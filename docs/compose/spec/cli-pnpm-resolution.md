@@ -14,7 +14,7 @@ English | [中文](cli-pnpm-resolution.zh.md)
 
 **What was built** — bundle-runtime writes `pnpm`/`pnpx` shims into `runtime/node/node_modules/.bin` after the pnpm package copy (POSIX shims resolving the node binary relatively, `.cmd` shims via `%~dp0`), so the market (through the shell's PATH prefix) and the CLI can execute the bundled pnpm. The CLI's `resolvePnpm()` probes candidates in order — `PNPM_BINARY` override, `pnpm` on PATH, then the runtime-sibling shim `<runtime>/node/node_modules/.bin/pnpm` derived from `INSTALL_ANCHOR` — accepting the first whose `--version` probe exits 0, and prints `npm install -g pnpm` / `corepack enable pnpm` guidance when none works. Review caught the dead `$DSH_HOME` junction candidate (the junction targets the deploy closure, which has no pnpm) and replaced it with the runtime-sibling shim.
 
-**Verification** — `vitest run apps/cli/tests/plugin.spec.ts`: 4/4 pass; `tsc -p apps/cli/tsconfig.json --noEmit`: clean; `node --check apps/desktop/scripts/bundle-runtime.mjs`: clean; review re-check (general-4) confirmed the deployed layout math, bundle PATH, and test coverage.
+**Verification** — `vitest run apps/cli/tests/plugin.spec.ts`: 4/4 pass; `tsc -p apps/cli/tsconfig.json --noEmit`: clean; `node --check apps/desktop-tauri/scripts/bundle-runtime.mjs`: clean; review re-check (general-4) confirmed the deployed layout math, bundle PATH, and test coverage.
 
 **Journey log** — The `$DSH_HOME/node_modules` junction points at the deploy closure, not the node distribution — the shipped mechanism claim was wrong until review C1; the fix (runtime-sibling shim from `INSTALL_ANCHOR`) also removed the now-unused `dsh-home-paths` import. The probe's shell concatenation initially lost the `shell: true` flag and failed on Windows; quoting for spaced paths was added in the same pass.
 
@@ -29,7 +29,7 @@ The profile plugin manager therefore works only on developer machines with a glo
 
 ## [S2] Design
 
-### Ship the bundled pnpm shims (`apps/desktop/scripts/bundle-runtime.mjs`)
+### Ship the bundled pnpm shims (`apps/desktop-tauri/scripts/bundle-runtime.mjs`)
 
 After the `cpSync` of the pnpm package into `runtime/node/node_modules/pnpm`, write executable shims into `runtime/node/node_modules/.bin`:
 

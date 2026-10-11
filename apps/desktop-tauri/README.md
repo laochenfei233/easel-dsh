@@ -25,7 +25,7 @@ Prerequisites: Node ≥ 22.19, pnpm ≥ 11, Rust ≥ 1.77, Tauri CLI (provided a
 ```sh
 pnpm install                # workspace dependencies
 pnpm run build              # produce lib and apps/web/dist (static frontend for dsh web)
-pnpm tauri dev              # from apps/desktop; dev mode uses PATH node + apps/cli/lib/bin.js
+pnpm tauri dev              # from apps/desktop-tauri; dev mode uses PATH node + apps/cli/lib/bin.js
 ```
 
 Dev mode needs built CLI artifacts (`pnpm run build`); you can also override runtime resolution with environment variables:

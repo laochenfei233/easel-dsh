@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/compose/spec/desktop-client.md
-desktop-client.md: cbbd417fb155703717e8ea2a04a15c749ae4d447
-desktop-client.zh.md: de0352acd81620849d4c3f6d691243b15ccb5175
+desktop-client.md: 11915046e7a5ef695cf8d27b270fdb7dca0c06d0
+desktop-client.zh.md: b9591813b3e788f201305dcb2a211c34515de980

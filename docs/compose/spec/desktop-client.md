@@ -14,7 +14,7 @@ English | [中文](desktop-client.zh.md)
 
 **What was built** — 桌面端内置插件市场由 `dshmarket` 切换为 `dsh-plugin`（npm 包，对应 dshplugin/dsh-plugin-hub 插件中心）：`scripts/bundle-runtime.mjs` 在打包期把 `dsh-plugin@latest` 装进 `runtime/plugins/dsh-plugin`（`--prod --ignore-scripts`，flatten 闭包，pnpm-workspace.yaml 置 `minimumReleaseAge: 0` 保证跟踪最新发行），首启时 `setup.rs::ensure_default_plugins` 复制进 web profile 的 `plugins/` 并写入 `cordis.patch.yml` insert 行（`id: dsh-plugin`，name `./plugins/dsh-plugin/node_modules/dsh-plugin/lib/index.js`，与包 `main` 一致）。内容链接改为系统默认浏览器打开：主窗口改由 `WebviewWindowBuilder` 构建（`tauri.conf.json` `create: false`）并挂 `on_new_window`，http/https/mailto/tel 经 `tauri-plugin-opener` 外开、其余 scheme 拒绝、弹窗一律 `Deny`，壳页面、向导页与 dsh iframe 内的 `target="_blank"` / `window.open` 均不再在应用内开新窗口。首启向导可选插件默认全部不勾选；顶部导航栏已移除（dsh UI 自带导航），`dsh-tauri` 导航桥条目随之从向导删除。
 
-**Verification** — `cargo check`（apps/desktop/src-tauri）：PASS，仅 1 个存量 warning（dsh_runner.rs:385 unused import）。`node --check` scripts/bundle-runtime.mjs、ui/dist/wizard.js、ui/dist/app.js：PASS。npm 烟测：`pnpm install --prod --ignore-scripts --lockfile=false` + `minimumReleaseAge: 0` 安装 `dsh-plugin@1.3.5`，`node_modules/dsh-plugin/lib/index.js` 存在且可加载；npm 元数据确认 `main=lib/index.js`、repository=dshplugin/dsh-plugin-hub、无运行时依赖。独立评审对照 wry 0.55.1 源码确认 `on_new_window` 拦截跨源 iframe（127.0.0.1:3081）的 NewWindowRequested，`Deny` → 不产生窗口。未做：bundle-runtime.mjs 全量执行（需先 `pnpm run build` 并下载 Node 运行时，由 CI 的 desktop-release.yml 覆盖）；应用内点击的端到端手测（Windows GUI，本环境无法无头执行）。
+**Verification** — `cargo check`（apps/desktop-tauri/src-tauri）：PASS，仅 1 个存量 warning（dsh_runner.rs:385 unused import）。`node --check` scripts/bundle-runtime.mjs、ui/dist/wizard.js、ui/dist/app.js：PASS。npm 烟测：`pnpm install --prod --ignore-scripts --lockfile=false` + `minimumReleaseAge: 0` 安装 `dsh-plugin@1.3.5`，`node_modules/dsh-plugin/lib/index.js` 存在且可加载；npm 元数据确认 `main=lib/index.js`、repository=dshplugin/dsh-plugin-hub、无运行时依赖。独立评审对照 wry 0.55.1 源码确认 `on_new_window` 拦截跨源 iframe（127.0.0.1:3081）的 NewWindowRequested，`Deny` → 不产生窗口。未做：bundle-runtime.mjs 全量执行（需先 `pnpm run build` 并下载 Node 运行时，由 CI 的 desktop-release.yml 覆盖）；应用内点击的端到端手测（Windows GUI，本环境无法无头执行）。
 
 **Journey log** — 1) 旧市场包 `dshmarket` 与 dsh-plugin-hub 无直接关系，必须先验证 npm 包 `dsh-plugin` 的 repository 字段才确认切换目标正确。2) `tauri.conf.json` 声明 `bundle.resources` 的 `../runtime` 必须存在，否则 tauri-build 的 cargo check 直接失败——worktree 里建空目录即可通过。3) worktree 提交会触发 lefthook pre-commit 的 lint 步骤，缺 node_modules 时报 `tsx: No such file or directory`，需先 `pnpm install --frozen-lockfile`。4) 评审确认 Tauri 2 (wry) 无 `on_new_window` 处理器时 WebView2 会把 `target="_blank"` 标记为已处理却不展示任何窗口——即桌面端链接"点了没反应"的根因，`Deny` + opener 外开是正解。5) setup.rs 原 `defaults` 元组第二元素从未被使用且与 insert 行内容不一致，属死代码，评审 M1 指出后移除。
 
@@ -22,7 +22,7 @@ English | [中文](desktop-client.zh.md)
 
 DeepSeek Harness（`dsh`）目前是 CLI + 浏览器形态：`dsh web` 在 `http://127.0.0.1:3080` 起本地服务并打开系统浏览器。用户需要一款**桌面独立客户端**：双击即用、关窗不退出（托盘常驻）、无需理解端口与浏览器标签页、安装包尽量小（选定 Tauri 而非 Electron）、全平台（Windows / macOS / Linux）发行，并由 GitHub Actions 打包 release 包。同时四个 agent preset（`standard` / `minimal` / `code` / `cordis`）的全部功能必须原样保留且可正常运行，插件安装/更新（dsh plugin、dsh-plugin 插件中心）等机制在桌面端也必须可用。
 
-仓库形态：fork `deepseek-ai/deepseek-harness` → `laochenfei233/deepseek-harness`，Tauri 壳作为新目录 `apps/desktop/` 并入 fork。上游同步 = 单向 `git pull upstream`（**绝不 push 上游**）；四 preset 由上游 `apps/cli/config/agent-presets/` 提供，壳不修改任何上游 `packages/` 代码，因此同步即保留全部功能。
+仓库形态：fork `deepseek-ai/deepseek-harness` → `laochenfei233/deepseek-harness`，Tauri 壳作为新目录 `apps/desktop-tauri/` 并入 fork。上游同步 = 单向 `git pull upstream`（**绝不 push 上游**）；四 preset 由上游 `apps/cli/config/agent-presets/` 提供，壳不修改任何上游 `packages/` 代码，因此同步即保留全部功能。
 
 ## [S2] Design
 
@@ -31,7 +31,7 @@ DeepSeek Harness（`dsh`）目前是 CLI + 浏览器形态：`dsh web` 在 `http
 桌面壳 = Tauri 2 应用，与社区先例同构（`xiincs/deepseek-harness-desktop`、`hairyf/deepseek-harness-desktop`、`dsh-tauri-desk/dsh-tauri` 协议）：
 
 ```
-apps/desktop/
+apps/desktop-tauri/
   src-tauri/            # Rust：主窗口 WebView + 子进程管理 + 托盘 + 系统集成
     src/
       main.rs           # Tauri 入口
@@ -123,8 +123,8 @@ apps/desktop/
 
 ### 2.8 目录与文件约定
 
-- 壳代码全部在 `apps/desktop/`（新增，不触碰上游文件）；
-- `apps/desktop/README.md` 说明构建与开发；
+- 壳代码全部在 `apps/desktop-tauri/`（新增，不触碰上游文件）；
+- `apps/desktop-tauri/README.md` 说明构建与开发；
 - 首次向导 UI 使用壳自带静态前端（无框架或轻框架），经 Tauri 初始窗口加载。
 
 ### 2.9 插件中心预装与内容链接外开
@@ -144,7 +144,7 @@ apps/desktop/
 
 - [x] T1: 建立 fork 仓库与 worktree（master 同步上游，分支 feat/tauri-desktop） — acceptance: `git pull upstream` 无冲突，四 preset 文件在位（covers: S1）
 - [x] T2: 编写本 spec — acceptance: 全部设计节有覆盖任务，无 TBD（covers: S1, S2）
-- [x] T3: 实现 `apps/desktop/src-tauri`（WebView + dsh 子进程管理 + 托盘 + host.openPath RPC + 崩溃重启） — acceptance: `cargo build`/`tauri build` 通过，`dsh web --no-open` 由壳拉起且 WebView 加载 3080（covers: S2.1, S2.3）
+- [x] T3: 实现 `apps/desktop-tauri/src-tauri`（WebView + dsh 子进程管理 + 托盘 + host.openPath RPC + 崩溃重启） — acceptance: `cargo build`/`tauri build` 通过，`dsh web --no-open` 由壳拉起且 WebView 加载 3080（covers: S2.1, S2.3）
 - [x] T4: 实现顶部导航栏 UI 与 dsh-tauri 协议桥 — acceptance: 三控件收发 postMessage 与协议一致（covers: S2.2）
 - [x] T5: 实现首次启动向导（预设四选一 + 默认/可选插件安装） — acceptance: 向导生成 profile 与插件安装命令按 2.5 表执行且可重入（covers: S2.5）
 - [x] T6: 实现 `scripts/bundle-runtime.mjs`（Node runtime + 裁剪 dsh 运行环境 + 内置 pnpm） — acceptance: 产物目录可离线运行 `dsh web --no-open` 且四 preset 在位（covers: S2.4）

@@ -2,5 +2,5 @@
 # side as of the last confirmed-consistent state. Both languages carry equal authority;
 # after editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write docs/compose/spec/desktop-port-resilience.md
-desktop-port-resilience.md: 811a539076e5486e12b08a4ea38eb8b8c01f59bf
-desktop-port-resilience.zh.md: a1cc8109b75c91ba823c5ecb20177cd0ebd34e2c
+desktop-port-resilience.md: d217f45115cfe52a4effdc107d49fbc7219c350f
+desktop-port-resilience.zh.md: 8b968c1dd8d7de059b0faf8b57f91813f4f3b98e

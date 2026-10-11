@@ -1,4 +1,4 @@
-# DeepSeek Harness 桌面端（apps/desktop）开发笔记
+# DeepSeek Harness 桌面端（apps/desktop-tauri）开发笔记
 
 > 本文档汇总桌面客户端（Tauri 2 壳）一次完整迭代的实现内容、关键机制、注意事项与排错记录。
 > 覆盖提交范围：`57da7798a..HEAD`（master）。代码以当前 master 为准，本文档为上下文快照。
@@ -94,7 +94,7 @@ pnpm 的 os/cpu/libc 过滤基于**运行它的 node 的架构**。mac x64 构�
 
 | 报错 | 根因 | 解决方案 |
 |---|---|---|
-| `Release (dsh) release:verify: dsh release members must share one version` | apps/desktop 版本 ≠ 家族 0.1.1-rc.2 | 三处版本同步（package.json / tauri.conf.json / Cargo.toml + lock） |
+| `Release (dsh) release:verify: dsh release members must share one version` | apps/desktop-tauri 版本 ≠ 家族 0.1.1-rc.2 | 三处版本同步（package.json / tauri.conf.json / Cargo.toml + lock） |
 | `Multiple versions of pnpm specified` | pnpm/action-setup `version` 与 packageManager 冲突 | 移除 action 的 `version` 字段 |
 | `Resource not accessible by integration`（tauri-action 上传 Release） | GITHUB_TOKEN 只读 | workflow 加 `permissions: contents: write` |
 | `bundled npm missing at .../node_modules/npm/...`（mac/linux） | POSIX tar.xz 布局为 `bin/node` + `lib/node_modules/npm` | installNode 扁平化布局 |
@@ -118,4 +118,4 @@ pnpm 的 os/cpu/libc 过滤基于**运行它的 node 的架构**。mac x64 构�
 - **CI**：架构校验 run（33033441566）构建中——验证 5 行矩阵 + 闭包架构自检；完成后确认 mac x64 与 win arm64 行的 node/原生模块均为目标架构。
 - **Intel Mac "dsh exited during startup"**：待 CI 校验结果定性——若闭包 native 为 arm64，需把 bundle-runtime 的 pnpm 改为显式用内置 x64 node 调用（不再依赖 PATH 解析）。
 - **Gitea**：代码已有私有只读镜像（自动从 GitHub 同步）；构建产物如需走 Gitea 分发需另找上传通道（镜像仓库只读）。
-- **本地**：`apps/desktop` 有未跟踪 `.tmp-tauri-cli/`（npx 缓存的 Tauri CLI，不入库）；`~/.dsh` 保留 `sessions/`。
+- **本地**：`apps/desktop-tauri` 有未跟踪 `.tmp-tauri-cli/`（npx 缓存的 Tauri CLI，不入库）；`~/.dsh` 保留 `sessions/`。

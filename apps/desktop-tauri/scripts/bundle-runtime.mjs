@@ -1,13 +1,13 @@
 // Builds the bundled runtime consumed by the Tauri shell:
 //
-//   apps/desktop/runtime/
+//   apps/desktop-tauri/runtime/
 //     node/                         Node executable (node.exe / node)
 //     dsh/                          pnpm-deploy closure of @deepseek-ai/dsh
 //                                   (+ @deepseek-ai/dsh-web-frontend/dist, pnpm)
 //     plugins/dsh-win-terminal-inspector/   local Windows-only plugin
 //
 // The shell resolves these paths in src-tauri/src/dsh_runner.rs
-// (resolve_runtime). Run from apps/desktop:
+// (resolve_runtime). Run from apps/desktop-tauri:
 //
 //   node scripts/bundle-runtime.mjs [--platform win|mac|linux] [--node-version v22.20.0]
 //
