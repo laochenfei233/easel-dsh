@@ -183,6 +183,59 @@ describe('sidebar global panels', () => {
     expect(within(navigation).getAllByRole('button').map(row => row.textContent)).toEqual(['Alpha panel', 'Beta panel'])
   })
 
+  it('hides a panel row on claim, shows the others, and restores it through the disposer', async () => {
+    const { runtime, locale, view } = await bench()
+    await mountPanels(runtime, locale)
+    expect(view.queryByRole('navigation')).not.toBeNull()
+    expect(within(view.getByRole('navigation', { name: 'Global panels' })).getAllByRole('button')).toHaveLength(2)
+
+    // Real use path: a plugin claims the hide through the provided service while it is active.
+    const claim = await runtime.mount({
+      inject: ['uiSidebarPanels'],
+      apply(ctx: Context) {
+        ctx.effect(() => (ctx.get('uiSidebarPanels') as { hidden(id: MainPanelId): () => void }).hidden(BETA), 'panel test: hide beta')
+      },
+    })
+    await waitFor(() => {
+      const navigation = view.getByRole('navigation', { name: 'Global panels' })
+      expect(within(navigation).getAllByRole('button')).toHaveLength(1)
+      expect(within(navigation).getByRole('button', { name: 'Alpha panel' })).toBeTruthy()
+      expect(within(navigation).queryByRole('button', { name: 'Beta panel' })).toBeNull()
+    })
+    // The hidden panel's body stays mounted and selectable by id.
+    fireEvent.click(within(view.getByRole('navigation', { name: 'Global panels' })).getByRole('button', { name: 'Alpha panel' }))
+
+    await claim.dispose()
+    await waitFor(() => {
+      expect(within(view.getByRole('navigation', { name: 'Global panels' })).getAllByRole('button')).toHaveLength(2)
+      expect(within(view.getByRole('navigation', { name: 'Global panels' })).getByRole('button', { name: 'Beta panel' })).toBeTruthy()
+    })
+  })
+
+  it('keeps the first hide when a second plugin hides the same id, and only the first disposer restores it', async () => {
+    const { runtime, locale, view } = await bench()
+    await mountPanels(runtime, locale)
+    const first = await runtime.mount({
+      inject: ['uiSidebarPanels'],
+      apply(ctx: Context) {
+        ctx.effect(() => (ctx.get('uiSidebarPanels') as { hidden(id: MainPanelId): () => void }).hidden(ALPHA), 'panel test: hide alpha 1')
+      },
+    })
+    const second = await runtime.mount({
+      inject: ['uiSidebarPanels'],
+      apply(ctx: Context) {
+        ctx.effect(() => (ctx.get('uiSidebarPanels') as { hidden(id: MainPanelId): () => void }).hidden(ALPHA), 'panel test: hide alpha 2')
+      },
+    })
+    expect(within(view.getByRole('navigation', { name: 'Global panels' })).queryByRole('button', { name: 'Alpha panel' })).toBeNull()
+
+    // The second claimant cannot restore a row it does not own.
+    await second.dispose()
+    expect(within(view.getByRole('navigation', { name: 'Global panels' })).queryByRole('button', { name: 'Alpha panel' })).toBeNull()
+    await first.dispose()
+    expect(within(view.getByRole('navigation', { name: 'Global panels' })).getByRole('button', { name: 'Alpha panel' })).toBeTruthy()
+  })
+
   it('selects registered main content and keeps a repeated selection active', async () => {
     const { runtime, locale, layout, view } = await bench()
     await mountPanels(runtime, locale)

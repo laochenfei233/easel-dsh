@@ -36,6 +36,27 @@ interface WorkspaceNavigation {
   startSession(workspaceId?: Parameters<SidebarRootInjected['startSession']>[0]): void
 }
 
+declare module '@deepseek-ai/cordis' {
+  interface Context {
+    /** Root-scoped nav-entry registry for panel visibility challenges. */
+    uiSidebarPanels: SidebarPanelService
+  }
+}
+
+/**
+ * Deployment-side picture: which global panel ids another plugin hides from
+ * the sidebar icon rail. The panel itself stays registered and reachable
+ * (selectPanel, layout.filters) — only the rail row disappears.
+ */
+export interface SidebarPanelService {
+  /**
+   * Hide one global panel id's icon row.
+   * @param id - the panel id (the same value as the list registration's id).
+   * @returns the disposer; hiding stops when the returned disposer runs.
+   */
+  hidden(id: MainPanelId): () => void
+}
+
 /** Services required by the sidebar plugin. */
 export const inject = ['slots', 'layout', 'uiWorkspace', 'locale', 'shortcuts']
 
@@ -45,13 +66,14 @@ export const inject = ['slots', 'layout', 'uiWorkspace', 'locale', 'shortcuts']
 export function apply(ctx: ClientContext): void {
   const workspaceNavigation = ctx.get('uiWorkspace') as unknown as WorkspaceNavigation
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-sidebar: dictionaries')
+  const hiddenPanels = new Set<MainPanelId>()
   const panels = createSnapshotStore<readonly SidebarPanelMetadata[]>([])
   const syncPanels = (): void => {
     const next = ctx.slots.entriesOfSlot('sidebar.panellist').map(({ options }) => {
       // The list registration requires an id; StoredEntry erases the slot kind.
       const id = options.id as MainPanelId
       return { id, order: options.order ?? 0, label: resolveSlotLabel(options.label) ?? id }
-    }).sort((a, b) => a.order - b.order)
+    }).filter(panel => !hiddenPanels.has(panel.id)).sort((a, b) => a.order - b.order)
     const previous = panels.getSnapshot()
     if (previous.length === next.length && previous.every((panel, index) => {
       const candidate = next[index] as SidebarPanelMetadata
@@ -61,6 +83,24 @@ export function apply(ctx: ClientContext): void {
   }
   ctx.effect(() => ctx.slots.subscribe('sidebar.panellist', syncPanels), 'ui-sidebar: panel entries')
   ctx.effect(() => ctx.locale.subscribe(syncPanels), 'ui-sidebar: panel labels')
+  ctx.effect(() => ctx.reflect.provide('uiSidebarPanels', {
+    // Hidden-nav declarations are the caller fiber's effect: registering under
+    // ctx.effect means panel entry collapse or plugin removal removes the hide
+    // with it and reruns syncPanels through the returned disposer chain.
+    hidden(id: MainPanelId): () => void {
+      if (hiddenPanels.has(id)) {
+        ctx.logger?.warn?.(`ui-sidebar: panel "${id}" hidden by a second registrant; keeping the first`)
+        return () => {}
+      }
+      hiddenPanels.add(id)
+      syncPanels()
+      return () => {
+        if (!hiddenPanels.has(id)) return
+        hiddenPanels.delete(id)
+        syncPanels()
+      }
+    },
+  }), 'ui-sidebar: panel visibility service')
 
   const injectProps = (): SidebarRootInjected => ({
     // The shell's New Session button rides the Workspace UI's shared action
