@@ -370,16 +370,29 @@ export class HarnessSdkJsonRpcServer {
     // rows in the host plane, so this agent reads them from the global layer. A
     // deployment that configures a roster has to join one here first
     // (@deepseek-ai/dsh-agent-preset-registry README, "Composing a child agent").
-    const handle = await this.ctx.agents.create({
-      sessionId: brandString<SessionId>(sessionId),
-      meta: { cwd: this.cwd },
-      agentOptions: {
-        provider: this.provider,
-        model: this.model,
-        ...this.reasoningEffort === undefined ? {} : { reasoningEffort: this.reasoningEffort },
-        ...this.maxTokens === undefined ? {} : { maxTokens: this.maxTokens },
-      },
-    })
+    const agentOptions = {
+      provider: this.provider,
+      model: this.model,
+      ...this.reasoningEffort === undefined ? {} : { reasoningEffort: this.reasoningEffort },
+      ...this.maxTokens === undefined ? {} : { maxTokens: this.maxTokens },
+    }
+    let handle
+    try {
+      handle = await this.ctx.agents.create({
+        sessionId: brandString<SessionId>(sessionId),
+        meta: { cwd: this.cwd },
+        agentOptions,
+      })
+    } catch (error) {
+      // A durable session from a previous runtime process is not an error for
+      // an SDK caller: the id addresses the conversation they asked for. Load
+      // the persisted session and resume an agent on it instead.
+      if (!String(error).includes('already exists')) throw error
+      handle = await this.ctx.agents.resume({
+        resumeSessionId: brandString<SessionId>(sessionId),
+        agentOptions,
+      })
+    }
     const rec: SessionRecord = { handle, failure: undefined }
     this.sessions.set(sessionId, rec)
     return rec
