@@ -220,8 +220,18 @@ async function deployDsh() {
   // run the native installs we actually need inside the closure. node-pty's
   // prebuild.js downloads its prebuilt binary; koffi/better-sqlite3 ship
   // per-platform prebuilt npm packages.
+  //
+  // Belt-and-braces only: newer pnpm refuses `rebuild` inside a lockfile-less
+  // deploy closure (ERR_PNPM_NO_LOCKFILE), and the workspace install already
+  // produced node-pty's prebuilds/ directory, which deploy carries along. So a
+  // failure here must not abort the bundle — the binaries are present either
+  // way; flattenClosure() copies them to the top level.
   step('rebuild native modules in closure');
-  runPnpm(['rebuild', 'node-pty'], { cwd: DSH_DIR });
+  try {
+    runPnpm(['rebuild', 'node-pty'], { cwd: DSH_DIR });
+  } catch (error) {
+    step(`node-pty rebuild skipped (exit ${error?.status ?? '?'}); using the workspace prebuilds carried by deploy`);
+  }
 
   // Ship pnpm so `dsh plugin` and the market can install/update plugins
   // inside the desktop's web profile. Pin the same major as the deploy step
@@ -234,18 +244,33 @@ async function deployDsh() {
   }
   step('install pnpm into runtime');
   const pnpmVersion = '11.7.0'; // must match the pnpm used by pnpm deploy
-  const scratch = join(RUNTIME, '.tmp', 'pnpm-prefix');
-  rmSync(scratch, { recursive: true, force: true });
-  mkdirSync(scratch, { recursive: true });
-  execFileSync(nodeExe, [npmCli, 'install', '--no-save', '--no-audit', '--no-fund', '--prefix', scratch, `pnpm@${pnpmVersion}`], { stdio: 'inherit' });
-  const pnpmPkg = join(scratch, 'node_modules', 'pnpm');
-  if (!existsSync(pnpmPkg)) {
-    throw new Error('pnpm did not install into scratch prefix');
+  // A staged node distribution (reused from a previous install via the
+  // "node already present" path) may already carry the exact pnpm this step
+  // installs; skip the network install then — npm can refuse the scratch
+  // prefix on locked-down Windows setups.
+  const presentPnpmManifest = join(NODE_DIR, 'node_modules', 'pnpm', 'package.json');
+  let pnpmPresent = false;
+  if (existsSync(presentPnpmManifest)) {
+    try {
+      pnpmPresent = JSON.parse(readFileSync(presentPnpmManifest, 'utf8')).version === pnpmVersion;
+    } catch { pnpmPresent = false; }
   }
-  rmSync(join(NODE_DIR, 'node_modules', 'pnpm'), { recursive: true, force: true });
-  cpSync(pnpmPkg, join(NODE_DIR, 'node_modules', 'pnpm'), { recursive: true });
-  rmSync(scratch, { recursive: true, force: true });
-  step(`pnpm@${pnpmVersion} installed`);
+  if (pnpmPresent) {
+    step(`pnpm@${pnpmVersion} already present in the runtime, skipping install`);
+  } else {
+    const scratch = join(RUNTIME, '.tmp', 'pnpm-prefix');
+    rmSync(scratch, { recursive: true, force: true });
+    mkdirSync(scratch, { recursive: true });
+    execFileSync(nodeExe, [npmCli, 'install', '--no-save', '--no-audit', '--no-fund', '--prefix', scratch, `pnpm@${pnpmVersion}`], { stdio: 'inherit' });
+    const pnpmPkg = join(scratch, 'node_modules', 'pnpm');
+    if (!existsSync(pnpmPkg)) {
+      throw new Error('pnpm did not install into scratch prefix');
+    }
+    rmSync(join(NODE_DIR, 'node_modules', 'pnpm'), { recursive: true, force: true });
+    cpSync(pnpmPkg, join(NODE_DIR, 'node_modules', 'pnpm'), { recursive: true });
+    rmSync(scratch, { recursive: true, force: true });
+    step(`pnpm@${pnpmVersion} installed`);
+  }
 
   // The scratch install's .bin shims die with it; recreate them so the market
   // (via the shell's PATH prefix) and `dsh plugin` (via $DSH_HOME/node_modules)
@@ -478,7 +503,14 @@ function flattenClosure() {
   // Windows' path limit inside the NSIS installer; DeepSeek/other providers
   // never load it, so drop the whole package.
   rmSync(join(DSH_DIR, 'node_modules', '@mistralai'), { recursive: true, force: true });
-  step('removed .pnpm virtual store and @mistralai');
+  // Chrome DevTools' issue-description .md sources (236 files, 60-73-char
+  // names under a deep path) also blow past the NSIS path limit. The devtools
+  // chunks embed the description text at build time — the source files are
+  // never read at runtime — so pruning them is lossless.
+  rmSync(join(DSH_DIR, 'node_modules', '@deepseek-ai', 'dsh-experimental-inspector',
+    'lib', 'devtools', 'models', 'issues_manager', 'descriptions'),
+    { recursive: true, force: true });
+  step('removed .pnpm virtual store, @mistralai, and overlong devtools docs');
 }
 
 // Turn a pnpm-style node_modules (virtual store + top-level links) into a
@@ -688,8 +720,42 @@ function buildPkgMap(repo) {
   return map;
 }
 
+// A previously installed desktop runtime keeps a copy of both bundled
+// plugins (`dsh-plugin` market closure and `dsh-win-terminal-inspector`).
+// Offline or GitHub-blocked build hosts reuse those copies instead of
+// re-downloading; set DSH_DESKTOP_PLUGIN_REUSE to point at such a runtime's
+// plugins directory, or leave it unset to probe the default install location.
+function reusePluginDir(name) {
+  const candidates = [];
+  if (process.env.DSH_DESKTOP_PLUGIN_REUSE) {
+    candidates.push(join(process.env.DSH_DESKTOP_PLUGIN_REUSE, name));
+  }
+  const localAppData = process.env.LOCALAPPDATA;
+  if (localAppData) {
+    candidates.push(join(localAppData, 'DeepSeek Harness Desktop', 'runtime', 'plugins', name));
+  }
+  return candidates.find((dir) => existsSync(dir));
+}
+
+/**
+ * Stage one bundled plugin into runtime/plugins, reusing a previously
+ * installed runtime's copy when available so offline or GitHub-blocked
+ * hosts never hit the network. Returns true when the reuse path ran.
+ */
+function stageReusablePlugin(name) {
+  const dest = join(PLUGINS_DIR, name);
+  const reusable = reusePluginDir(name);
+  if (reusable === undefined) return false;
+  if (resolve(reusable) === resolve(dest)) return true; // already in place
+  rmSync(dest, { recursive: true, force: true });
+  cpSync(reusable, dest, { recursive: true });
+  step(`${name} reused from ${reusable}`);
+  return true;
+}
+
 async function installWinTerminalInspector() {
   if (PLATFORM !== 'win') return;
+  if (stageReusablePlugin('dsh-win-terminal-inspector')) return;
   const dest = join(PLUGINS_DIR, 'dsh-win-terminal-inspector');
   rmSync(dest, { recursive: true, force: true });
   // codeload.github.com is reachable from build sandboxes where github.com's
@@ -742,6 +808,7 @@ async function main() {
 // afterwards). The shell copies this directory into the web profile on first
 // launch.
 async function prepareDefaultPluginDshPlugin() {
+  if (stageReusablePlugin('dsh-plugin')) return;
   const dest = join(PLUGINS_DIR, 'dsh-plugin');
   rmSync(dest, { recursive: true, force: true });
   mkdirSync(dest, { recursive: true });

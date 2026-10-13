@@ -44,8 +44,12 @@ fn build_main_window(app: &tauri::AppHandle) -> Result<(), String> {
         })
         .build()
         .map_err(|e| e.to_string())?;
+    // The window stays hidden here on purpose: a `show()` issued before the
+    // event loop starts can be dropped, and showing early presents a blank
+    // webview while dsh boots. dsh_runner reveals it on every `dsh://ready`.
     Ok(())
 }
+
 
 /// Schemes we hand to the OS opener. The URL comes from web content, so only
 /// the well-known link schemes pass; anything else is refused outright.

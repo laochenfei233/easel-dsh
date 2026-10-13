@@ -110,6 +110,7 @@ impl DshHandle {
             }
             let launch_url = self.launch_url.lock().expect("launch-url mutex").clone();
             let _ = app.emit("dsh://ready", DshEndpoint { url: launch_url });
+            reveal_main_window(&app);
 
             // Wait for the child to exit (or the stopping flag).
             loop {
@@ -158,6 +159,7 @@ impl DshHandle {
                     continue;
                 };
                 let _ = app.emit("dsh://ready", DshEndpoint { url: Some(url) });
+                reveal_main_window(&app);
                 wait_port_closed(port, self.stopping.clone()).await;
                 *self.launch_url.lock().expect("launch-url mutex") = None;
                 continue;
@@ -784,6 +786,19 @@ pub fn dsh_status(state: tauri::State<'_, DshHandle>) -> DshStatus {
 #[tauri::command]
 pub fn restart_dsh(state: tauri::State<'_, DshHandle>) {
     state.request_restart();
+}
+
+/// Reveal the shell window once the dsh UI is actually reachable. The main
+/// window is built before the event loop starts, where a queued `show()` can
+/// be dropped on some WebView2/Windows combinations, and revealing it earlier
+/// would present a blank webview while dsh boots. Called at every
+/// `dsh://ready`; showing an already-visible window is a no-op.
+fn reveal_main_window(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
 }
 
 #[tauri::command]
