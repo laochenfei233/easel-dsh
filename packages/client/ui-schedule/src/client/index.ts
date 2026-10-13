@@ -53,6 +53,7 @@ import { ScheduleTaskTabTitle } from './ScheduleTaskTabTitle.tsx'
 import { SessionScheduleHover } from './SessionScheduleHover.tsx'
 import { SessionScheduleMark } from './SessionScheduleMark.tsx'
 import { createSessionScheduleSource, type SessionScheduleSourceFactory } from './session-schedule-state.ts'
+import { SchedulesSettingsSection, type SchedulesSettingsInjected } from './SchedulesSettingsSection.tsx'
 import { TaskTabBindings } from './task-tab-bindings.ts'
 import { TaskManagerPage, type TaskManagerInjected } from './TaskManagerPage.tsx'
 import type { TaskDetailInjected } from './TaskDetail.tsx'
@@ -182,6 +183,28 @@ export function apply(ctx: ClientContext): void {
     locale: MANAGER_NS,
     label: () => t('panel'),
   }, TaskManagerIcon))
+  // The deployment may own the product navigation and leave this page off the
+  // rail (via `ctx.uiSidebarPanels.hidden`); this section keeps the page
+  // reachable from Settings. Ordered after the Plugins section (15), before
+  // agent presets (20).
+  ctx.slots.inject('settings.section', () => ctx.slots.register({
+    name: 'settings.section',
+    id: PANEL_ID,
+    order: 18,
+    locale: MANAGER_NS,
+    label: () => t('panel'),
+    inject: (): SchedulesSettingsInjected => ({
+      // Optional read, not a fiber inject: the layout service is root-frame
+      // infrastructure the settings shell already sits inside, so declaring it
+      // here would make this fiber wait on nothing. Absent service fails loud
+      // at click time (broken composition) instead of at registration.
+      selectPanel: () => {
+        const layout = ctx.get('layout')
+        if (layout === undefined) throw new Error('ui-schedule: the layout service is absent; cannot select the schedules panel')
+        layout.selectPanel(PANEL_ID)
+      },
+    }),
+  }, SchedulesSettingsSection))
   // The created task is a Turn-level element, not a Tool-group row: the Turn
   // Definition publishes the settled result and this tail list entry renders
   // the card beneath the closing prose.
