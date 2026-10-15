@@ -44,6 +44,11 @@
     "resources": {
       "../runtime": "runtime"
     },
+    "windows": {
+      "nsis": {
+        "installerHooks": "./installer-hooks.nsh"
+      }
+    },
     "category": "DeveloperTool",
     "shortDescription": "DeepSeek Harness desktop client",
     "longDescription": "A standalone desktop client for DeepSeek Harness (dsh). Embeds the dsh web UI in a native window with a bundled Node runtime."
