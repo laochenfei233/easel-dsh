@@ -774,6 +774,12 @@ mod easel_tests {
         ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
         write(&easel.join("outputs/private.txt"), "keep me");
         write(&easel.join("skills/openclaw/skill-a/SKILL.md"), "user edit");
+        // The payload copy is outside the stamp gate: even with the version
+        // unchanged it must be restored from the runtime on every start.
+        write(
+            &home.join("profiles/node_modules/dsh-plugin-easel/index.js"),
+            "// tampered",
+        );
         let rows_before = patch_text(&home).matches("id: easel").count();
 
         ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
@@ -786,6 +792,11 @@ mod easel_tests {
         assert_eq!(
             fs::read_to_string(easel.join("skills/openclaw/skill-a/SKILL.md")).unwrap(),
             "user edit"
+        );
+        assert_eq!(
+            fs::read_to_string(home.join("profiles/node_modules/dsh-plugin-easel/index.js"))
+                .unwrap(),
+            "// plugin"
         );
         assert_eq!(patch_text(&home).matches("id: easel").count(), rows_before);
     }
