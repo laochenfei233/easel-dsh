@@ -408,6 +408,478 @@ fn has_patch_row(rows: &[Yaml], id: &str) -> bool {
     })
 }
 
+// ---------------------------------------------------------------------------
+// Bundled Easel integration.
+//
+// The runtime bundle ships the Easel project tree (runtime/easel: skills,
+// plugin source, profile template) and the plugin payload
+// (runtime/plugins/dsh-plugin-easel). The registration rows live in the
+// profile's patch layer, written here — the plugin package no longer carries
+// its own bundle patch, and the client half resolves through the same bare
+// package name in the profile module fallback (the dsh-plugin precedent).
+//
+// The easel-skills row reuses the shipped `@deepseek-ai/dsh-skill-filesystem`
+// provider a second time, pointed at Easel's own skill directory: frontmatter
+// parsing, name validation, and invocation policy stay its job. Registered at
+// the deployment level, its provider joins the skill registry's global layer,
+// so every preset's agent reads the merged catalog and an Easel skill name
+// never shadows a repository skill.
+//
+// The ui-plugin-manager disable row implements the frontend-replacement
+// policy: the sidebar belongs to Easel's navigation, so dsh's own sidebar
+// entry moves into Settings (whose "Built-in plugins" section is a separate
+// package and keeps mounting). It disables a ROW, never dsh's source — see
+// easel-dsh-frontend.md §2.6.2. Users re-enable it by editing the row to
+// `disabled: false`, not by deleting it (the shell re-adds missing rows).
+
+const EASEL_STAMP_FILE: &str = ".bundle-version";
+const EASEL_PLUGIN_NAME: &str = "dsh-plugin-easel";
+
+/// Content root of the bundled Easel integration: `EASEL_HOME` overrides,
+/// defaulting to `%LOCALAPPDATA%\Easel` (USERPROFILE fallback mirrors
+/// `dsh_home` for environments without LOCALAPPDATA).
+fn easel_home() -> PathBuf {
+    if let Ok(home) = std::env::var("EASEL_HOME") {
+        return PathBuf::from(home);
+    }
+    if let Ok(dir) = std::env::var("LOCALAPPDATA") {
+        return PathBuf::from(dir).join("Easel");
+    }
+    let base = std::env::var("USERPROFILE")
+        .or_else(|_| std::env::var("HOME"))
+        .unwrap_or_default();
+    PathBuf::from(base).join("AppData").join("Local").join("Easel")
+}
+
+fn runtime_easel_dir(app: &AppHandle) -> Option<PathBuf> {
+    if let Ok(dir) = app.path().resource_dir() {
+        let bundled = dir.join("runtime").join("easel");
+        if bundled.exists() {
+            return Some(bundled);
+        }
+    }
+    // Dev launches have no bundled resources; EASEL_BUNDLE_DIR points at a
+    // staged runtime/easel tree (mirrors DSH_DESKTOP_PLUGINS_DIR).
+    std::env::var("EASEL_BUNDLE_DIR").map(PathBuf::from).ok()
+}
+
+/// Entry point on the spawn path. No-op wherever the bundle is absent (dev
+/// without staging, non-Windows), otherwise deploy/sync/register.
+pub(crate) fn ensure_easel_bundle(app: &AppHandle) -> Result<(), String> {
+    let runtime_easel = match runtime_easel_dir(app) {
+        Some(dir) => dir,
+        None => return Ok(()),
+    };
+    let runtime_payload = match runtime_plugins_dir(app) {
+        Ok(dir) => dir.join(EASEL_PLUGIN_NAME),
+        Err(_) => return Ok(()),
+    };
+    let home = dsh_home();
+    ensure_easel_bundle_at(&runtime_easel, &runtime_payload, &easel_home(), &home)
+}
+
+/// Deploy the bundled Easel tree, refresh the profile payload, and write the
+/// registration rows. Every step is idempotent and user data (outputs/, real
+/// profiles, .env, existing patch rows' config) is never overwritten:
+///
+/// 1. stamp-gated sync of `skills/` + `dsh-plugin-easel/` into EASEL_HOME
+///    (replaced) and `profiles/_template` + README + LICENSE (missing only);
+/// 2. the profile payload in `$DSH_HOME/profiles/node_modules` is re-copied
+///    on every start — the plugin has no market self-update, the shell is its
+///    only update channel;
+/// 3. patch rows are insert-if-absent by id across both row shapes: a plain
+///    config-override row (pre-bundle installs) converts in place, keeping
+///    its config, and the skills row's default root follows the converted
+///    easel row's projectRoot so the two never fork.
+pub(crate) fn ensure_easel_bundle_at(
+    runtime_easel: &Path,
+    runtime_payload: &Path,
+    easel_root: &Path,
+    home: &Path,
+) -> Result<(), String> {
+    if !runtime_payload.join("package.json").exists() || !runtime_easel.join("VERSION").exists() {
+        return Ok(());
+    }
+
+    let version = fs::read_to_string(runtime_easel.join("VERSION"))
+        .map_err(|e| format!("read easel VERSION: {e}"))?
+        .trim()
+        .to_string();
+    let stamp = easel_root.join(EASEL_STAMP_FILE);
+    let deployed = fs::read_to_string(&stamp)
+        .unwrap_or_default()
+        .trim()
+        .to_string();
+    if deployed != version {
+        fs::create_dir_all(easel_root).map_err(|e| e.to_string())?;
+        for dir in ["skills", EASEL_PLUGIN_NAME] {
+            let dest = easel_root.join(dir);
+            if dest.exists() {
+                fs::remove_dir_all(&dest).map_err(|e| format!("clear easel {dir}: {e}"))?;
+            }
+            copy_dir(&runtime_easel.join(dir), &dest)?;
+        }
+        let template = easel_root.join("profiles").join("_template");
+        if !template.exists() {
+            copy_dir(&runtime_easel.join("profiles").join("_template"), &template)?;
+        }
+        for rel in ["README.md", "LICENSE"] {
+            let dest = easel_root.join(rel);
+            if !dest.exists() {
+                fs::copy(runtime_easel.join(rel), &dest)
+                    .map_err(|e| format!("copy easel {rel}: {e}"))?;
+            }
+        }
+        fs::write(&stamp, &version).map_err(|e| e.to_string())?;
+    }
+
+    let payload_dest = home
+        .join("profiles")
+        .join("node_modules")
+        .join(EASEL_PLUGIN_NAME);
+    if payload_dest.exists() {
+        fs::remove_dir_all(&payload_dest).map_err(|e| e.to_string())?;
+    }
+    fs::create_dir_all(payload_dest.parent().unwrap()).map_err(|e| e.to_string())?;
+    copy_dir(runtime_payload, &payload_dest)?;
+
+    let profile = profile_web_dir(home);
+    fs::create_dir_all(&profile).map_err(|e| e.to_string())?;
+    remove_easel_bundle_row(&profile, EASEL_PLUGIN_NAME)?;
+
+    let patch_path = profile.join("cordis.patch.yml");
+    let mut rows: Vec<Yaml> = fs::read_to_string(&patch_path)
+        .ok()
+        .and_then(|raw| serde_yaml::from_str(&raw).ok())
+        .map(sanitize_rows)
+        .unwrap_or_default();
+
+    // Paths go through the YAML serializer so backslashes and non-ASCII are
+    // quoted by it, never hand-escaped.
+    let project_root = yaml_scalar(easel_root.to_string_lossy().as_ref())?;
+    let converted_root = ensure_easel_row(
+        &mut rows,
+        "easel",
+        &format!(
+            "insert:\n  - id: easel\n    name: {EASEL_PLUGIN_NAME}\n    config:\n      projectRoot: {project_root}\n"
+        ),
+    )?;
+    // Keep the skills root and the deployed projectRoot in one story: a
+    // converted row pins its own root, fresh installs use EASEL_HOME.
+    let root_dir = converted_root.unwrap_or_else(|| easel_root.to_string_lossy().into_owned());
+    let skills_dir = yaml_scalar(
+        &Path::new(&root_dir)
+            .join("skills")
+            .join("openclaw")
+            .to_string_lossy(),
+    )?;
+    ensure_easel_row(
+        &mut rows,
+        "easel-skills",
+        &format!(
+            "insert:\n  - id: easel-skills\n    name: '@deepseek-ai/dsh-skill-filesystem'\n    config:\n      providerName: easel\n      includeDefaultRoots: false\n      customSkillDirs: [{skills_dir}]\n"
+        ),
+    )?;
+    if !rows
+        .iter()
+        .any(|row| row_has_id(row, "ui-plugin-manager"))
+    {
+        rows.push(
+            serde_yaml::from_str("- id: ui-plugin-manager\n  disabled: true\n")
+                .map_err(|e| format!("build ui-plugin-manager row: {e}"))?,
+        );
+    }
+
+    fs::write(
+        &patch_path,
+        serde_yaml::to_string(&rows).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())
+}
+
+/// Serialize a string as a YAML scalar (quoted when the value requires it).
+fn yaml_scalar(value: &str) -> Result<String, String> {
+    serde_yaml::to_string(value)
+        .map(|text| text.trim().to_string())
+        .map_err(|e| format!("yaml scalar: {e}"))
+}
+
+/// Whether the row carries `id` — either as a plain disable/config row or
+/// inside its `insert` sequence.
+fn row_has_id(row: &Yaml, id: &str) -> bool {
+    if row.get("id").and_then(Yaml::as_str) == Some(id) {
+        return true;
+    }
+    row.get("insert")
+        .and_then(|ins| ins.as_sequence())
+        .is_some_and(|seq| {
+            seq.iter()
+                .any(|entry| entry.get("id").and_then(Yaml::as_str) == Some(id))
+        })
+}
+
+/// Insert the row unless an entry with the same id exists in any shape. A
+/// plain (config-override) row predates the shell-owned insert row — the
+/// bundle patch that provided its insert counterpart is gone, so convert in
+/// place, keeping the user's config and `disabled` flag. Returns the plain
+/// row's `projectRoot` when one was converted.
+fn ensure_easel_row(
+    rows: &mut Vec<Yaml>,
+    id: &str,
+    row_yaml: &str,
+) -> Result<Option<String>, String> {
+    let fresh: Yaml = serde_yaml::from_str(row_yaml).map_err(|e| format!("build {id} row: {e}"))?;
+    let Some(index) = rows.iter().position(|row| row_has_id(row, id)) else {
+        rows.push(fresh);
+        return Ok(None);
+    };
+    if rows[index].get("insert").is_some() {
+        return Ok(None); // shell-shaped or user-edited insert row: leave it
+    }
+    let mut converted = fresh;
+    if let Some(entry) = converted
+        .get_mut("insert")
+        .and_then(|insert| insert.as_sequence_mut())
+        .and_then(|seq| seq.first_mut())
+    {
+        if let Some(config) = rows[index].get("config").cloned() {
+            entry["config"] = config;
+        }
+        if let Some(disabled) = rows[index].get("disabled").cloned() {
+            entry["disabled"] = disabled;
+        }
+    }
+    let project_root = rows[index]
+        .get("config")
+        .and_then(|config| config.get("projectRoot"))
+        .and_then(Yaml::as_str)
+        .map(String::from);
+    rows[index] = converted;
+    Ok(project_root)
+}
+
+/// The plugin no longer declares `dsh.bundle`, so a leftover row in the
+/// profile's bundle list makes the composer skip it with a warning on every
+/// start. pnpm-era installs carry the row; remove it (read-modify-write).
+/// Fresh profiles have no package.json yet — nothing to remove, and nothing
+/// to add either: the patch rows above are the whole registration.
+fn remove_easel_bundle_row(profile: &Path, name: &str) -> Result<(), String> {
+    let path = profile.join("package.json");
+    let Ok(raw) = fs::read_to_string(&path) else {
+        return Ok(());
+    };
+    let Ok(mut manifest) = serde_json::from_str::<serde_json::Value>(&raw) else {
+        return Ok(());
+    };
+    let Some(bundles) = manifest
+        .get_mut("dsh")
+        .and_then(|dsh| dsh.get_mut("profile"))
+        .and_then(|layer| layer.get_mut("bundles"))
+        .and_then(|bundles| bundles.as_array_mut())
+    else {
+        return Ok(());
+    };
+    let before = bundles.len();
+    bundles.retain(|row| row.as_str() != Some(name));
+    if bundles.len() == before {
+        return Ok(());
+    }
+    fs::write(
+        &path,
+        serde_json::to_string_pretty(&manifest).map_err(|e| e.to_string())? + "\n",
+    )
+    .map_err(|e| e.to_string())
+}
+
+#[cfg(test)]
+mod easel_tests {
+    use super::*;
+
+    fn temp_dir(tag: &str) -> PathBuf {
+        // The user temp dir is not always writable from sandboxed test runs;
+        // cargo's own target/ is.
+        let dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("target")
+            .join("tmp")
+            .join(format!("easel-setup-test-{tag}"));
+        let _ = fs::remove_dir_all(&dir);
+        dir
+    }
+
+    fn write(path: &Path, contents: &str) {
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, contents).unwrap();
+    }
+
+    /// A minimal bundled runtime: the runtime/easel content tree plus the
+    /// plugin payload. Calling again with a different version restages it.
+    fn stage_bundle(root: &Path, version: &str, skill: &str) -> (PathBuf, PathBuf) {
+        let tree = root.join("runtime").join("easel");
+        write(&tree.join("VERSION"), version);
+        write(&tree.join("skills/openclaw/skill-a/SKILL.md"), skill);
+        write(&tree.join("dsh-plugin-easel/index.js"), "// plugin source");
+        write(&tree.join("profiles/_template/identity.md"), "template");
+        write(&tree.join("README.md"), "readme");
+        write(&tree.join("LICENSE"), "license");
+        let payload = root.join("runtime").join("plugins").join("dsh-plugin-easel");
+        write(&payload.join("package.json"), "{\"name\":\"dsh-plugin-easel\"}");
+        write(&payload.join("index.js"), "// plugin");
+        (tree, payload)
+    }
+
+    fn patch_text(home: &Path) -> String {
+        fs::read_to_string(profile_web_dir(home).join("cordis.patch.yml")).unwrap()
+    }
+
+    #[test]
+    fn fresh_install_deploys_and_registers() {
+        let root = temp_dir("fresh");
+        let (tree, payload) = stage_bundle(&root, "0.1.0", "v1");
+        let home = root.join("home");
+        let easel = root.join("easel-home");
+
+        ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
+
+        assert_eq!(fs::read_to_string(easel.join(".bundle-version")).unwrap(), "0.1.0");
+        assert_eq!(
+            fs::read_to_string(easel.join("skills/openclaw/skill-a/SKILL.md")).unwrap(),
+            "v1"
+        );
+        assert!(easel.join("README.md").exists());
+        assert!(easel.join("LICENSE").exists());
+        assert!(easel.join("profiles/_template/identity.md").exists());
+        assert_eq!(
+            fs::read_to_string(home.join("profiles/node_modules/dsh-plugin-easel/index.js"))
+                .unwrap(),
+            "// plugin"
+        );
+        let patch = patch_text(&home);
+        assert!(patch.contains("id: easel"));
+        assert!(patch.contains("id: easel-skills"));
+        assert!(patch.contains("id: ui-plugin-manager"));
+        assert!(patch.contains("disabled: true"));
+        // The skills row must point inside the deployed root, not at it.
+        assert!(patch.contains(
+            easel.join("skills").join("openclaw").to_string_lossy().as_ref()
+        ));
+        assert!(patch.contains(easel.to_string_lossy().as_ref()));
+    }
+
+    #[test]
+    fn rerun_is_idempotent_and_keeps_user_data() {
+        let root = temp_dir("idem");
+        let (tree, payload) = stage_bundle(&root, "0.1.0", "v1");
+        let home = root.join("home");
+        let easel = root.join("easel-home");
+        ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
+        write(&easel.join("outputs/private.txt"), "keep me");
+        write(&easel.join("skills/openclaw/skill-a/SKILL.md"), "user edit");
+        let rows_before = patch_text(&home).matches("id: easel").count();
+
+        ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
+
+        assert_eq!(
+            fs::read_to_string(easel.join("outputs/private.txt")).unwrap(),
+            "keep me"
+        );
+        // The stamp is unchanged, so the user's skill edit survives.
+        assert_eq!(
+            fs::read_to_string(easel.join("skills/openclaw/skill-a/SKILL.md")).unwrap(),
+            "user edit"
+        );
+        assert_eq!(patch_text(&home).matches("id: easel").count(), rows_before);
+    }
+
+    #[test]
+    fn version_bump_resyncs_skills_but_keeps_user_data() {
+        let root = temp_dir("bump");
+        let (tree, payload) = stage_bundle(&root, "0.1.0", "v1");
+        let home = root.join("home");
+        let easel = root.join("easel-home");
+        ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
+        write(&easel.join("outputs/private.txt"), "keep me");
+        stage_bundle(&root, "0.2.0", "v2");
+
+        ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
+
+        assert_eq!(
+            fs::read_to_string(easel.join("skills/openclaw/skill-a/SKILL.md")).unwrap(),
+            "v2"
+        );
+        assert_eq!(fs::read_to_string(easel.join(".bundle-version")).unwrap(), "0.2.0");
+        assert_eq!(
+            fs::read_to_string(easel.join("outputs/private.txt")).unwrap(),
+            "keep me"
+        );
+    }
+
+    #[test]
+    fn plain_config_rows_convert_keeping_project_root() {
+        let root = temp_dir("convert");
+        let (tree, payload) = stage_bundle(&root, "0.1.0", "v1");
+        let home = root.join("home");
+        let easel = root.join("easel-home");
+        write(
+            &profile_web_dir(&home).join("cordis.patch.yml"),
+            "- id: easel\n  config:\n    projectRoot: C:\\repo\n- id: ui-plugin-manager\n  disabled: true\n",
+        );
+
+        ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
+
+        let patch = patch_text(&home);
+        // Converted to an insert row keeping the pinned root…
+        assert!(patch.contains("name: dsh-plugin-easel"));
+        assert!(patch.contains("C:\\repo"));
+        // …and the skills root follows it, never EASEL_HOME.
+        assert!(patch.contains("C:\\repo\\skills\\openclaw"));
+        assert!(!patch.contains(&easel.to_string_lossy().as_ref()));
+        // No duplicate disable row.
+        assert_eq!(patch.matches("id: ui-plugin-manager").count(), 1);
+    }
+
+    #[test]
+    fn existing_insert_rows_are_left_alone() {
+        let root = temp_dir("keep");
+        let (tree, payload) = stage_bundle(&root, "0.1.0", "v1");
+        let home = root.join("home");
+        let easel = root.join("easel-home");
+        write(
+            &profile_web_dir(&home).join("cordis.patch.yml"),
+            "- insert:\n    - id: easel\n      name: dsh-plugin-easel\n      disabled: true\n      config:\n        projectRoot: C:\\repo\n",
+        );
+
+        ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
+
+        let patch = patch_text(&home);
+        assert!(patch.contains("disabled: true"));
+        assert!(patch.contains("C:\\repo"));
+        // One easel row (the user's), plus the fresh easel-skills row.
+        assert_eq!(patch.matches("id: easel").count(), 2);
+    }
+
+    #[test]
+    fn leftover_bundle_row_is_removed_and_fresh_profiles_untouched() {
+        let root = temp_dir("bundles");
+        let (tree, payload) = stage_bundle(&root, "0.1.0", "v1");
+        let home = root.join("home");
+        let easel = root.join("easel-home");
+        write(
+            &profile_web_dir(&home).join("package.json"),
+            "{\"name\":\"p\",\"dsh\":{\"profile\":{\"bundles\":[\"@deepseek-ai/dsh-base\",\"dsh-plugin-easel\"]}}}",
+        );
+
+        ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
+
+        let manifest: serde_json::Value = serde_json::from_str(
+            &fs::read_to_string(profile_web_dir(&home).join("package.json")).unwrap(),
+        )
+        .unwrap();
+        let bundles = manifest["dsh"]["profile"]["bundles"].as_array().unwrap();
+        assert_eq!(bundles.len(), 1);
+        assert_eq!(bundles[0], "@deepseek-ai/dsh-base");
+    }
+}
+
 /// The app is a GUI process; spawned children would flash a console window.
 fn no_window(cmd: &mut std::process::Command) {
     #[cfg(windows)]

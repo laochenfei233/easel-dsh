@@ -177,6 +177,8 @@ impl DshHandle {
     async fn spawn_child(&self, app: AppHandle) -> Result<(Child, u16), String> {
         append_startup_log("spawn_child: begin");
         self.ensure_home_node_modules()?;
+        crate::setup::ensure_easel_bundle(&app)?;
+        append_startup_log("spawn_child: easel bundle ready");
         crate::setup::ensure_default_plugins(&app)?;
         append_startup_log("spawn_child: default plugins ready");
         let port = match select_port() {
