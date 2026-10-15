@@ -26,6 +26,7 @@ const RUNTIME = join(ROOT, 'runtime');
 const NODE_DIR = join(RUNTIME, 'node');
 const DSH_DIR = join(RUNTIME, 'dsh');
 const PLUGINS_DIR = join(RUNTIME, 'plugins');
+const EASEL_DIR = join(RUNTIME, 'easel');
 
 const args = process.argv.slice(2);
 
@@ -781,9 +782,52 @@ function writeManifest() {
     node: readdirSync(NODE_DIR).join(','),
     dshCli: existsSync(join(DSH_DIR, 'lib', 'bin.js')),
     plugins: existsSync(PLUGINS_DIR) ? readdirSync(PLUGINS_DIR) : [],
+    easel: existsSync(join(EASEL_DIR, 'VERSION')),
   };
   writeFileSync(join(RUNTIME, 'manifest.json'), JSON.stringify(manifest, null, 2));
   step(`manifest: ${JSON.stringify(manifest)}`);
+}
+
+// The Easel integration ships in the Windows bundle. The plugin's build output
+// joins runtime/plugins (the shell installs it into the profile), and
+// runtime/easel mirrors the Easel checkout's project-side content: skills, the
+// plugin source, the profile template. The shell deploys that tree under
+// EASEL_HOME on first launch and stamps it with VERSION — content changes must
+// bump dsh-plugin-easel's package version to trigger a resync.
+async function stageEasel() {
+  if (PLATFORM !== 'win') return;
+  const repo = process.env.EASEL_REPO ?? resolve(ROOT, '..', '..', '..');
+  const plugin = join(repo, 'dsh-plugin-easel');
+  if (!existsSync(join(plugin, 'package.json'))) {
+    step('easel repo not found, skipping the easel bundle');
+    return;
+  }
+  step(`building dsh-plugin-easel in ${plugin}`);
+  execFileSync(process.execPath, ['build.mjs'], { cwd: plugin, stdio: 'inherit' });
+  const pkg = JSON.parse(readFileSync(join(plugin, 'package.json'), 'utf8'));
+  const version = pkg.version ?? '0.0.0';
+
+  const payload = join(PLUGINS_DIR, 'dsh-plugin-easel');
+  rmSync(payload, { recursive: true, force: true });
+  mkdirSync(payload, { recursive: true });
+  // package.json rides along implicitly under npm's `files` semantics; the
+  // plain copy loop has no such rule.
+  for (const file of ['package.json', ...(pkg.files ?? [])]) {
+    cpSync(join(plugin, file), join(payload, file));
+  }
+
+  // Whitelist staging: user data (outputs/, real profiles, .env) and the
+  // retired Python tree cannot enter the bundle by construction.
+  const noJunk = (src) => !/(^|[\\/])(node_modules|__pycache__)([\\/]|$)/.test(src) && !src.endsWith('.pyc');
+  rmSync(EASEL_DIR, { recursive: true, force: true });
+  mkdirSync(EASEL_DIR, { recursive: true });
+  cpSync(join(repo, 'skills'), join(EASEL_DIR, 'skills'), { recursive: true, filter: noJunk });
+  cpSync(plugin, join(EASEL_DIR, 'dsh-plugin-easel'), { recursive: true, filter: noJunk });
+  cpSync(join(repo, 'profiles', '_template'), join(EASEL_DIR, 'profiles', '_template'), { recursive: true });
+  cpSync(join(repo, 'README.md'), join(EASEL_DIR, 'README.md'));
+  cpSync(join(repo, 'LICENSE'), join(EASEL_DIR, 'LICENSE'));
+  writeFileSync(join(EASEL_DIR, 'VERSION'), version);
+  step(`easel ${version} staged into runtime/easel`);
 }
 
 async function main() {
@@ -800,6 +844,7 @@ async function main() {
   await deployDsh();
   await installWinTerminalInspector();
   await prepareDefaultPluginDshPlugin();
+  await stageEasel();
   writeManifest();
 }
 
