@@ -809,12 +809,14 @@ async function stageEasel() {
 
   const payload = join(PLUGINS_DIR, 'dsh-plugin-easel');
   rmSync(payload, { recursive: true, force: true });
-  mkdirSync(payload, { recursive: true });
-  // package.json rides along implicitly under npm's `files` semantics; the
-  // plain copy loop has no such rule.
-  for (const file of ['package.json', ...(pkg.files ?? [])]) {
-    cpSync(join(plugin, file), join(payload, file));
-  }
+  // Stage the whole package: a files-list staging dropped lib/asr.js (an
+  // index.js import the manifest never listed) and the loader failed on a
+  // clean machine. The source tree is ~1.1MB; listing files by hand is a
+  // drift trap that already bit once.
+  cpSync(plugin, payload, {
+    recursive: true,
+    filter: (src) => !/(^|[\\/])(node_modules|\.git)([\\/]|$)/.test(src),
+  });
 
   // Whitelist staging: user data (outputs/, real profiles, .env) and the
   // retired Python tree cannot enter the bundle by construction.
