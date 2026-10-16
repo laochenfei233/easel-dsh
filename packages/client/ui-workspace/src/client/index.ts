@@ -51,6 +51,9 @@ import { ForkSessionMenuItem } from './session-actions/ForkSession.tsx'
 import { PinSessionMenuItem, PinSessionRowButton } from './session-actions/PinSession.tsx'
 import { RenameSessionMenuItem, SessionRenameDialog } from './session-actions/RenameSession.tsx'
 import { RowActionToast } from './session-actions/RowActionToast.tsx'
+import { createElement } from 'react'
+import { getWorkspaceUIMode } from './easel-mode.ts'
+import type { WorkspacePickerProps } from './contract/slots.ts'
 import { WorkspacePicker } from './WorkspacePicker.tsx'
 import { en, zh, type WorkspaceKey } from './locales.ts'
 
@@ -317,6 +320,10 @@ export function apply(ctx: Context): void {
       name: 'shell.overlay', id: 'workspace.row-toast', locale: NS, store: viewStore, inject: rowToastInjected,
     }, RowActionToast)
   })
+  // EASEL-DIVERGENCE(easel-single-workspace D2): the hero picker selects among
+  // workspaces, which single mode reduces to one — render nothing.
+  const GatedWorkspacePicker = (props: WorkspacePickerProps) =>
+    getWorkspaceUIMode() === 'full' ? createElement(WorkspacePicker, props) : null
   ctx.slots.inject('conversation.hero.workspace', () => ctx.slots.register(
     {
       name: 'conversation.hero.workspace',
@@ -324,7 +331,7 @@ export function apply(ctx: Context): void {
       inject: pickerInjected,
       locale: NS,
     },
-    WorkspacePicker,
+    GatedWorkspacePicker,
   ))
 }
 
@@ -338,3 +345,7 @@ function activeSessionRefusal(reason: unknown): readonly SessionActivity[] | und
   const { rpcError } = reason as WorkspaceArchiveError
   return rpcError.code === 'workspace/session-active' ? rpcError.details.activity : undefined
 }
+
+// EASEL-DIVERGENCE(easel-single-workspace D1): mode switch consumed by the
+// Easel plugin settings and by the gated surfaces above.
+export { getWorkspaceUIMode, setWorkspaceUIMode, type WorkspaceUIMode } from './easel-mode.ts'

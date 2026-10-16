@@ -3,6 +3,7 @@
 import './control-row-dom.ts'
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { setWorkspaceUIMode } from '@deepseek-ai/dsh-client-ui-workspace/client'
 import { act, cleanup, fireEvent, waitFor, within } from '@testing-library/react'
 import { useState } from 'react'
 import { LocaleRuntime } from '@deepseek-ai/dsh-client-locale/client'
@@ -102,6 +103,10 @@ async function bench(opts?: { blank?: boolean }) {
 }
 
 describe('resident composer', () => {
+  // EASEL-DIVERGENCE(easel-single-workspace D2): the workspace chip and picker
+  // under test are full-mode surfaces; afterEach restores the single default.
+  beforeEach(() => setWorkspaceUIMode('full'))
+  afterEach(() => setWorkspaceUIMode('single'))
   it('renders the locked view state while no session exists at all', async () => {
     const runtime = await SlotTestRuntime.create()
     provideWorkspaceNavigation(runtime)

@@ -264,7 +264,13 @@ class UiWorkspaceService extends Service implements UiWorkspace {
     const recent = workspace.phase === 'ready' && sessions.phase === 'ready'
       ? recentWorkspace(workspace.items, sessions.byId)
       : undefined
-    const target = workspaceId ?? currentWorkspaceId ?? recent
+    // EASEL-DIVERGENCE(easel-single-workspace D2): single mode keeps exactly one
+    // workspace, so the recent-Workspace miss falls through to the registry head
+    // instead of refusing the draft.
+    const fallback = recent === undefined && workspace.phase === 'ready'
+      ? workspace.items[0]?.workspaceId
+      : undefined
+    const target = workspaceId ?? currentWorkspaceId ?? recent ?? fallback
     if (target === undefined) {
       if (initializeDraft) {
         this.notify({ kind: 'createFailed', message: this.ctx.locale.bind('workspace')('draft.workspaceRequired') })

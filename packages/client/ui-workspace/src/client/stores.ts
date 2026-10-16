@@ -9,6 +9,7 @@ import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-sto
 import type { SessionListState } from '@deepseek-ai/dsh-api-session-controller/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import { reconcileManualOrder, type ArchivedFilter, type SessionRowState } from './tree.ts'
+import { getWorkspaceUIMode } from './easel-mode.ts'
 
 /** Browser-local order account for the hierarchy-free flat Session list. */
 export const FLAT_SESSION_ORDER_KEY = '__flat_session_order__'
@@ -82,7 +83,9 @@ function copySessionOrders(
 export function createWorkspaceViewStore(): EngineStoreHandle<WorkspaceViewState, WorkspaceViewActions> {
   return defineStore({
     init: (): WorkspaceViewState => ({
-      groupBy: 'workspace',
+      // EASEL-DIVERGENCE(easel-single-workspace D4): single mode leads with the
+      // topic list; persisted preferences are unaffected (init runs once).
+      groupBy: getWorkspaceUIMode() === 'full' ? 'workspace' : 'flat',
       orderBy: 'updated',
       groupExpansion: {},
       sessionOrderByAccount: {},

@@ -1,4 +1,9 @@
 import { describe, expect, it } from 'vitest'
+// EASEL-DIVERGENCE(easel-single-workspace D2/D4): this suite exercises the
+// upstream multi-workspace surface; the Easel single-mode default is off here.
+// Module level: the workspace view store singleton initializes at import.
+import { setWorkspaceUIMode } from '../src/client/easel-mode.ts'
+setWorkspaceUIMode('full')
 import type { SessionListState, SessionSummary } from '@deepseek-ai/dsh-api-session-controller/client'
 import type { WorkspaceId, WorkspaceView } from '@deepseek-ai/dsh-api-workspace-controller/client'
 import type {

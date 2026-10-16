@@ -1,5 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest'
+// EASEL-DIVERGENCE(easel-single-workspace D2/D4): this suite exercises the
+// upstream multi-workspace surface; the Easel single-mode default is off here.
+// Module level: the workspace view store singleton initializes at import.
+import { setWorkspaceUIMode } from '../src/client/easel-mode.ts'
+setWorkspaceUIMode('full')
 import { act, cleanup, createEvent, fireEvent, render, screen } from '@testing-library/react'
 import type { ComponentProps } from 'react'
 import type { WorkspaceId } from '@deepseek-ai/dsh-api-workspace-controller/client'
@@ -425,6 +430,25 @@ describe('workspace browser rows', () => {
       currentId={undefined} onOpen={vi.fn()} onUnarchive={vi.fn()} t={t}
     />)
     expect(screen.getByRole('treeitem').querySelector('[data-state="done"]')).not.toBeNull()
+  })
+
+  // EASEL-DIVERGENCE(easel-single-workspace D2): single mode has no rename or
+  // delete targets for the one main workspace.
+  it('single mode strips rename and delete from the workspace row menu', () => {
+    setWorkspaceUIMode('single')
+    const group: GroupNode = {
+      key: 'project', workspaceId: wid('project'), cwd: '/projects/project', createdAt: 0, label: 'Project',
+      sessionCount: 0, expanded: false, containsCurrent: false, sessions: [],
+    }
+    render(<ProjectRowItem
+      group={group} onToggle={vi.fn()} onCreate={vi.fn()}
+      actions={{ rename: vi.fn(), delete: vi.fn() }} t={t}
+    />)
+    fireEvent.click(screen.getByRole('button', { name: '工作区“Project”的操作' }))
+    expect(screen.queryByRole('menuitem', { name: '重命名' })).toBeNull()
+    expect(screen.queryByRole('menuitem', { name: '删除工作区' })).toBeNull()
+    // restore the file's module-level 'full' for the upstream tests that follow
+    setWorkspaceUIMode('full')
   })
 
   it('workspace row menu opens on the ellipsis, renames, and shows the danger delete row', () => {

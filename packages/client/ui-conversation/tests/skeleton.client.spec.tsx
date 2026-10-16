@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import type { GlobalStandardProps, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { setWorkspaceUIMode } from '@deepseek-ai/dsh-client-ui-workspace/client'
+
+// EASEL-DIVERGENCE(easel-single-workspace D2): tests default to the Easel
+// single-mode gates; tests that exercise the multi-workspace surface opt out.
+afterEach(() => setWorkspaceUIMode('single'))
 import { createContext, useContext, type ReactNode } from 'react'
 import { act, cleanup, fireEvent, render } from '@testing-library/react'
 import type { Context } from '@deepseek-ai/cordis'
@@ -532,6 +537,9 @@ describe('ConversationRoot resident composer', () => {
   })
 
   it('hero phase: keeps sidebar controls accessible while hiding conversation chrome', () => {
+    // EASEL-DIVERGENCE(easel-single-workspace D2): exercises the multi-workspace
+    // surface; the file-level afterEach restores 'single'.
+    setWorkspaceUIMode('full')
     const b = mount(
       sessionSnapshotOf({ blank: true }),
       [
@@ -659,6 +667,9 @@ describe('ConversationRoot resident composer', () => {
   })
 
   it('rolls the pending workspace label back when switching fails', async () => {
+    // EASEL-DIVERGENCE(easel-single-workspace D2): exercises the multi-workspace
+    // surface; the file-level afterEach restores 'single'.
+    setWorkspaceUIMode('full')
     const selectWorkspace = vi.fn(async () => { throw new Error('connect failed') })
     const b = mount(
       sessionSnapshotOf({ blank: true }),
@@ -677,6 +688,9 @@ describe('ConversationRoot resident composer', () => {
   })
 
   it('blank session keeps the interactive picker chip (workspace switchable until the first message)', () => {
+    // EASEL-DIVERGENCE(easel-single-workspace D2): exercises the multi-workspace
+    // surface; the file-level afterEach restores 'single'.
+    setWorkspaceUIMode('full')
     const b = mount(sessionSnapshotOf({ blank: true }))
     const chip = b.view.getByRole('button', { name: '选择工作区' })
     expect((chip as HTMLButtonElement).disabled).toBe(false)
