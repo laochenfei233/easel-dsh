@@ -23,7 +23,9 @@ pub fn dsh_home() -> PathBuf {
             let base = std::env::var("USERPROFILE")
                 .or_else(|_| std::env::var("HOME"))
                 .unwrap_or_default();
-            PathBuf::from(base).join(".dsh")
+            // EASEL-DIVERGENCE(easel-standalone-client L0/D3): keep the shell's
+            // default home in lockstep with packages/util/home-paths ('.easel').
+            PathBuf::from(base).join(".easel")
         })
 }
 

@@ -150,7 +150,7 @@ export function parseDshArgs(argv: readonly string[], version: string, manageDes
   // inferred type would be circular through its own chain.
   const program: Command = new Command()
   program
-    .name('dsh')
+    .name('easel') // EASEL-DIVERGENCE(easel-standalone-client L0/D2): fork bin identity
     .version(version, '-V, --version', 'output the version number')
     .usage('[--profile] <name> [options] [app-args...]\n       dsh plugin --profile <name> <pnpm-args...>')
     .description('dsh: boot a DeepSeek Harness profile — an ordered stack of plugin-bundle patch layers under your own overrides.')
