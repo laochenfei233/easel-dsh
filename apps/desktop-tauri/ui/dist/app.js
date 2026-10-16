@@ -8,6 +8,8 @@
 const frame = document.getElementById('dsh-frame');
 const banner = document.getElementById('error-banner');
 const errorText = document.getElementById('error-text');
+const splash = document.getElementById('splash');
+const splashStatus = document.getElementById('splash-status');
 let activeUrl;
 let pendingUrl;
 
@@ -17,11 +19,23 @@ const listen = (event, cb) => window.__TAURI__.event.listen(event, cb);
 function showError(text) {
   errorText.textContent = text;
   banner.classList.remove('hidden');
+  if (splashStatus) splashStatus.textContent = String(text);
 }
 
 function hideError() {
   banner.classList.add('hidden');
 }
+
+function showSplash(text) {
+  if (!splash) return;
+  splash.classList.remove('done');
+  if (text && splashStatus) splashStatus.textContent = text;
+}
+
+// The authenticated dsh UI has painted inside the iframe: retire the splash.
+frame.addEventListener('load', () => {
+  if (activeUrl && frame.src !== 'about:blank' && splash) splash.classList.add('done');
+});
 
 // Exchanges the launch URL through Rust, which installs the browser cookie in
 // the native WebView store, then loads the clean URL it returns.
@@ -61,6 +75,7 @@ document.getElementById('btn-retry').addEventListener('click', () => {
   activeUrl = undefined;
   pendingUrl = undefined;
   frame.src = 'about:blank';
+  showSplash('正在重启本地服务…');
   invoke('restart_dsh');
 });
 

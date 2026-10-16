@@ -1,6 +1,6 @@
 {
-  "name": "DeepSeek Harness",
-  "short_name": "DSH",
+  "name": "Easel-dsh",
+  "short_name": "Easel-dsh",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",

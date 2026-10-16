@@ -14,7 +14,7 @@ const PLUGINS = [
   { id: 'dsh-session-context-menu', spec: 'github:baihejiangnan/dsh-session-context-menu', name: '更好的右键菜单', desc: '会话/工作区/文本的原生风格右键菜单（桌面端专用）' },
   { id: 'dsh-im', spec: '-w @xmanrui/dsh-im', name: 'IM 机器人（企微/飞书/钉钉/微信/QQ）', desc: '扫码或凭据接入 9 个 IM 频道，手机上也能用 Harness' },
   { id: 'dsh-lark', spec: 'dsh-lark', name: '飞书机器人', desc: '飞书/Lark IM bot 频道插件' },
-  { id: 'dsh-qqbot', spec: 'dsh-qqbot', name: 'QQ 机器人', desc: 'QQ Bot 接入 DeepSeek Harness（腾讯官方插件）' },
+  { id: 'dsh-qqbot', spec: 'dsh-qqbot', name: 'QQ 机器人', desc: 'QQ Bot 接入 Easel-dsh（腾讯官方插件）' },
   { id: 'dsh-vision-router', spec: 'dsh-vision-router', name: '视觉路由', desc: '内置免费视觉链 + 像素级视觉工具（图像问答/OCR/截图等），无需 Python' },
   { id: 'graph-memory', spec: 'github:adoresever/graph-memory', name: '知识图谱记忆', desc: '跨会话记忆召回：知识图谱 + 语义向量检索，本地优先存储，压缩上下文' },
   { id: 'aegis', spec: 'github:ganyuanran/aegis', name: 'Aegis 方法包', desc: 'AI 编码更可靠：基线优先、证据验证、防漂移，减少返工' },
