@@ -234,8 +234,8 @@ async function deployDsh() {
     step(`node-pty rebuild skipped (exit ${error?.status ?? '?'}); using the workspace prebuilds carried by deploy`);
   }
 
-  // Ship pnpm so `dsh plugin` and the market can install/update plugins
-  // inside the desktop's web profile. Pin the same major as the deploy step
+  // Ship pnpm so `dsh plugin` can install/update plugins inside the
+  // desktop's web profile. Pin the same major as the deploy step
   // (store format must match) and install into a scratch prefix first —
   // `npm install --prefix <nodeDir>` would drop the bundled npm itself.
   const nodeExe = join(NODE_DIR, PLATFORM === 'win' ? 'node.exe' : 'node');
@@ -273,7 +273,7 @@ async function deployDsh() {
     step(`pnpm@${pnpmVersion} installed`);
   }
 
-  // The scratch install's .bin shims die with it; recreate them so the market
+  // The scratch install's .bin shims die with it; recreate them so plugin
   // (via the shell's PATH prefix) and `dsh plugin` (via $DSH_HOME/node_modules)
   // can execute the bundled pnpm. The shims resolve the node binary relative
   // to themselves — the installed bundle path differs from the build path, so
@@ -721,8 +721,8 @@ function buildPkgMap(repo) {
   return map;
 }
 
-// A previously installed desktop runtime keeps a copy of both bundled
-// plugins (`dsh-plugin` market closure and `dsh-win-terminal-inspector`).
+// A previously installed desktop runtime keeps a copy of the bundled
+// `dsh-win-terminal-inspector` plugin.
 // Offline or GitHub-blocked build hosts reuse those copies instead of
 // re-downloading; set DSH_DESKTOP_PLUGIN_REUSE to point at such a runtime's
 // plugins directory, or leave it unset to probe the default install location.
@@ -845,40 +845,15 @@ async function main() {
   }
   await deployDsh();
   await installWinTerminalInspector();
-  await prepareDefaultPluginDshPlugin();
+  // EASEL-DIVERGENCE: the DSH plugin market (`dsh-plugin`) is not part of
+  // Easel-dsh. Purge a payload an earlier staging run left behind so it
+  // cannot ride into the installer.
+  if (existsSync(join(PLUGINS_DIR, 'dsh-plugin'))) {
+    rmSync(join(PLUGINS_DIR, 'dsh-plugin'), { recursive: true, force: true });
+    step('purged the retired dsh-plugin market payload');
+  }
   await stageEasel();
   writeManifest();
-}
-
-// The plugin market ships preinstalled: install its full dependency closure
-// into runtime/plugins/dsh-plugin (network at bundle time, offline
-// afterwards). The shell copies this directory into the web profile on first
-// launch.
-async function prepareDefaultPluginDshPlugin() {
-  if (stageReusablePlugin('dsh-plugin')) return;
-  const dest = join(PLUGINS_DIR, 'dsh-plugin');
-  rmSync(dest, { recursive: true, force: true });
-  mkdirSync(dest, { recursive: true });
-  writeFileSync(
-    join(dest, 'package.json'),
-    JSON.stringify({ name: 'dsh-plugin-bundle', private: true, type: 'module', dependencies: { 'dsh-plugin': 'latest' } }, null, 2),
-  );
-  // Isolate from the parent workspace so pnpm treats this as a standalone
-  // project (no purge/TTY prompts, no lefthook postinstall). minimumReleaseAge
-  // defaults on in pnpm 11 and would make `latest` skip a fresh market
-  // release, silently resolving to an older version; zero it so the market
-  // plugin tracks the newest published build.
-  writeFileSync(join(dest, 'pnpm-workspace.yaml'), 'packages: []\nminimumReleaseAge: 0\n');
-  step('install dsh-plugin closure into runtime/plugins/dsh-plugin');
-  runPnpm(['install', '--prod', '--ignore-scripts', '--lockfile=false'], { cwd: dest });
-  const marketPkg = join(dest, 'node_modules', 'dsh-plugin', 'package.json');
-  if (!existsSync(marketPkg)) {
-    throw new Error('dsh-plugin did not install into runtime/plugins/dsh-plugin');
-  }
-  // Flatten the closure so a copied profile plugin resolves its own deps.
-  flattenNodeModules(join(dest, 'node_modules'));
-  rmSync(join(dest, 'node_modules', '.pnpm'), { recursive: true, force: true });
-  step('dsh-plugin closure installed');
 }
 
 main().catch((err) => {
