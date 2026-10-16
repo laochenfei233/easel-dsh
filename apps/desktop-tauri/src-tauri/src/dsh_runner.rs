@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::sync::Mutex as LaunchUrlMutex;
 use std::time::Duration;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::webview::{
     cookie::{time::Duration as CookieDuration, SameSite},
     Cookie,
@@ -25,12 +25,40 @@ const RESTART_LIMIT: u32 = 3;
 const LOG_NAME: &str = "dsh-web.log";
 /// Upper bound of the fallback port scan when `INTERNAL_PORT` is occupied.
 const PORT_SCAN_LIMIT: u16 = 50;
+/// Records the server this home last started, so a later shell can adopt it
+/// instead of paying the whole `dsh web` boot again.
+const SERVER_RECORD_NAME: &str = "desktop-server.json";
+/// Loopback probe budget for the adopt check. A live server answers in
+/// milliseconds; anything slower is treated as absent so the cold path never
+/// waits on a dead record.
+const ADOPT_PROBE_TIMEOUT: Duration = Duration::from_millis(500);
+
+// EASEL-DIVERGENCE(desktop-startup-latency L2 Layer 1): replay list in
+// docs/compose/specs/easel-standalone-client.md.
+/// The live server a previous shell start left behind, named by the launch URL
+/// it printed. The token is per process, so accepting it proves the server on
+/// that port is the one this home started rather than a recycled port or a
+/// foreign listener.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+struct ServerRecord {
+    port: u16,
+    url: String,
+    pid: u32,
+    /// Runtime closure the recorded server was started from; a shell may only
+    /// adopt a server from its own build.
+    bin: String,
+    bin_len: u64,
+    bin_modified_ms: u64,
+}
 
 /// Handle to the managed dsh child process. `child` is `None` while the
 /// process is down and about to be (or already) restarted.
 pub struct DshHandle {
     child: Arc<Mutex<Option<Child>>>,
     stopping: Arc<AtomicBool>,
+    /// A restart asked for the current server's replacement: the supervisor
+    /// must not adopt the very hub this flag is meant to retire.
+    restarting: Arc<AtomicBool>,
     port: Arc<AtomicU16>,
     launch_url: Arc<LaunchUrlMutex<Option<String>>>,
     node_path: PathBuf,
@@ -50,6 +78,7 @@ impl DshHandle {
         let handle = Self {
             child: Arc::new(Mutex::new(None)),
             stopping: Arc::new(AtomicBool::new(false)),
+            restarting: Arc::new(AtomicBool::new(false)),
             port: Arc::new(AtomicU16::new(INTERNAL_PORT)),
             launch_url: Arc::new(LaunchUrlMutex::new(None)),
             node_path,
@@ -58,6 +87,7 @@ impl DshHandle {
         let loop_handle = Self {
             child: handle.child.clone(),
             stopping: handle.stopping.clone(),
+            restarting: handle.restarting.clone(),
             port: handle.port.clone(),
             launch_url: handle.launch_url.clone(),
             node_path: handle.node_path.clone(),
@@ -76,6 +106,19 @@ impl DshHandle {
         loop {
             if self.stopping.load(Ordering::SeqCst) {
                 return;
+            }
+            // Adopt the server an earlier shell start left running. Repeating
+            // the `dsh web` boot is the whole of the wait the user sees, and
+            // the adopted server already carries the profile and plugins.
+            if let Some(port) = self.adopt_running_server(&app).await {
+                wait_port_closed(port, self.stopping.clone()).await;
+                // Forget only a hub that stopped serving. One still listening
+                // belongs to no child of this shell, and its record is what the
+                // next start adopts instead of booting a rival on another port.
+                if !port_open(port) {
+                    forget_server();
+                }
+                continue;
             }
             let (child, port) = match self.spawn_child(app.clone()).await {
                 Ok(owned) => owned,
@@ -109,6 +152,12 @@ impl DshHandle {
                 continue;
             }
             let launch_url = self.launch_url.lock().expect("launch-url mutex").clone();
+            if let Some(url) = launch_url.as_deref() {
+                let pid = self.child.lock().await.as_ref().and_then(|child| child.id());
+                if let Some(pid) = pid {
+                    remember_server(port, url, pid, &self.dsh_bin);
+                }
+            }
             let _ = app.emit("dsh://ready", DshEndpoint { url: launch_url });
             reveal_main_window(&app);
 
@@ -172,6 +221,33 @@ impl DshHandle {
             let _ = app.emit("dsh://restarting", restarts);
             tokio::time::sleep(Duration::from_secs(2)).await;
         }
+    }
+
+    /// Attach the supervisor to the server an earlier shell start left running,
+    /// or report `None` to fall through to a cold spawn. The decision is one
+    /// file read plus one loopback request, both blocking, so it runs on the
+    /// blocking pool and leaves the async runtime free.
+    async fn adopt_running_server(&self, app: &AppHandle) -> Option<u16> {
+        // A restart asked for this hub's replacement; adopting it again would
+        // answer the request with the hub it was meant to replace.
+        if self.restarting.swap(false, Ordering::SeqCst) {
+            return None;
+        }
+        let path = server_record_path();
+        let bin = self.dsh_bin.clone();
+        let record = tauri::async_runtime::spawn_blocking(move || adopt_decision(&path, &bin))
+            .await
+            .ok()
+            .flatten()?;
+        self.port.store(record.port, Ordering::SeqCst);
+        *self.launch_url.lock().expect("launch-url mutex") = Some(record.url.clone());
+        append_startup_log(&format!(
+            "adopted running server on {} (pid {})",
+            record.port, record.pid
+        ));
+        let _ = app.emit("dsh://ready", DshEndpoint { url: Some(record.url) });
+        reveal_main_window(app);
+        Some(record.port)
     }
 
     async fn spawn_child(&self, app: AppHandle) -> Result<(Child, u16), String> {
@@ -311,22 +387,50 @@ impl DshHandle {
     /// restart request).
     pub fn stop(&self) {
         self.stopping.store(true, Ordering::SeqCst);
-        let child = self.child.clone();
-        tauri::async_runtime::spawn(async move {
-            if let Some(mut child) = child.lock().await.take() {
+        tauri::async_runtime::block_on(async {
+            if let Some(mut child) = self.child.lock().await.take() {
                 let _ = child.kill().await;
                 let _ = child.wait().await;
+                forget_server();
+                return;
+            }
+            // An adopted hub is no longer this shell's child, so it is ended by
+            // pid — and only a pid the record still proves: re-reading it
+            // requires the process on that port to answer with the launch token
+            // the recorded hub printed, which the pid of a replaced hub cannot.
+            let path = server_record_path();
+            let bin = self.dsh_bin.clone();
+            let adopted =
+                tauri::async_runtime::spawn_blocking(move || adopt_decision(&path, &bin)).await;
+            if let Ok(Some(record)) = adopted {
+                terminate_pid(record.pid);
+                forget_server();
             }
         });
     }
 
     /// Graceful restart requested from the UI ("Restart service").
     pub fn request_restart(&self) {
+        self.restarting.store(true, Ordering::SeqCst);
         let child = self.child.clone();
+        let bin = self.dsh_bin.clone();
         tauri::async_runtime::spawn(async move {
             if let Some(mut child) = child.lock().await.take() {
                 let _ = child.kill().await;
                 let _ = child.wait().await;
+                return;
+            }
+            // An adopted server is not this shell's child. Re-read and re-verify
+            // its record before ending it by pid: the recorded pid belongs to a
+            // serving process only while that server's own launch token still
+            // authenticates, and a pid from a replaced server may have been
+            // recycled by an unrelated process. A hub that cannot be verified is
+            // left alone; the supervisor replaces it on another port instead.
+            let path = server_record_path();
+            let adopted =
+                tauri::async_runtime::spawn_blocking(move || adopt_decision(&path, &bin)).await;
+            if let Ok(Some(record)) = adopted {
+                terminate_pid(record.pid);
             }
         });
     }
@@ -381,6 +485,134 @@ impl DshHandle {
             std::os::unix::fs::symlink(&target, &link).map_err(|e| e.to_string())?;
         }
         Ok(())
+    }
+}
+
+/// Where the adopted-server record lives: the fork's harness home, beside the
+/// startup log, so a shell upgrade keeps the same home in view.
+fn server_record_path() -> PathBuf {
+    crate::setup::dsh_home().join(SERVER_RECORD_NAME)
+}
+
+/// Runtime identity of the CLI entry point: length and modification time. An
+/// app update replaces the bundled closure, so a mismatch means the recorded
+/// server predates this build and must not serve this shell.
+fn runtime_identity(bin: &Path) -> Option<(u64, u64)> {
+    let metadata = std::fs::metadata(bin).ok()?;
+    let modified = metadata.modified().ok()?;
+    let millis = modified.duration_since(std::time::UNIX_EPOCH).ok()?.as_millis() as u64;
+    Some((metadata.len(), millis))
+}
+
+/// The launch URL's token when the URL is this profile's loopback launch URL
+/// for `port`: `http://127.0.0.1:<port>/?token=<token>`.
+fn launch_token(url: &str, port: u16) -> Option<String> {
+    let rest = url.strip_prefix("http://127.0.0.1:")?;
+    let (authority, query) = rest.split_once('/')?;
+    if authority != port.to_string() {
+        return None;
+    }
+    let token = query.strip_prefix("?token=")?;
+    if token.is_empty() || token.contains('&') {
+        return None;
+    }
+    Some(token.to_string())
+}
+
+/// Ask the recorded server to authenticate with its launch token. Only the
+/// process that printed the URL accepts it, so a 303 to the root while holding
+/// the cookie-minting token proves the recorded server is still the one this
+/// home started. Every other answer — 401 for a foreign token, another status
+/// for a foreign server, no answer at all — leaves the shell on the cold path.
+fn probe_launch_url(port: u16, token: &str) -> bool {
+    use std::io::{Read, Write};
+
+    let address = std::net::SocketAddr::from(([127, 0, 0, 1], port));
+    let Ok(mut stream) = std::net::TcpStream::connect_timeout(&address, ADOPT_PROBE_TIMEOUT) else {
+        return false;
+    };
+    let _ = stream.set_read_timeout(Some(ADOPT_PROBE_TIMEOUT));
+    let _ = stream.set_write_timeout(Some(ADOPT_PROBE_TIMEOUT));
+    let request = format!(
+        "GET /?token={token} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n"
+    );
+    if stream.write_all(request.as_bytes()).is_err() {
+        return false;
+    }
+    let mut response = [0u8; 64];
+    let read = match stream.read(&mut response) {
+        Ok(read) => read,
+        Err(_) => return false,
+    };
+    let status = String::from_utf8_lossy(&response[..read]);
+    status.starts_with("HTTP/1.1 303") || status.starts_with("HTTP/1.0 303")
+}
+
+/// Read the record at `path` and report the server it names when that server
+/// can still be adopted. Blocking (file read plus loopback request), so the
+/// supervisor runs it on the blocking pool.
+fn adopt_decision(path: &Path, bin: &Path) -> Option<ServerRecord> {
+    let raw = std::fs::read(path).ok()?;
+    let record: ServerRecord = serde_json::from_slice(&raw).ok()?;
+    let Some(identity) = runtime_identity(bin) else {
+        return None;
+    };
+    if record.bin != bin.to_string_lossy() || (record.bin_len, record.bin_modified_ms) != identity {
+        return None;
+    }
+    let token = launch_token(&record.url, record.port)?;
+    if !probe_launch_url(record.port, &token) {
+        return None;
+    }
+    Some(record)
+}
+
+/// Record the server this spawn produced, so the next shell start can adopt it.
+/// A record that cannot be written costs nothing but the adoption, so failures
+/// are dropped rather than raised at a point where the server is already up.
+fn remember_server(port: u16, url: &str, pid: u32, bin: &Path) {
+    let Some((bin_len, bin_modified_ms)) = runtime_identity(bin) else {
+        return;
+    };
+    let record = ServerRecord {
+        port,
+        url: url.to_string(),
+        pid,
+        bin: bin.to_string_lossy().into_owned(),
+        bin_len,
+        bin_modified_ms,
+    };
+    let path = server_record_path();
+    if let Some(dir) = path.parent() {
+        let _ = std::fs::create_dir_all(dir);
+    }
+    if let Ok(bytes) = serde_json::to_vec(&record) {
+        let _ = std::fs::write(&path, bytes);
+    }
+}
+
+fn forget_server() {
+    let _ = std::fs::remove_file(server_record_path());
+}
+
+/// End a hub by pid together with its process tree. Windows needs the tree:
+/// the hub's own children hold the workspace open.
+fn terminate_pid(pid: u32) {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        let mut kill = std::process::Command::new("cmd");
+        kill.creation_flags(CREATE_NO_WINDOW);
+        let _ = kill
+            .args(["/c", "taskkill", "/PID", &pid.to_string(), "/T", "/F"])
+            .status();
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = std::process::Command::new("kill")
+            .arg(pid.to_string())
+            .status();
     }
 }
 
@@ -811,6 +1043,93 @@ pub fn open_ui(app: AppHandle) -> Result<(), String> {
         let _ = window.set_focus();
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod adopt_tests {
+    // EASEL-DIVERGENCE(desktop-startup-latency L2 Layer 1): decision-contract tests.
+    use super::{adopt_decision, launch_token, runtime_identity, ServerRecord};
+    use std::path::PathBuf;
+
+    fn temp_dir(name: &str) -> PathBuf {
+        // OUT_DIR (target/…/build) is the one location this test process is
+        // guaranteed to write: the machine's %TEMP% is not, under restricted
+        // tokens and redirected shells alike.
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let dir = PathBuf::from(env!("OUT_DIR")).join(format!("adopt-{name}-{unique}"));
+        std::fs::create_dir_all(&dir).unwrap();
+        dir
+    }
+
+    #[test]
+    fn launch_token_accepts_only_the_matching_loopback_url() {
+        assert_eq!(launch_token("http://127.0.0.1:3081/?token=abc", 3081).as_deref(), Some("abc"));
+        assert_eq!(launch_token("http://127.0.0.1:3082/?token=abc", 3081), None);
+        assert_eq!(launch_token("http://localhost:3081/?token=abc", 3081), None);
+        assert_eq!(launch_token("http://127.0.0.1:3081/?token=", 3081), None);
+        assert_eq!(launch_token("http://127.0.0.1:3081/?token=a&b", 3081), None);
+    }
+
+    fn write_record(dir: &std::path::Path, bin: &std::path::Path, port: u16, url: &str) -> PathBuf {
+        let metadata = std::fs::metadata(bin).unwrap();
+        let record = ServerRecord {
+            port,
+            url: url.to_string(),
+            pid: 4242,
+            bin: bin.to_string_lossy().into_owned(),
+            bin_len: metadata.len(),
+            bin_modified_ms: metadata
+                .modified()
+                .unwrap()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_millis() as u64,
+        };
+        let path = dir.join("desktop-server.json");
+        std::fs::write(&path, serde_json::to_vec(&record).unwrap()).unwrap();
+        path
+    }
+
+    #[test]
+    fn adopt_decision_rejects_a_record_from_another_runtime() {
+        let dir = temp_dir("identity");
+        let real_bin = dir.join("bin.js");
+        std::fs::write(&real_bin, b"export {}").unwrap();
+        let fake_bin = dir.join("other.js");
+        std::fs::write(&fake_bin, b"export {}").unwrap();
+        let path = write_record(&dir, &real_bin, 3081, "http://127.0.0.1:3081/?token=abc");
+        assert_eq!(adopt_decision(&path, &fake_bin), None);
+        let identity = runtime_identity(&real_bin).unwrap();
+        std::fs::write(&real_bin, b"export {};").unwrap();
+        // A changed closure (different length) invalidates the same-path record.
+        if runtime_identity(&real_bin) != Some(identity) {
+            assert_eq!(adopt_decision(&path, &real_bin), None);
+        }
+    }
+
+    #[test]
+    fn adopt_decision_requires_a_live_token_annotated_url() {
+        let dir = temp_dir("dead");
+        let bin = dir.join("bin.js");
+        std::fs::write(&bin, b"export {}").unwrap();
+        // Port 1 on loopback is never answering within the probe budget.
+        let path = write_record(&dir, &bin, 1, "http://127.0.0.1:1/?token=abc");
+        assert_eq!(adopt_decision(&path, &bin), None);
+    }
+
+    #[test]
+    fn adopt_decision_rejects_a_malformed_record() {
+        let dir = temp_dir("malformed");
+        let bin = dir.join("bin.js");
+        std::fs::write(&bin, b"export {}").unwrap();
+        let path = dir.join("desktop-server.json");
+        std::fs::write(&path, b"{ not json").unwrap();
+        assert_eq!(adopt_decision(&path, &bin), None);
+        assert_eq!(adopt_decision(&dir.join("missing.json"), &bin), None);
+    }
 }
 
 #[cfg(test)]
