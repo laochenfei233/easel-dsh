@@ -138,6 +138,9 @@ export interface ModelCatalogModel {
   readonly name: string
   readonly description?: string
   readonly reasoning?: ModelReasoning
+  // EASEL-DIVERGENCE(easel-breakdown-fullpage): vision-capable selectors filter
+  // on this; absent means the adapter did not declare modalities.
+  readonly inputModalities?: readonly string[]
 }
 
 /** One provider and its successfully loaded model catalog. */
