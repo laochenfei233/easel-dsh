@@ -120,6 +120,9 @@ impl DshHandle {
                 }
                 continue;
             }
+            // No hub to adopt: every one of our servers still running is a
+            // rival of the fresh one this shell is about to boot.
+            sweep_rival_servers(None).await;
             let (child, port) = match self.spawn_child(app.clone()).await {
                 Ok(owned) => owned,
                 Err(err) => {
@@ -239,6 +242,10 @@ impl DshHandle {
             .await
             .ok()
             .flatten()?;
+        // The hub being adopted is the sole survivor: rivals left by dead
+        // shells or parallel launches hold session writer locks the user sees
+        // as "occupied by another dsh".
+        sweep_rival_servers(Some(record.pid)).await;
         self.port.store(record.port, Ordering::SeqCst);
         *self.launch_url.lock().expect("launch-url mutex") = Some(record.url.clone());
         append_startup_log(&format!(
@@ -618,6 +625,94 @@ fn terminate_pid(pid: u32) {
 
 fn port_open(port: u16) -> bool {
     std::net::TcpStream::connect(("127.0.0.1", port)).is_ok()
+}
+
+/// Matches a process whose command line boots one of OUR `dsh web` servers:
+/// the installed runtime (`...\Easel-dsh\runtime\...`) or this repo's worktree
+/// (`...\Easel\dsh\...`). Prism or stock-dsh installs boot from different
+/// paths and must never match — the sweep must not kill another product.
+fn is_our_dsh_web_server(command_line: &str) -> bool {
+    // 路径被引号包着（`..."bin.js" web --port...`），不能要求连续子串。
+    let line = command_line.to_lowercase();
+    line.contains("bin.js")
+        && line.contains(" web --port")
+        && (line.contains("easel-dsh\\runtime") || line.contains("easel\\dsh"))
+}
+
+/// Pure decision core of the sweep so the rules stay testable without
+/// processes: kill every sampled pid that boots one of our dsh web servers,
+/// except the kept survivor.
+fn rival_pids(samples: &[(u32, String)], keep: Option<u32>) -> Vec<u32> {
+    samples
+        .iter()
+        .filter(|(pid, line)| Some(*pid) != keep && is_our_dsh_web_server(line))
+        .map(|(pid, _)| *pid)
+        .collect()
+}
+
+/// Enumerate running node processes as (pid, command line) samples.
+#[cfg(windows)]
+fn list_process_samples() -> Vec<(u32, String)> {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    let output = std::process::Command::new("powershell")
+        .creation_flags(CREATE_NO_WINDOW)
+        .args([
+            "-NoProfile",
+            "-Command",
+            "Get-CimInstance Win32_Process -Filter \"Name='node.exe'\" | Select-Object ProcessId,CommandLine | ConvertTo-Json -Compress",
+        ])
+        .output();
+    let Ok(output) = output else {
+        return Vec::new();
+    };
+    // One match renders as a bare object, several as an array — normalize.
+    let Ok(value) = serde_json::from_slice::<serde_json::Value>(&output.stdout) else {
+        return Vec::new();
+    };
+    let items: Vec<serde_json::Value> = match value {
+        serde_json::Value::Array(items) => items,
+        item @ serde_json::Value::Object(_) => vec![item],
+        _ => return Vec::new(),
+    };
+    items
+        .iter()
+        .filter_map(|item| {
+            let pid = item.get("ProcessId")?.as_u64()? as u32;
+            let line = item.get("CommandLine")?.as_str()?.to_owned();
+            Some((pid, line))
+        })
+        .collect()
+}
+
+#[cfg(not(windows))]
+fn list_process_samples() -> Vec<(u32, String)> {
+    Vec::new()
+}
+
+/// One shell, one server: end every rival `dsh web` server of ours except
+/// `keep`. Rivals are what a dead shell leaves behind (orphans whose server
+/// outlived it) and what parallel launches boot beside the hub — the session
+/// writer locks they hold are the "occupied by another dsh" users keep
+/// hitting. Runs at every adopt/spawn decision, so a sweep also follows the
+/// hub this shell supervised eventually dying.
+async fn sweep_rival_servers(keep: Option<u32>) {
+    if cfg!(debug_assertions) {
+        // Dev shells must not kill the installed instance under comparison.
+        return;
+    }
+    let killed = tauri::async_runtime::spawn_blocking(move || {
+        let targets = rival_pids(&list_process_samples(), keep);
+        for pid in &targets {
+            terminate_pid(*pid);
+        }
+        targets
+    })
+    .await
+    .unwrap_or_default();
+    if !killed.is_empty() {
+        append_startup_log(&format!("swept rival dsh web servers: {killed:?}"));
+    }
 }
 
 /// Choose the port for the next `dsh web` spawn: the default `INTERNAL_PORT`
@@ -1135,6 +1230,30 @@ mod adopt_tests {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn rival_sweep_kills_orphans_and_rivals_but_spares_the_kept_hub() {
+        let hub = r#"C:\Users\chenfei\AppData\Local\EASEL-DSH\runtime\dsh\lib\bin.js" web --port 3082 --no-open"#.to_string();
+        let orphan = r#"C:\Users\chenfei\AppData\Local\easel-dsh\runtime\dsh\lib\bin.js" web --port 3081 --no-open"#.to_string();
+        let dev = r#"C:\Users\chenfei\Documents\GitHub\Easel\dsh\cli\lib\bin.js" web --port 3083 --no-open"#.to_string();
+        // 另一个产品（prism）的 dsh web：路径不同，绝不能被误杀。
+        let prism = r#"C:\Users\chenfei\Documents\GitHub\prism-agent\dsh\cli\lib\bin.js" web --port 3099 --no-open"#.to_string();
+        let unrelated = r#"C:\Tools\something\server.js" --port 7000"#.to_string();
+        let samples = vec![
+            (34096, hub),
+            (40456, orphan),
+            (21944, dev),
+            (111, prism),
+            (222, unrelated),
+        ];
+        // 收养 3082 时：装机的孤儿（大小写不敏感命中）与源码树的开发实例都清，
+        // prism 与无关进程不动。
+        assert_eq!(rival_pids(&samples, Some(34096)), vec![40456, 21944]);
+        // 冷启（无正主）：我们家的 dsh web 全清，仍不碰别家。
+        assert_eq!(rival_pids(&samples, None), vec![34096, 40456, 21944]);
+        // keep 指向不存在的 pid（记录被复用污染）：只是少豁免一项，其余照清。
+        assert_eq!(rival_pids(&samples, Some(999)), vec![34096, 40456, 21944]);
+    }
 
     #[test]
     fn launch_url_parser_accepts_only_the_current_loopback_token() {
