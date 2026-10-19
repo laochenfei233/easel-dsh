@@ -251,7 +251,11 @@ export async function windowsFileApplications(
   const encodedApplication = Buffer.from(application ?? '').toString('base64')
   const script = `$ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
-Add-Type -ReferencedAssemblies System,System.Core,System.Drawing -TypeDefinition @'
+$refs = @('System', 'System.Core', 'System.Drawing')
+# PowerShell 7 compiles against .NET Core, where the types this adapter touches are
+# forwarded to assemblies the .NET Framework reference list never names.
+if ($PSVersionTable.PSVersion.Major -ge 6) { $refs += @('System.Runtime', 'System.Runtime.Extensions', 'System.Collections', 'Microsoft.Win32.Primitives', 'System.Drawing.Common', 'System.Drawing.Primitives', 'System.Private.Windows.Core') }
+Add-Type -ReferencedAssemblies $refs -TypeDefinition @'
 ${WINDOWS_ASSOCIATIONS}
 '@
 $path = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('${encodedPath}'))
