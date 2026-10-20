@@ -791,6 +791,33 @@ describe('header-validated membership projection', () => {
     expect(workspace.sessionIds).not.toContain('cwd-only')
   })
 
+  it('resolves a stored workspace path through a link for membership and attach', async () => {
+    const target = await makeDir('migrated-target')
+    const alias = join(base, 'migrated-alias')
+    await symlink(target, alias)
+    const id = WorkspaceId('00000000-0000-4000-8000-000000000004')
+    const pool = storedPool(
+      [[id, record(alias, ['migrated'])]],
+      { initialized: true, workspaceIds: [id] },
+    )
+    const result = await harness({
+      pool,
+      sessions: [
+        header('migrated', alias),
+        header('new', alias),
+      ],
+    })
+    const workspace = result.registry.list()[0]!
+    // The record keeps its spelling; identity resolves through the link so
+    // sessions stored under either spelling belong to the same workspace.
+    expect(storedRecord(pool, id).path).toBe(alias)
+    expect(workspace.path).toBe(target)
+    expect(workspace.sessionIds).toEqual(['migrated'])
+    await workspace.attachSession(SessionId('new'))
+    expect(workspace.sessionIds).toEqual(['new', 'migrated'])
+    await expect(result.registry.resolveByPath(alias)).resolves.toBe(workspace)
+  })
+
   it('rejects duplicate candidate ownership, duplicate paths, and initialized order drift', async () => {
     const first = await makeDir('corrupt-first')
     const second = await makeDir('corrupt-second')

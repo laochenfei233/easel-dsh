@@ -73,17 +73,22 @@ export class WorkspaceEntity implements Workspace {
    * @param host - Registry-owned table, session-path index, and header reads.
    * @param id - The record's stable id.
    * @param record - The validated record snapshot loaded or just written.
+   * @param canonicalPath - The record path resolved through `fs.realpath`.
+   * Re-resolved on every load because the directory behind a stored path can
+   * become a link (the desktop layout migration moves data and leaves a
+   * junction behind); the stored spelling stays untouched.
    */
   constructor(
     private readonly host: WorkspaceEntityHost,
     readonly id: WorkspaceId,
     record: WorkspaceRecord,
+    private readonly canonicalPath: string = record.path,
   ) {
     this.record = record
   }
 
   get path(): string {
-    return this.record.path
+    return this.canonicalPath
   }
 
   get title(): string {
@@ -99,7 +104,7 @@ export class WorkspaceEntity implements Workspace {
   }
 
   get sessionIds(): readonly SessionId[] {
-    return this.record.sessionIds.filter(id => this.host.sessionPath(id) === this.record.path)
+    return this.record.sessionIds.filter(id => this.host.sessionPath(id) === this.canonicalPath)
   }
 
   async setTitle(title: string): Promise<void> {
@@ -115,7 +120,7 @@ export class WorkspaceEntity implements Workspace {
       const header = await this.host.readSessionHeader(sessionId)
       if (header.cwd === undefined) {
         throw new Error(
-          `cannot attach session '${sessionId}' to workspace '${this.record.path}': `
+          `cannot attach session '${sessionId}' to workspace '${this.canonicalPath}': `
           + 'its stored header carries no cwd to validate against',
         )
       }
@@ -124,20 +129,20 @@ export class WorkspaceEntity implements Workspace {
         cwd = await realpathNormalize(header.cwd)
       } catch (error) {
         throw new Error(
-          `cannot attach session '${sessionId}' to workspace '${this.record.path}': `
+          `cannot attach session '${sessionId}' to workspace '${this.canonicalPath}': `
           + `its cwd '${header.cwd}' does not resolve, so it cannot be validated`,
           { cause: error },
         )
       }
       if (!(await stat(cwd)).isDirectory()) {
         throw new Error(
-          `cannot attach session '${sessionId}' to workspace '${this.record.path}': `
+          `cannot attach session '${sessionId}' to workspace '${this.canonicalPath}': `
           + `its cwd '${header.cwd}' is not a directory`,
         )
       }
-      if (cwd !== this.record.path) {
+      if (cwd !== this.canonicalPath) {
         throw new Error(
-          `cannot attach session '${sessionId}' to workspace '${this.record.path}': `
+          `cannot attach session '${sessionId}' to workspace '${this.canonicalPath}': `
           + `its cwd resolves to '${cwd}'`,
         )
       }
@@ -179,7 +184,7 @@ export class WorkspaceEntity implements Workspace {
 
   async status(): Promise<'ok' | 'missing-dir'> {
     try {
-      return (await stat(this.record.path)).isDirectory() ? 'ok' : 'missing-dir'
+      return (await stat(this.canonicalPath)).isDirectory() ? 'ok' : 'missing-dir'
     } catch {
       // Any stat failure (ENOENT, dangling parent, permission loss) means the
       // directory is not usable right now; the record itself never mutates.
@@ -205,7 +210,7 @@ export class WorkspaceEntity implements Workspace {
       next = await this.host.table().update(this.id, (current) => {
         const changed = fn(current)
         const sessionIds = changed.sessionIds.filter(
-          id => this.host.sessionPath(id) === changed.path,
+          id => this.host.sessionPath(id) === this.canonicalPath,
         )
         if (changed === current && sessionIds.length === current.sessionIds.length) {
           throw unchangedSentinel

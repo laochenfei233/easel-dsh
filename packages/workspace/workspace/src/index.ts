@@ -174,6 +174,13 @@ export class WorkspaceRegistry extends Service {
   private global?: DomainGlobal<WorkspaceDomainState>
   private state?: WorkspaceDomainState
   private readonly entities = new Map<WorkspaceId, WorkspaceEntity>()
+  /**
+   * Stored record paths resolved through `fs.realpath`. A record's directory
+   * can become a link after it was written (the desktop layout migration moves
+   * the data aside and leaves a junction), so identity is resolved on every
+   * load while the stored spelling stays untouched.
+   */
+  private readonly canonicalWorkspacePaths = new Map<WorkspaceId, string>()
   private readonly headers = new Map<SessionId, SessionHeader>()
   private readonly sessionPaths = new Map<SessionId, string>()
   private readonly invalidSessionPaths = new Map<SessionId, string>()
@@ -201,6 +208,7 @@ export class WorkspaceRegistry extends Service {
     this.global = domain.global
     this.state = domain.global.get()
 
+    await this.canonicalizeWorkspacePaths()
     await this.recoverPendingMutation()
     this.validateStoredState(this.state)
     if (!this.state.initialized) {
@@ -522,8 +530,9 @@ export class WorkspaceRegistry extends Service {
       createdAt: now,
       updatedAt: now,
     }
-    const entity = new WorkspaceEntity(this.host, id, record)
+    const entity = new WorkspaceEntity(this.host, id, record, canonical)
     this.entities.set(id, entity)
+    this.canonicalWorkspacePaths.set(id, canonical)
     const pendingState: WorkspaceDomainState = {
       ...state,
       pendingMutation: { operation: 'create', workspaceId: id },
@@ -532,12 +541,14 @@ export class WorkspaceRegistry extends Service {
       await this.setState(pendingState)
     } catch (error) {
       this.entities.delete(id)
+      this.canonicalWorkspacePaths.delete(id)
       throw error
     }
     try {
       await table.put(id, record)
     } catch (error) {
       this.entities.delete(id)
+      this.canonicalWorkspacePaths.delete(id)
       try {
         await this.setState(state)
       } catch (rollbackError) {
@@ -559,6 +570,7 @@ export class WorkspaceRegistry extends Service {
       })
     } catch (error) {
       this.entities.delete(id)
+      this.canonicalWorkspacePaths.delete(id)
       try {
         await table.delete(id)
       } catch (rollbackError) {
@@ -595,10 +607,12 @@ export class WorkspaceRegistry extends Service {
       pendingMutation: { operation: 'delete', workspaceId: id },
     })
     this.entities.delete(id)
+    this.canonicalWorkspacePaths.delete(id)
     try {
       await this.requireTable().delete(id)
     } catch (error) {
       this.entities.set(id, entity)
+      this.canonicalWorkspacePaths.set(id, entity.path)
       try {
         await this.setState(state)
       } catch (rollbackError) {
@@ -606,6 +620,7 @@ export class WorkspaceRegistry extends Service {
         // agree with that recoverable direction rather than republish a row
         // absent from the persisted order.
         this.entities.delete(id)
+        this.canonicalWorkspacePaths.delete(id)
         throw new AggregateError(
           [error, rollbackError],
           `workspace '${id}' record deletion and registry-order rollback both failed`,
@@ -666,7 +681,7 @@ export class WorkspaceRegistry extends Service {
     const byPath = new Map<string, WorkspaceId>()
     const accounted = new Map<SessionId, WorkspaceId>()
     for (const [id, record] of table.entries()) {
-      byPath.set(record.path, id)
+      byPath.set(this.canonicalWorkspacePaths.get(id) ?? record.path, id)
       for (const sessionId of record.sessionIds) accounted.set(sessionId, id)
     }
 
@@ -687,6 +702,7 @@ export class WorkspaceRegistry extends Service {
           updatedAt: createdAt,
         }
         await table.put(id, record)
+        this.canonicalWorkspacePaths.set(id, group.path)
         byPath.set(group.path, id)
         for (const sessionId of sessionIds) accounted.set(sessionId, id)
         continue
@@ -782,11 +798,33 @@ export class WorkspaceRegistry extends Service {
     }
   }
 
+  /**
+   * Resolve every stored workspace path through `fs.realpath` for identity.
+   * Records are written canonical, but the directory behind one can be
+   * replaced by a link later (the desktop layout migration moves the data and
+   * leaves a junction at the old path); without this pass the recorded
+   * spelling no longer equals the canonical session cwd, so every session in
+   * the workspace is filtered out and new sessions refuse to attach. A path
+   * that no longer resolves keeps its stored spelling so the existing
+   * missing-directory handling reports it instead of this repair hiding it.
+   */
+  private async canonicalizeWorkspacePaths(): Promise<void> {
+    this.canonicalWorkspacePaths.clear()
+    for (const [id, record] of this.requireTable().entries()) {
+      try {
+        this.canonicalWorkspacePaths.set(id, await realpathNormalize(record.path))
+      } catch {
+        this.canonicalWorkspacePaths.set(id, record.path)
+      }
+    }
+  }
+
   private rebuildEntities(): void {
     this.entities.clear()
     for (const id of this.requireState().workspaceIds) {
       const record = this.requireTable().get(id) as WorkspaceRecord
-      this.entities.set(id, new WorkspaceEntity(this.host, id, record))
+      const canonical = this.canonicalWorkspacePaths.get(id) ?? record.path
+      this.entities.set(id, new WorkspaceEntity(this.host, id, record, canonical))
     }
   }
 
@@ -836,12 +874,13 @@ export class WorkspaceRegistry extends Service {
   private reportFilteredCandidates(): void {
     for (const entity of this.entities.values()) {
       const record = this.requireTable().get(entity.id) as WorkspaceRecord
+      const canonical = this.canonicalWorkspacePaths.get(entity.id) ?? record.path
       for (const sessionId of record.sessionIds) {
         const path = this.sessionPaths.get(sessionId)
-        if (path === record.path) continue
+        if (path === canonical) continue
         const reason = this.invalidSessionPaths.get(sessionId)
           ?? (this.headers.has(sessionId)
-            ? `canonical cwd '${path}' differs from workspace path '${record.path}'`
+            ? `canonical cwd '${path}' differs from workspace path '${canonical}'`
             : 'session header is missing')
         this.ctx.logger.warn(
           `workspace '${entity.id}' filtered session '${sessionId}' from membership: ${reason}`,
