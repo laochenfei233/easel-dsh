@@ -7,6 +7,7 @@
 //! that picks an agent preset and installs plugins.
 
 mod dsh_runner;
+mod layout;
 mod setup;
 mod tray;
 
@@ -152,6 +153,10 @@ fn hide_child_consoles() {}
 
 pub fn run() {
     hide_child_consoles();
+    // EASEL-DIVERGENCE(easel-dsh-layout): move pre-layout data into
+    // <install>\data before any command reads the first-run state or the dsh
+    // home. Installed-only; dev launches keep their scratch paths.
+    layout::migrate();
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())

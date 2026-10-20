@@ -322,6 +322,11 @@ impl DshHandle {
         // process on mac/linux (osascript/npx/git all spawn with ENOENT).
         let path_value = std::env::join_paths(&path_parts).map_err(|e| e.to_string())?;
         cmd.env("PATH", &path_value);
+        // EASEL-DIVERGENCE(easel-dsh-layout): point dsh at the installed data
+        // home instead of relying on the ~/.easel default, which only stays
+        // correct through the migration junction.
+        cmd.env("DSH_HOME", crate::setup::dsh_home());
+        cmd.env("EASEL_HOME", crate::setup::easel_home());
         no_window(&mut cmd);
         // Startup log in the dsh home (provably writable — the profile patch
         // was just written there), appended to at every failure point. The
@@ -466,31 +471,19 @@ impl DshHandle {
         if !target.exists() {
             return Err(format!("closure node_modules missing at {target:?}"));
         }
-        if link.exists() {
+        if crate::layout::is_reparse_point(&link) {
+            // A moved home carries the old junction; a dangling one makes
+            // mklink fail with "already exists", so inspect and replace it.
+            let current = std::fs::read_link(&link).ok();
+            if current.as_deref() == Some(target.as_path()) {
+                return Ok(());
+            }
+            crate::layout::remove_link(&link)?;
+        } else if link.exists() {
             return Ok(());
         }
         std::fs::create_dir_all(&home).map_err(|e| e.to_string())?;
-        #[cfg(windows)]
-        {
-            // Directory junction (no admin rights needed, unlike symlink).
-            use std::os::windows::process::CommandExt;
-            const CREATE_NO_WINDOW: u32 = 0x0800_0000;
-            let mut mklink = std::process::Command::new("cmd");
-            mklink.creation_flags(CREATE_NO_WINDOW);
-            let status = mklink
-                .args(["/c", "mklink", "/J"])
-                .arg(&link)
-                .arg(&target)
-                .status()
-                .map_err(|e| format!("mklink failed: {e}"))?;
-            if !status.success() {
-                return Err(format!("failed to link DSH_HOME node_modules ({status})"));
-            }
-        }
-        #[cfg(not(windows))]
-        {
-            std::os::unix::fs::symlink(&target, &link).map_err(|e| e.to_string())?;
-        }
+        crate::layout::create_link(&link, &target)?;
         Ok(())
     }
 }

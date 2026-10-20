@@ -17,16 +17,10 @@ const PRESET_ROW_ID: &str = "agent-presets";
 const STATE_FILE: &str = "desktop.json";
 
 pub fn dsh_home() -> PathBuf {
-    std::env::var("DSH_HOME")
-        .map(PathBuf::from)
-        .unwrap_or_else(|_| {
-            let base = std::env::var("USERPROFILE")
-                .or_else(|_| std::env::var("HOME"))
-                .unwrap_or_default();
-            // EASEL-DIVERGENCE(easel-standalone-client L0/D3): keep the shell's
-            // default home in lockstep with packages/util/home-paths ('.easel').
-            PathBuf::from(base).join(".easel")
-        })
+    // EASEL-DIVERGENCE(easel-dsh-layout): installed builds resolve to
+    // <install>\data\home; dev builds and pre-migration installs fall back to
+    // the historical ~/.easel (layout::dsh_home owns that precedence).
+    crate::layout::dsh_home()
 }
 
 fn profile_web_dir(home: &Path) -> PathBuf {
@@ -370,20 +364,11 @@ fn has_patch_row(rows: &[Yaml], id: &str) -> bool {
 const EASEL_STAMP_FILE: &str = ".bundle-version";
 const EASEL_PLUGIN_NAME: &str = "dsh-plugin-easel";
 
-/// Content root of the bundled Easel integration: `EASEL_HOME` overrides,
-/// defaulting to `%LOCALAPPDATA%\Easel` (USERPROFILE fallback mirrors
-/// `dsh_home` for environments without LOCALAPPDATA).
-fn easel_home() -> PathBuf {
-    if let Ok(home) = std::env::var("EASEL_HOME") {
-        return PathBuf::from(home);
-    }
-    if let Ok(dir) = std::env::var("LOCALAPPDATA") {
-        return PathBuf::from(dir).join("Easel");
-    }
-    let base = std::env::var("USERPROFILE")
-        .or_else(|_| std::env::var("HOME"))
-        .unwrap_or_default();
-    PathBuf::from(base).join("AppData").join("Local").join("Easel")
+/// Content root of the bundled Easel integration. Installed builds keep it
+/// under `<install>\data\workspace` (migrated installs keep the legacy path so
+/// dsh workspace records stay valid); `EASEL_HOME` overrides for dev.
+pub(crate) fn easel_home() -> PathBuf {
+    crate::layout::easel_home()
 }
 
 fn runtime_easel_dir(app: &AppHandle) -> Option<PathBuf> {
@@ -901,7 +886,7 @@ fn runtime_plugins_dir(app: &AppHandle) -> Result<PathBuf, String> {
         .map_err(|_| "no bundled plugins dir; set DSH_DESKTOP_PLUGINS_DIR in dev".to_string())
 }
 
-fn copy_dir(src: &Path, dest: &Path) -> Result<(), String> {
+pub(crate) fn copy_dir(src: &Path, dest: &Path) -> Result<(), String> {
     fs::create_dir_all(dest).map_err(|e| e.to_string())?;
     for entry in fs::read_dir(src).map_err(|e| e.to_string())? {
         let entry = entry.map_err(|e| e.to_string())?;
