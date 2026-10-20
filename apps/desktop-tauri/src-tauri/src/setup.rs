@@ -515,6 +515,20 @@ pub(crate) fn ensure_easel_bundle_at(
             "insert:\n  - id: easel-skills\n    name: '@deepseek-ai/dsh-skill-filesystem'\n    config:\n      providerName: easel\n      includeDefaultRoots: false\n      customSkillDirs: [{skills_dir}]\n"
         ),
     )?;
+    // Feature plugins split out of the core easel plugin: each mounts its own
+    // routes into the core `easelApi` registry, so disabling one row turns one
+    // feature off without touching the workbench. Both resolve through the core
+    // package's exports map (dsh-plugin-easel/<name>).
+    ensure_easel_row(
+        &mut rows,
+        "easel-automation",
+        "insert:\n  - id: easel-automation\n    name: dsh-plugin-easel/automation\n",
+    )?;
+    ensure_easel_row(
+        &mut rows,
+        "easel-deconstruct",
+        "insert:\n  - id: easel-deconstruct\n    name: dsh-plugin-easel/deconstruct\n",
+    )?;
     if !rows
         .iter()
         .any(|row| row_has_id(row, "ui-plugin-manager"))
@@ -800,8 +814,10 @@ mod easel_tests {
         let patch = patch_text(&home);
         assert!(patch.contains("disabled: true"));
         assert!(patch.contains("C:\\repo"));
-        // One easel row (the user's), plus the fresh easel-skills row.
-        assert_eq!(patch.matches("id: easel").count(), 2);
+        // The user's easel row plus the fresh rows this shell maintains, one each.
+        for id in ["easel", "easel-skills", "easel-automation", "easel-deconstruct"] {
+            assert_eq!(patch.matches(&format!("- id: {id}\n")).count(), 1, "row {id}");
+        }
     }
 
     #[test]
