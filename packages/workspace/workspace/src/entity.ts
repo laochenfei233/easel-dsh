@@ -157,12 +157,12 @@ export class WorkspaceEntity implements Workspace {
     await this.mutate((record) => {
       if (!record.sessionIds.includes(sessionId)) {
         throw new WorkspaceMoveInvalidError(
-          `cannot move session '${sessionId}' in workspace '${record.path}': the session is not accounted`,
+          `cannot move session '${sessionId}' in workspace '${this.canonicalPath}': the session is not accounted`,
         )
       }
       if (beforeSessionId !== undefined && !record.sessionIds.includes(beforeSessionId)) {
         throw new WorkspaceMoveInvalidError(
-          `cannot move session '${sessionId}' before '${beforeSessionId}' in workspace '${record.path}': `
+          `cannot move session '${sessionId}' before '${beforeSessionId}' in workspace '${this.canonicalPath}': `
           + 'the anchor session is not accounted',
         )
       }

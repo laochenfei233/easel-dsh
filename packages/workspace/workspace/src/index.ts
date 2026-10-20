@@ -730,8 +730,10 @@ export class WorkspaceRegistry extends Service {
     const priorRank = new Map(state.workspaceIds.map((id, index) => [id, index]))
     const workspaceIds = [...table.entries()]
       .sort(([leftId, left], [rightId, right]) => {
-        const leftTime = groupRank.get(left.path) ?? Date.parse(left.createdAt)
-        const rightTime = groupRank.get(right.path) ?? Date.parse(right.createdAt)
+        const leftTime = groupRank.get(this.canonicalWorkspacePaths.get(leftId) ?? left.path)
+          ?? Date.parse(left.createdAt)
+        const rightTime = groupRank.get(this.canonicalWorkspacePaths.get(rightId) ?? right.path)
+          ?? Date.parse(right.createdAt)
         return rightTime - leftTime
           || (priorRank.get(leftId) ?? Number.MAX_SAFE_INTEGER)
             - (priorRank.get(rightId) ?? Number.MAX_SAFE_INTEGER)

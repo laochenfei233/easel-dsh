@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -8,12 +8,13 @@ import Storage from '@deepseek-ai/dsh-storage'
 import { DomainFacility } from '@deepseek-ai/dsh-storage-domain'
 import { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
 import WorkspaceRegistry from '@deepseek-ai/dsh-workspace'
+import type { SessionHeader } from '@deepseek-ai/dsh-session'
 import type { WorkspaceId } from '@deepseek-ai/dsh-workspace/types'
 import WorkspaceController from '../src/index.ts'
 import { DEFAULT_WORKSPACE_DIRECTORY } from '../src/default-workspace.ts'
 import { WorkspaceFeed } from '../src/feed.ts'
 import type { WorkspaceFollowFrame } from '../src/types.ts'
-import { MemoryStorageBackend } from '../../../storage/storage-domain/tests/helpers/memory-backend.ts'
+import { MemoryMediaPool, MemoryStorageBackend } from '../../../storage/storage-domain/tests/helpers/memory-backend.ts'
 
 // The controller relays whatever families the providers report; this suite merges its own.
 declare module '@deepseek-ai/dsh-workspace/types' {
@@ -50,18 +51,25 @@ function deferred<T>(): Deferred<T> {
   return { promise, resolve }
 }
 
-async function harness(options: { systemDocuments?: boolean } = {}) {
+async function harness(options: {
+  systemDocuments?: boolean
+  pool?: MemoryMediaPool
+  sessions?: readonly SessionHeader[]
+} = {}) {
   const root = realpathSync.native(mkdtempSync(join(tmpdir(), 'dsh-workspace-controller-')))
   tempDirs.push(root)
   const ctx = new Context()
   roots.push(ctx)
   await ctx.plugin(SessionStore)
   await ctx.plugin(Storage)
-  ctx.storage.backend.register('memory', new MemoryStorageBackend())
+  ctx.storage.backend.register('memory', new MemoryStorageBackend(options.pool))
   const storageDomain = new DomainFacility(ctx, { backend: 'memory', routes: {} })
   ctx.storage.mount('domain', storageDomain)
   ctx.provide('storageDomain', storageDomain)
-  ctx.provide('sessionPersistence', { list: () => Promise.resolve([]) } as never)
+  const sessions = options.sessions ?? []
+  ctx.provide('sessionPersistence', {
+    list: () => Promise.resolve(sessions.map(header => ({ header, revision: 'rev' as never }))),
+  } as never)
   await ctx.plugin(WorkspaceRegistry)
   const dispose = (): void => {}
   ctx.provide('typert', {
@@ -414,6 +422,52 @@ describe('WorkspaceController follow', () => {
 
     abort.abort()
     await expect(iterator.next()).resolves.toEqual({ done: true, value: undefined })
+  })
+
+  it('publishes the canonical path for a stored junction workspace after a mutation', async () => {
+    const base = realpathSync.native(mkdtempSync(join(tmpdir(), 'dsh-workspace-junction-')))
+    tempDirs.push(base)
+    const target = join(base, 'data')
+    mkdirSync(target, { recursive: true })
+    const alias = join(base, 'Easel')
+    symlinkSync(target, alias, process.platform === 'win32' ? 'junction' : 'dir')
+    const id = '00000000-0000-4000-8000-000000000010' as WorkspaceId
+    const now = new Date().toISOString()
+    const pool = new MemoryMediaPool()
+    pool.versions.set('workspace', 2)
+    pool.media.set('workspace', {
+      tables: new Map([['workspaces', new Map([[id, {
+        path: alias,
+        title: 'alias',
+        sessionIds: ['s1'],
+        createdAt: now,
+        updatedAt: now,
+      }]])]]),
+      global: { initialized: true, workspaceIds: [id], archivedSessionIds: [], pinnedSessionIds: [] },
+    })
+    const { controller } = await harness({
+      pool,
+      sessions: [{ id: SessionId('s1'), cwd: alias, createdAt: 0 } as SessionHeader],
+    })
+    const abort = new AbortController()
+    const iterator = controller.follow(abort.signal)[Symbol.asyncIterator]()
+    try {
+      // The baseline already normalizes the stored spelling.
+      await expect(nextFrame(iterator)).resolves.toMatchObject({
+        type: 'baseline',
+        value: { items: [{ path: target, sessionIds: ['s1'] }] },
+      })
+      // A later mutation publishes the same canonical path; the raw record
+      // still carries the alias, so a raw-record projection would flip it back.
+      await controller.rename({ workspaceId: id, title: 'renamed' })
+      await expect(nextFrame(iterator)).resolves.toMatchObject({
+        type: 'upsert',
+        workspace: { path: target, title: 'renamed', sessionIds: ['s1'] },
+      })
+    } finally {
+      abort.abort()
+      await iterator.return?.()
+    }
   })
 
   it('ignores unrelated domain writes and closes active followers on disposal', async () => {

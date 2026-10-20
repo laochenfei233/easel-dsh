@@ -65,9 +65,11 @@ export interface Workspace {
   readonly id: WorkspaceId
 
   /**
-   * Canonical directory path: the `fs.realpath` of the path given at create
-   * time (trailing slashes, `..`, and symlinks all resolved). Never rewritten
-   * afterwards, even when the directory disappears (see {@link status}).
+   * Canonical directory path: the `fs.realpath` of the record's stored path,
+   * resolved at every load so a directory later replaced by a link keeps one
+   * identity (trailing slashes, `..`, and symlinks all resolved). The durable
+   * record's spelling is never rewritten; a path that no longer resolves keeps
+   * its stored spelling (see {@link status}).
    */
   readonly path: string
 

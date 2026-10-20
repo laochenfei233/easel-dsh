@@ -31,11 +31,29 @@ export function workspaceView(workspace: Workspace): WorkspaceView {
   }
 }
 
-function changedWorkspaceView(workspaceId: string, value: unknown): WorkspaceView {
+/**
+ * Project one committed record into its Remote value.
+ *
+ * The record keeps the stored path spelling; the registry entity owns the
+ * canonical identity of the same directory. Increments must publish that
+ * canonical path too, or a client that learned the canonical baseline would
+ * flip back to a junction spelling after the first mutation.
+ *
+ * @param registry - authoritative registry used for the canonical path.
+ * @param workspaceId - id of the committed record.
+ * @param value - raw record value from the storage-domain change.
+ * @returns detached Workspace projection for Remote consumers.
+ */
+function changedWorkspaceView(
+  registry: Context['workspaceRegistry'],
+  workspaceId: string,
+  value: unknown,
+): WorkspaceView {
   const record: WorkspaceRecord = workspaceRecord.parse(value)
+  const canonical = registry.get(WorkspaceId(workspaceId))?.path ?? record.path
   return {
     workspaceId: WorkspaceId(workspaceId),
-    path: record.path,
+    path: canonical,
     title: record.title,
     sessionIds: [...record.sessionIds],
     createdAt: record.createdAt,
@@ -134,7 +152,7 @@ export class WorkspaceFeed {
     if (!this.knownIds.has(change.key)) return
     this.publish({
       type: 'upsert',
-      workspace: changedWorkspaceView(change.key, change.value),
+      workspace: changedWorkspaceView(this.ctx.workspaceRegistry, change.key, change.value),
     })
   }
 
