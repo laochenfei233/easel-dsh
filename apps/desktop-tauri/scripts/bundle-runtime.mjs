@@ -788,18 +788,18 @@ function writeManifest() {
   step(`manifest: ${JSON.stringify(manifest)}`);
 }
 
-// The Easel integration ships in the Windows bundle. The plugin's build output
-// joins runtime/plugins (the shell installs it into the profile), and
-// runtime/easel mirrors the Easel checkout's project-side content: skills, the
-// plugin source, the profile template. The shell deploys that tree under
-// EASEL_HOME on first launch and stamps it with VERSION — content changes must
-// bump dsh-plugin-easel's package version to trigger a resync.
+// The Easel integration ships per-platform: the plugin's build output joins
+// runtime/plugins (the shell installs it into the profile), and runtime/easel
+// mirrors the project-side content: skills, the plugin source, the profile
+// template. The shell deploys that tree under EASEL_HOME on first launch and
+// stamps it with VERSION — content changes must bump dsh-plugin-easel's
+// package version and re-run scripts/sync-easel-bundle.mjs (the source of
+// truth is the vendored dsh/easel tree; EASEL_REPO overrides for dev).
 async function stageEasel() {
-  if (PLATFORM !== 'win') return;
-  const repo = process.env.EASEL_REPO ?? resolve(ROOT, '..', '..', '..');
-  const plugin = join(repo, 'dsh-plugin-easel');
+  const base = process.env.EASEL_REPO ?? resolve(ROOT, '..', '..', 'easel');
+  const plugin = join(base, 'dsh-plugin-easel');
   if (!existsSync(join(plugin, 'package.json'))) {
-    step('easel repo not found, skipping the easel bundle');
+    step('easel bundle content not found, skipping the easel bundle');
     return;
   }
   step(`building dsh-plugin-easel in ${plugin}`);
@@ -823,11 +823,11 @@ async function stageEasel() {
   const noJunk = (src) => !/(^|[\\/])(node_modules|__pycache__)([\\/]|$)/.test(src) && !src.endsWith('.pyc');
   rmSync(EASEL_DIR, { recursive: true, force: true });
   mkdirSync(EASEL_DIR, { recursive: true });
-  cpSync(join(repo, 'skills'), join(EASEL_DIR, 'skills'), { recursive: true, filter: noJunk });
+  cpSync(join(base, 'skills'), join(EASEL_DIR, 'skills'), { recursive: true, filter: noJunk });
   cpSync(plugin, join(EASEL_DIR, 'dsh-plugin-easel'), { recursive: true, filter: noJunk });
-  cpSync(join(repo, 'profiles', '_template'), join(EASEL_DIR, 'profiles', '_template'), { recursive: true });
-  cpSync(join(repo, 'README.md'), join(EASEL_DIR, 'README.md'));
-  cpSync(join(repo, 'LICENSE'), join(EASEL_DIR, 'LICENSE'));
+  cpSync(join(base, 'profiles', '_template'), join(EASEL_DIR, 'profiles', '_template'), { recursive: true });
+  cpSync(join(base, 'README.md'), join(EASEL_DIR, 'README.md'));
+  cpSync(join(base, 'LICENSE'), join(EASEL_DIR, 'LICENSE'));
   writeFileSync(join(EASEL_DIR, 'VERSION'), version);
   step(`easel ${version} staged into runtime/easel`);
 }
