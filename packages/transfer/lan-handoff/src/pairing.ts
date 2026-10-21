@@ -174,13 +174,15 @@ export function attachChannel(socket: TLSSocket): ConnectionChannel {
       return (await this.nextFrame(types, timeoutMs)).message
     },
     nextFrame(types: string | readonly string[], timeoutMs: number): Promise<ChannelFrame> {
-      if (failed !== undefined) return Promise.reject(failed)
       const accepted = wanted(types)
+      // Frames that already arrived stay deliverable after the peer closes:
+      // a graceful close follows the final protocol frame, not precedes it.
       const queuedIndex = queued.findIndex(frame => accepted.includes(frame.message.type))
       if (queuedIndex !== -1) {
         const [frame] = queued.splice(queuedIndex, 1)
         if (frame !== undefined) return Promise.resolve(frame)
       }
+      if (failed !== undefined) return Promise.reject(failed)
       return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
           reject(new PairingError('timeout', `connection did not advance within ${timeoutMs} ms`))

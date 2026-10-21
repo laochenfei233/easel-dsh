@@ -105,13 +105,37 @@ it('propagates a decline to the dialing side without persisting anyone', async (
   expect(beta.service.pairedPeers()).toEqual([])
 })
 
-it('declines incoming pairing when no handler is installed', async () => {
+it('keeps incoming pairing pending without a handler and declines it by id', async () => {
   const alpha = await device()
   const beta = await device()
 
   const dialed = await alpha.service.pairWithPeer({ host: '127.0.0.1', port: beta.port })
+  await vi.waitFor(() => { expect(beta.service.pairingOffers()).toHaveLength(1) })
+  const pending = beta.service.pairingOffers()[0]
+  if (pending === undefined) throw new Error('no pending pairing recorded')
+  expect(pending.sas).toBe(dialed.sas)
+  expect(pending.direction).toBe('received')
+  await beta.service.rejectPairing(pending.id)
+
   await expect(dialed.accept()).rejects.toBeInstanceOf(PairingRejectedError)
   expect(alpha.service.pairedPeers()).toEqual([])
+  expect(beta.service.pairedPeers()).toEqual([])
+  expect(beta.service.pairingOffers()).toEqual([])
+})
+
+it('accepts one pending pairing by id and persists on both sides', async () => {
+  const alpha = await device()
+  const beta = await device()
+
+  const dialed = await alpha.service.pairWithPeer({ host: '127.0.0.1', port: beta.port })
+  await vi.waitFor(() => { expect(beta.service.pairingOffers()).toHaveLength(1) })
+  const pending = beta.service.pairingOffers()[0]
+  if (pending === undefined) throw new Error('no pending pairing recorded')
+
+  await Promise.all([dialed.accept(), beta.service.acceptPairing(pending.id)])
+  expect(alpha.service.pairedPeers().map(peer => String(peer.id))).toEqual([String((await beta.service.ready).deviceId)])
+  expect(beta.service.pairedPeers().map(peer => String(peer.id))).toEqual([String((await alpha.service.ready).deviceId)])
+  expect(beta.service.pairingOffers()).toEqual([])
 })
 
 afterEach(async () => {

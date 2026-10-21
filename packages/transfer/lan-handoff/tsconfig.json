@@ -19,6 +19,18 @@
     },
     {
       "path": "../../../vendor/schemastery"
+    },
+    {
+      "path": "../../session-query/session-log-export/tsconfig.host.json"
+    },
+    {
+      "path": "../../session-query/session-log-import"
+    },
+    {
+      "path": "../../session-query/session-query"
+    },
+    {
+      "path": "../../workspace/workspace"
     }
   ]
 }

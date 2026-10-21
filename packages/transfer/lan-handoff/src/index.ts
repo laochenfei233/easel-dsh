@@ -1,14 +1,33 @@
 /**
  * LAN project-handoff peer service (`ctx.lanHandoff`): persistent device
- * identity, TLS listener, mDNS discovery, and pairing for transferring
- * project bundles between devices.
+ * identity, TLS listener, mDNS discovery, pairing, and the product-level
+ * send/receive orchestration the Easel shell drives.
+ *
+ * Session export, import, and workspace registration resolve through the host
+ * context at use time; a profile that has not mounted them still mounts this
+ * service and is refused loudly only when a handoff is attempted.
  * @module @deepseek-ai/dsh-lan-handoff
  */
 
+import { randomBytes } from 'node:crypto'
 import { hostname } from 'node:os'
+import { join, resolve } from 'node:path'
 import type { TLSSocket } from 'node:tls'
 import { Context, Service } from '@deepseek-ai/cordis'
 import z from '@deepseek-ai/schemastery'
+import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
+import { SessionId } from '@deepseek-ai/dsh-session'
+import {
+  DEFAULT_SESSION_LOG_COMPRESSION_LEVEL,
+  flushLiveSessionLog,
+  readSessionLogText,
+  streamSessionLogZip,
+  type SessionLogExportReady,
+} from '@deepseek-ai/dsh-session-log-export'
+import type { SessionLogImporter } from '@deepseek-ai/dsh-session-log-import'
+import type { SessionPersistence } from '@deepseek-ai/dsh-session-persistence'
+import type { SessionQueryEngine } from '@deepseek-ai/dsh-session-query'
+import type { WorkspaceRegistry } from '@deepseek-ai/dsh-workspace'
 import {
   advertiseLanHandoff,
   browseLanHandoff,
@@ -31,7 +50,14 @@ import {
   type PairingPeer,
 } from './pairing.ts'
 import { loadPairedPeers, savePairedPeers, type PairedPeer } from './peers.ts'
-import type { WireMessage } from './frame.ts'
+import {
+  prepareBundle,
+  receiveHandoff,
+  sendPreparedBundle,
+  type ReceivedHandoff,
+  type SessionArchiveSource,
+} from './handoff.ts'
+import type { SentBundle } from './transfer.ts'
 
 export {
   DeviceIdentityCorruptError,
@@ -64,13 +90,13 @@ export { dialLanPeer, startLanListener, type LanListener } from './listener.ts'
 export {
   answerPairing,
   attachChannel,
-  type ChannelFrame,
   dialForPairing,
   PAIRING_TIMEOUT_MS,
   PairingError,
   PairingIncompatibleError,
   PairingRejectedError,
   pairingIdentityOf,
+  type ChannelFrame,
   type ConnectionChannel,
   type PairingDeviceInfo,
   type PairingIdentity,
@@ -90,20 +116,6 @@ export {
 } from './frame.ts'
 export { deriveSas, deriveSasFromKeys, SAS_LENGTH, spkiOf, type SasMaterial } from './sas.ts'
 export {
-  HandoffPreparationError,
-  HandoffReceiveError,
-  prepareBundle,
-  projectDirectoryName,
-  receiveHandoff,
-  sendPreparedBundle,
-  walkProjectTree,
-  type HandoffImportHost,
-  type PreparedBundle,
-  type ProjectTreeFile,
-  type ReceivedHandoff,
-  type SessionArchiveSource,
-} from './handoff.ts'
-export {
   computeTreeSummary,
   receiveBundle,
   sendBundle,
@@ -118,12 +130,26 @@ export {
   type BundleEntryRef,
   type BundleEntrySink,
   type BundleManifest,
-  type OfferDecision,
   type BundleTreeSummary,
+  type OfferDecision,
   type ReceivedBundle,
   type ReceiveBundleHandlers,
   type SentBundle,
 } from './transfer.ts'
+export {
+  HandoffPreparationError,
+  HandoffReceiveError,
+  prepareBundle,
+  projectDirectoryName,
+  receiveHandoff,
+  sendPreparedBundle,
+  walkProjectTree,
+  type HandoffImportHost,
+  type PreparedBundle,
+  type ProjectTreeFile,
+  type ReceivedHandoff,
+  type SessionArchiveSource,
+} from './handoff.ts'
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -145,6 +171,13 @@ export interface Config {
    * a free port, and mDNS advertises the assigned value.
    */
   port?: number
+  /**
+   * Absolute directory that receives handed-off projects, each as its own
+   * subdirectory named from the sender's title. An empty string is the schema
+   * default and resolves to `<handoff root>/inbox`; the Easel shell points
+   * this at the project root's `projects` directory.
+   */
+  handoffDirectory?: string
 }
 
 /** Composition-time overrides for the peer service (loopback/test seams). */
@@ -153,6 +186,8 @@ export interface LanHandoffStartOptions {
   readonly identityRoot?: string
   /** Discovery host replacing live mDNS; loopback tests inject a recording host. */
   readonly discovery?: LanDiscoveryHost
+  /** Loopback test compositions keep loopback addresses in discovered peers. */
+  readonly allowLoopbackPeers?: boolean
 }
 
 /** Stable runtime state of a started peer service. */
@@ -165,31 +200,48 @@ export interface LanHandoffState {
   readonly port: number
   /** Host address the listener bound (`::` dual-stack or `0.0.0.0`). */
   readonly host: string
+  /** Absolute directory received projects land in. */
+  readonly handoffDirectory: string
 }
 
-/** Handler for a sync (transfer) request from a paired peer; installed by the transfer layer. */
-export type SyncConnectionHandler = (
-  socket: TLSSocket,
-  hello: WireMessage,
-  channel: ConnectionChannel,
-  peer: PairingPeer,
-) => void | Promise<void>
+/** One pairing waiting for a user decision. */
+export interface PendingPairing {
+  /** Opaque id the UI uses to accept or reject. */
+  readonly id: string
+  /** The remote device. */
+  readonly peer: PairingPeer
+  /** Six-digit string both screens must show identically. */
+  readonly sas: string
+  /** Which side initiated. */
+  readonly direction: 'dialed' | 'received'
+}
+
+/** The last completed transfer, for status displays. */
+export interface LastHandoff {
+  /** Epoch milliseconds when the transfer settled. */
+  readonly at: number
+  /** Whether the transfer completed. */
+  readonly ok: boolean
+  /** Human-readable outcome. */
+  readonly detail: string
+}
 
 /**
- * LAN peer services: identity, listener, discovery, and pairing.
+ * LAN peer services: identity, listener, discovery, pairing, and handoff.
  *
- * Accepted TLS sockets open with a `hello`; pairing hellos become
- * {@link PairingOffer}s for {@link LanHandoffService.onPairingRequest},
- * transfer hellos reach the installed sync handler, and everything else is
- * refused without payload exchange.
+ * Received projects land under {@link Config.handoffDirectory}, are imported
+ * through the mounted `sessionLogImporter`, and are registered through the
+ * mounted `workspaces` registry. Sending exports sessions through the mounted
+ * `sessionPersistence`, `sessionQuery`, and `attachments` services.
  */
 export class LanHandoffService extends Service {
-  /** No service dependencies: state lives under the harness home, on disk, and in mDNS. */
+  /** No service dependencies: repository services resolve at use time. */
   static inject = []
 
   static Config: z<Config> = z.object({
     name: z.string().default(''),
     port: z.number().min(0).max(65535).default(0),
+    handoffDirectory: z.string().default(''),
   })
 
   /** Runtime state, resolved once on start; device id and bound port never change afterwards. */
@@ -197,24 +249,28 @@ export class LanHandoffService extends Service {
 
   private readonly discovered = new Map<string, PeerAdvertisement>()
   private readonly paired = new Map<string, PairedPeer>()
+  private readonly pending = new Map<string, PairingOffer>()
   private identity: DeviceIdentity | undefined
   private root: string | undefined
   private pairingRequestHandler: ((offer: PairingOffer) => void) | undefined
-  private syncConnectionHandler: SyncConnectionHandler | undefined
+  private lastHandoff: LastHandoff | undefined
 
   /**
    * @param ctx - host context owning the fiber that runs peer services.
-   * @param config - validated listener and identity configuration.
+   * @param config - validated listener, identity, and receipt configuration.
    * @param options - loopback/test seams recorded for a later start.
    */
   constructor(ctx: Context, config: Config, options?: LanHandoffStartOptions) {
     super(ctx, 'lanHandoff')
-    this.ready = new Promise<LanHandoffState>((resolve, reject) => {
+    this.ready = new Promise<LanHandoffState>((resolveState, reject) => {
       ctx.effect(async () => {
         try {
           const root = options?.identityRoot ?? defaultLanHandoffRoot()
           const identity: DeviceIdentity = await loadDeviceIdentity(options?.identityRoot)
           const name = config.name !== undefined && config.name.trim().length > 0 ? config.name : hostname()
+          const handoffDirectory = config.handoffDirectory !== undefined && config.handoffDirectory.trim().length > 0
+            ? resolve(config.handoffDirectory)
+            : join(root, 'inbox')
           const discovery = options?.discovery ?? createBonjourDiscovery()
           const listener = await startLanListener(identity, config.port ?? 0, (socket) => { this.serveConnection(socket) })
           const published = advertiseLanHandoff(
@@ -223,15 +279,21 @@ export class LanHandoffService extends Service {
             name,
             listener.port,
           )
-          browseLanHandoff(discovery, identity.deviceId, (peer) => { this.discovered.set(peer.id, peer) })
+          browseLanHandoff(
+            discovery,
+            identity.deviceId,
+            (peer) => { this.discovered.set(peer.id, peer) },
+            { ...options?.allowLoopbackPeers === true ? { allowLoopback: true } : {} },
+          )
           this.identity = identity
           this.root = root
           for (const [id, peer] of await loadPairedPeers(root)) this.paired.set(id, peer)
-          resolve({
+          resolveState({
             deviceId: identity.deviceId,
             name,
             port: listener.port,
             host: listener.host,
+            handoffDirectory,
           })
           return () => this.teardown(published, listener, discovery)
         } catch (error) {
@@ -263,10 +325,28 @@ export class LanHandoffService extends Service {
   }
 
   /**
-   * Install the handler receiving each incoming pairing request.
-   *
-   * Without a handler, incoming requests are declined immediately instead of
-   * leaving the peer's socket waiting.
+   * Snapshot every pairing waiting for a decision.
+   * @returns the pending pairings in arrival order.
+   */
+  pairingOffers(): readonly PendingPairing[] {
+    const entries: PendingPairing[] = []
+    for (const [id, offer] of this.pending) {
+      entries.push({ id, peer: offer.peer, sas: offer.sas, direction: offer.direction })
+    }
+    return entries
+  }
+
+  /**
+   * The most recent settled transfer outcome.
+   * @returns the last outcome, or `undefined` before the first transfer.
+   */
+  lastHandoffOutcome(): LastHandoff | undefined {
+    return this.lastHandoff
+  }
+
+  /**
+   * Install a handler receiving each incoming pairing request instead of the
+   * pending list. Without a handler, requests stay in {@link pairingOffers}.
    * @param handler - receiver of a {@link PairingOffer}; the handler owns accept/reject.
    * @returns an uninstaller clearing this handler when it is still installed.
    */
@@ -278,23 +358,10 @@ export class LanHandoffService extends Service {
   }
 
   /**
-   * Install the handler for transfer requests from paired peers.
-   * @param handler - receiver of the accepted socket, hello, channel, and peer.
-   * @returns an uninstaller clearing this handler when it is still installed.
-   */
-  onSyncConnection(handler: SyncConnectionHandler): () => void {
-    this.syncConnectionHandler = handler
-    return () => {
-      if (this.syncConnectionHandler === handler) this.syncConnectionHandler = undefined
-    }
-  }
-
-  /**
    * Dial a peer and drive the pairing handshake to a user decision.
    * @param target - the peer's address and port, from discovery or manual entry.
    * @param options - optional cancellation before the socket connects.
    * @returns the offer whose accept() persists the pairing on success.
-   * @throws {PairingIncompatibleError} when no protocol version is shared.
    * @throws {PairingRejectedError} when the peer declines.
    * @throws {PairingError} for protocol or timeout failures.
    */
@@ -309,10 +376,156 @@ export class LanHandoffService extends Service {
     const socket = dialLanPeer(target, identity)
     try {
       const offer = await dialForPairing(socket, pairingIdentityOf(state.deviceId, identity.cert, state.name))
-      return this.persisting(offer)
+      const persisted = this.persisting(offer)
+      // A dialed pairing is the same user decision as a received one: park it
+      // so the UI confirms the confirmation string from one pending list.
+      this.pending.set(randomBytes(6).toString('hex'), persisted)
+      return persisted
     } catch (error) {
       socket.destroy()
       throw error
+    }
+  }
+
+  /**
+   * Dial a discovered peer and pair with it.
+   * @param peerId - a device id from {@link peersSnapshot}.
+   * @param options - optional cancellation.
+   * @returns the offer to show the user.
+   */
+  async pairWithDiscoveredPeer(peerId: string, options?: { readonly signal?: AbortSignal }): Promise<PairingOffer> {
+    return this.pairWithPeer(this.addressOf(peerId), options)
+  }
+
+  /**
+   * Accept one pending pairing by its UI id.
+   * @param id - the id from {@link pairingOffers}.
+   */
+  async acceptPairing(id: string): Promise<void> {
+    const offer = this.takePending(id)
+    try {
+      await offer.accept()
+    } finally {
+      this.pending.delete(id)
+    }
+  }
+
+  /**
+   * Decline one pending pairing by its UI id.
+   * @param id - the id from {@link pairingOffers}.
+   */
+  async rejectPairing(id: string): Promise<void> {
+    const offer = this.takePending(id)
+    try {
+      await offer.reject()
+    } finally {
+      this.pending.delete(id)
+    }
+  }
+
+  /**
+   * Open one authenticated sync connection to a paired, currently discovered peer.
+   *
+   * The opening hello claims this device's id; the peer verifies it against
+   * the certificate this connection presents and refuses unpaired ids.
+   * @param peerId - the paired device's id.
+   * @returns the connected socket and its frame channel.
+   * @throws {Error} when the peer is not discovered right now or no longer paired.
+   */
+  async openSyncChannel(peerId: string): Promise<{ readonly socket: TLSSocket; readonly channel: ConnectionChannel }> {
+    const state = await this.ready
+    const identity = this.identity
+    if (identity === undefined) throw new Error('lan handoff identity is not started')
+    if (!this.paired.has(peerId)) throw new Error(`device ${peerId} is not paired with this device`)
+    const socket = await secureDial(this.addressOf(peerId), identity)
+    const channel = attachChannel(socket)
+    channel.write({ type: 'hello', binaryLength: 0, intent: 'sync', peer: String(state.deviceId) })
+    return { socket, channel }
+  }
+
+  /**
+   * Hand one project workspace to a paired peer and stream its bundle.
+   *
+   * Sessions belonging to the workspace are exported through the mounted
+   * session services; the project tree is walked and hashed before any bytes
+   * move, and a tree that cannot be read completely aborts the transfer.
+   * @param peerId - the paired device's id.
+   * @param workspacePath - the workspace directory to hand off.
+   * @param options - optional cancellation.
+   * @returns which entries were streamed and which the peer already held.
+   * @throws {Error} when required session or workspace services are absent, or the workspace is unknown.
+   * @throws {HandoffPreparationError} when the project tree is unreadable.
+   */
+  async sendProjectToPeer(
+    peerId: string,
+    workspacePath: string,
+    options?: { readonly signal?: AbortSignal },
+  ): Promise<SentBundle> {
+    const seams = this.sessionServices()
+    const workspace = await seams.workspaces.resolveByPath(workspacePath)
+    if (workspace === undefined) throw new Error(`no registered workspace at "${workspacePath}"`)
+    const archives: SessionArchiveSource[] = []
+    for (const sessionId of workspace.sessionIds) {
+      options?.signal?.throwIfAborted()
+      await seams.flush(sessionId, options?.signal)
+      const content = await seams.readLog(sessionId, options?.signal)
+      if (content === undefined) throw new Error(`session "${sessionId}" has no stored log`)
+      archives.push({
+        sessionId: String(sessionId),
+        archiveName: sessionArchiveName(String(sessionId)),
+        open: () => seams.zip(content, sessionId, options?.signal),
+      })
+    }
+    const prepared = await prepareBundle({
+      projectPath: workspace.path,
+      projectTitle: workspace.title.length > 0 ? workspace.title : 'project',
+      sessionArchives: archives,
+      ...options?.signal === undefined ? {} : { signal: options.signal },
+    })
+    const { socket, channel } = await this.openSyncChannel(peerId)
+    try {
+      const sent = await sendPreparedBundle(channel, prepared, options?.signal)
+      this.lastHandoff = { at: Date.now(), ok: true, detail: `sent ${String(sent.sent.length)} entries to ${peerId}` }
+      return sent
+    } catch (error) {
+      this.lastHandoff = { at: Date.now(), ok: false, detail: error instanceof Error ? error.message : String(error) }
+      throw error
+    } finally {
+      // Graceful close flushes frames still in the write buffer; destroy()
+      // can discard the final `done` message and leave the peer waiting.
+      socket.end()
+    }
+  }
+
+  /**
+   * Resolve the session/workspace services a handoff needs.
+   * @returns the live seams.
+   * @throws {Error} naming every missing service when the profile lacks one.
+   */
+  private sessionServices(): SessionServiceSeams {
+    const persistence = this.ctx.get('sessionPersistence')
+    const query = this.ctx.get('sessionQuery')
+    const attachments = this.ctx.get('attachments')
+    const workspaces = this.ctx.get('workspaces')
+    const missing = [
+      persistence === undefined ? 'sessionPersistence' : undefined,
+      query === undefined ? 'sessionQuery' : undefined,
+      attachments === undefined ? 'attachments' : undefined,
+      workspaces === undefined ? 'workspaces' : undefined,
+    ].filter((service): service is string => service !== undefined)
+    if (persistence === undefined || query === undefined || attachments === undefined || workspaces === undefined) {
+      throw new Error(`lan handoff requires the ${missing.join(', ')} service(s) in this profile; mount them or disable handoff`)
+    }
+    const exportDeps: SessionLogExportReady = { sessionQuery: query, sessionPersistence: persistence, attachments, sessions: this.ctx.get('sessions') }
+    return {
+      persistence,
+      query,
+      attachments,
+      workspaces,
+      importer: this.ctx.get('sessionLogImporter'),
+      flush: (sessionId, signal) => flushLiveSessionLog({ sessions: this.ctx.get('sessions') }, sessionId, signal),
+      readLog: (sessionId, signal) => readSessionLogText(persistence, sessionId, signal),
+      zip: (content, sessionId, signal) => collectZip(exportDeps, content, sessionId, signal),
     }
   }
 
@@ -344,6 +557,34 @@ export class LanHandoffService extends Service {
   }
 
   /**
+   * Resolve one peer's dial address from the latest advertisement.
+   * @param peerId - the device id.
+   * @returns the dial target.
+   * @throws {Error} when the peer is not currently discoverable.
+   */
+  private addressOf(peerId: string): { readonly host: string; readonly port: number } {
+    const peer = this.discovered.get(peerId)
+    const host = peer?.addresses[0]
+    if (peer === undefined || host === undefined) {
+      throw new Error(`device ${peerId} is not currently visible on the network; ask it to keep the app open and retry`)
+    }
+    return { host, port: peer.port }
+  }
+
+  /**
+   * Take one pending offer by id.
+   * @param id - the pending pairing id.
+   * @returns the offer, removed from the pending list.
+   * @throws {Error} for an unknown or already settled id.
+   */
+  private takePending(id: string): PairingOffer {
+    const offer = this.pending.get(id)
+    if (offer === undefined) throw new Error(`pairing ${id} is not pending`)
+    this.pending.delete(id)
+    return offer
+  }
+
+  /**
    * Route one accepted TLS socket by its opening `hello`.
    * @param socket - the accepted connection after the TLS handshake.
    */
@@ -368,11 +609,12 @@ export class LanHandoffService extends Service {
     if (intent === 'pair') {
       const offer = await answerPairing(socket, hello, pairingIdentityOf(state.deviceId, identity.cert, state.name), channel)
       const handler = this.pairingRequestHandler
-      if (handler === undefined) {
-        await offer.reject()
+      if (handler !== undefined) {
+        handler(this.persisting(offer))
         return
       }
-      handler(this.persisting(offer))
+      const id = randomBytes(6).toString('hex')
+      this.pending.set(id, this.persisting(offer))
       return
     }
     if (intent === 'sync') {
@@ -383,22 +625,52 @@ export class LanHandoffService extends Service {
         ? undefined
         : deviceIdFromCertificate(Buffer.from(certificate.raw))
       const claimed = hello['peer']
-      const handler = this.syncConnectionHandler
-      if (handler === undefined || presented === undefined || typeof claimed !== 'string'
+      if (presented === undefined || typeof claimed !== 'string'
         || String(presented) !== claimed || !this.paired.has(presented)) {
-        const paired = presented !== undefined && this.paired.has(presented)
-        channel.write({ type: 'reject', binaryLength: 0, reason: paired ? 'syncUnavailable' : 'notPaired' })
+        channel.write({ type: 'reject', binaryLength: 0, reason: 'notPaired' })
         socket.end()
         return
       }
-      const record = this.paired.get(presented)
-      /* v8 ignore next -- the membership check above guarantees the record */
-      if (record === undefined) return
-      await handler(socket, hello, channel, { id: record.id, name: record.name, platform: record.platform })
+      await this.serveSync(channel)
       return
     }
     channel.write({ type: 'reject', binaryLength: 0, reason: 'incompatible' })
     socket.end()
+  }
+
+  /**
+   * Receive one bundle from a verified paired peer into the handoff directory.
+   * @param channel - the authenticated connection channel.
+   */
+  private async serveSync(channel: ConnectionChannel): Promise<void> {
+    const seams = this.sessionServices()
+    const importer = seams.importer
+    if (importer === undefined) throw new Error('lan handoff requires the sessionLogImporter service to receive projects')
+    const host = {
+      importSessionArchives: async (archives: readonly Uint8Array[], targetCwd: string): Promise<readonly string[]> => {
+        const ids: string[] = []
+        for (const archive of archives) {
+          const result = await importer.importArchive(archive, { targetCwd })
+          ids.push(String(result.root.id), ...result.descendants.map(descendant => String(descendant.id)))
+        }
+        return ids
+      },
+      attachProject: async (projectPath: string, title: string, sessionIds: readonly string[]): Promise<void> => {
+        const workspace = await seams.workspaces.create(projectPath, title)
+        for (const id of sessionIds) await workspace.attachSession(SessionId(id))
+      },
+    }
+    const state = await this.ready
+    try {
+      const outcome: ReceivedHandoff = await receiveHandoff(channel, {
+        targetParentDirectory: state.handoffDirectory,
+        host,
+      })
+      this.lastHandoff = { at: Date.now(), ok: true, detail: `received "${outcome.projectPath}"` }
+    } catch (error) {
+      this.lastHandoff = { at: Date.now(), ok: false, detail: error instanceof Error ? error.message : String(error) }
+      throw error
+    }
   }
 
   /**
@@ -416,4 +688,59 @@ export class LanHandoffService extends Service {
     await listener.close()
     await discovery.dispose()
   }
+}
+
+/** The services and operations one handoff composes. */
+interface SessionServiceSeams {
+  readonly persistence: SessionPersistence
+  readonly query: SessionQueryEngine
+  readonly attachments: AttachmentStore
+  readonly workspaces: WorkspaceRegistry
+  readonly importer: SessionLogImporter | undefined
+  flush(sessionId: SessionId, signal: AbortSignal | undefined): Promise<void>
+  readLog(sessionId: SessionId, signal: AbortSignal | undefined): Promise<string | undefined>
+  zip(content: string, sessionId: SessionId, signal: AbortSignal | undefined): Promise<Uint8Array>
+}
+
+/** Wire name of one session archive inside a bundle. */
+function sessionArchiveName(sessionId: string): string {
+  return `dsh-session-${sessionId.replace(/[^A-Za-z0-9_-]/gu, '_')}.zip`
+}
+
+/** Drain one exporter ZIP stream into memory. */
+async function collectZip(
+  deps: SessionLogExportReady,
+  content: string,
+  sessionId: SessionId,
+  signal: AbortSignal | undefined,
+): Promise<Uint8Array> {
+  const stream = streamSessionLogZip(
+    deps,
+    content,
+    sessionId,
+    true,
+    DEFAULT_SESSION_LOG_COMPRESSION_LEVEL,
+    signal ?? new AbortController().signal,
+  )
+  const chunks: Buffer[] = []
+  const reader = stream.getReader()
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    chunks.push(Buffer.from(value))
+  }
+  return Buffer.concat(chunks)
+}
+
+/** Dial a peer and await the TLS handshake. */
+async function secureDial(
+  target: { readonly host: string; readonly port: number },
+  identity: DeviceIdentity,
+): Promise<TLSSocket> {
+  const socket = dialLanPeer(target, identity)
+  await new Promise<void>((resolveConnect, reject) => {
+    socket.once('secureConnect', () => resolveConnect())
+    socket.once('error', (error: Error) => reject(error))
+  })
+  return socket
 }

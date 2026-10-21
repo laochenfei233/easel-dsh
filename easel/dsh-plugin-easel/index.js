@@ -1693,6 +1693,102 @@ async function serveApi(api, req, res) {
 }
 
 /**
+ * Routes for LAN project handoff.
+ *
+ * The handoff backend lives in the `@deepseek-ai/dsh-lan-handoff` plugin row;
+ * this table only relays through the runtime service, so the Easel plugin
+ * keeps its staged payload free of harness imports.
+ * @param ctx - host context that may carry the `lanHandoff` service.
+ * @returns route rows in the {@link CORE_ROUTES} shape.
+ */
+export function createHandoffRoutes(ctx) {
+  const lan = () => ctx.get?.('lanHandoff')
+  const requireLan = () => {
+    const service = lan()
+    if (service === undefined) throw new ApiError(409, '局域网交接未启用：profile 未挂载 @deepseek-ai/dsh-lan-handoff')
+    return service
+  }
+  return [
+    ['GET', ['handoff', 'status'], async () => {
+      const service = lan()
+      if (service === undefined) {
+        return { json: { available: false, reason: 'LAN handoff is not enabled in this profile' } }
+      }
+      const state = await service.ready
+      return { json: {
+        available: true,
+        device: {
+          id: String(state.deviceId),
+          name: state.name,
+          port: state.port,
+          handoffDirectory: state.handoffDirectory,
+        },
+        paired: service.pairedPeers().map(peer => ({
+          id: String(peer.id), name: peer.name, platform: peer.platform, pairedAt: peer.pairedAt,
+        })),
+        discovered: service.peersSnapshot().map(peer => ({
+          id: String(peer.id),
+          name: peer.name,
+          platform: peer.platform,
+          port: peer.port,
+          addresses: peer.addresses,
+          compatible: peer.compatible,
+        })),
+        pending: service.pairingOffers().map(offer => ({
+          id: offer.id,
+          sas: offer.sas,
+          direction: offer.direction,
+          peer: { id: String(offer.peer.id), name: offer.peer.name, platform: offer.peer.platform },
+        })),
+        last: service.lastHandoffOutcome() ?? null,
+      } }
+    }],
+    ['POST', ['handoff', 'pair'], async (c) => {
+      const service = requireLan()
+      const body = await c.body()
+      const before = new Set(service.pairingOffers().map(offer => offer.id))
+      if (typeof body?.peerId === 'string' && body.peerId.length > 0) {
+        await service.pairWithDiscoveredPeer(body.peerId)
+      } else {
+        const host = String(body?.host ?? '').trim()
+        const port = Number(body?.port)
+        if (host.length === 0 || !Number.isInteger(port) || port < 1 || port > 65535) {
+          throw new ApiError(400, 'host 与 port 必填（或提供 peerId）')
+        }
+        await service.pairWithPeer({ host, port })
+      }
+      const pending = service.pairingOffers().find(offer => !before.has(offer.id))
+      if (pending === undefined) throw new ApiError(502, '配对未能进入待确认状态')
+      return { json: {
+        id: pending.id,
+        sas: pending.sas,
+        direction: pending.direction,
+        peer: { id: String(pending.peer.id), name: pending.peer.name, platform: pending.peer.platform },
+      } }
+    }],
+    ['POST', ['handoff', 'pair', ':id', 'accept'], async (c) => {
+      await requireLan().acceptPairing(String(c.params.id))
+      return { json: { ok: true } }
+    }],
+    ['POST', ['handoff', 'pair', ':id', 'reject'], async (c) => {
+      await requireLan().rejectPairing(String(c.params.id))
+      return { json: { ok: true } }
+    }],
+    ['POST', ['handoff', 'send'], async (c) => {
+      const service = requireLan()
+      const body = await c.body()
+      const peerId = String(body?.peerId ?? '')
+      const workspacePath = String(body?.workspacePath ?? '')
+      if (peerId.length === 0 || workspacePath.length === 0) {
+        throw new ApiError(400, 'peerId 与 workspacePath 必填')
+      }
+      const result = await service.sendProjectToPeer(peerId, workspacePath)
+      return { json: { ok: true, sent: result.sent, skipped: result.skipped } }
+    }],
+  ]
+}
+
+/**
  * Register the Easel routes.
  * @param ctx - the host context providing the route table.
  * @param config - the `config` block of this plugin's loader row.
@@ -1704,6 +1800,7 @@ export function apply(ctx, config = {}) {
   const api = createRouteRegistry(settings)
   ctx.provide('easelApi', api)
   ctx.effect(() => api.register(CORE_ROUTES), 'easel: core routes')
+  ctx.effect(() => api.register(createHandoffRoutes(ctx)), 'easel: handoff routes')
   ctx.effect(() => ctx.webServer.register({
     kind: 'exact',
     path: `${settings.basePath}/status`,

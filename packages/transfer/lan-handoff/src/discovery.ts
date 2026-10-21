@@ -183,17 +183,21 @@ export function isLoopbackAddress(address: string): boolean {
  * upgrade.
  * @param entry - raw discovery entry.
  * @param ownDeviceId - this device's id, which filters its own announcements.
+ * @param options - `allowLoopback` keeps loopback addresses for loopback test compositions.
  * @returns the peer advertisement, or `undefined` when the entry is not listable.
  */
 export function parseDiscoveredEntry(
   entry: LanDiscoveryEntry,
   ownDeviceId: DeviceId,
+  options?: { readonly allowLoopback?: boolean },
 ): PeerAdvertisement | undefined {
   const device = parseDeviceTxt(entry.txt)
   if (device === undefined || device.id === ownDeviceId) return undefined
   const address = Number.isSafeInteger(entry.port) && entry.port >= 1 && entry.port <= 65535 ? entry.port : undefined
   if (address === undefined) return undefined
-  const addresses = entry.addresses.filter(one => !isLoopbackAddress(one))
+  const addresses = options?.allowLoopback === true
+    ? entry.addresses
+    : entry.addresses.filter(one => !isLoopbackAddress(one))
   if (addresses.length === 0) return undefined
   return {
     ...device,
@@ -230,14 +234,16 @@ export function advertiseLanHandoff(
  * @param discovery - discovery host driving the network.
  * @param ownDeviceId - this device's id, which filters its own announcements.
  * @param onPeer - callback per listable peer advertisement.
+ * @param options - `allowLoopback` keeps loopback addresses for loopback test compositions.
  */
 export function browseLanHandoff(
   discovery: LanDiscoveryHost,
   ownDeviceId: DeviceId,
   onPeer: (peer: PeerAdvertisement) => void,
+  options?: { readonly allowLoopback?: boolean },
 ): void {
   discovery.find(LAN_HANDOFF_SERVICE_TYPE, (entry) => {
-    const peer = parseDiscoveredEntry(entry, ownDeviceId)
+    const peer = parseDiscoveredEntry(entry, ownDeviceId, options)
     if (peer !== undefined) onPeer(peer)
   })
 }
