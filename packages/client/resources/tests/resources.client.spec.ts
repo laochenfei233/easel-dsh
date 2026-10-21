@@ -110,11 +110,11 @@ describe('protocolOf', () => {
     // hostname is empty and pathname starts with `//host`. The desktop shell
     // must still find the `file` provider.
     class LegacyURL extends URL {
-      get hostname(): string {
+      override get hostname(): string {
         return ''
       }
 
-      get pathname(): string {
+      override get pathname(): string {
         const host = super.hostname
         return host === '' ? super.pathname : `//${host}${super.pathname}`
       }
