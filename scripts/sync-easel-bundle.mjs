@@ -19,9 +19,12 @@ if (!existsSync(join(easel, 'dsh-plugin-easel', 'package.json'))) {
   process.exit(2)
 }
 const destination = join(DSH_ROOT, 'easel')
-const noJunk = (src) =>
-  !/(^|[\\/])(node_modules|__pycache__|\.git)([\\/]|$)/.test(src)
-  && !src.endsWith('.pyc') && !src.endsWith('.env') && !src.endsWith('.log')
+const noJunk = (src) => {
+  const base = src.split(/[\\/]/).pop() ?? ''
+  return !/(^|[\\/])(node_modules|__pycache__|\.git)([\\/]|$)/.test(src)
+    && !src.endsWith('.pyc') && !src.endsWith('.log')
+    && !(base.startsWith('.env') && !base.endsWith('.example'))
+}
 
 for (const name of ['skills', 'profiles/_template', 'dsh-plugin-easel', 'README.md', 'LICENSE']) {
   if (!existsSync(join(easel, name))) {

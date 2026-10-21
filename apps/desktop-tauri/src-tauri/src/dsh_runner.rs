@@ -621,9 +621,10 @@ fn port_open(port: u16) -> bool {
 }
 
 /// Matches a process whose command line boots one of OUR `dsh web` servers:
-/// the installed runtime (`...\Easel-dsh\runtime\...`) or this repo's worktree
-/// (`...\Easel\dsh\...` or `.../Easel/dsh/...`). Prism or stock-dsh installs
-/// boot from different paths and must never match — the sweep must not kill
+/// the installed runtime (`...\Easel-dsh\runtime\...`, the mac app bundle
+/// `/Applications/Easel-dsh.app/Contents/Resources/runtime/...`) or this
+/// repo's worktree (`...\Easel\dsh\...`). Prism or stock-dsh installs boot
+/// from different paths and must never match — the sweep must not kill
 /// another product.
 fn is_our_dsh_web_server(command_line: &str) -> bool {
     // 路径被引号包着（`..."bin.js" web --port...`），不能要求连续子串。
@@ -631,7 +632,9 @@ fn is_our_dsh_web_server(command_line: &str) -> bool {
     let line = command_line.to_lowercase().replace('\\', "/");
     line.contains("bin.js")
         && line.contains(" web --port")
-        && (line.contains("easel-dsh/runtime") || line.contains("easel/dsh"))
+        && (line.contains("easel-dsh/runtime")
+            || line.contains("easel/dsh")
+            || line.contains("easel-dsh.app/contents"))
 }
 
 /// Pure decision core of the sweep so the rules stay testable without
@@ -694,7 +697,8 @@ fn list_process_samples() -> Vec<(u32, String)> {
     parse_ps_samples(&String::from_utf8_lossy(&output.stdout))
 }
 
-/// `ps -axo pid=,command= -ww` 的行解析：pid 后空格隔开命令，行首可能有缩进。
+/// Parses `ps -axo pid=,command= -ww` lines: a pid, one space, then the
+/// command (ps right-aligns the pid column, so leading spaces get trimmed).
 #[cfg(not(windows))]
 fn parse_ps_samples(stdout: &str) -> Vec<(u32, String)> {
     stdout
@@ -1274,9 +1278,10 @@ mod tests {
     }
 
     #[test]
-    fn rival_sweep_matches_mac_and_uppercase_paths_via_separator_normalization() {
-        // 既装机器（~/.dsh 下的大写目录）与开发树的正斜杠形态——macOS 的 ps 就长这样。
-        let installed = "/Users/fei/.dsh/EASEL-DSH/runtime/dsh/lib/bin.js web --port 3081 --no-open".to_string();
+    fn rival_sweep_matches_mac_install_and_dev_paths_via_separator_normalization() {
+        // mac 装机 = .app bundle（resources 在 Contents/Resources/runtime），
+        // 开发树 = 仓库路径，`ps -axo` 输出的就是正斜杠。
+        let installed = "/Applications/Easel-dsh.app/Contents/Resources/runtime/dsh/lib/bin.js web --port 3081 --no-open".to_string();
         let dev = "/Users/fei/Documents/GitHub/Easel/dsh/cli/lib/bin.js web --port 3083 --no-open".to_string();
         // 正斜杠写法的别家产品，同样不许误杀。
         let prism = "/Users/fei/Documents/GitHub/prism-agent/dsh/cli/lib/bin.js web --port 3099 --no-open".to_string();

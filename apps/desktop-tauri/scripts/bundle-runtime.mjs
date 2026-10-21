@@ -819,8 +819,14 @@ async function stageEasel() {
   });
 
   // Whitelist staging: user data (outputs/, real profiles, .env) and the
-  // retired Python tree cannot enter the bundle by construction.
-  const noJunk = (src) => !/(^|[\\/])(node_modules|__pycache__)([\\/]|$)/.test(src) && !src.endsWith('.pyc');
+  // retired Python tree cannot enter the bundle by construction. .env.example
+  // skill templates are content, not secrets.
+  const noJunk = (src) => {
+    const base = src.split(/[\\/]/).pop() ?? '';
+    return !/(^|[\\/])(node_modules|__pycache__)([\\/]|$)/.test(src)
+      && !src.endsWith('.pyc') && !src.endsWith('.log')
+      && !(base.startsWith('.env') && !base.endsWith('.example'));
+  };
   rmSync(EASEL_DIR, { recursive: true, force: true });
   mkdirSync(EASEL_DIR, { recursive: true });
   cpSync(join(base, 'skills'), join(EASEL_DIR, 'skills'), { recursive: true, filter: noJunk });
