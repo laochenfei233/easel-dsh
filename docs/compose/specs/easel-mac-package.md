@@ -40,23 +40,23 @@ commits: dsh 71ea5c0568..8a66b85fdc2（5e012932a2 vendoring、3d1de6a9d6 stageEa
    比例、圆角、抗锯齿完全保留原设计（第一版曾叠加 Apple 185.4/1024 半径遮罩，实机反馈「硬裁」
    后去掉；面积平均重采样的 promote 权重按真实覆盖率归一，否则放大会出现半透明马赛克），
    写入前自校验条目集/尺寸/网格边距；`icon.ico` 与 PNG 家族保持 Windows 形态不动。
-6. **mac 实机反馈②：启动撞出 401 文案 → 顶层原生导航**：`dsh web authentication required; reopen
-   the URL printed by dsh web.` 在 mac 上两轮复现。第一层根因：`authenticate_webview` 预装进原生
+6. **mac 实机反馈②：启动撞出 401 文案 → 独立窗口承载**：`dsh web authentication required; reopen
+   the URL printed by dsh web.` 在 mac 上三轮复现。第一层根因：`authenticate_webview` 预装进原生
    cookie 存储的 cookie 到不了 WKWebView 的内嵌 iframe（WebKit 不向纯 HTTP loopback 发送
-   `Secure` cookie，也不把第三方 iframe 的存储交出来）。第二层根因（首版 pass-through 修复后
-   实机仍 401）：iframe 直接加载 `/?token=…` 时 303 铸的 `SameSite=Strict` cookie 同样带不上——
-   该导航由父页面（tauri://localhost）发起、处于第三方上下文，site-for-cookies 为空，303 跟随
-   的请求永远不会附带 Strict cookie，落点仍是 401。终版方案 = **主窗口顶层原生导航**：WebKit 系
-   （macOS/Linux）由 supervisor 在每次就绪时（以及壳页在 ready/状态轮询时经 `navigate_main`）
-   对主窗口做 `window.navigate(token_url)`——原生导航无网页发起者，浏览器视角等价于用户在
-   地址栏打开该 URL，服务端 303 以第一方身份铸 cookie 并被跟随请求携带，之后应用即窗口文档
-   本身，全程无第三方上下文；Windows（Chromium WebView2）保持原 iframe 预装链路不动
-   （Chromium 在第三方 iframe 里拒绝 SET Strict cookie，预装 `SameSite=None; Secure` 是必须的）。
-   随行变更：launch_exchange 提取为共用存活探测；壳页崩溃时 `return_to_shell_page` 导回壳页
-   （由 splash/banner 兜底）；WebKit 主窗口挂 `on_navigation` 策略（dsh/tauri 源留在窗口，
-   其余交给系统浏览器，替代原 iframe 宿主桥的 open 转发；`window.open` 弹窗路由不变）；
-   同源守卫避免重复导航重载应用（同端口重启的会话 cookie 仍有效）。v1 的 icon 网格条目
-   生成与 Windows 链路验证签名随附。
+   `Secure` cookie，也不把第三方 iframe 的存储交出来）。第二层根因（v2 pass-through 后实机仍
+   401）：iframe 直载 `/?token=…` 时 303 铸的 Strict cookie 在跟随请求上带不上（父页面发起的
+   第三方导航 site-for-cookies 为空）。第三层根因（v2 顶层 `window.navigate` 后实机仍 401，且
+   子进程日志证明服务健康、六次启动全部正常打印 URL）：**WebKit 以当前文档锚定 SameSite**——
+   从 `tauri://localhost` 壳页发起的导航（含 wry `loadRequest` 原生导航）仍按跨站处理，Strict
+   cookie 既种不上也不随 303 跟随发送。终版方案 = **独立窗口、首文档即启动 URL**：WebKit 系由
+   supervisor 在就绪时（以及壳页经 `navigate_main`）新建 `app` 窗口直接以 token URL 作为首文档
+   ——没有 tauri 源可锚定，等价于浏览器标签页打开打印的 URL，303 以第一方身份铸 cookie 并被
+   跟随请求携带，应用独占该窗口；后续就绪（换端口）对既有 app 窗口做同源导航（同站，Strict
+   照常携带）。壳页保留在隐藏主窗口作为向导/启动页/错误兜底，服务死亡时关闭 app 窗口并浮出壳页；
+   托盘/`open_ui` 优先唤起 app 窗口；导航策略（`allow_app_navigation`）与弹窗路由在壳页与 app
+   窗口共用。Windows（Chromium WebView2）保持壳页 + iframe + 预装 `SameSite=None; Secure` 链路
+   不动（Chromium 在第三方 iframe 里拒绝 SET Strict cookie）；同时修正 v2 在 Windows 上也会
+   触发 `navigate_ready` 主窗口导航的问题（改为 cfg 分平台的空操作）。
 
 **Verification** — cargo test --lib 22/22（含新归一/双安装形态断言）；插件
 node --test 92/92；web/ 删除后 `node build.mjs`（Easel 布局）+ vendored 布局
@@ -146,6 +146,7 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
 - [x] T10: mac 实机反馈修复①：generate-mac-icons.mjs 重生成 icon.icns（Apple 网格，等比缩放保圆角）+ 注释/README 同步（depends: none）
 - [x] T11: mac 实机反馈修复② v1（已废）：authenticate_webview 分流 + iframe 直载 token URL——实机仍 401，根因见 Report 6 第二层（depends: none）
 - [x] T12: mac 实机反馈修复② v2：dsh_runner.rs 顶层原生导航 navigate_main/supervisor 钩子 + on_navigation 策略 + return_to_shell_page + app.js 分流（depends: T11）
+- [x] T13: mac 实机反馈修复② v3：独立 app 窗口承载 dsh UI（首文档=token URL）+ 壳页保留兜底 + 托盘/open_ui 唤起优先级 + Windows navigate_ready 空操作修正（depends: T12）
 
 ## [S4] Acceptance
 
@@ -172,5 +173,12 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
       导航无法携带 Strict cookie（Report 6 第二层）
 - [x] T12 验证：cargo check/test --lib 22/22 + clippy 无新告警（tauri 2.11.5
       navigate/url/on_navigation API 均在库签名核对）；app.js node --check；
-      README 双语 + i18n 配对 + spec 同步；mac 实机三验（Dock 图标为原设计
-      等比缩放 + 首启顶层导航直进主界面）待下次 workflow 出包验收
+      README 双语 + i18n 配对 + spec 同步
+- [x] T12 实机：装包（图标已正确、进程确认是 v3 构建）后 401 仍复现，窗口为纯 401
+      文本无壳页痕迹；子进程日志显示六次启动全部成功打印 URL、stderr 为空 → 证实
+      WebKit 以当前文档锚定 SameSite（Report 6 第三层），旧实例/服务端均排除
+- [x] T13 验证：cargo check/test 27/27 + clippy 仅存量告警；tauri
+      run_on_main_thread 建窗 / WebviewUrl::External / on_new_window /
+      on_navigation 均按 2.11.5 库签名；app.js node --check；README 双语 +
+      i18n 配对 + spec 同步；mac 实机四验（独立窗口内首启直进主界面）待下轮
+      workflow 出包验收

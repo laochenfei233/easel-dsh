@@ -3,7 +3,7 @@
 
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{TrayIconBuilder, TrayIconEvent};
-use tauri::{AppHandle, Manager};
+use tauri::AppHandle;
 
 pub fn build(app: &AppHandle) -> tauri::Result<()> {
     let show = MenuItem::with_id(app, "show", "显示主窗口", true, None::<&str>)?;
@@ -34,9 +34,7 @@ pub fn build(app: &AppHandle) -> tauri::Result<()> {
 }
 
 pub(crate) fn show_main_window(app: &AppHandle) {
-    if let Some(window) = app.get_webview_window("main") {
-        let _ = window.show();
-        let _ = window.unminimize();
-        let _ = window.set_focus();
-    }
+    // The dsh UI may live in its own window on WebKit shells; bring whatever
+    // the user considers the interface forward.
+    crate::dsh_runner::show_ui_window(app);
 }

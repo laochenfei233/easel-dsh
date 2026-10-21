@@ -16,6 +16,8 @@ use tauri::webview::{
     cookie::{time::Duration as CookieDuration, SameSite},
     Cookie,
 };
+#[cfg(not(windows))]
+use tauri::webview::NewWindowFeatures;
 use tauri::{AppHandle, Emitter, Manager, Url};
 use tokio::io::{AsyncBufReadExt, AsyncRead, AsyncReadExt, AsyncSeekExt, AsyncWriteExt};
 use tokio::process::{Child, Command};
@@ -1178,21 +1180,15 @@ pub async fn authenticate_webview(app: AppHandle, url: String) -> Result<Webview
     }
 }
 
+/// Label of the window that hosts the dsh UI on WebKit shells. The shell page
+/// stays loaded in `main` (hidden) as the wizard/error surface, so a crashed
+/// server can bring the splash back without recreating anything.
+#[cfg(not(windows))]
+const APP_WINDOW: &str = "app";
+
 /// Navigate the main window to the launch URL, top-level, the way a user
-/// opening the printed URL in a browser would.
-///
-/// WebKit shells (macOS/Linux) host the dsh UI as the window's own document.
-/// The server's exchange cookie cannot enter an embedded iframe on WebKit
-/// (no `Secure` cookies into plain-HTTP loopback, and a third-party iframe
-/// navigation carries a null site-for-cookies, so the `SameSite=Strict`
-/// cookie never attaches to the 303's follow-up request — every start landed
-/// on the 401 body). A top-level native navigation is browser-initiated: the
-/// 303 mints the cookie and the followed redirect carries it, and everything
-/// after that is the document's own first-party traffic.
-///
-/// The same-origin guard keeps a re-entry (a second `ready` for the same
-/// port, or the UI's call racing the supervisor's) from reloading the app
-/// window; a same-port restart keeps the still-valid session cookie.
+/// opening the printed URL in a browser would. Windows only: WebView2 keeps
+/// the shell page + pre-installed cookie iframe design.
 pub(crate) fn navigate_main_window(app: &AppHandle, url: &str) -> Result<(), String> {
     let window = app
         .get_webview_window("main")
@@ -1201,10 +1197,7 @@ pub(crate) fn navigate_main_window(app: &AppHandle, url: &str) -> Result<(), Str
         .parse::<Url>()
         .map_err(|e| format!("invalid dsh web launch URL: {e}"))?;
     if let Ok(current) = window.url() {
-        if current.scheme() == parsed.scheme()
-            && current.host_str() == parsed.host_str()
-            && current.port() == parsed.port()
-        {
+        if same_origin(&current, &parsed) {
             return Ok(());
         }
     }
@@ -1213,48 +1206,145 @@ pub(crate) fn navigate_main_window(app: &AppHandle, url: &str) -> Result<(), Str
         .map_err(|e| format!("navigate to the dsh web URL failed: {e}"))
 }
 
-/// The UI-facing entry point of the navigation above: the shell page calls it
+fn same_origin(a: &Url, b: &Url) -> bool {
+    a.scheme() == b.scheme() && a.host_str() == b.host_str() && a.port() == b.port()
+}
+
+/// Open the dsh UI in its own window on WebKit shells, or navigate the window
+/// that already hosts it.
+///
+/// WebKit anchors SameSite decisions to the CURRENT document: a navigation
+/// started from the `tauri://localhost` shell page counts as cross-site, so
+/// the server's `HttpOnly; SameSite=Strict` exchange cookie is neither stored
+/// nor sent and every launch lands on the 401 body. A window created directly
+/// against the launch URL has no document to anchor to — the first load
+/// behaves exactly like a browser tab opening the printed URL: the 303 mints
+/// the cookie first-party, the redirect carries it, and everything after that
+/// is the app document's own same-origin traffic. Later readiness (a restarted
+/// server on another port) navigates the existing app window, which is a
+/// same-site navigation from the app document and keeps working.
+#[cfg(not(windows))]
+pub(crate) fn open_app_window(app: &AppHandle, url: &str) -> Result<(), String> {
+    let parsed = url
+        .parse::<Url>()
+        .map_err(|e| format!("invalid dsh web launch URL: {e}"))?;
+    if let Some(window) = app.get_webview_window(APP_WINDOW) {
+        let navigated = window.url().ok().map(|current| !same_origin(&current, &parsed)).unwrap_or(true);
+        if navigated {
+            window
+                .navigate(parsed)
+                .map_err(|e| format!("navigate the app window failed: {e}"))?;
+        }
+        show_window(&window);
+        if let Some(main) = app.get_webview_window("main") {
+            let _ = main.hide();
+        }
+        append_startup_log(&format!(
+            "app window {} {}",
+            APP_WINDOW,
+            if navigated { "navigated" } else { "reused" }
+        ));
+        return Ok(());
+    }
+    // Window creation must run on the main thread; the supervisor runs on the
+    // async runtime.
+    let handle = app.clone();
+    app.run_on_main_thread(move || {
+        let built = tauri::WebviewWindowBuilder::new(
+            &handle,
+            APP_WINDOW,
+            tauri::WebviewUrl::External(parsed),
+        )
+        .title("Easel-dsh")
+        .inner_size(1280.0, 820.0)
+        .min_inner_size(800.0, 600.0)
+        .on_new_window({
+            let handle = handle.clone();
+            move |url, _features: NewWindowFeatures| {
+                crate::open_new_window_externally(&handle, &url)
+            }
+        })
+        .on_navigation({
+            let handle = handle.clone();
+            move |url| crate::allow_app_navigation(&handle, url)
+        })
+        .build();
+        match built {
+            Ok(window) => {
+                show_window(&window);
+                if let Some(main) = handle.get_webview_window("main") {
+                    let _ = main.hide();
+                }
+                append_startup_log(&format!("app window {APP_WINDOW} created"));
+            }
+            Err(err) => append_startup_log(&format!("open app window failed: {err}")),
+        }
+    })
+    .map_err(|e| format!("open app window dispatch failed: {e}"))
+}
+
+/// The UI-facing entry point of the window above: the shell page calls it
 /// once a `ready` arrives (including the wizard-completion reload, which races
-/// the supervisor's own navigation — the same-origin guard deduplicates).
+/// the supervisor's own call — the window lookup deduplicates).
 #[tauri::command]
 pub fn navigate_main(app: AppHandle, url: String) -> Result<(), String> {
-    navigate_main_window(&app, &url)
-}
-
-/// Navigate to the launch URL on every readiness, unless the first-run wizard
-/// still owns the window: its completion flow reloads the shell page, whose
-/// status polling reaches `navigate_main` on its own.
-fn navigate_ready(app: &AppHandle, url: &str) {
-    if crate::setup::is_initialized() {
-        if let Err(err) = navigate_main_window(app, url) {
-            append_startup_log(&format!("navigate main window to the dsh web: {err}"));
-        }
+    #[cfg(not(windows))]
+    {
+        return open_app_window(&app, &url);
+    }
+    #[cfg(windows)]
+    {
+        navigate_main_window(&app, &url)
     }
 }
 
-/// Send the window back to the shell page when it had navigated to the dsh UI
-/// that just died, so the splash/banner surface takes over while the
-/// supervisor boots a replacement.
+/// Open the app window on every readiness, unless the first-run wizard still
+/// owns the window: its completion flow reloads the shell page, whose status
+/// polling reaches `navigate_main` on its own. WebView2 keeps the shell page +
+/// iframe design and never navigates here.
+fn navigate_ready(app: &AppHandle, url: &str) {
+    if !crate::setup::is_initialized() {
+        return;
+    }
+    #[cfg(not(windows))]
+    if let Err(err) = open_app_window(app, url) {
+        append_startup_log(&format!("open app window for the dsh web: {err}"));
+    }
+    #[cfg(windows)]
+    let _ = (app, url);
+}
+
+/// Close the app window and bring the shell page back when the served UI just
+/// died, so the splash/banner surface takes over while the supervisor boots a
+/// replacement; the next readiness opens a fresh app window.
 #[cfg(not(windows))]
 fn return_to_shell_page(app: &AppHandle) {
-    let Some(window) = app.get_webview_window("main") else {
-        return;
-    };
-    let on_dsh_ui = window
-        .url()
-        .ok()
-        .map(|current| {
-            matches!(current.scheme(), "http" | "https")
-                && matches!(current.host_str(), Some("127.0.0.1") | Some("localhost"))
-        })
-        .unwrap_or(false);
-    if !on_dsh_ui {
+    if let Some(window) = app.get_webview_window(APP_WINDOW) {
+        let _ = window.close();
+    }
+    if let Some(main) = app.get_webview_window("main") {
+        let _ = main.show();
+        let _ = main.set_focus();
+    }
+}
+
+/// Show and focus one window; shared by the tray, `open_ui`, and readiness.
+fn show_window(window: &tauri::WebviewWindow) {
+    let _ = window.show();
+    let _ = window.unminimize();
+    let _ = window.set_focus();
+}
+
+/// Bring the visible UI forward: the app window when the app hosts it, the
+/// shell page otherwise.
+pub(crate) fn show_ui_window(app: &AppHandle) {
+    #[cfg(not(windows))]
+    if let Some(window) = app.get_webview_window(APP_WINDOW) {
+        show_window(&window);
         return;
     }
-    // The shell pages live under the app's own origin; index.html re-runs the
-    // status polling and shows the splash/error surface.
-    if let Ok(shell) = Url::parse("tauri://localhost/index.html") {
-        let _ = window.navigate(shell);
+    if let Some(window) = app.get_webview_window("main") {
+        show_window(&window);
     }
 }
 #[derive(Serialize)]
@@ -1293,11 +1383,7 @@ fn reveal_main_window(app: &AppHandle) {
 
 #[tauri::command]
 pub fn open_ui(app: AppHandle) -> Result<(), String> {
-    if let Some(window) = app.get_webview_window("main") {
-        let _ = window.show();
-        let _ = window.unminimize();
-        let _ = window.set_focus();
-    }
+    show_ui_window(&app);
     Ok(())
 }
 

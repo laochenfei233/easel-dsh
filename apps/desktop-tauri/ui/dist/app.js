@@ -3,10 +3,11 @@
 // The top navigation bar is intentionally gone; the dsh UI owns its chrome.
 // The iframe stays blank until Rust validates the launch URL. On Windows it
 // exchanges the token and pre-installs the WebView cookie, then loads the
-// clean URL in the iframe. On WebKit shells the window itself navigates to
-// the token URL (a third-party iframe cannot carry the exchange cookie on
-// WebKit), so the shell page calls navigate_main and steps aside; the
-// supervisor re-navigates on later readiness by itself.
+// clean URL in the iframe. On WebKit shells `navigate_main` opens the dsh UI
+// in its own window against the token URL (a fresh document has no tauri
+// origin to anchor SameSite against, so the server's Strict cookie works);
+// this page stays loaded in the hidden main window as the wizard/error
+// surface, and the supervisor reopens the app window on later readiness.
 
 const frame = document.getElementById('dsh-frame');
 const banner = document.getElementById('error-banner');
@@ -47,7 +48,7 @@ frame.addEventListener('load', () => {
 // Loads the session: WebView2 exchanges the token through Rust (which
 // pre-installs the cookie in the native WebView store) and the iframe loads
 // the clean URL; WebKit shells hand the token URL to `navigate_main`, which
-// navigates the window itself and ends this page's session.
+// opens the app in its own window and hides this shell page.
 async function openAuthenticated(url) {
   if (!url || url === activeUrl || url === pendingUrl) return;
   pendingUrl = url;

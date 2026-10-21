@@ -43,26 +43,15 @@ fn build_main_window(app: &tauri::AppHandle) -> Result<(), String> {
         .on_new_window(move |url, _features: NewWindowFeatures| {
             open_new_window_externally(&handle, &url)
         });
-    // WebKit shells host the dsh UI as the window's own document once the
-    // launch URL arrives, so top-level navigations need the routing the shell
-    // page used to relay through the iframe host bridge: the dsh origins stay
-    // in the window, everything else opens in the system browser. WebView2
-    // keeps the shell page + iframe design and navigates nothing.
+    // WebKit shells host the dsh UI in its own window, so top-level
+    // navigations need the routing the shell page used to relay through the
+    // iframe host bridge: the dsh origins stay in the window, everything else
+    // opens in the system browser. WebView2 keeps the shell page + iframe
+    // design and navigates nothing.
     #[cfg(not(windows))]
     let builder = {
         let handle = app.clone();
-        builder.on_navigation(move |url| {
-            let local = matches!(url.scheme(), "tauri" | "about" | "data" | "blob" | "asset")
-                || (matches!(url.scheme(), "http" | "https")
-                    && matches!(url.host_str(), Some("127.0.0.1") | Some("localhost")));
-            if local {
-                return true;
-            }
-            if is_externally_openable(url) {
-                let _ = handle.opener().open_url(url.as_str(), None::<&str>);
-            }
-            false
-        })
+        builder.on_navigation(move |url| allow_app_navigation(&handle, url))
     };
     builder
         .build()
@@ -80,6 +69,25 @@ fn is_externally_openable(url: &tauri::Url) -> bool {
     matches!(url.scheme(), "http" | "https" | "mailto" | "tel")
 }
 
+/// Top-level navigation policy for the WebKit windows that render the dsh UI:
+/// the shell pages and the loopback dsh origins stay in the window, every
+/// other web target opens in the system browser instead of hijacking the app
+/// window (the shell page used to relay this through the iframe host bridge,
+/// which is gone once the window hosts the dsh UI directly).
+#[cfg(not(windows))]
+pub(crate) fn allow_app_navigation(app: &tauri::AppHandle, url: &tauri::Url) -> bool {
+    let local = matches!(url.scheme(), "tauri" | "about" | "data" | "blob" | "asset")
+        || (matches!(url.scheme(), "http" | "https")
+            && matches!(url.host_str(), Some("127.0.0.1") | Some("localhost")));
+    if local {
+        return true;
+    }
+    if is_externally_openable(url) {
+        let _ = app.opener().open_url(url.as_str(), None::<&str>);
+    }
+    false
+}
+
 /// Send every popup request — `window.open` and `target="_blank"` alike, from
 /// the shell or from inside the dsh iframe — to the user's browser and refuse
 /// the popup itself.
@@ -87,7 +95,7 @@ fn is_externally_openable(url: &tauri::Url) -> bool {
 /// Without a handler the platform webview drops these requests on the floor,
 /// which is what made `target="_blank"` links dead in the app: WebView2 marks
 /// the request handled with nothing to show, so the click does nothing at all.
-fn open_new_window_externally(
+pub(crate) fn open_new_window_externally(
     app: &tauri::AppHandle,
     url: &tauri::Url,
 ) -> NewWindowResponse<tauri::Wry> {
