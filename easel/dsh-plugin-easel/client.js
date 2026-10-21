@@ -4,6 +4,7 @@ window.__ModuleLoader__.load({
     const module = { exports: {} };
     const exports = module.exports;
 
+"use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -22,14 +23,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/client.tsx
+// easel/dsh-plugin-easel/src/client.tsx
 var client_exports = {};
 __export(client_exports, {
   default: () => client_default
 });
 module.exports = __toCommonJS(client_exports);
 
-// src/generated/easel-css.js
+// easel/dsh-plugin-easel/src/generated/easel-css.js
 var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .easel-scope {
   color-scheme: dark;
   --bg: #14171e;
@@ -892,10 +893,10 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
     box-shadow: inset 0 0 0 1px var(--border-strong);
   }}`;
 
-// src/lib/shell.tsx
+// easel/dsh-plugin-easel/src/lib/shell.tsx
 var import_react = require("react");
 
-// src/lib/task.ts
+// easel/dsh-plugin-easel/src/lib/task.ts
 var getServices = null;
 var cwdResolver = null;
 function configureTasks(cfg) {
@@ -999,7 +1000,7 @@ async function resolveHomeWorkspaceId(projectDir) {
   return root ? findWorkspaceByPath(root)?.workspaceId ?? null : null;
 }
 
-// src/lib/shell.tsx
+// easel/dsh-plugin-easel/src/lib/shell.tsx
 function pageKey(view11) {
   return `easel.${view11}`;
 }
@@ -1129,7 +1130,7 @@ function createShellBridge(ctx, t) {
   return { useShellProps, navigate, useTopic, t, refresh: shell.refresh, setPersona: shell.setPersona };
 }
 
-// src/features/dashboard.tsx
+// easel/dsh-plugin-easel/src/features/dashboard.tsx
 var dashboard_exports = {};
 __export(dashboard_exports, {
   Component: () => Component,
@@ -1140,7 +1141,7 @@ __export(dashboard_exports, {
   view: () => view
 });
 
-// src/components/icons.tsx
+// easel/dsh-plugin-easel/src/components/icons.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 var svg = (size = 18, sw = 1.8) => ({
   width: size,
@@ -1267,10 +1268,10 @@ var IconPublish = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, impo
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6" })
 ] });
 
-// src/components/DashboardPage.tsx
+// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
 var import_react2 = require("react");
 
-// src/lib/api.ts
+// easel/dsh-plugin-easel/src/lib/api.ts
 var BASE = "/easel";
 async function request(url, options) {
   const res = await fetch(`${BASE}${url}`, { cache: "no-store", ...options });
@@ -1450,7 +1451,7 @@ function projectizeTopic(body) {
   return request("/api/projectize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 }
 
-// src/lib/whoami.ts
+// easel/dsh-plugin-easel/src/lib/whoami.ts
 var KEY = "easel_whoami";
 var WHOAMI_TTL_MS = 6e5;
 function getWhoamiCache() {
@@ -1496,7 +1497,7 @@ function verifyStale(platforms, opts = {}) {
   );
 }
 
-// src/components/DashboardPage.tsx
+// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
 function fmtNum(n) {
   if (n == null) return "\u2014";
@@ -1784,7 +1785,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
   ] });
 }
 
-// src/features/dashboard.tsx
+// easel/dsh-plugin-easel/src/features/dashboard.tsx
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var view = "dashboard";
 var order = 30;
@@ -1816,7 +1817,7 @@ var plugin = {
   }
 };
 
-// src/features/trends.tsx
+// easel/dsh-plugin-easel/src/features/trends.tsx
 var trends_exports = {};
 __export(trends_exports, {
   Component: () => Component2,
@@ -1827,7 +1828,7 @@ __export(trends_exports, {
   view: () => view2
 });
 
-// src/components/TrendsPage.tsx
+// easel/dsh-plugin-easel/src/components/TrendsPage.tsx
 var import_react3 = require("react");
 var import_jsx_runtime4 = require("react/jsx-runtime");
 var ALL_PLATFORMS = [
@@ -2197,7 +2198,7 @@ function TrendsPage({ onUseTopic }) {
   ] });
 }
 
-// src/features/trends.tsx
+// easel/dsh-plugin-easel/src/features/trends.tsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
 var view2 = "trends";
 var order2 = 31;
@@ -2229,7 +2230,7 @@ var plugin2 = {
   }
 };
 
-// src/features/ideas.tsx
+// easel/dsh-plugin-easel/src/features/ideas.tsx
 var ideas_exports = {};
 __export(ideas_exports, {
   Component: () => Component3,
@@ -2240,7 +2241,7 @@ __export(ideas_exports, {
   view: () => view3
 });
 
-// src/components/IdeasPage.tsx
+// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
 var import_react4 = require("react");
 var import_jsx_runtime6 = require("react/jsx-runtime");
 var COLUMNS = [
@@ -2476,7 +2477,7 @@ function IdeasPage({ onUseTopic }) {
   ] });
 }
 
-// src/features/ideas.tsx
+// easel/dsh-plugin-easel/src/features/ideas.tsx
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var view3 = "ideas";
 var order3 = 32;
@@ -2508,7 +2509,7 @@ var plugin3 = {
   }
 };
 
-// src/features/calendar.tsx
+// easel/dsh-plugin-easel/src/features/calendar.tsx
 var calendar_exports = {};
 __export(calendar_exports, {
   Component: () => Component4,
@@ -2519,7 +2520,7 @@ __export(calendar_exports, {
   view: () => view4
 });
 
-// src/components/CalendarPage.tsx
+// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
 var import_react5 = require("react");
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var STATUS_META = {
@@ -2914,7 +2915,7 @@ function CalendarPage() {
   ] });
 }
 
-// src/features/calendar.tsx
+// easel/dsh-plugin-easel/src/features/calendar.tsx
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var view4 = "calendar";
 var order4 = 33;
@@ -2946,7 +2947,7 @@ var plugin4 = {
   }
 };
 
-// src/features/skills.tsx
+// easel/dsh-plugin-easel/src/features/skills.tsx
 var skills_exports = {};
 __export(skills_exports, {
   Component: () => Component5,
@@ -2957,13 +2958,13 @@ __export(skills_exports, {
   view: () => view5
 });
 
-// src/components/SkillPage.tsx
+// easel/dsh-plugin-easel/src/components/SkillPage.tsx
 var import_react7 = require("react");
 
-// src/components/SkillDrawer.tsx
+// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
 var import_react6 = require("react");
 
-// ../dsh/node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -4120,7 +4121,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../dsh/node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -6095,7 +6096,7 @@ function createDOMPurify() {
 }
 var purify_default = createDOMPurify();
 
-// src/lib/sanitize.ts
+// easel/dsh-plugin-easel/src/lib/sanitize.ts
 k.setOptions({ breaks: true, gfm: true });
 function renderMarkdown(md) {
   if (!md) return "";
@@ -6103,7 +6104,7 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
-// src/lib/skillDisplayNames.ts
+// easel/dsh-plugin-easel/src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
   "ai-image-gen": "AI \u751F\u56FE",
   "ai-music": "BGM / \u97F3\u4E50\u751F\u6210",
@@ -6223,7 +6224,7 @@ function displayName(raw) {
   return SKILL_DISPLAY_NAMES[raw] || raw;
 }
 
-// src/components/SkillDrawer.tsx
+// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
 var import_jsx_runtime10 = require("react/jsx-runtime");
 function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) {
   const [detail, setDetail] = (0, import_react6.useState)(null);
@@ -6444,7 +6445,7 @@ ${input.trim()}
   ] }) });
 }
 
-// src/components/SkillPage.tsx
+// easel/dsh-plugin-easel/src/components/SkillPage.tsx
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var LAYERS = [
   { key: "discover", label: "\u53D1\u73B0", Icon: IconSearch, color: "var(--layer-discover)" },
@@ -6590,7 +6591,7 @@ function SkillPage({ persona, onNavigate }) {
   ] });
 }
 
-// src/features/skills.tsx
+// easel/dsh-plugin-easel/src/features/skills.tsx
 var import_jsx_runtime12 = require("react/jsx-runtime");
 var view5 = "skills";
 var order5 = 34;
@@ -6622,7 +6623,7 @@ var plugin5 = {
   }
 };
 
-// src/features/outputs.tsx
+// easel/dsh-plugin-easel/src/features/outputs.tsx
 var outputs_exports = {};
 __export(outputs_exports, {
   Component: () => Component6,
@@ -6633,7 +6634,7 @@ __export(outputs_exports, {
   view: () => view6
 });
 
-// src/components/OutputsPage.tsx
+// easel/dsh-plugin-easel/src/components/OutputsPage.tsx
 var import_react8 = require("react");
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var FILTERS = [
@@ -6939,7 +6940,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   ] });
 }
 
-// src/features/outputs.tsx
+// easel/dsh-plugin-easel/src/features/outputs.tsx
 var import_jsx_runtime14 = require("react/jsx-runtime");
 var view6 = "outputs";
 var order6 = 35;
@@ -6971,7 +6972,7 @@ var plugin6 = {
   }
 };
 
-// src/features/publish.tsx
+// easel/dsh-plugin-easel/src/features/publish.tsx
 var publish_exports = {};
 __export(publish_exports, {
   Component: () => Component7,
@@ -6982,10 +6983,10 @@ __export(publish_exports, {
   view: () => view7
 });
 
-// src/components/PublishPage.tsx
+// easel/dsh-plugin-easel/src/components/PublishPage.tsx
 var import_react9 = require("react");
 
-// src/lib/store.ts
+// easel/dsh-plugin-easel/src/lib/store.ts
 var PUBLISH_KEY = "easel_publish_draft";
 var PREVIOUS_BRAND = ["post", "craft"].join("");
 function readMigratedLocalValue(key, suffix) {
@@ -7022,7 +7023,7 @@ function savePublishDraft(d2) {
   }
 }
 
-// src/components/PublishPage.tsx
+// easel/dsh-plugin-easel/src/components/PublishPage.tsx
 var import_jsx_runtime15 = require("react/jsx-runtime");
 var PLATFORMS2 = [
   { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", titleLimit: 20, bodyLimit: 1e3, hint: "\u6807\u9898\u226420\uFF0C\u6B63\u6587\u22641000\uFF0C\u91CD\u60C5\u7EEA+\u8BDD\u9898\u6807\u7B7E" },
@@ -7571,7 +7572,7 @@ function PublishPage({ persona }) {
   ] });
 }
 
-// src/features/publish.tsx
+// easel/dsh-plugin-easel/src/features/publish.tsx
 var import_jsx_runtime16 = require("react/jsx-runtime");
 var view7 = "publish";
 var order7 = 36;
@@ -7603,7 +7604,7 @@ var plugin7 = {
   }
 };
 
-// src/features/accounts.tsx
+// easel/dsh-plugin-easel/src/features/accounts.tsx
 var accounts_exports = {};
 __export(accounts_exports, {
   Component: () => Component8,
@@ -7614,7 +7615,7 @@ __export(accounts_exports, {
   view: () => view8
 });
 
-// src/components/AccountsPage.tsx
+// easel/dsh-plugin-easel/src/components/AccountsPage.tsx
 var import_react10 = require("react");
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var STATE_LABEL = {
@@ -8271,7 +8272,7 @@ function AccountsPage() {
   ] });
 }
 
-// src/features/accounts.tsx
+// easel/dsh-plugin-easel/src/features/accounts.tsx
 var import_jsx_runtime18 = require("react/jsx-runtime");
 var view8 = "accounts";
 var order8 = 37;
@@ -8303,7 +8304,7 @@ var plugin8 = {
   }
 };
 
-// src/features/profile.tsx
+// easel/dsh-plugin-easel/src/features/profile.tsx
 var profile_exports = {};
 __export(profile_exports, {
   Component: () => Component9,
@@ -8314,10 +8315,10 @@ __export(profile_exports, {
   view: () => view9
 });
 
-// src/components/PersonaBrowser.tsx
+// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
 var import_react13 = require("react");
 
-// src/components/ProfilePage.tsx
+// easel/dsh-plugin-easel/src/components/ProfilePage.tsx
 var import_react11 = require("react");
 var import_jsx_runtime19 = require("react/jsx-runtime");
 function fanTier(n) {
@@ -8545,7 +8546,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
   ] });
 }
 
-// src/components/OnboardingWizard.tsx
+// easel/dsh-plugin-easel/src/components/OnboardingWizard.tsx
 var import_react12 = require("react");
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var PLATFORMS3 = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u89C6\u9891\u53F7", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
@@ -8777,7 +8778,7 @@ ${formToInstruction(name, form)}`;
   ] }) });
 }
 
-// src/components/PersonaBrowser.tsx
+// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
 var import_jsx_runtime21 = require("react/jsx-runtime");
 function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }) {
   const [wizardOpen, setWizardOpen] = (0, import_react13.useState)(false);
@@ -8847,7 +8848,7 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
   ] });
 }
 
-// src/features/profile.tsx
+// easel/dsh-plugin-easel/src/features/profile.tsx
 var import_jsx_runtime22 = require("react/jsx-runtime");
 var view9 = "profile";
 var order9 = 38;
@@ -8879,7 +8880,7 @@ var plugin9 = {
   }
 };
 
-// src/features/breakdown.tsx
+// easel/dsh-plugin-easel/src/features/breakdown.tsx
 var breakdown_exports = {};
 __export(breakdown_exports, {
   Component: () => Component10,
@@ -8890,7 +8891,7 @@ __export(breakdown_exports, {
   view: () => view10
 });
 
-// src/components/BreakdownPage.tsx
+// easel/dsh-plugin-easel/src/components/BreakdownPage.tsx
 var import_react14 = require("react");
 var import_jsx_runtime23 = require("react/jsx-runtime");
 var FETCH_STAGES = [
@@ -9218,7 +9219,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
   ] });
 }
 
-// src/features/breakdown.tsx
+// easel/dsh-plugin-easel/src/features/breakdown.tsx
 var import_jsx_runtime24 = require("react/jsx-runtime");
 var view10 = "breakdown";
 var order10 = 39;
@@ -9250,10 +9251,10 @@ var plugin10 = {
   }
 };
 
-// src/lib/media-preview.tsx
+// easel/dsh-plugin-easel/src/lib/media-preview.tsx
 var import_react15 = require("react");
 
-// src/lib/media-url.js
+// easel/dsh-plugin-easel/src/lib/media-url.js
 var VIDEO_EXTENSIONS = ["mp4", "m4v", "mov", "webm", "mkv"];
 var AUDIO_EXTENSIONS = ["mp3", "wav", "m4a", "aac", "flac", "ogg", "opus"];
 var MEDIA_EXTENSIONS = [...VIDEO_EXTENSIONS, ...AUDIO_EXTENSIONS];
@@ -9284,7 +9285,7 @@ function workspaceMediaPath(absolutePath, projectRoot2) {
   return rel;
 }
 
-// src/lib/media-preview.tsx
+// easel/dsh-plugin-easel/src/lib/media-preview.tsx
 var import_jsx_runtime25 = require("react/jsx-runtime");
 var MEDIA_BODY_ID = "easel-media-player";
 var MEDIA_COPY = {
@@ -9432,7 +9433,7 @@ function registerMediaPreview(ctx) {
   else if (ctx.get?.("documentPreviews") !== void 0) attach(ctx);
 }
 
-// src/features/media.ts
+// easel/dsh-plugin-easel/src/features/media.ts
 var plugin11 = {
   name: "easel-media",
   inject: ["slots", "locale"],
@@ -9445,7 +9446,7 @@ var plugin11 = {
   }
 };
 
-// src/lib/context-menu-model.js
+// easel/dsh-plugin-easel/src/lib/context-menu-model.js
 var FILE_ROW_SELECTOR = "[data-files-entry]";
 var FILE_ROOT_SELECTOR = "[data-files-root]";
 var EDITABLE_SELECTOR = [
@@ -9563,7 +9564,7 @@ function fileNameOf(path) {
   return parts[parts.length - 1] ?? "";
 }
 
-// src/features/context-menu.js
+// easel/dsh-plugin-easel/src/features/context-menu.js
 var STYLE_ID = "easel-context-menu-style";
 var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
@@ -10125,7 +10126,7 @@ function reportError(ctx, error) {
   }
 }
 
-// src/features/index.ts
+// easel/dsh-plugin-easel/src/features/index.ts
 var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
 var FEATURES = views.map((module2) => ({
   view: module2.view,
@@ -10135,7 +10136,7 @@ var FEATURES = views.map((module2) => ({
 }));
 var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12];
 
-// src/client.tsx
+// easel/dsh-plugin-easel/src/client.tsx
 var NS = "easel.panel";
 var STYLE_ID2 = "dsh-plugin-easel-style";
 var STYLES = EASEL_CSS;
