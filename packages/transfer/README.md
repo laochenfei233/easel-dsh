@@ -27,7 +27,7 @@ The transfer group lets two devices running this harness exchange project bundle
 <a id="related-documentation"></a>
 ## Related documentation
 
-- [LAN project handoff spec](../../docs/compose/specs/easel-lan-handoff.md) — the design document and acceptance criteria for the handoff capability.
+- LAN project handoff spec: `docs/compose/specs/easel-lan-handoff.md` (authored in Chinese) — the design document and acceptance criteria for the handoff capability.
 - [dsh-session-log-export](../session-query/session-log-export/README.md) — the log-archive format the handoff carries per session.
 - [dsh-mime-attachment](../attachment/README.md) — the attachment store that receives the images and files carried inside a session archive.
 

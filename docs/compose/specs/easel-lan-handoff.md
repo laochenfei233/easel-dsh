@@ -10,7 +10,9 @@ commits: # filled at delivery
 
 ## Report
 
-工作区：`.worktrees/easel-lan-handoff`（基线 2926be2078d）。T1 骨架与 T4 导入包并行进行中。
+工作区：`.worktrees/easel-lan-handoff`（基线 2926be2078d）。T1–T6 全部落地并有测试；T7 宿主路由已交付，客户端页面未做；T8 未完成（见任务勾选）。
+已过门：全仓 `pnpm run typecheck` 5/5、lan-handoff 50 测试、easel 插件 98 测试（含 6 条 handoff 路由测试）、oxlint 0 告警。
+未过门：快照、`build:check`、覆盖率实测、真机双端验收（含 Windows 防火墙首包提示）。
 
 ## [S1] Problem
 
@@ -95,16 +97,17 @@ agent 会话。换设备继续干目前只能手工拷文件——会话上下�
 
 ## Tasks
 
-- [ ] T1: `dsh-lan-handoff` 包骨架：设备身份密钥 + 自签证书 + TLS 监听（OS 端口）+ mDNS 广播/浏览
-      （bonjour-service）+ 手动地址；`apps/cli` 依赖与壳激活行接线（depends: none）
-- [ ] T2: 配对协议 + peers 持久化 + SAS 确认回调面（depends: T1）
-- [ ] T3: bundle 传输协议：manifest/文件块/sha256/断点续传/未知消息跳过（depends: T2）
-- [ ] T4: `session-log-import`：cwd 重映射物化 + 附件入库 + 会话 id 冲突拒绝（depends: none）
-- [ ] T5: 发送端装配（pre-flight 递归遍历 → flush barrier → 逐会话 export → 文件树 → manifest + 树级摘要）
-      （depends: T3, T4）
-- [ ] T6: 导入端装配 + 接收树三方对账 + `WorkspaceRegistry` 建区挂靠（depends: T3, T4）
-- [ ] T7: Easel UI（设备列表/发送/接收，locale 文案、client half）（depends: T5, T6）
-- [ ] T8: 快照/回环端到端验收 + docs（README、architecture 提及、packages/README 组说明）（depends: T7）
+- [x] T1: `dsh-lan-handoff` 包骨架：设备身份密钥 + 自签证书 + TLS 监听（OS 端口）+ mDNS 广播/浏览
+      （bonjour-service）+ 手动地址（commit 171150431a；apps/cli 依赖与壳激活行仍待接）
+- [x] T2: 配对协议 + peers 持久化 + SAS 确认回调面（commit d0c9132f42）
+- [x] T3: bundle 传输协议：manifest/文件块/sha256/断点续传/未知消息跳过（commit e49cd6c903）
+- [x] T4: `session-log-import`：cwd 重映射物化 + 附件入库 + 会话 id 冲突拒绝（commit 1e0455660c）
+- [x] T5: 发送端装配（pre-flight 递归遍历 → flush barrier → 逐会话 export → 文件树 → manifest + 树级摘要）
+      （commit 54751d5ba5）
+- [x] T6: 导入端装配 + 接收树三方对账 + `WorkspaceRegistry` 建区挂靠（commit 54751d5ba5）
+- [x] T7a: Easel 宿主路由（status/pair/accept/reject/send，经 `ctx.get('lanHandoff')` 转发）（commit 42cf53dc23）
+- [ ] T7b: Easel 客户端页面（设备列表/发送/接收 UI，locale 文案、client half）
+- [ ] T8: 快照/回环端到端验收 + docs 收尾 + `build:check` + 覆盖率实测 + `apps/cli`/壳激活行接线 + 真机双端验收
 
 ## [S4] Acceptance
 

@@ -178,13 +178,23 @@ export interface Config {
   handoffDirectory?: string
 }
 
+/** One resolved workspace record as the handoff reads it. */
+export interface HandoffWorkspaceRecord {
+  /** Workspace directory. */
+  readonly path: string
+  /** Workspace title. */
+  readonly title: string
+  /** Sessions attached to the workspace. */
+  readonly sessionIds: readonly SessionId[]
+}
+
 /** The workspace operations a handoff uses (the host workspaceRegistry service). */
 export interface HandoffWorkspaces {
   /**
    * Resolve one registered workspace by its path.
    * @param path - the workspace directory.
    */
-  resolveByPath(path: string): Promise<{ readonly path: string; readonly title: string; readonly sessionIds: readonly SessionId[] } | undefined>
+  resolveByPath(path: string): Promise<HandoffWorkspaceRecord | undefined>
   /**
    * Register the received project.
    * @param path - the received project directory.

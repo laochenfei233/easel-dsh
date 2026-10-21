@@ -27,7 +27,7 @@ transfer 组让两台运行本 harness 的设备在局域网内交换项目交�
 <a id="related-documentation"></a>
 ## 相关文档
 
-- [LAN 项目交接 spec](../../docs/compose/specs/easel-lan-handoff.md) — 交接能力的设计文档与验收标准。
+- LAN 项目交接 spec：`docs/compose/specs/easel-lan-handoff.md`（中文撰写） — 交接能力的设计文档与验收标准。
 - [dsh-session-log-export](../session-query/session-log-export/README.zh.md) — 交接按会话携带的日志归档格式。
 - [dsh-attachment](../attachment/README.zh.md) — 接收会话归档内图片与文件的附件仓库。
 

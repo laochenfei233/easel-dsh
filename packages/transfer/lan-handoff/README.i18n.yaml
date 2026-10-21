@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/transfer/lan-handoff/README.md
+/:
+  en: d8a0e9d0d31f3789
+  zh: 8865dacc4446e4ba
+/deepseek-ai-dsh-lan-handoff:
+  en: 94717d564e6246a6
+  zh: 293ab0a6e8c1cf07
+/deepseek-ai-dsh-lan-handoff/summary:
+  en: 65ac3beb69271729
+  zh: d23d77eb8cefa270
+/deepseek-ai-dsh-lan-handoff/table-of-contents:
+  en: 474ba9dea4f2f1af
+  zh: 75e436f94e3efde8
+/deepseek-ai-dsh-lan-handoff/use-this-package:
+  en: cba5fd4c18ed3f29
+  zh: 65f1fbf381d286ef
