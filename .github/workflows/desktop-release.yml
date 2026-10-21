@@ -172,7 +172,7 @@ jobs:
           args: --verbose ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: dsh-desktop-${{ matrix.platform }}-${{ matrix.arch }}
           if-no-files-found: error
