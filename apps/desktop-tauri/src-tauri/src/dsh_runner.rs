@@ -622,14 +622,16 @@ fn port_open(port: u16) -> bool {
 
 /// Matches a process whose command line boots one of OUR `dsh web` servers:
 /// the installed runtime (`...\Easel-dsh\runtime\...`) or this repo's worktree
-/// (`...\Easel\dsh\...`). Prism or stock-dsh installs boot from different
-/// paths and must never match — the sweep must not kill another product.
+/// (`...\Easel\dsh\...` or `.../Easel/dsh/...`). Prism or stock-dsh installs
+/// boot from different paths and must never match — the sweep must not kill
+/// another product.
 fn is_our_dsh_web_server(command_line: &str) -> bool {
     // 路径被引号包着（`..."bin.js" web --port...`），不能要求连续子串。
-    let line = command_line.to_lowercase();
+    // 分隔符归一成 `/`：Windows 命令行是反斜杠，macOS 是正斜杠，同一个规则两边都要命中。
+    let line = command_line.to_lowercase().replace('\\', "/");
     line.contains("bin.js")
         && line.contains(" web --port")
-        && (line.contains("easel-dsh\\runtime") || line.contains("easel\\dsh"))
+        && (line.contains("easel-dsh/runtime") || line.contains("easel/dsh"))
 }
 
 /// Pure decision core of the sweep so the rules stay testable without
@@ -680,7 +682,30 @@ fn list_process_samples() -> Vec<(u32, String)> {
 
 #[cfg(not(windows))]
 fn list_process_samples() -> Vec<(u32, String)> {
-    Vec::new()
+    // -ww disables the terminal-width command-line truncation that would cut
+    // off the `web --port` tail the matcher needs. Failing ps is tolerated:
+    // an empty sweep beats blocking adopt/spawn.
+    let Ok(output) = std::process::Command::new("ps")
+        .args(["-axo", "pid=,command=", "-ww"])
+        .output()
+    else {
+        return Vec::new();
+    };
+    parse_ps_samples(&String::from_utf8_lossy(&output.stdout))
+}
+
+/// `ps -axo pid=,command= -ww` 的行解析：pid 后空格隔开命令，行首可能有缩进。
+#[cfg(not(windows))]
+fn parse_ps_samples(stdout: &str) -> Vec<(u32, String)> {
+    stdout
+        .lines()
+        .filter_map(|line| {
+            let line = line.trim();
+            let (pid, command) = line.split_once(' ')?;
+            let pid = pid.trim().parse().ok()?;
+            Some((pid, command.trim_start().to_owned()))
+        })
+        .collect()
 }
 
 /// One shell, one server: end every rival `dsh web` server of ours except
@@ -1246,6 +1271,35 @@ mod tests {
         assert_eq!(rival_pids(&samples, None), vec![34096, 40456, 21944]);
         // keep 指向不存在的 pid（记录被复用污染）：只是少豁免一项，其余照清。
         assert_eq!(rival_pids(&samples, Some(999)), vec![34096, 40456, 21944]);
+    }
+
+    #[test]
+    fn rival_sweep_matches_mac_and_uppercase_paths_via_separator_normalization() {
+        // 既装机器（~/.dsh 下的大写目录）与开发树的正斜杠形态——macOS 的 ps 就长这样。
+        let installed = "/Users/fei/.dsh/EASEL-DSH/runtime/dsh/lib/bin.js web --port 3081 --no-open".to_string();
+        let dev = "/Users/fei/Documents/GitHub/Easel/dsh/cli/lib/bin.js web --port 3083 --no-open".to_string();
+        // 正斜杠写法的别家产品，同样不许误杀。
+        let prism = "/Users/fei/Documents/GitHub/prism-agent/dsh/cli/lib/bin.js web --port 3099 --no-open".to_string();
+        let samples = vec![(40456, installed), (21944, dev), (111, prism)];
+        assert_eq!(rival_pids(&samples, None), vec![40456, 21944]);
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn ps_sample_parser_accepts_ps_output() {
+        let samples = parse_ps_samples(
+            "  40456 /usr/local/bin/node /Users/fei/.dsh/easel-dsh/runtime/dsh/lib/bin.js web --port 3081\n  1 /sbin/launchd\n",
+        );
+        assert_eq!(
+            samples,
+            vec![
+                (
+                    40456u32,
+                    "/usr/local/bin/node /Users/fei/.dsh/easel-dsh/runtime/dsh/lib/bin.js web --port 3081".to_string()
+                ),
+                (1u32, "/sbin/launchd".to_string()),
+            ]
+        );
     }
 
     #[test]
