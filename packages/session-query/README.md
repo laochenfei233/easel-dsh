@@ -29,6 +29,7 @@ Each package README describes what you can do with its part of the family.
 | [`session-query/`](session-query/README.md) | Unified session-history query service: exact reads, relationship traces, and filters | `ctx.sessionQuery` |
 | [`session-query-sqlite/`](session-query-sqlite/README.md) | Full-text search across session history backed by a SQLite FTS5 index | registers on `ctx.sessionQuery` |
 | [`session-log-export/`](session-log-export/README.md) | Web `/export` command and browser download of a session ZIP | `ctx.sessionLogDownload` (browser) |
+| [`session-log-import/`](session-log-import/README.md) | Host-side import of an exported session ZIP into the local persistence and attachment stores with a remapped work directory | `ctx.sessionLogImporter` |
 
 -----
 
