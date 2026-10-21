@@ -163,8 +163,16 @@ impl DshHandle {
                     remember_server(port, url, pid, &self.dsh_bin);
                 }
             }
-            let _ = app.emit("dsh://ready", DshEndpoint { url: launch_url });
+            let _ = app.emit(
+                "dsh://ready",
+                DshEndpoint {
+                    url: launch_url.clone(),
+                },
+            );
             reveal_main_window(&app);
+            if let Some(url) = launch_url.as_deref() {
+                navigate_ready(&app, url);
+            }
 
             // Wait for the child to exit (or the stopping flag).
             loop {
@@ -188,6 +196,11 @@ impl DshHandle {
             if self.stopping.load(Ordering::SeqCst) {
                 return;
             }
+            // A shell that already navigated to the dsh UI would otherwise sit
+            // on a dead origin while the replacement boots; the shell page's
+            // splash is the recovery surface here.
+            #[cfg(not(windows))]
+            return_to_shell_page(&app);
 
             // The plugin market restarts `dsh` as a detached process whose stdout
             // goes to its own log. Capture the launch URL from the bytes it adds;
@@ -212,8 +225,14 @@ impl DshHandle {
                     wait_port_closed(port, self.stopping.clone()).await;
                     continue;
                 };
-                let _ = app.emit("dsh://ready", DshEndpoint { url: Some(url) });
+                let _ = app.emit(
+                    "dsh://ready",
+                    DshEndpoint {
+                        url: Some(url.clone()),
+                    },
+                );
                 reveal_main_window(&app);
+                navigate_ready(&app, &url);
                 wait_port_closed(port, self.stopping.clone()).await;
                 *self.launch_url.lock().expect("launch-url mutex") = None;
                 continue;
@@ -254,8 +273,14 @@ impl DshHandle {
             "adopted running server on {} (pid {})",
             record.port, record.pid
         ));
-        let _ = app.emit("dsh://ready", DshEndpoint { url: Some(record.url) });
+        let _ = app.emit(
+            "dsh://ready",
+            DshEndpoint {
+                url: Some(record.url.clone()),
+            },
+        );
         reveal_main_window(app);
+        navigate_ready(app, &record.url);
         Some(record.port)
     }
 
@@ -1103,19 +1128,15 @@ async fn launch_exchange(parsed: Url) -> Result<(AuthCookie, String, String), St
 /// Load the launch-token URL into the shell webview.
 ///
 /// Chromium WebView2 (Windows): the shell installs the exchanged cookie into
-/// the native cookie store (`SameSite=None; Secure`) and returns the clean URL,
-/// because a `SameSite=Strict` cookie minted inside the embedded cross-origin
-/// iframe is not sent to the loopback server.
+/// the native cookie store (`SameSite=None; Secure`) and returns the clean URL
+/// for the iframe, because a `SameSite=Strict` cookie minted inside the
+/// embedded cross-origin iframe is not sent to the loopback server.
 ///
-/// WebKit shells (macOS/Linux): return the token URL for the iframe to load
-/// directly. Pre-installing the exchanged cookie cannot authenticate this
-/// iframe: the loopback listener is plain HTTP, and WebKit neither sends
-/// `Secure` cookies into it nor delivers a shell-installed cookie from the
-/// third-party iframe storage — the observed failure, the 401 body at every
-/// start. Loading `/?token=…` inside the iframe keeps every cookie in the
-/// iframe's own storage: the server mints the `HttpOnly; SameSite=Strict`
-/// cookie on its 303 redirect, and every later request is the iframe
-/// document's same-origin traffic.
+/// WebKit shells (macOS/Linux): the session load no longer goes through this
+/// command — an iframe (or any third-party-context navigation) can never
+/// carry the exchange cookie there, so the window itself navigates top-level
+/// via `navigate_main` instead. This command's WebKit branch survives only as
+/// the validated probe that hands back the token URL unchanged.
 #[tauri::command]
 pub async fn authenticate_webview(app: AppHandle, url: String) -> Result<WebviewSession, String> {
     let parsed = url
@@ -1154,6 +1175,86 @@ pub async fn authenticate_webview(app: AppHandle, url: String) -> Result<Webview
     #[cfg(not(windows))]
     {
         Ok(WebviewSession { url: token_url })
+    }
+}
+
+/// Navigate the main window to the launch URL, top-level, the way a user
+/// opening the printed URL in a browser would.
+///
+/// WebKit shells (macOS/Linux) host the dsh UI as the window's own document.
+/// The server's exchange cookie cannot enter an embedded iframe on WebKit
+/// (no `Secure` cookies into plain-HTTP loopback, and a third-party iframe
+/// navigation carries a null site-for-cookies, so the `SameSite=Strict`
+/// cookie never attaches to the 303's follow-up request — every start landed
+/// on the 401 body). A top-level native navigation is browser-initiated: the
+/// 303 mints the cookie and the followed redirect carries it, and everything
+/// after that is the document's own first-party traffic.
+///
+/// The same-origin guard keeps a re-entry (a second `ready` for the same
+/// port, or the UI's call racing the supervisor's) from reloading the app
+/// window; a same-port restart keeps the still-valid session cookie.
+pub(crate) fn navigate_main_window(app: &AppHandle, url: &str) -> Result<(), String> {
+    let window = app
+        .get_webview_window("main")
+        .ok_or("main webview unavailable")?;
+    let parsed = url
+        .parse::<Url>()
+        .map_err(|e| format!("invalid dsh web launch URL: {e}"))?;
+    if let Ok(current) = window.url() {
+        if current.scheme() == parsed.scheme()
+            && current.host_str() == parsed.host_str()
+            && current.port() == parsed.port()
+        {
+            return Ok(());
+        }
+    }
+    window
+        .navigate(parsed)
+        .map_err(|e| format!("navigate to the dsh web URL failed: {e}"))
+}
+
+/// The UI-facing entry point of the navigation above: the shell page calls it
+/// once a `ready` arrives (including the wizard-completion reload, which races
+/// the supervisor's own navigation — the same-origin guard deduplicates).
+#[tauri::command]
+pub fn navigate_main(app: AppHandle, url: String) -> Result<(), String> {
+    navigate_main_window(&app, &url)
+}
+
+/// Navigate to the launch URL on every readiness, unless the first-run wizard
+/// still owns the window: its completion flow reloads the shell page, whose
+/// status polling reaches `navigate_main` on its own.
+fn navigate_ready(app: &AppHandle, url: &str) {
+    if crate::setup::is_initialized() {
+        if let Err(err) = navigate_main_window(app, url) {
+            append_startup_log(&format!("navigate main window to the dsh web: {err}"));
+        }
+    }
+}
+
+/// Send the window back to the shell page when it had navigated to the dsh UI
+/// that just died, so the splash/banner surface takes over while the
+/// supervisor boots a replacement.
+#[cfg(not(windows))]
+fn return_to_shell_page(app: &AppHandle) {
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+    let on_dsh_ui = window
+        .url()
+        .ok()
+        .map(|current| {
+            matches!(current.scheme(), "http" | "https")
+                && matches!(current.host_str(), Some("127.0.0.1") | Some("localhost"))
+        })
+        .unwrap_or(false);
+    if !on_dsh_ui {
+        return;
+    }
+    // The shell pages live under the app's own origin; index.html re-runs the
+    // status polling and shows the splash/error surface.
+    if let Ok(shell) = Url::parse("tauri://localhost/index.html") {
+        let _ = window.navigate(shell);
     }
 }
 #[derive(Serialize)]

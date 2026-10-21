@@ -38,11 +38,33 @@ fn build_main_window(app: &tauri::AppHandle) -> Result<(), String> {
         .ok_or_else(|| "No \"main\" window in the Tauri config".to_string())?;
 
     let handle = app.clone();
-    tauri::WebviewWindowBuilder::from_config(app, &window_config)
+    let builder = tauri::WebviewWindowBuilder::from_config(app, &window_config)
         .map_err(|e| e.to_string())?
         .on_new_window(move |url, _features: NewWindowFeatures| {
             open_new_window_externally(&handle, &url)
+        });
+    // WebKit shells host the dsh UI as the window's own document once the
+    // launch URL arrives, so top-level navigations need the routing the shell
+    // page used to relay through the iframe host bridge: the dsh origins stay
+    // in the window, everything else opens in the system browser. WebView2
+    // keeps the shell page + iframe design and navigates nothing.
+    #[cfg(not(windows))]
+    let builder = {
+        let handle = app.clone();
+        builder.on_navigation(move |url| {
+            let local = matches!(url.scheme(), "tauri" | "about" | "data" | "blob" | "asset")
+                || (matches!(url.scheme(), "http" | "https")
+                    && matches!(url.host_str(), Some("127.0.0.1") | Some("localhost")));
+            if local {
+                return true;
+            }
+            if is_externally_openable(url) {
+                let _ = handle.opener().open_url(url.as_str(), None::<&str>);
+            }
+            false
         })
+    };
+    builder
         .build()
         .map_err(|e| e.to_string())?;
     // The window stays hidden here on purpose: a `show()` issued before the
@@ -194,6 +216,7 @@ pub fn run() {
             setup::apply_first_run,
             dsh_runner::dsh_status,
             dsh_runner::authenticate_webview,
+            dsh_runner::navigate_main,
             dsh_runner::restart_dsh,
             dsh_runner::open_ui,
         ])

@@ -2,14 +2,14 @@
 // committed tile master, src-tauri/icons/official-512.png.
 //
 // The tile master composes edge to edge: at every size the white tile fills the
-// canvas apart from the rounded corners. The Dock renders the whole canvas at
-// the slot size, so a full-bleed tile looks ~25% larger than Apple's icon grid,
-// where the shape occupies 824x824 of a 1024x1024 canvas with ~100px
-// transparent margins and a 185.4px corner radius. Every generated size scales
-// the master onto that grid — content = size * 824/1024, inset =
-// size * 100/1024, radius = 185.4 * size / 1024 — with a signed-distance alpha
-// falloff for the corners. The Windows .ico pipeline and the committed PNG
-// family stay untouched; only the macOS Dock shrinks to the grid.
+// canvas apart from its own rounded corners. The Dock renders the whole canvas
+// at the slot size, so a full-bleed tile looks ~25% larger than Apple's icon
+// grid, where the shape occupies 824x824 of a 1024x1024 canvas with ~100px
+// transparent margins. Every generated size keeps the master exactly as
+// designed — proportions, corner radius, and anti-aliasing — and only scales
+// it by 824/1024 onto a transparent, centered canvas: the original in the
+// Apple slot, with no re-cropped corners. The Windows .ico pipeline and the
+// committed PNG family stay untouched; only the macOS Dock shrinks to fit.
 //
 //   node scripts/generate-mac-icons.mjs
 //
@@ -37,7 +37,6 @@ const ENTRIES = [
 const CANVAS = 1024;
 const SHAPE = 824;
 const INSET = (CANVAS - SHAPE) / 2;
-const RADIUS = 185.4;
 
 // ---------- PNG decode ----------
 
@@ -105,81 +104,80 @@ function unfilterPng(png, width, height) {
 
 // ---------- resample ----------
 
-/** Integer-factor box average downscale (factor >= 1; 1 clones). */
-function downscaleBox(source, width, height, factor) {
-  const outWidth = width / factor;
-  const outHeight = height / factor;
-  const data = Buffer.alloc(outWidth * outHeight * 4);
-  for (let y = 0; y < outHeight; y++) {
-    for (let x = 0; x < outWidth; x++) {
-      for (let ch = 0; ch < 4; ch++) {
-        let sum = 0;
-        for (let sy = 0; sy < factor; sy++) {
-          for (let sx = 0; sx < factor; sx++) {
-            sum += source[(((y * factor + sy) * width) + (x * factor + sx)) * 4 + ch];
-          }
+/**
+ * Box-filter resample to an arbitrary size: every destination pixel averages
+ * the source rectangle it covers (premultiplied alpha, straight RGBA out).
+ * With scale < 1 it downsamples; with scale > 1 it expands the covered
+ * source area per destination pixel.
+ */
+function resample(source, sourceWidth, sourceHeight, destWidth, destHeight) {
+  const data = Buffer.alloc(destWidth * destHeight * 4);
+  const scaleX = sourceWidth / destWidth;
+  const scaleY = sourceHeight / destHeight;
+  for (let y = 0; y < destHeight; y++) {
+    const sy0 = y * scaleY;
+    const sy1 = Math.min(sourceHeight, (y + 1) * scaleY);
+    for (let x = 0; x < destWidth; x++) {
+      const sx0 = x * scaleX;
+      const sx1 = Math.min(sourceWidth, (x + 1) * scaleX);
+      // Premultiply-alpha box average: accumulate alpha-weighted colors and
+      // the coverage weight itself, then normalize by the REAL weight sum —
+      // on upscale the covered source rect is smaller than one source pixel,
+      // so scale^2 would understate alpha and leave translucent mottling.
+      let rs = 0, gs = 0, bs = 0, was = 0, wsum = 0;
+      for (let sy = Math.floor(sy0); sy < sy1; sy++) {
+        const wy = Math.min(1, sy + 1 - sy0) - Math.max(0, sy - sy0);
+        for (let sx = Math.floor(sx0); sx < sx1; sx++) {
+          const wx = Math.min(1, sx + 1 - sx0) - Math.max(0, sx - sx0);
+          const w = wx * wy;
+          if (w <= 0) continue;
+          const at = (sy * sourceWidth + sx) * 4;
+          const r = source[at], g = source[at + 1], b = source[at + 2], a = source[at + 3];
+          const wa = (w * a) / 255;
+          wsum += w;
+          was += wa;
+          rs += wa * r;
+          gs += wa * g;
+          bs += wa * b;
         }
-        data[((y * outWidth) + x) * 4 + ch] = Math.round(sum / (factor * factor));
+      }
+      const out = (y * destWidth + x) * 4;
+      if (wsum > 0) {
+        // `was` accumulates in 0..1 alpha units (w*a/255), so scale back up.
+        data[out + 3] = Math.round((255 * was) / wsum);
+        if (was > 0) {
+          data[out] = Math.round(rs / was);
+          data[out + 1] = Math.round(gs / was);
+          data[out + 2] = Math.round(bs / was);
+        }
       }
     }
   }
-  return { width: outWidth, height: outHeight, data };
+  return { width: destWidth, height: destHeight, data };
 }
 
-/** Bilinear upscale; clamped edges, straight alpha. */
-function upscaleBilinear(source, width, height, factor) {
-  const outWidth = width * factor;
-  const outHeight = height * factor;
-  const data = Buffer.alloc(outWidth * outHeight * 4);
-  for (let y = 0; y < outHeight; y++) {
-    const sy = (y + 0.5) / factor - 0.5;
-    const y0 = Math.max(0, Math.min(height - 1, Math.floor(sy)));
-    const y1 = Math.min(height - 1, y0 + 1);
-    const fy = Math.max(0, Math.min(1, sy - y0));
-    for (let x = 0; x < outWidth; x++) {
-      const sx = (x + 0.5) / factor - 0.5;
-      const x0 = Math.max(0, Math.min(width - 1, Math.floor(sx)));
-      const x1 = Math.min(width - 1, x0 + 1);
-      const fx = Math.max(0, Math.min(1, sx - x0));
-      const out = (y * outWidth + x) * 4;
-      for (let ch = 0; ch < 4; ch++) {
-        const p00 = source[(y0 * width + x0) * 4 + ch];
-        const p10 = source[(y0 * width + x1) * 4 + ch];
-        const p01 = source[(y1 * width + x0) * 4 + ch];
-        const p11 = source[(y1 * width + x1) * 4 + ch];
-        const top = p00 + (p10 - p00) * fx;
-        const bottom = p01 + (p11 - p01) * fx;
-        data[out + ch] = Math.round(top + (bottom - top) * fy);
-      }
-    }
+/** Paste one RGBA image centered on a transparent square canvas of `size`. */
+function composeOnSquareCanvas(image, size) {
+  const inset = Math.round((INSET * size) / CANVAS);
+  const data = Buffer.alloc(size * size * 4);
+  for (let y = 0; y < image.height; y++) {
+    const dst = ((y + inset) * size + inset) * 4;
+    image.data.copy(data, dst, y * image.width * 4, (y + 1) * image.width * 4);
   }
-  return { width: outWidth, height: outHeight, data };
+  return { width: size, height: size, data };
 }
 
 /**
- * Shrink the image onto the macOS icon grid at its own size: content edge
- * size * 824/1024, inset size * 100/1024, corner radius 185.4 * size / 1024.
- * The master alpha is multiplied by the rounded-rect coverage, so its own
- * antialiased edges survive intersected with the grid.
+ * Shrink the master onto the macOS icon grid at its own size: content edge
+ * size * 824/1024, centered, with the design's own corners and anti-aliasing
+ * untouched.
  */
-function applyMacGrid(image, size) {
-  const inset = (INSET * size) / CANVAS;
-  const shape = (SHAPE * size) / CANVAS;
-  const radius = (RADIUS * size) / CANVAS;
-  const half = shape / 2;
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const ax = Math.abs(x + 0.5 - inset - half) - (half - radius);
-      const ay = Math.abs(y + 0.5 - inset - half) - (half - radius);
-      const dx = Math.max(ax, 0);
-      const dy = Math.max(ay, 0);
-      const d = Math.sqrt(dx * dx + dy * dy) + Math.min(Math.max(ax, ay), 0) - radius;
-      const coverage = Math.max(0, Math.min(1, 0.5 - d));
-      const at = (y * size + x) * 4 + 3;
-      image.data[at] = Math.round(image.data[at] * coverage);
-    }
-  }
-  return image;
+function composeMacGrid(master, size) {
+  const contentEdge = Math.round((SHAPE * size) / CANVAS);
+  return composeOnSquareCanvas(
+    resample(master.data, master.width, master.height, contentEdge, contentEdge),
+    size,
+  );
 }
 
 // ---------- PNG encode ----------
@@ -300,21 +298,10 @@ function alphaBoundingBox(image) {
 
 const master = decodePng(MASTER);
 if (master.width !== master.height) throw new Error(`${MASTER}: master is not square`);
-const MASTER_EDGE = master.width;
 
 const rendered = new Map();
 for (const size of [...new Set(ENTRIES.map(([, size]) => size))]) {
-  let image;
-  if (size === MASTER_EDGE) {
-    image = { width: size, height: size, data: Buffer.from(master.data) };
-  } else if (size < MASTER_EDGE) {
-    if (MASTER_EDGE % size !== 0) throw new Error(`master ${MASTER_EDGE} does not divide into ${size}`);
-    image = downscaleBox(master.data, master.width, master.height, MASTER_EDGE / size);
-  } else {
-    if (size % MASTER_EDGE !== 0) throw new Error(`master ${MASTER_EDGE} does not upscale to ${size}`);
-    image = upscaleBilinear(master.data, master.width, master.height, size / MASTER_EDGE);
-  }
-  applyMacGrid(image, size);
+  const image = composeMacGrid(master, size);
   rendered.set(size, encodePng(image));
 }
 
@@ -322,9 +309,8 @@ writeFileSync(TARGET, buildIcns(rendered));
 const seen = verifyIcns(TARGET);
 
 // The 1024 entry is what the Dock composes from; decode it from its own PNG
-// bytes and confirm the content sits in the 824/1024 slot.
-const masterOrNull = decodePngBuffer(rendered.get(1024), 1024);
-const largest = alphaBoundingBox(masterOrNull);
+// bytes and confirm the content sits centered in the 824/1024 slot.
+const largest = alphaBoundingBox(decodePngBuffer(rendered.get(1024), 1024));
 const expectedInset = (INSET * 1024) / CANVAS;
 if (largest.l > expectedInset + 2 || largest.t > expectedInset + 2
   || largest.l < expectedInset - 2 || largest.t < expectedInset - 2) {
@@ -332,12 +318,18 @@ if (largest.l > expectedInset + 2 || largest.t > expectedInset + 2
     `grid margin out of tolerance: bbox starts at (${largest.l},${largest.t}), expected ~${expectedInset}`,
   );
 }
+const expectedContent = (SHAPE * 1024) / CANVAS;
+if (largest.width < expectedContent - 4 || largest.height < expectedContent - 4) {
+  throw new Error(
+    `grid content smaller than the slot: ${largest.width}x${largest.height}, expected ~${expectedContent}`,
+  );
+}
 
 console.log(`wrote ${TARGET} (${rendered.size} rendered sizes, ${ENTRIES.length} entries)`);
 for (const { type, width } of seen) console.log(`  ${type}: ${width}px`);
 console.log(
   `grid check: content bbox ${largest.l}..${largest.r} x ${largest.t}..${largest.b}` +
-  ` on a 1024 canvas (inset ${expectedInset}, shape ${expectedInset + (SHAPE * 1024) / CANVAS})` +
+  ` on a 1024 canvas (inset ${expectedInset}, slot ${expectedContent})` +
   ` — ${((largest.width / 1024) * 100).toFixed(1)}% wide, ${((largest.height / 1024) * 100).toFixed(1)}% tall`,
 );
 

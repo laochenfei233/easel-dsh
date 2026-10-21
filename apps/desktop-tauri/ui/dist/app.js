@@ -3,9 +3,10 @@
 // The top navigation bar is intentionally gone; the dsh UI owns its chrome.
 // The iframe stays blank until Rust validates the launch URL. On Windows it
 // exchanges the token and pre-installs the WebView cookie, then loads the
-// clean URL it returns; on WebKit shells the returned URL still carries the
-// token and the iframe loads it directly (the server mints the Strict cookie
-// in the iframe's own storage; see authenticate_webview).
+// clean URL in the iframe. On WebKit shells the window itself navigates to
+// the token URL (a third-party iframe cannot carry the exchange cookie on
+// WebKit), so the shell page calls navigate_main and steps aside; the
+// supervisor re-navigates on later readiness by itself.
 
 const frame = document.getElementById('dsh-frame');
 const banner = document.getElementById('error-banner');
@@ -17,6 +18,10 @@ let pendingUrl;
 
 const invoke = (cmd, args) => window.__TAURI__.core.invoke(cmd, args);
 const listen = (event, cb) => window.__TAURI__.event.listen(event, cb);
+
+// WebView2 keeps the embedded-iframe design; WebKit shells (macOS/Linux)
+// navigate the window itself to the dsh UI.
+const NATIVE_NAVIGATION = !/Windows/.test(navigator.userAgent);
 
 function showError(text) {
   errorText.textContent = text;
@@ -39,13 +44,19 @@ frame.addEventListener('load', () => {
   if (activeUrl && frame.src !== 'about:blank' && splash) splash.classList.add('done');
 });
 
-// Loads the session URL Rust prepared for the webview engine (see the file
-// header); Windows pre-installs the cookie, WebKit shells load the token URL
-// in the iframe itself.
+// Loads the session: WebView2 exchanges the token through Rust (which
+// pre-installs the cookie in the native WebView store) and the iframe loads
+// the clean URL; WebKit shells hand the token URL to `navigate_main`, which
+// navigates the window itself and ends this page's session.
 async function openAuthenticated(url) {
   if (!url || url === activeUrl || url === pendingUrl) return;
   pendingUrl = url;
   try {
+    if (NATIVE_NAVIGATION) {
+      await invoke('navigate_main', { url });
+      activeUrl = url;
+      return;
+    }
     const session = await invoke('authenticate_webview', { url });
     if (session.url === activeUrl) return;
     hideError();

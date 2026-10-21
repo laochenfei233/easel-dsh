@@ -33,21 +33,30 @@ commits: dsh 71ea5c0568..8a66b85fdc2（5e012932a2 vendoring、3d1de6a9d6 stageEa
    outputs/plugin/docs/assets/tools/pytest.ini 等必要与 meta 内容。
    **Easel 仓从此不推任何远端（不同步 easel）；产品仓 = easel-dsh
    （gitea 私有 + GitHub 公开，分支 feat/easel-mac-package，gitea 默认分支已设）。**
-5. **mac 实机反馈①：Dock 图标过大**：提交的 `icon.icns` 母图构图满幅——白瓷砖
-   顶满画布只剩四角，Dock 按全画布渲染 → 比标准 mac 图标大 ~25%（系统图标的
-   形状占 824/1024）。新增 `apps/desktop-tauri/scripts/generate-mac-icons.mjs`：
-   以 `official-512.png` 母图重生成全套 icns 条目（16..1024 共 11 条目，Apple
-   网格网格：内容 824/1024、四边留白 100/1024、圆角 185.4/1024，round-rect
-   SDF 抗锯齿叠加母图 alpha），写入前自校验条目集/尺寸/网格边距；
-   `icon.ico` 与 PNG 家族保持 Windows 形态不动。
-6. **mac 实机反馈②：启动撞出 401 文案**：`authenticate_webview` 预装进原生
-   cookie 存储的 cookie 到不了 WKWebView 的内嵌 iframe（WebKit 不向纯 HTTP
-   loopback 发送 `Secure` cookie，也不把第三方 iframe 的存储交出来），iframe
-   首次加载渲染出服务端 401 文案。按 webview 引擎分流：Windows（Chromium
-   WebView2）保持原链路（预装 `SameSite=None; Secure` cookie + 干净 URL）；
-   WebKit 系（macOS/Linux）交换保留（存活探测失败先于 iframe 401）但直接返回
-   带 token 的 URL，iframe 自行加载 `/?token=…`，服务端 303 在 iframe 自身
-   存储铸造 `HttpOnly; SameSite=Strict` 会话 cookie，后续请求全部同源。
+5. **mac 实机反馈①：Dock 图标过大 → 等比缩放重生成**：提交的 `icon.icns` 母图构图满幅——白瓷砖
+   顶满画布只剩四角，Dock 按全画布渲染 → 比标准 mac 图标大 ~25%（系统图标的形状占 824/1024）。
+   新增 `apps/desktop-tauri/scripts/generate-mac-icons.mjs`：以 `official-512.png` 母图重生成全套
+   icns 条目（16..1024 共 11 条目），每个尺寸都是母图按 824/1024 **等比缩放到透明居中画布**——
+   比例、圆角、抗锯齿完全保留原设计（第一版曾叠加 Apple 185.4/1024 半径遮罩，实机反馈「硬裁」
+   后去掉；面积平均重采样的 promote 权重按真实覆盖率归一，否则放大会出现半透明马赛克），
+   写入前自校验条目集/尺寸/网格边距；`icon.ico` 与 PNG 家族保持 Windows 形态不动。
+6. **mac 实机反馈②：启动撞出 401 文案 → 顶层原生导航**：`dsh web authentication required; reopen
+   the URL printed by dsh web.` 在 mac 上两轮复现。第一层根因：`authenticate_webview` 预装进原生
+   cookie 存储的 cookie 到不了 WKWebView 的内嵌 iframe（WebKit 不向纯 HTTP loopback 发送
+   `Secure` cookie，也不把第三方 iframe 的存储交出来）。第二层根因（首版 pass-through 修复后
+   实机仍 401）：iframe 直接加载 `/?token=…` 时 303 铸的 `SameSite=Strict` cookie 同样带不上——
+   该导航由父页面（tauri://localhost）发起、处于第三方上下文，site-for-cookies 为空，303 跟随
+   的请求永远不会附带 Strict cookie，落点仍是 401。终版方案 = **主窗口顶层原生导航**：WebKit 系
+   （macOS/Linux）由 supervisor 在每次就绪时（以及壳页在 ready/状态轮询时经 `navigate_main`）
+   对主窗口做 `window.navigate(token_url)`——原生导航无网页发起者，浏览器视角等价于用户在
+   地址栏打开该 URL，服务端 303 以第一方身份铸 cookie 并被跟随请求携带，之后应用即窗口文档
+   本身，全程无第三方上下文；Windows（Chromium WebView2）保持原 iframe 预装链路不动
+   （Chromium 在第三方 iframe 里拒绝 SET Strict cookie，预装 `SameSite=None; Secure` 是必须的）。
+   随行变更：launch_exchange 提取为共用存活探测；壳页崩溃时 `return_to_shell_page` 导回壳页
+   （由 splash/banner 兜底）；WebKit 主窗口挂 `on_navigation` 策略（dsh/tauri 源留在窗口，
+   其余交给系统浏览器，替代原 iframe 宿主桥的 open 转发；`window.open` 弹窗路由不变）；
+   同源守卫避免重复导航重载应用（同端口重启的会话 cookie 仍有效）。v1 的 icon 网格条目
+   生成与 Windows 链路验证签名随附。
 
 **Verification** — cargo test --lib 22/22（含新归一/双安装形态断言）；插件
 node --test 92/92；web/ 删除后 `node build.mjs`（Easel 布局）+ vendored 布局
@@ -134,8 +143,9 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
       GitHub easel-dsh 因 github.com:443 间歇不可达挂后台重试循环补齐；
       误推 deepseek-harness origin 的分支待 github 副本落地后删除
 - [x] T9: Easel 仓解构删除提交（depends: T8）—— b2adf41 + f703510
-- [x] T10: mac 实机反馈修复①：generate-mac-icons.mjs 重生成 icon.icns（Apple 网格）+ 注释/README 同步（depends: none）
-- [x] T11: mac 实机反馈修复②：dsh_runner.rs authenticate_webview 按 webview 引擎分流（WebKit 传透 token URL）+ 单测/README 同步（depends: none）
+- [x] T10: mac 实机反馈修复①：generate-mac-icons.mjs 重生成 icon.icns（Apple 网格，等比缩放保圆角）+ 注释/README 同步（depends: none）
+- [x] T11: mac 实机反馈修复② v1（已废）：authenticate_webview 分流 + iframe 直载 token URL——实机仍 401，根因见 Report 6 第二层（depends: none）
+- [x] T12: mac 实机反馈修复② v2：dsh_runner.rs 顶层原生导航 navigate_main/supervisor 钩子 + on_navigation 策略 + return_to_shell_page + app.js 分流（depends: T11）
 
 ## [S4] Acceptance
 
@@ -151,9 +161,16 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
 - [x] Easel 仓新提交（b2adf41+f703510）删除解构清单文件，保留
       skills/profiles/outputs/plugin/docs；未推任何远端
 - [x] T10 验证：generate-mac-icons.mjs 自校验通过（11 条目全解析、网格检查
-      内容 bbox 100..923 = 824/1024 正中）；提取的 1024/128 条目目视与
-      macOS 系统图标比例对齐（Windows .ico/PNG 未动）
+      内容 bbox 100..923 = 824/1024 正中；面积平均权重的 promot 分母按真实
+      覆盖率归一——首版曾因放大概率分母错误出半透明马赛克）；提取的 1024/128
+      条目目视确认原设计圆角构图完整、与系统图标物理大小对齐（Windows
+      .ico/PNG 未动）
 - [x] T11 验证：cargo check/test --lib 22/22；browser-auth + fetch-routes
       聚焦单测 15/15（服务端 303/401/HMAC 契约不变）；app.js node --check；
-      README 双语 + app.js 注释同步；mac 实机二验（重打包后 Dock 大小与
-      首启认证）待下次 workflow 出包验收
+      README 双语 + app.js 注释同步
+- [x] T11 实机：装包后 401 文案仍复现 → 证实 iframe 直载方案失效，根因为第三方
+      导航无法携带 Strict cookie（Report 6 第二层）
+- [x] T12 验证：cargo check/test --lib 22/22 + clippy 无新告警（tauri 2.11.5
+      navigate/url/on_navigation API 均在库签名核对）；app.js node --check；
+      README 双语 + i18n 配对 + spec 同步；mac 实机三验（Dock 图标为原设计
+      等比缩放 + 首启顶层导航直进主界面）待下次 workflow 出包验收
