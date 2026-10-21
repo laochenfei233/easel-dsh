@@ -7,13 +7,13 @@ import { setWorkspaceUIMode } from '@deepseek-ai/dsh-client-ui-workspace/client'
 // single-mode gates; tests that exercise the multi-workspace surface opt out.
 afterEach(() => setWorkspaceUIMode('single'))
 import { createContext, useContext, type ReactNode } from 'react'
-import { act, cleanup, fireEvent, render } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, within } from '@testing-library/react'
 import type { Context } from '@deepseek-ai/cordis'
 import type { SessionListState, SessionSnapshot } from '@deepseek-ai/dsh-api-session-controller/client'
 import type { WorkspaceSnapshot, WorkspaceView } from '@deepseek-ai/dsh-api-workspace-controller/client'
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 import {
-  bindSnapshotSelector, makeTranslate, RemoteError, sessionSnapshot as sessionFixture,
+  allowAllAccess, bindSnapshotSelector, makeTranslate, RemoteError, sessionSnapshot as sessionFixture,
 } from '@deepseek-ai/dsh-client-test-runtime'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
 import type { SessionStatusSnapshot } from '@deepseek-ai/dsh-client-ui-session/client'
@@ -228,6 +228,7 @@ function mount(
           useSessionStatus={useSessionStatus}
           useSessionRetainInfo={() => undefined}
           useWorkspaces={props.useWorkspaces}
+          {...allowAllAccess}
           useProjection={(() => undefined)}
           useInput={useInput}
           inputActions={inputActions}
@@ -257,6 +258,7 @@ function mount(
           useSessionStatus={useSessionStatus}
           useSessionRetainInfo={() => undefined}
           useWorkspaces={props.useWorkspaces}
+          {...allowAllAccess}
           useProjection={(() => undefined)}
           useInput={useInput}
           inputActions={inputActions}
@@ -284,6 +286,7 @@ function mount(
           useSessionStatus={useSessionStatus}
           useSessionRetainInfo={() => undefined}
           useWorkspaces={props.useWorkspaces}
+          {...allowAllAccess}
           useProjection={(() => undefined)}
           useInput={useInput}
           inputActions={inputActions}
@@ -342,6 +345,7 @@ function mount(
       useSessionStatus,
       useSessionRetainInfo: () => undefined,
       useWorkspaces: bindSnapshotSelector(workspaces),
+      ...allowAllAccess,
       useProjection: (() => undefined),
       useComposerBlock: select => select(options.composerBlock),
       useInput,
@@ -372,6 +376,7 @@ function mount(
     useSessionRetainInfo: () => undefined,
     useResource,
     useWorkspaces: bindSnapshotSelector(workspaces),
+    ...allowAllAccess,
     useProjection: (() => undefined),
     useInput,
     inputActions,
@@ -698,6 +703,18 @@ describe('ConversationRoot resident composer', () => {
     // The agent-preset chip sits in the same row, for the same reason: both
     // choices are only open before the first message.
     expect(b.slotCalls).toContain('conversation.hero.agentPreset')
+    expect(b.slotCalls).toContain('conversation.hero.options')
+  })
+
+  it('seats the New Session options after the agent-preset chip, and only for a Session', () => {
+    const b = mount(sessionSnapshotOf({ blank: true }))
+    const preset = within(b.view.container).getByTestId('view-conversation.hero.agentPreset')
+    const options = within(b.view.container).getByTestId('view-conversation.hero.options')
+    expect(options.parentElement?.previousElementSibling).toBe(preset)
+
+    const cold = mount(sessionSnapshotOf(), [], undefined, { sessionId: undefined })
+    expect(cold.slotCalls).toContain('conversation.hero.agentPreset')
+    expect(cold.slotCalls).not.toContain('conversation.hero.options')
   })
 
   it('prompt failure renders the promptError strip (ordinary failure, no transaction UI)', () => {

@@ -24,6 +24,7 @@ import type {
   SessionEventNotification,
   SessionPromptParams,
   SessionPromptResult,
+  SessionResumeParams,
   SessionWaitParams,
   SessionWorkingDirectoryParams,
   SessionWorkingDirectorySetParams,
@@ -212,6 +213,24 @@ export class HarnessSdkJsonRpcServer {
   }
 
   /**
+   * Restore a persisted session and repair its interrupted final turn without sending input.
+   * Uses the initialized model route while preserving the stored session identity and directory.
+   * Rejects missing, unreadable, or already owned sessions; never creates a replacement.
+   * @param params - persisted session identity in the configured persistence store.
+   * @returns an empty result after the Agent is ready for prompts.
+   */
+  async resume(params: SessionResumeParams): Promise<Record<string, never>> {
+    if (!this.initialized) throw new Error('SDK server is not initialized')
+    if (this.shuttingDown) throw new Error('SDK server is shutting down')
+    const sessionId = params.sessionId
+    if (this.sessions.has(sessionId) || this.sessionCreations.has(sessionId)) {
+      throw new Error(`SDK session is already open or opening: ${sessionId}`)
+    }
+    await this.openSession(sessionId, true)
+    return {}
+  }
+
+  /**
    * Wait for an existing owned Agent and its managed descendants to finish.
    * The response follows all Session notifications emitted during the wait.
    * Rejects a live Agent failure that has no subsequent durable terminal.
@@ -327,6 +346,13 @@ export class HarnessSdkJsonRpcServer {
         return this.initialize(params as unknown as InitializeParams)
       case 'session/prompt':
         return this.prompt(params as unknown as SessionPromptParams)
+      case 'session/resume': {
+        const sessionId = params?.sessionId
+        if (typeof sessionId !== 'string' || sessionId.length === 0) {
+          throw new TypeError('session/resume requires a non-empty sessionId string')
+        }
+        return this.resume({ sessionId })
+      }
       case 'session/wait': {
         const sessionId = params?.sessionId
         if (typeof sessionId !== 'string') throw new TypeError('session/wait requires a sessionId string')
@@ -356,7 +382,11 @@ export class HarnessSdkJsonRpcServer {
     if (existing) return existing
     const pending = this.sessionCreations.get(sessionId)
     if (pending) return pending
-    const creation = this.createSession(sessionId)
+    return this.openSession(sessionId, false)
+  }
+
+  private openSession(sessionId: string, resume: boolean): Promise<SessionRecord> {
+    const creation = this.createSession(sessionId, resume)
     this.sessionCreations.set(sessionId, creation)
     void creation.then(
       () => { this.sessionCreations.delete(sessionId) },
@@ -365,7 +395,7 @@ export class HarnessSdkJsonRpcServer {
     return creation
   }
 
-  private async createSession(sessionId: string): Promise<SessionRecord> {
+  private async createSession(sessionId: string, resume: boolean): Promise<SessionRecord> {
     // No preset composition: this server's compositions keep the model-facing
     // rows in the host plane, so this agent reads them from the global layer. A
     // deployment that configures a roster has to join one here first
@@ -377,21 +407,28 @@ export class HarnessSdkJsonRpcServer {
       ...this.maxTokens === undefined ? {} : { maxTokens: this.maxTokens },
     }
     let handle
-    try {
-      handle = await this.ctx.agents.create({
-        sessionId: brandString<SessionId>(sessionId),
-        meta: { cwd: this.cwd },
-        agentOptions,
-      })
-    } catch (error) {
-      // A durable session from a previous runtime process is not an error for
-      // an SDK caller: the id addresses the conversation they asked for. Load
-      // the persisted session and resume an agent on it instead.
-      if (!String(error).includes('already exists')) throw error
+    if (resume) {
       handle = await this.ctx.agents.resume({
         resumeSessionId: brandString<SessionId>(sessionId),
         agentOptions,
       })
+    } else {
+      try {
+        handle = await this.ctx.agents.create({
+          sessionId: brandString<SessionId>(sessionId),
+          meta: { cwd: this.cwd },
+          agentOptions,
+        })
+      } catch (error) {
+        // A durable session from a previous runtime process is not an error for
+        // an SDK caller: the id addresses the conversation they asked for. Load
+        // the persisted session and resume an agent on it instead.
+        if (!String(error).includes('already exists')) throw error
+        handle = await this.ctx.agents.resume({
+          resumeSessionId: brandString<SessionId>(sessionId),
+          agentOptions,
+        })
+      }
     }
     const rec: SessionRecord = { handle, failure: undefined }
     this.sessions.set(sessionId, rec)
