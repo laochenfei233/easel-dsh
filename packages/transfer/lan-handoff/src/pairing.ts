@@ -15,7 +15,7 @@ import type { TLSSocket } from 'node:tls'
 import {
   createFrameReader,
   encodeFrame,
-  FRAME_UNAUTHENTICATED_HEADER_MAX_BYTES,
+  FRAME_HEADER_MAX_BYTES,
   FrameError,
   type WireMessage,
 } from './frame.ts'
@@ -100,6 +100,14 @@ export class PairingRejectedError extends PairingError {
   }
 }
 
+/** One resolved frame: the header message plus its binary payload. */
+export interface ChannelFrame {
+  /** The decoded header. */
+  readonly message: WireMessage
+  /** The binary payload exactly as declared by the header. */
+  readonly binary: Uint8Array
+}
+
 /** The socket-facing message plumbing shared by both pairing roles. */
 export interface ConnectionChannel {
   /**
@@ -109,8 +117,18 @@ export interface ConnectionChannel {
    * @param timeoutMs - maximum wait.
    */
   next(types: string | readonly string[], timeoutMs: number): Promise<WireMessage>
-  /** Send one frame. */
-  write(message: WireMessage): void
+  /**
+   * Resolve the next matching message together with its binary payload.
+   * @param types - accepted type tags.
+   * @param timeoutMs - maximum wait.
+   */
+  nextFrame(types: string | readonly string[], timeoutMs: number): Promise<ChannelFrame>
+  /**
+   * Send one frame.
+   * @param message - the header fields; `binaryLength` defaults to the payload length.
+   * @param binary - optional payload bytes.
+   */
+  write(message: WireMessage, binary?: Uint8Array): void
 }
 
 /**
@@ -123,25 +141,25 @@ export function attachChannel(socket: TLSSocket): ConnectionChannel {
     typeof types === 'string' ? [types] : types
   const waiters: {
     readonly types: readonly string[]
-    readonly resolve: (message: WireMessage) => void
+    readonly resolve: (frame: ChannelFrame) => void
     readonly reject: (error: Error) => void
   }[] = []
-  const queued: WireMessage[] = []
+  const queued: ChannelFrame[] = []
   let failed: Error | undefined
   const failAll = (error: Error): void => {
     if (failed !== undefined) return
     failed = error
     for (const entry of waiters.splice(0)) entry.reject(error)
   }
-  const reader = createFrameReader((message) => {
+  const reader = createFrameReader((message, binary) => {
     const index = waiters.findIndex(entry => entry.types.includes(message.type))
     if (index === -1) {
-      queued.push(message)
+      queued.push({ message, binary })
       return
     }
     const [entry] = waiters.splice(index, 1)
-    entry?.resolve(message)
-  }, FRAME_UNAUTHENTICATED_HEADER_MAX_BYTES)
+    entry?.resolve({ message, binary })
+  }, FRAME_HEADER_MAX_BYTES)
   socket.on('data', (chunk: Buffer) => {
     try {
       reader.push(chunk)
@@ -152,28 +170,31 @@ export function attachChannel(socket: TLSSocket): ConnectionChannel {
   socket.on('error', (error: Error) => { failAll(error) })
   socket.on('close', () => { failAll(new PairingRejectedError(undefined)) })
   return {
-    next(types: string | readonly string[], timeoutMs: number): Promise<WireMessage> {
+    async next(types: string | readonly string[], timeoutMs: number): Promise<WireMessage> {
+      return (await this.nextFrame(types, timeoutMs)).message
+    },
+    nextFrame(types: string | readonly string[], timeoutMs: number): Promise<ChannelFrame> {
       if (failed !== undefined) return Promise.reject(failed)
       const accepted = wanted(types)
-      const queuedIndex = queued.findIndex(message => accepted.includes(message.type))
+      const queuedIndex = queued.findIndex(frame => accepted.includes(frame.message.type))
       if (queuedIndex !== -1) {
-        const [message] = queued.splice(queuedIndex, 1)
-        if (message !== undefined) return Promise.resolve(message)
+        const [frame] = queued.splice(queuedIndex, 1)
+        if (frame !== undefined) return Promise.resolve(frame)
       }
-      return new Promise<WireMessage>((resolve, reject) => {
+      return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
-          reject(new PairingError('timeout', `pairing did not advance within ${timeoutMs} ms`))
+          reject(new PairingError('timeout', `connection did not advance within ${timeoutMs} ms`))
         }, timeoutMs)
         waiters.push({
           types: accepted,
-          resolve: (message) => { clearTimeout(timer); resolve(message) },
+          resolve: (frame) => { clearTimeout(timer); resolve(frame) },
           reject: (error) => { clearTimeout(timer); reject(error) },
         })
       })
     },
-    write(message: WireMessage): void {
+    write(message: WireMessage, binary?: Uint8Array): void {
       if (failed !== undefined) throw failed
-      socket.write(encodeFrame(message))
+      socket.write(encodeFrame(message, binary))
     },
   }
 }

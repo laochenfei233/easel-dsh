@@ -64,6 +64,7 @@ export { dialLanPeer, startLanListener, type LanListener } from './listener.ts'
 export {
   answerPairing,
   attachChannel,
+  type ChannelFrame,
   dialForPairing,
   PAIRING_TIMEOUT_MS,
   PairingError,
@@ -88,6 +89,27 @@ export {
   type WireMessage,
 } from './frame.ts'
 export { deriveSas, deriveSasFromKeys, SAS_LENGTH, spkiOf, type SasMaterial } from './sas.ts'
+export {
+  computeTreeSummary,
+  receiveBundle,
+  sendBundle,
+  TransferIntegrityError,
+  TransferProtocolError,
+  TransferRejectedError,
+  TRANSFER_CHUNK_BYTES,
+  TRANSFER_PROTOCOL_VERSION,
+  validateBundleManifest,
+  type BundleEntryKind,
+  type BundleEntryReader,
+  type BundleEntryRef,
+  type BundleEntrySink,
+  type BundleManifest,
+  type OfferDecision,
+  type BundleTreeSummary,
+  type ReceivedBundle,
+  type ReceiveBundleHandlers,
+  type SentBundle,
+} from './transfer.ts'
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
