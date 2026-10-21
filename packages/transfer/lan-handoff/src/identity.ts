@@ -65,12 +65,12 @@ interface StoredIdentity {
 }
 
 /**
- * Derive the branded device id from one certificate PEM.
- * @param cert - certificate PEM.
+ * Derive the branded device id from one certificate PEM or DER buffer.
+ * @param cert - certificate PEM text or DER bytes.
  * @returns the 20-hex-character device id.
- * @throws when the PEM is not a parsable certificate.
+ * @throws when the certificate is not parsable.
  */
-function deviceIdOf(cert: string): DeviceId {
+export function deviceIdFromCertificate(cert: string | Buffer): DeviceId {
   const spki = new X509Certificate(cert).publicKey.export({ type: 'spki', format: 'der' })
   const hex = createHash('sha256').update(Buffer.from(spki)).digest('hex')
   return brandString<DeviceId>(hex.slice(0, DEVICE_ID_HEX_LENGTH))
@@ -112,7 +112,7 @@ async function readStoredIdentity(file: string): Promise<StoredIdentity | undefi
     throw new DeviceIdentityCorruptError(file, new TypeError('identity record is missing the certificate or the key'))
   }
   try {
-    deviceIdOf(cert)
+    deviceIdFromCertificate(cert)
   } catch (error) {
     throw new DeviceIdentityCorruptError(file, error)
   }
@@ -160,5 +160,5 @@ async function mintIdentity(file: string, root: string): Promise<StoredIdentity>
 export async function loadDeviceIdentity(root = defaultLanHandoffRoot()): Promise<DeviceIdentity> {
   const file = join(root, IDENTITY_FILE_NAME)
   const stored: StoredIdentity = (await readStoredIdentity(file)) ?? (await mintIdentity(file, root))
-  return { deviceId: deviceIdOf(stored.cert), cert: stored.cert, key: stored.key }
+  return { deviceId: deviceIdFromCertificate(stored.cert), cert: stored.cert, key: stored.key }
 }

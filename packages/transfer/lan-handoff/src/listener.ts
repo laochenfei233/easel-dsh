@@ -72,7 +72,14 @@ export async function startLanListener(
   onConnection: (socket: TLSSocket) => void,
   hosts: readonly string[] = LISTEN_HOSTS,
 ): Promise<LanListener> {
-  const server = createTlsServer({ key: identityTls.key, cert: identityTls.cert }, onConnection)
+  const server = createTlsServer({
+    key: identityTls.key,
+    cert: identityTls.cert,
+    // The peer's identity certificate is the connection's identity source;
+    // pairing and sync authorize on the derived device id, not on a chain.
+    requestCert: true,
+    rejectUnauthorized: false,
+  }, onConnection)
   let bound: { readonly host: string; readonly port: number } | undefined
   let lastError: unknown
   for (const host of hosts) {

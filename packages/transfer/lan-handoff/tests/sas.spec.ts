@@ -1,11 +1,11 @@
-/** SAS derivation determinism, widening, and sensitivity to key and nonce material. */
+/** SAS derivation: determinism, format, and sensitivity to material and role order. */
 
 import { randomBytes } from 'node:crypto'
-import { expect, it } from 'vitest'
-import { loadDeviceIdentity, type DeviceIdentity } from '../src/identity.ts'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { expect, it } from 'vitest'
+import { loadDeviceIdentity, type DeviceIdentity } from '../src/identity.ts'
 import { deriveSas, deriveSasFromKeys, SAS_LENGTH, spkiOf } from '../src/sas.ts'
 
 let pair: readonly [DeviceIdentity, DeviceIdentity] | undefined
@@ -30,25 +30,40 @@ async function identityPair(): Promise<readonly [DeviceIdentity, DeviceIdentity]
 
 it('derives a stable six-digit string for fixed material', async () => {
   const [first, second] = await identityPair()
-  const ownNonce = randomBytes(16)
-  const peerNonce = randomBytes(16)
-  const again = randomBytes(16)
-  expect(deriveSas(first.cert, second.cert, ownNonce, peerNonce))
-    .toBe(deriveSas(first.cert, second.cert, ownNonce, peerNonce))
-  expect(deriveSasFromKeys(spkiOf(first.cert), spkiOf(second.cert), ownNonce, again))
-    .toMatch(/^[0-9]{6}$/u)
+  const dialerNonce = randomBytes(16)
+  const listenerNonce = randomBytes(16)
+  const again = deriveSas(
+    { cert: first.cert, nonce: dialerNonce },
+    { cert: second.cert, nonce: listenerNonce },
+  )
+  const repeat = deriveSas(
+    { cert: first.cert, nonce: dialerNonce },
+    { cert: second.cert, nonce: listenerNonce },
+  )
+  expect(again).toBe(repeat)
+  expect(again).toMatch(/^[0-9]{6}$/u)
   expect(SAS_LENGTH).toBe(6)
 })
 
-it('moves when a nonce or a certificate changes', async () => {
+it('moves when any key, nonce, or role changes', async () => {
   const [first, second] = await identityPair()
-  const same = randomBytes(16)
+  const nonce = randomBytes(16)
   const other = randomBytes(16)
-  const base = deriveSasFromKeys(spkiOf(first.cert), spkiOf(second.cert), same, same)
-  const moved = deriveSasFromKeys(spkiOf(first.cert), spkiOf(second.cert), same, other)
-  const peerKeyMoved = deriveSasFromKeys(spkiOf(second.cert), spkiOf(first.cert), same, same)
-  // P(both hashes collapsing onto the base digits) is about 10^-12.
-  expect(new Set([base, moved, peerKeyMoved]).size).toBeGreaterThanOrEqual(2)
+  const firstKey = spkiOf(first.cert)
+  const secondKey = spkiOf(second.cert)
+  const variants = [
+    deriveSasFromKeys(firstKey, secondKey, nonce, nonce),
+    deriveSasFromKeys(firstKey, secondKey, nonce, other),
+    deriveSasFromKeys(firstKey, secondKey, other, nonce),
+    deriveSasFromKeys(secondKey, firstKey, nonce, nonce),
+    deriveSasFromKeys(firstKey, secondKey, other, other),
+    deriveSasFromKeys(firstKey, secondKey, randomBytes(16), randomBytes(16)),
+    deriveSasFromKeys(firstKey, secondKey, randomBytes(16), randomBytes(16)),
+    deriveSasFromKeys(firstKey, secondKey, randomBytes(16), randomBytes(16)),
+  ]
+  // Each variant collides with the first only by chance (about one in a million),
+  // and all seven colliding at once is negligible.
+  expect(new Set(variants).size).toBeGreaterThan(1)
 })
 
 it('pads low confirmation values to the full digit count', () => {
