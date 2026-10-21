@@ -157,7 +157,18 @@ pub fn run() {
     // <install>\data before any command reads the first-run state or the dsh
     // home. Installed-only; dev launches keep their scratch paths.
     layout::migrate();
-    tauri::Builder::default()
+    let builder = tauri::Builder::default();
+    // Release only: a second launch of the installed shell must surface the
+    // resident instance instead of stacking another tray-resident one (window
+    // close only hides to tray) whose forced kill would leave a ghost tray
+    // icon behind. The plugin's mutex keys on the shared `ai.easel.desktop`
+    // identifier, so a dev build beside an installed shell would bounce off
+    // it — dev builds stay multi-instance.
+    #[cfg(not(debug_assertions))]
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+        tray::show_main_window(app);
+    }));
+    builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {
