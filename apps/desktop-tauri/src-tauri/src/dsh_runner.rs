@@ -10,6 +10,8 @@ use std::sync::Mutex as LaunchUrlMutex;
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
+// The WebView2 path is the only one that pre-installs a native cookie.
+#[cfg(windows)]
 use tauri::webview::{
     cookie::{time::Duration as CookieDuration, SameSite},
     Cookie,
@@ -1013,7 +1015,7 @@ fn plain_path(p: &Path) -> PathBuf {
     }
 }
 
-/// Cookie fields needed to install the launch exchange result in WebView2.
+/// Cookie fields of the launch-token exchange response.
 #[derive(Debug)]
 struct AuthCookie {
     name: String,
@@ -1021,7 +1023,8 @@ struct AuthCookie {
     max_age: i64,
 }
 
-/// The clean Web origin to load after the launch-token exchange.
+/// The URL the shell iframe should load: the clean origin on Windows, the
+/// token URL on WebKit shells (see `authenticate_webview`).
 #[derive(Serialize)]
 pub struct WebviewSession {
     pub url: String,
@@ -1056,21 +1059,13 @@ fn auth_cookie_from_response(response: &str) -> Option<AuthCookie> {
     })
 }
 
-/// Exchange the one-time URL token for a browser cookie in the native store.
-/// The cookie is made usable by the embedded cross-origin iframe; a strict
-/// cookie minted by an iframe would not be sent back to the loopback server.
-#[tauri::command]
-pub async fn authenticate_webview(app: AppHandle, url: String) -> Result<WebviewSession, String> {
-    let parsed = url
-        .parse::<Url>()
-        .ok()
-        .filter(|parsed| {
-            parsed.scheme() == "http"
-                && parsed.host_str() == Some("127.0.0.1")
-                && parsed.port().is_some()
-        })
-        .ok_or("invalid dsh web launch URL")?;
-    let (cookie_parts, clean_url) = tauri::async_runtime::spawn_blocking(move || {
+/// Exchange the launch token over loopback HTTP and report both URL forms the
+/// shell may load: the clean origin for a cookie-carried session and the
+/// original token URL for the WebKit in-iframe load. The exchange doubles as a
+/// liveness probe, failing before the iframe can display the 401 body.
+async fn launch_exchange(parsed: Url) -> Result<(AuthCookie, String, String), String> {
+    let (cookie, clean_url, token_url) = tauri::async_runtime::spawn_blocking(move || {
+        let token_url = parsed.to_string();
         let port = parsed.port().ok_or("invalid dsh web launch URL")?;
         let target = match parsed.query() {
             Some(query) => format!("{}?{query}", parsed.path()),
@@ -1098,25 +1093,68 @@ pub async fn authenticate_webview(app: AppHandle, url: String) -> Result<Webview
         let mut clean = parsed;
         clean.set_query(None);
         clean.set_fragment(None);
-        Ok::<_, String>((cookie, clean.to_string()))
+        Ok::<_, String>((cookie, clean.to_string(), token_url))
     })
     .await
     .map_err(|e| format!("launch-token exchange task failed: {e}"))??;
-    let cookie = Cookie::build((cookie_parts.name, cookie_parts.value))
-        .domain("127.0.0.1")
-        .path("/")
-        .http_only(true)
-        .same_site(SameSite::None)
-        .secure(true)
-        .max_age(CookieDuration::seconds(cookie_parts.max_age))
-        .build();
-    let window = app
-        .get_webview_window("main")
-        .ok_or("main webview unavailable")?;
-    window
-        .set_cookie(cookie)
-        .map_err(|e| format!("browser-cookie installation failed: {e}"))?;
-    Ok(WebviewSession { url: clean_url })
+    Ok((cookie, clean_url, token_url))
+}
+
+/// Load the launch-token URL into the shell webview.
+///
+/// Chromium WebView2 (Windows): the shell installs the exchanged cookie into
+/// the native cookie store (`SameSite=None; Secure`) and returns the clean URL,
+/// because a `SameSite=Strict` cookie minted inside the embedded cross-origin
+/// iframe is not sent to the loopback server.
+///
+/// WebKit shells (macOS/Linux): return the token URL for the iframe to load
+/// directly. Pre-installing the exchanged cookie cannot authenticate this
+/// iframe: the loopback listener is plain HTTP, and WebKit neither sends
+/// `Secure` cookies into it nor delivers a shell-installed cookie from the
+/// third-party iframe storage — the observed failure, the 401 body at every
+/// start. Loading `/?token=…` inside the iframe keeps every cookie in the
+/// iframe's own storage: the server mints the `HttpOnly; SameSite=Strict`
+/// cookie on its 303 redirect, and every later request is the iframe
+/// document's same-origin traffic.
+#[tauri::command]
+pub async fn authenticate_webview(app: AppHandle, url: String) -> Result<WebviewSession, String> {
+    let parsed = url
+        .parse::<Url>()
+        .ok()
+        .filter(|parsed| {
+            parsed.scheme() == "http"
+                && parsed.host_str() == Some("127.0.0.1")
+                && parsed.port().is_some()
+        })
+        .ok_or("invalid dsh web launch URL")?;
+    // Each platform consumes a subset (Windows: {cookie, clean_url}; WebKit:
+    // {token_url}); the statement allow keeps the other target's fields
+    // warning-free.
+    #[allow(unused_variables)]
+    let (cookie, clean_url, token_url) = launch_exchange(parsed).await?;
+    let _ = &app;
+    #[cfg(windows)]
+    {
+        let cookie = Cookie::build((cookie.name, cookie.value))
+            .domain("127.0.0.1")
+            .path("/")
+            .http_only(true)
+            .same_site(SameSite::None)
+            .secure(true)
+            .max_age(CookieDuration::seconds(cookie.max_age))
+            .build();
+        let window = app
+            .get_webview_window("main")
+            .ok_or("main webview unavailable")?;
+        window
+            .set_cookie(cookie)
+            .map_err(|e| format!("browser-cookie installation failed: {e}"))?;
+        Ok(WebviewSession { url: clean_url })
+    }
+    #[cfg(not(windows))]
+    {
+        Ok(WebviewSession { url: token_url })
+    }
 }
 #[derive(Serialize)]
 pub struct DshStatus {

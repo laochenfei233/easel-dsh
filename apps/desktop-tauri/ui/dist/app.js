@@ -1,9 +1,11 @@
 // Shell page logic: first-run gate, dsh lifecycle events, and the
 // host <-> iframe bridge (native notifications and default-browser links).
 // The top navigation bar is intentionally gone; the dsh UI owns its chrome.
-// The iframe stays blank until Rust exchanges dsh's one-time launch token for
-// a WebView cookie; loading the token URL directly would leave the strict
-// browser cookie unusable inside this cross-origin iframe.
+// The iframe stays blank until Rust validates the launch URL. On Windows it
+// exchanges the token and pre-installs the WebView cookie, then loads the
+// clean URL it returns; on WebKit shells the returned URL still carries the
+// token and the iframe loads it directly (the server mints the Strict cookie
+// in the iframe's own storage; see authenticate_webview).
 
 const frame = document.getElementById('dsh-frame');
 const banner = document.getElementById('error-banner');
@@ -37,8 +39,9 @@ frame.addEventListener('load', () => {
   if (activeUrl && frame.src !== 'about:blank' && splash) splash.classList.add('done');
 });
 
-// Exchanges the launch URL through Rust, which installs the browser cookie in
-// the native WebView store, then loads the clean URL it returns.
+// Loads the session URL Rust prepared for the webview engine (see the file
+// header); Windows pre-installs the cookie, WebKit shells load the token URL
+// in the iframe itself.
 async function openAuthenticated(url) {
   if (!url || url === activeUrl || url === pendingUrl) return;
   pendingUrl = url;

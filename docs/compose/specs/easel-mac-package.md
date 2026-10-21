@@ -33,6 +33,21 @@ commits: dsh 71ea5c0568..8a66b85fdc2（5e012932a2 vendoring、3d1de6a9d6 stageEa
    outputs/plugin/docs/assets/tools/pytest.ini 等必要与 meta 内容。
    **Easel 仓从此不推任何远端（不同步 easel）；产品仓 = easel-dsh
    （gitea 私有 + GitHub 公开，分支 feat/easel-mac-package，gitea 默认分支已设）。**
+5. **mac 实机反馈①：Dock 图标过大**：提交的 `icon.icns` 母图构图满幅——白瓷砖
+   顶满画布只剩四角，Dock 按全画布渲染 → 比标准 mac 图标大 ~25%（系统图标的
+   形状占 824/1024）。新增 `apps/desktop-tauri/scripts/generate-mac-icons.mjs`：
+   以 `official-512.png` 母图重生成全套 icns 条目（16..1024 共 11 条目，Apple
+   网格网格：内容 824/1024、四边留白 100/1024、圆角 185.4/1024，round-rect
+   SDF 抗锯齿叠加母图 alpha），写入前自校验条目集/尺寸/网格边距；
+   `icon.ico` 与 PNG 家族保持 Windows 形态不动。
+6. **mac 实机反馈②：启动撞出 401 文案**：`authenticate_webview` 预装进原生
+   cookie 存储的 cookie 到不了 WKWebView 的内嵌 iframe（WebKit 不向纯 HTTP
+   loopback 发送 `Secure` cookie，也不把第三方 iframe 的存储交出来），iframe
+   首次加载渲染出服务端 401 文案。按 webview 引擎分流：Windows（Chromium
+   WebView2）保持原链路（预装 `SameSite=None; Secure` cookie + 干净 URL）；
+   WebKit 系（macOS/Linux）交换保留（存活探测失败先于 iframe 401）但直接返回
+   带 token 的 URL，iframe 自行加载 `/?token=…`，服务端 303 在 iframe 自身
+   存储铸造 `HttpOnly; SameSite=Strict` 会话 cookie，后续请求全部同源。
 
 **Verification** — cargo test --lib 22/22（含新归一/双安装形态断言）；插件
 node --test 92/92；web/ 删除后 `node build.mjs`（Easel 布局）+ vendored 布局
@@ -119,6 +134,8 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
       GitHub easel-dsh 因 github.com:443 间歇不可达挂后台重试循环补齐；
       误推 deepseek-harness origin 的分支待 github 副本落地后删除
 - [x] T9: Easel 仓解构删除提交（depends: T8）—— b2adf41 + f703510
+- [x] T10: mac 实机反馈修复①：generate-mac-icons.mjs 重生成 icon.icns（Apple 网格）+ 注释/README 同步（depends: none）
+- [x] T11: mac 实机反馈修复②：dsh_runner.rs authenticate_webview 按 webview 引擎分流（WebKit 传透 token URL）+ 单测/README 同步（depends: none）
 
 ## [S4] Acceptance
 
@@ -133,3 +150,10 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
       .env.example 技能模板保留）
 - [x] Easel 仓新提交（b2adf41+f703510）删除解构清单文件，保留
       skills/profiles/outputs/plugin/docs；未推任何远端
+- [x] T10 验证：generate-mac-icons.mjs 自校验通过（11 条目全解析、网格检查
+      内容 bbox 100..923 = 824/1024 正中）；提取的 1024/128 条目目视与
+      macOS 系统图标比例对齐（Windows .ico/PNG 未动）
+- [x] T11 验证：cargo check/test --lib 22/22；browser-auth + fetch-routes
+      聚焦单测 15/15（服务端 303/401/HMAC 契约不变）；app.js node --check；
+      README 双语 + app.js 注释同步；mac 实机二验（重打包后 Dock 大小与
+      首启认证）待下次 workflow 出包验收
