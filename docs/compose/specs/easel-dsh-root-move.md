@@ -14,12 +14,13 @@ commits: 47169b76fcf..e0147d5f902
 
 **Verification** — 全部在新根执行：
 - `git log --oneline -3` → e0147d5f902 / 47169b76fcf / 8a66b85fdc2，历史连续 PASS
-- `git status --porcelain | wc -l` → 3（2 个既有 untracked + `?? dsh/` 残壳空目录）PASS
+- `git status --porcelain` → 2（`apps/cli/.env.example` 与 `apps/cli/out/` 为迁移前既有 untracked；验收构建重生成的 vendored `client.js` 随 resync 提交入库）PASS
 - 主仓 `git worktree list` → `Easel @ e0147d5f902 [feat/easel-mac-package]` 注册正确；master 主 checkout 与 safety worktree 未受影响；并行会话新开的 `.worktrees/easel-ci-fix` 完好 PASS
 - `git remote get-url origin / easel-dsh` → 四组 remote 完好 PASS
 - `CI=true pnpm install` → 1m41s 成功，postinstall（含 lefthook install）全部通过 PASS
 - `node easel/dsh-plugin-easel/build.mjs` → exit 0，`client.js` 552.4kb，`resolveDshRoot` 向上解析到根成功 PASS
-- 归档仓 `git worktree repair` + `git log --oneline -1` → 31a8f4a 可用；外层四分支 push 因 github.com:443 不可达失败，按删除规则归档保留，不删除 PASS（条件性）
+- 归档仓 `git worktree repair` + `git log --oneline -1` → 31a8f4a 可用 PASS
+- 外层四分支 push 复核：网络恢复后重试，origin=ZJU-REAL/Easel 仅可读（403 denied to laochenfei233；origin/main 已被第三方并行演进至 3f1d4fb），无写信权限 → 归档按规则长期保留 PASS（条件性）
 
 **Journey log**
 - 外层根目录被 ZCode 主进程 cwd 锁死，顶层改名/删除都不可能——改为「由内向外」：先清空子项再让 dsh 内容升层，最后手工改写主仓 `.git/worktrees/dsh/gitdir` 指针，跳过了 `git worktree move`（目标路径被锁同样会失败）。
@@ -62,5 +63,5 @@ commits: 47169b76fcf..e0147d5f902
 - [x] 新根 `docs/compose/specs/` 含 20 个 spec 且已提交（e0147d5f902，22 文件含 2 脚本）
 - [x] `node easel/dsh-plugin-easel/build.mjs` 在新根跑通（exit 0，552.4kb bundle）
 - [x] `pnpm install` 在新根成功（CI=true，1m41s）
-- [x] 外层四分支 push 失败 → 归档保留并明确报告（待网络恢复补推后再删）
+- [x] 外层四分支 push 无权限（403）→ 归档长期保留并明确报告，去留由用户决策
 - [x] dsh 仓内 feat/easel-mac-package 分支提交历史连续（e0147d5f902 → 47169b76fcf → 8a66b85fdc2）
