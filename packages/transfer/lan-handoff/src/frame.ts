@@ -108,15 +108,15 @@ export function createFrameReader(
     push(chunk: Buffer): void {
       buffered = buffered.byteLength === 0 ? chunk : Buffer.concat([buffered, chunk])
       for (;;) {
-        if (headerLength === undefined) {
-          if (buffered.byteLength < 4) return
-          headerLength = buffered.readUInt32BE(0)
-          if (headerLength === 0 || headerLength > maxHeaderBytes) {
-            throw new FrameError(`header length ${headerLength} is outside 1..${maxHeaderBytes}`)
-          }
-          buffered = buffered.subarray(4)
-        }
         if (message === undefined) {
+          if (headerLength === undefined) {
+            if (buffered.byteLength < 4) return
+            headerLength = buffered.readUInt32BE(0)
+            if (headerLength === 0 || headerLength > maxHeaderBytes) {
+              throw new FrameError(`header length ${headerLength} is outside 1..${maxHeaderBytes}`)
+            }
+            buffered = buffered.subarray(4)
+          }
           if (buffered.byteLength < headerLength) return
           let parsed: unknown
           try {

@@ -90,6 +90,20 @@ export {
 } from './frame.ts'
 export { deriveSas, deriveSasFromKeys, SAS_LENGTH, spkiOf, type SasMaterial } from './sas.ts'
 export {
+  HandoffPreparationError,
+  HandoffReceiveError,
+  prepareBundle,
+  projectDirectoryName,
+  receiveHandoff,
+  sendPreparedBundle,
+  walkProjectTree,
+  type HandoffImportHost,
+  type PreparedBundle,
+  type ProjectTreeFile,
+  type ReceivedHandoff,
+  type SessionArchiveSource,
+} from './handoff.ts'
+export {
   computeTreeSummary,
   receiveBundle,
   sendBundle,
