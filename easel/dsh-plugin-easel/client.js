@@ -4,7 +4,6 @@ window.__ModuleLoader__.load({
     const module = { exports: {} };
     const exports = module.exports;
 
-"use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -2964,7 +2963,7 @@ var import_react7 = require("react");
 // src/components/SkillDrawer.tsx
 var import_react6 = require("react");
 
-// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../dsh/node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -4121,7 +4120,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../dsh/node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
