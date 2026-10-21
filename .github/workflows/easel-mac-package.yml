@@ -1,0 +1,83 @@
+name: Package Easel-dsh · macOS
+
+# The Tauri shell bundle (ai.easel.desktop), not the upstream Electron
+# packaging in macos-package.yml. arm64 and x64 build separately on the
+# self-hosted runner; both carry the vendored easel bundle (dsh/easel).
+# Signing/notarization is out of scope for now: artifacts are unsigned
+# trial builds and must not be published to release channels.
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: '打包源码：分支名或 dsh-v* tag'
+        type: string
+        default: feat/easel-mac-package
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: easel-mac-package
+  cancel-in-progress: false
+
+jobs:
+  package:
+    name: Package Easel-dsh (${{ matrix.arch }})
+    runs-on: [self-hosted, macOS, ARM64, dsh-mac-package-trial]
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x64]
+    defaults:
+      run:
+        shell: bash
+    env:
+      DSH_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+          clean: true
+          ref: ${{ inputs.source_ref }}
+      - uses: pnpm/action-setup@v5.0.0
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.arch }}
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: '24'
+      - name: Install locked dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Ensure the Rust target toolchain
+        run: rustup target add ${{ matrix.arch == 'arm64' && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}
+      - name: Stage the bundled runtime for ${{ matrix.arch }}
+        run: node apps/desktop-tauri/scripts/bundle-runtime.mjs --platform mac --arch ${{ matrix.arch }}
+      - name: Build the dmg
+        run: >-
+          pnpm --filter @deepseek-ai/dsh-desktop-tauri run tauri --
+          build --bundles dmg
+          --target ${{ matrix.arch == 'arm64' && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}
+      - name: Resolve the artifact version
+        if: success()
+        run: echo "VERSION=$(node -p "require('./apps/desktop-tauri/src-tauri/tauri.conf.json').version")" >> "$GITHUB_ENV"
+      - name: Retain the installer
+        if: success()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: easel-dsh-mac-${{ matrix.arch }}-${{ env.VERSION }}-${{ github.run_id }}
+          include-hidden-files: true
+          path: apps/desktop-tauri/src-tauri/target/${{ matrix.arch == 'arm64' && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+          retention-days: 14
+      - name: Retain build logs
+        if: always()
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: easel-dsh-mac-${{ matrix.arch }}-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            apps/desktop-tauri/runtime/manifest.json
+            apps/desktop-tauri/src-tauri/target/*/release/bundle/dmg/
+          if-no-files-found: warn
+          retention-days: 7
