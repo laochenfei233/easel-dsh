@@ -412,6 +412,7 @@
     { "path": "./packages/ssh/sandbox-ssh" },
     { "path": "./packages/subprocess/win32-process" },
     { "path": "./packages/shell/shell" },
+    { "path": "./packages/transfer/lan-handoff" },
     { "path": "./packages/terminal/terminal" },
     { "path": "./packages/terminal/terminal-bash" },
     { "path": "./packages/shell/tool-bash-persistent" },
