@@ -32,7 +32,6 @@ import { RenameSessionMenuItem, SessionRenameDialog } from '../src/client/sessio
 import { RowActionToast } from '../src/client/session-actions/RowActionToast.tsx'
 import type { ArchiveToastInjected, ToastDisplayInjected } from '../src/client/contract/toast.ts'
 import { SessionIdMenuItem } from '../src/client/session-actions/SessionId.tsx'
-import { WorkspacePicker } from '../src/client/WorkspacePicker.tsx'
 import { FLAT_SESSION_ORDER_KEY } from '../src/client/stores.ts'
 import { UNGROUPED_KEY } from '../src/client/tree.ts'
 import { apply as hostApply } from '../src/index.ts'
