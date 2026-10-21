@@ -11,9 +11,11 @@ import { join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
 import {
   LanHandoffService,
+  type HandoffImporter,
+  type HandoffWorkspaces,
+  type LanAdvertisement,
   type LanDiscoveryEntry,
   type LanDiscoveryHost,
-  type LanAdvertisement,
 } from '../src/index.ts'
 
 /** Discovery host that records publications and lets the test inject peers. */
@@ -42,24 +44,29 @@ class RecordingDiscoveryHost implements LanDiscoveryHost {
 }
 
 interface FakeSeams {
-  readonly workspaces: Context['workspaces']
+  readonly workspaces: HandoffWorkspaces
   readonly created: { readonly path: string; readonly title: string }[]
   readonly attached: string[]
+}
+
+/** Importer seam reporting one imported session regardless of archive count. */
+const fakeImporter: HandoffImporter = {
+  importArchive: async () => ({ root: { id: 'session-x' }, descendants: [] }),
 }
 
 /** Minimal workspaces/importer/persistence seams for a session-free handoff. */
 function fakeServices(resolveWorkspaceTo?: { readonly path: string; readonly title: string }): FakeSeams {
   const created: { path: string; title: string }[] = []
   const attached: string[] = []
-  const workspaces = {
+  const workspaces: HandoffWorkspaces = {
     resolveByPath: async () => resolveWorkspaceTo === undefined
       ? undefined
       : { path: resolveWorkspaceTo.path, title: resolveWorkspaceTo.title, sessionIds: [] },
-    create: async (path: string, title?: string) => {
+    create: async (path, title) => {
       created.push({ path, title: title ?? '' })
-      return { attachSession: async (id: unknown) => { attached.push(String(id)) } }
+      return { attachSession: async (id) => { attached.push(String(id)) } }
     },
-  } as Context['workspaces']
+  }
   return { workspaces, created, attached }
 }
 
@@ -83,21 +90,20 @@ async function device(options: {
   const ctx = new Context()
   const root = await mkdtemp(join(tmpdir(), 'dsh-prod-'))
   const destination = await mkdtemp(join(tmpdir(), 'dsh-prod-inbox-'))
+  let seamOptions = {}
   if (options.withSeams) {
     const seams = fakeServices(options.resolveWorkspaceTo)
-    ctx.provide('workspaces', seams.workspaces)
     ctx.provide('sessionPersistence', {} as Context['sessionPersistence'])
     ctx.provide('sessionQuery', {} as Context['sessionQuery'])
     ctx.provide('attachments', {} as Context['attachments'])
-    ctx.provide('sessionLogImporter', {
-      importArchive: async () => ({ root: { id: 'session-x' }, descendants: [] }),
-    } as Context['sessionLogImporter'])
+    seamOptions = { workspaces: seams.workspaces, importer: fakeImporter }
   }
   const discovery = new RecordingDiscoveryHost()
   const service = new LanHandoffService(ctx, { name: 'loopback', handoffDirectory: destination }, {
     identityRoot: root,
     discovery,
     allowLoopbackPeers: true,
+    ...seamOptions,
   })
   const state = await service.ready
   disposers.push(async () => {

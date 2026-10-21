@@ -24,10 +24,8 @@ import {
   streamSessionLogZip,
   type SessionLogExportReady,
 } from '@deepseek-ai/dsh-session-log-export'
-import type { SessionLogImporter } from '@deepseek-ai/dsh-session-log-import'
 import type { SessionPersistence } from '@deepseek-ai/dsh-session-persistence'
 import type { SessionQueryEngine } from '@deepseek-ai/dsh-session-query'
-import type { WorkspaceRegistry } from '@deepseek-ai/dsh-workspace'
 import {
   advertiseLanHandoff,
   browseLanHandoff,
@@ -180,6 +178,34 @@ export interface Config {
   handoffDirectory?: string
 }
 
+/** The workspace operations a handoff uses (the host workspaceRegistry service). */
+export interface HandoffWorkspaces {
+  /**
+   * Resolve one registered workspace by its path.
+   * @param path - the workspace directory.
+   */
+  resolveByPath(path: string): Promise<{ readonly path: string; readonly title: string; readonly sessionIds: readonly SessionId[] } | undefined>
+  /**
+   * Register the received project.
+   * @param path - the received project directory.
+   * @param title - the sender project title.
+   */
+  create(path: string, title?: string): Promise<{ attachSession(id: SessionId): Promise<void> }>
+}
+
+/** The session-import operation a handoff uses (the host sessionLogImporter service). */
+export interface HandoffImporter {
+  /**
+   * Materialize one exported archive.
+   * @param archive - the archive bytes.
+   * @param options - target work directory and optional cancellation.
+   */
+  importArchive(
+    archive: Uint8Array,
+    options: { readonly targetCwd: string; readonly signal?: AbortSignal },
+  ): Promise<{ readonly root: { readonly id: unknown }; readonly descendants: readonly { readonly id: unknown }[] }>
+}
+
 /** Composition-time overrides for the peer service (loopback/test seams). */
 export interface LanHandoffStartOptions {
   /** Identity and peer-state directory overriding the harness home; loopback tests use a temp root. */
@@ -188,6 +214,10 @@ export interface LanHandoffStartOptions {
   readonly discovery?: LanDiscoveryHost
   /** Loopback test compositions keep loopback addresses in discovered peers. */
   readonly allowLoopbackPeers?: boolean
+  /** Workspace seam override; production resolves the context workspaceRegistry service. */
+  readonly workspaces?: HandoffWorkspaces
+  /** Session-import seam override; production resolves the context sessionLogImporter service. */
+  readonly importer?: HandoffImporter
 }
 
 /** Stable runtime state of a started peer service. */
@@ -252,6 +282,7 @@ export class LanHandoffService extends Service {
   private readonly pending = new Map<string, PairingOffer>()
   private identity: DeviceIdentity | undefined
   private root: string | undefined
+  private readonly options: LanHandoffStartOptions
   private pairingRequestHandler: ((offer: PairingOffer) => void) | undefined
   private lastHandoff: LastHandoff | undefined
 
@@ -262,6 +293,7 @@ export class LanHandoffService extends Service {
    */
   constructor(ctx: Context, config: Config, options?: LanHandoffStartOptions) {
     super(ctx, 'lanHandoff')
+    this.options = options ?? {}
     this.ready = new Promise<LanHandoffState>((resolveState, reject) => {
       ctx.effect(async () => {
         try {
@@ -506,7 +538,8 @@ export class LanHandoffService extends Service {
     const persistence = this.ctx.get('sessionPersistence')
     const query = this.ctx.get('sessionQuery')
     const attachments = this.ctx.get('attachments')
-    const workspaces = this.ctx.get('workspaces')
+    const workspaces = this.options.workspaces
+      ?? this.ctx.get('workspaceRegistry') as HandoffWorkspaces | undefined
     const missing = [
       persistence === undefined ? 'sessionPersistence' : undefined,
       query === undefined ? 'sessionQuery' : undefined,
@@ -522,7 +555,8 @@ export class LanHandoffService extends Service {
       query,
       attachments,
       workspaces,
-      importer: this.ctx.get('sessionLogImporter'),
+      importer: this.options.importer
+        ?? this.ctx.get('sessionLogImporter') as HandoffImporter | undefined,
       flush: (sessionId, signal) => flushLiveSessionLog({ sessions: this.ctx.get('sessions') }, sessionId, signal),
       readLog: (sessionId, signal) => readSessionLogText(persistence, sessionId, signal),
       zip: (content, sessionId, signal) => collectZip(exportDeps, content, sessionId, signal),
@@ -695,8 +729,8 @@ interface SessionServiceSeams {
   readonly persistence: SessionPersistence
   readonly query: SessionQueryEngine
   readonly attachments: AttachmentStore
-  readonly workspaces: WorkspaceRegistry
-  readonly importer: SessionLogImporter | undefined
+  readonly workspaces: HandoffWorkspaces
+  readonly importer: HandoffImporter | undefined
   flush(sessionId: SessionId, signal: AbortSignal | undefined): Promise<void>
   readLog(sessionId: SessionId, signal: AbortSignal | undefined): Promise<string | undefined>
   zip(content: string, sessionId: SessionId, signal: AbortSignal | undefined): Promise<Uint8Array>
