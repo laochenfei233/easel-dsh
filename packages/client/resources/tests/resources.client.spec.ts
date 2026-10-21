@@ -104,6 +104,29 @@ describe('protocolOf', () => {
     expect(protocolOf('/a/b.txt')).toBeUndefined()
     expect(protocolOf('')).toBeUndefined()
   })
+
+  it('recovers the host when an older parser puts it in an opaque path', () => {
+    // WebView2 132 parses a non-special scheme's `//host` as an opaque path:
+    // hostname is empty and pathname starts with `//host`. The desktop shell
+    // must still find the `file` provider.
+    class LegacyURL extends URL {
+      get hostname(): string {
+        return ''
+      }
+
+      get pathname(): string {
+        const host = super.hostname
+        return host === '' ? super.pathname : `//${host}${super.pathname}`
+      }
+    }
+    vi.stubGlobal('URL', LegacyURL)
+    try {
+      expect(protocolOf('dsh-resource://file/session/s1/a')).toBe('file')
+      expect(protocolOf('dsh-resource:///no-host')).toBeUndefined()
+    } finally {
+      vi.unstubAllGlobals()
+    }
+  })
 })
 
 describe('ResourceRegistry providers', () => {

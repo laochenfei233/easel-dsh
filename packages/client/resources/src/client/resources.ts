@@ -50,6 +50,14 @@ export const RESOURCE_SCHEME = 'dsh-resource'
  * URL parser reads it (lower-cased). Any other string — another scheme, or one
  * the URL parser rejects — names no protocol and is treated like an address
  * whose protocol has no provider.
+ *
+ * Older Chromium builds (WebView2 132, used by the desktop shell) parse a
+ * non-special scheme's `//host` as an opaque path: `hostname` is empty and the
+ * host sits at the start of `pathname` (`//host/…`). The same address parses
+ * with a hostname in current Chromium, so both readings are accepted; without
+ * the fallback every sidebar document preview in the desktop shell reported
+ * "file resource service unavailable" while the web build worked.
+ *
  * @param address - the full address.
  * @returns the protocol key, or `undefined` when the address is not a resource address.
  */
@@ -63,8 +71,13 @@ export function protocolOf(address: string): string | undefined {
     return undefined
   }
   if (parsed.protocol !== `${RESOURCE_SCHEME}:`) return undefined
+  const host = parsed.hostname !== ''
+    ? parsed.hostname
+    : parsed.pathname.startsWith('//')
+      ? parsed.pathname.slice(2).split('/')[0] ?? ''
+      : ''
   // A non-special scheme's host is opaque to the URL parser and keeps its case.
-  return parsed.hostname === '' ? undefined : parsed.hostname.toLowerCase()
+  return host === '' ? undefined : host.toLowerCase()
 }
 
 function idle(status: 'none' | 'loading'): ResourceSnapshot<unknown> {
