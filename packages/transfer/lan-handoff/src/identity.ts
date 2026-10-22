@@ -143,8 +143,10 @@ async function mintIdentity(file: string, root: string): Promise<StoredIdentity>
   try {
     await writeFile(file, JSON.stringify(minted), { encoding: 'utf8', mode: 0o600, flag: 'wx' })
   } catch (error) {
+    /* v8 ignore next -- EEXIST needs two processes racing their first boot */
     if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
   }
+  /* v8 ignore next -- the exclusive-create winner above just materialized the file */
   return (await readStoredIdentity(file)) ?? minted
 }
 

@@ -50,10 +50,6 @@ interface StoredRecord {
 class MemoryPersistence extends SessionPersistence {
   readonly records = new Map<string, StoredRecord>()
 
-  constructor(ctx: Context) {
-    super(ctx)
-  }
-
   async create(header: SessionHeader, options?: SessionPersistenceCreateOptions): Promise<SessionHandle> {
     if (this.records.has(header.id)) throw new SessionAlreadyExistsError(header.id)
     const record: StoredRecord = {
@@ -256,6 +252,37 @@ it('imports a root plus a seeded subagent, remaps cwd, and restores attachments'
     const chunks: Uint8Array[] = []
     for await (const chunk of context.receiver.readFileStream(fileRef)) chunks.push(chunk)
     expect(Buffer.concat(chunks)).toEqual(Buffer.from(fileBytes))
+  } finally {
+    await teardown(context)
+  }
+})
+
+it('forwards an active cancellation signal through every store call', async () => {
+  const context = await harness()
+  try {
+    const controller = new AbortController()
+    const archive = zipSync({ 'session.v4.jsonl': encoder.encode(logText(headerLine(), eventLine(0))) }, { level: 0 })
+    const targetCwd = join(tmpdir(), 'dsh-import-signal')
+    const result = await context.importer.importArchive(archive, { targetCwd, signal: controller.signal })
+    expect(String(result.root.id)).toBe('session-a')
+    expect(context.memory.records.get('session-a')?.events).toHaveLength(1)
+  } finally {
+    await teardown(context)
+  }
+})
+
+it('refuses a file whose deposited digest differs from the recorded one', async () => {
+  const context = await harness()
+  try {
+    const bytes = encoder.encode('actual bytes')
+    const wrongDigest = createHash('sha256').update('other bytes').digest('hex')
+    const archive = zipSync({
+      'session.v4.jsonl': encoder.encode(logText(headerLine(), eventLine(0))),
+      ['files/' + wrongDigest.slice(0, 2) + '/' + wrongDigest + '/notes.txt']: bytes,
+    }, { level: 0 })
+    const failure = context.importer.importArchive(archive, { targetCwd: join(tmpdir(), 'dsh-import-mismatch') })
+    await expect(failure).rejects.toBeInstanceOf(SessionImportAttachmentMismatchError)
+    await expect(failure).rejects.toMatchObject({ expected: 'sha256:' + wrongDigest })
   } finally {
     await teardown(context)
   }

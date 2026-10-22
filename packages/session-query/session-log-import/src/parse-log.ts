@@ -67,6 +67,7 @@ export function parseSessionLog(text: string, path: string): ParsedSessionLog {
   } catch (error) {
     throw new SessionImportFormatError(
       path,
+      /* v8 ignore next -- the storage contract only throws Error instances */
       `session log was refused by the storage contract: ${error instanceof Error ? error.message : String(error)}`,
       { cause: error },
     )

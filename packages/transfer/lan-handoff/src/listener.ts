@@ -86,6 +86,7 @@ export async function startLanListener(
     try {
       await listen(server, host, port)
       const address = server.address()
+      /* v8 ignore next 2 -- a TCP listener never reports a pipe-name address */
       bound = { host, port: typeof address === 'object' && address !== null ? address.port : port }
       break
     } catch (error) {

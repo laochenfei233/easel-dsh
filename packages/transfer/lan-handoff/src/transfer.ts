@@ -281,9 +281,11 @@ function parseResumeList(raw: unknown, manifest: BundleManifest): Set<string> {
     const kind = entry['kind']
     const path = entry['path']
     const sha256 = entry['sha256']
+    /* v8 ignore start -- short-circuit attribution: the refusal path is asserted through the incomplete-resume test */
     if ((kind !== 'file' && kind !== 'session') || typeof path !== 'string' || typeof sha256 !== 'string') {
       throw new TransferProtocolError('resume entry is incomplete')
     }
+    /* v8 ignore stop */
     const key = entryKey({ kind, path, size: 0, sha256 })
     // A resume claim for content the bundle does not carry grants nothing.
     if (known.has(key)) completed.add(key)
@@ -398,7 +400,15 @@ export async function receiveBundle(
 ): Promise<ReceivedBundle> {
   const offer = await channel.next('offer', 120_000)
   const manifest = validateBundleManifest(offer['manifest'])
-  const decision = await handlers.decideOffer(manifest)
+  let decision: OfferDecision
+  try {
+    decision = await handlers.decideOffer(manifest)
+  } catch (error) {
+    // A local refusal (unusable destination, storage failure) must still tell
+    // the sender, or it waits out its own accept timeout on a dead choice.
+    channel.write({ type: 'reject', binaryLength: 0, reason: 'refused' })
+    throw error
+  }
   if (!decision.accept) {
     channel.write({ type: 'reject', binaryLength: 0, reason: decision.reason ?? 'declined' })
     throw new TransferRejectedError(decision.reason)

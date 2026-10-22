@@ -103,6 +103,7 @@ export interface LanDiscoveryEntry {
 /** Resolve this process's advertised platform label. @returns the platform label.
  */
 export function lanPlatformOfHost(): LanPlatform {
+  /* v8 ignore next 3 -- the non-host platform branches run on the other OS lanes */
   return process.platform === 'win32' ? 'windows'
     : process.platform === 'darwin' ? 'macos'
       : 'linux'

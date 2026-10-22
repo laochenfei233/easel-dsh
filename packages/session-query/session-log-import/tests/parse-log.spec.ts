@@ -112,3 +112,8 @@ it('refuses seed markers that disagree with the header', () => {
     eventLine({ type: 'session/end-seed', seq: 2, time: 1_002, data: { inherited: true } }),
   ), 'subagent')).toThrow(/more than one inherited seed marker/u)
 })
+
+it('accepts a canonical log without a trailing newline', () => {
+  const parsed = parseSessionLog(header() + '\n' + eventLine(turn(0)), 'root')
+  expect(parsed.events).toHaveLength(1)
+})

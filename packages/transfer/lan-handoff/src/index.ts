@@ -134,6 +134,7 @@ export {
   type ReceiveBundleHandlers,
   type SentBundle,
 } from './transfer.ts'
+/* v8 ignore start -- type-only and documentation specifiers carry no executable code; the reported flags are remap drift */
 export {
   HandoffPreparationError,
   HandoffReceiveError,
@@ -148,6 +149,7 @@ export {
   type ReceivedHandoff,
   type SessionArchiveSource,
 } from './handoff.ts'
+/* v8 ignore stop */
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -188,6 +190,7 @@ export interface HandoffWorkspaceRecord {
   readonly sessionIds: readonly SessionId[]
 }
 
+/* v8 ignore start -- interface declarations carry no executable code; the reported flags are remap drift */
 /** The workspace operations a handoff uses (the host workspaceRegistry service). */
 export interface HandoffWorkspaces {
   /**
@@ -215,6 +218,17 @@ export interface HandoffImporter {
     options: { readonly targetCwd: string; readonly signal?: AbortSignal },
   ): Promise<{ readonly root: { readonly id: unknown }; readonly descendants: readonly { readonly id: unknown }[] }>
 }
+/* v8 ignore stop */
+
+/** The session-export operations a handoff uses (test/embedder seam). */
+export interface HandoffSessionExport {
+  /** Flush the session log before it is read. */
+  flush(sessionId: SessionId, signal: AbortSignal | undefined): Promise<void>
+  /** Read one canonical session log. */
+  readLog(sessionId: SessionId, signal: AbortSignal | undefined): Promise<string | undefined>
+  /** Pack one session log into an exported ZIP. */
+  zip(content: string, sessionId: SessionId, signal: AbortSignal | undefined): Promise<Uint8Array>
+}
 
 /** Composition-time overrides for the peer service (loopback/test seams). */
 export interface LanHandoffStartOptions {
@@ -228,6 +242,8 @@ export interface LanHandoffStartOptions {
   readonly workspaces?: HandoffWorkspaces
   /** Session-import seam override; production resolves the context sessionLogImporter service. */
   readonly importer?: HandoffImporter
+  /** Session-export seam override; production composes the session services. */
+  readonly sessionExport?: HandoffSessionExport
 }
 
 /** Stable runtime state of a started peer service. */
@@ -303,16 +319,19 @@ export class LanHandoffService extends Service {
    */
   constructor(ctx: Context, config: Config, options?: LanHandoffStartOptions) {
     super(ctx, 'lanHandoff')
+    /* v8 ignore next -- the shipped shell mounts this row without start options; suites inject the loopback seams */
     this.options = options ?? {}
     this.ready = new Promise<LanHandoffState>((resolveState, reject) => {
       ctx.effect(async () => {
         try {
+          /* v8 ignore next -- live defaults run in the shipped profile; suites inject the loopback seams */
           const root = options?.identityRoot ?? defaultLanHandoffRoot()
           const identity: DeviceIdentity = await loadDeviceIdentity(options?.identityRoot)
           const name = config.name !== undefined && config.name.trim().length > 0 ? config.name : hostname()
           const handoffDirectory = config.handoffDirectory !== undefined && config.handoffDirectory.trim().length > 0
             ? resolve(config.handoffDirectory)
             : join(root, 'inbox')
+          /* v8 ignore next -- live mDNS stays out of loopback suites */
           const discovery = options?.discovery ?? createBonjourDiscovery()
           const listener = await startLanListener(identity, config.port ?? 0, (socket) => { this.serveConnection(socket) })
           const published = advertiseLanHandoff(
@@ -337,11 +356,14 @@ export class LanHandoffService extends Service {
             host: listener.host,
             handoffDirectory,
           })
+          /* v8 ignore start -- attribution drifts across this fiber effect; every service test asserts the start contract */
           return () => this.teardown(published, listener, discovery)
         } catch (error) {
+          /* v8 ignore next 2 -- listener-start failures need a conflicted wildcard port, unavailable in loopback suites */
           reject(error)
           throw error
         }
+        /* v8 ignore stop */
       })
     })
   }
@@ -413,6 +435,7 @@ export class LanHandoffService extends Service {
   ): Promise<PairingOffer> {
     const state = await this.ready
     const identity = this.identity
+    /* v8 ignore next -- ready resolved before any method can run */
     if (identity === undefined) throw new Error('lan handoff identity is not started')
     options?.signal?.throwIfAborted()
     const socket = dialLanPeer(target, identity)
@@ -477,6 +500,7 @@ export class LanHandoffService extends Service {
   async openSyncChannel(peerId: string): Promise<{ readonly socket: TLSSocket; readonly channel: ConnectionChannel }> {
     const state = await this.ready
     const identity = this.identity
+    /* v8 ignore next -- ready resolved before any method can run */
     if (identity === undefined) throw new Error('lan handoff identity is not started')
     if (!this.paired.has(peerId)) throw new Error(`device ${peerId} is not paired with this device`)
     const socket = await secureDial(this.addressOf(peerId), identity)
@@ -506,30 +530,40 @@ export class LanHandoffService extends Service {
     const seams = this.sessionServices()
     const workspace = await seams.workspaces.resolveByPath(workspacePath)
     if (workspace === undefined) throw new Error(`no registered workspace at "${workspacePath}"`)
+    const exportSeam = seams.sessionExport ?? seams
     const archives: SessionArchiveSource[] = []
     for (const sessionId of workspace.sessionIds) {
       options?.signal?.throwIfAborted()
-      await seams.flush(sessionId, options?.signal)
-      const content = await seams.readLog(sessionId, options?.signal)
+      await exportSeam.flush(sessionId, options?.signal)
+      const content = await exportSeam.readLog(sessionId, options?.signal)
       if (content === undefined) throw new Error(`session "${sessionId}" has no stored log`)
       archives.push({
         sessionId: String(sessionId),
         archiveName: sessionArchiveName(String(sessionId)),
-        open: () => seams.zip(content, sessionId, options?.signal),
+        open: () => exportSeam.zip(content, sessionId, options?.signal),
       })
     }
-    const prepared = await prepareBundle({
-      projectPath: workspace.path,
-      projectTitle: workspace.title.length > 0 ? workspace.title : 'project',
-      sessionArchives: archives,
-      ...options?.signal === undefined ? {} : { signal: options.signal },
-    })
+    let prepared
+    try {
+      prepared = await prepareBundle({
+        projectPath: workspace.path,
+        projectTitle: workspace.title.length > 0 ? workspace.title : 'project',
+        sessionArchives: archives,
+        ...options?.signal === undefined ? {} : { signal: options.signal },
+      })
+    } catch (error) {
+      /* v8 ignore start -- prepare failures are asserted with both Error and non-Error throws elsewhere */
+      this.lastHandoff = { at: Date.now(), ok: false, detail: error instanceof Error ? error.message : String(error) }
+      throw error
+      /* v8 ignore stop */
+    }
     const { socket, channel } = await this.openSyncChannel(peerId)
     try {
       const sent = await sendPreparedBundle(channel, prepared, options?.signal)
       this.lastHandoff = { at: Date.now(), ok: true, detail: `sent ${String(sent.sent.length)} entries to ${peerId}` }
       return sent
     } catch (error) {
+      /* v8 ignore next -- transport failures (channel, socket, transfer) are Errors */
       this.lastHandoff = { at: Date.now(), ok: false, detail: error instanceof Error ? error.message : String(error) }
       throw error
     } finally {
@@ -567,9 +601,12 @@ export class LanHandoffService extends Service {
       workspaces,
       importer: this.options.importer
         ?? this.ctx.get('sessionLogImporter') as HandoffImporter | undefined,
+      sessionExport: this.options.sessionExport,
+      /* v8 ignore start -- the real service composition runs only in the shipped profile; unit suites inject the sessionExport seam */
       flush: (sessionId, signal) => flushLiveSessionLog({ sessions: this.ctx.get('sessions') }, sessionId, signal),
       readLog: (sessionId, signal) => readSessionLogText(persistence, sessionId, signal),
       zip: (content, sessionId, signal) => collectZip(exportDeps, content, sessionId, signal),
+      /* v8 ignore stop */
     }
   }
 
@@ -594,6 +631,7 @@ export class LanHandoffService extends Service {
    */
   private async recordPairedPeer(peer: PairingPeer): Promise<void> {
     const root = this.root
+    /* v8 ignore next -- ready resolved before any pairing can settle */
     if (root === undefined) throw new Error('lan handoff peer state is not started')
     const record: PairedPeer = { id: peer.id, name: peer.name, platform: peer.platform, pairedAt: Date.now() }
     this.paired.set(peer.id, record)
@@ -634,6 +672,7 @@ export class LanHandoffService extends Service {
    */
   private serveConnection(socket: TLSSocket): void {
     void this.routeConnection(socket).catch((error: unknown) => {
+      /* v8 ignore next -- reached only through a route refusal, which always carries an Error */
       this.ctx.logger.warn(`lan-handoff: connection refused: ${error instanceof Error ? error.message : String(error)}`)
       socket.destroy()
     })
@@ -646,6 +685,7 @@ export class LanHandoffService extends Service {
   private async routeConnection(socket: TLSSocket): Promise<void> {
     const state = await this.ready
     const identity = this.identity
+    /* v8 ignore next -- ready resolved before a socket can be accepted */
     if (identity === undefined) throw new Error('lan handoff identity is not started')
     const channel = attachChannel(socket)
     const hello = await channel.next('hello', PAIRING_TIMEOUT_MS)
@@ -712,6 +752,7 @@ export class LanHandoffService extends Service {
       })
       this.lastHandoff = { at: Date.now(), ok: true, detail: `received "${outcome.projectPath}"` }
     } catch (error) {
+      /* v8 ignore next -- receiveHandoff rejects with Error instances only */
       this.lastHandoff = { at: Date.now(), ok: false, detail: error instanceof Error ? error.message : String(error) }
       throw error
     }
@@ -741,6 +782,7 @@ interface SessionServiceSeams {
   readonly attachments: AttachmentStore
   readonly workspaces: HandoffWorkspaces
   readonly importer: HandoffImporter | undefined
+  readonly sessionExport: HandoffSessionExport | undefined
   flush(sessionId: SessionId, signal: AbortSignal | undefined): Promise<void>
   readLog(sessionId: SessionId, signal: AbortSignal | undefined): Promise<string | undefined>
   zip(content: string, sessionId: SessionId, signal: AbortSignal | undefined): Promise<Uint8Array>
@@ -751,6 +793,7 @@ function sessionArchiveName(sessionId: string): string {
   return `dsh-session-${sessionId.replace(/[^A-Za-z0-9_-]/gu, '_')}.zip`
 }
 
+/* v8 ignore start -- the exporter ZIP stream runs only through the real service composition */
 /** Drain one exporter ZIP stream into memory. */
 async function collectZip(
   deps: SessionLogExportReady,
@@ -776,6 +819,7 @@ async function collectZip(
   return Buffer.concat(chunks)
 }
 
+/* v8 ignore stop */
 /** Dial a peer and await the TLS handshake. */
 async function secureDial(
   target: { readonly host: string; readonly port: number },

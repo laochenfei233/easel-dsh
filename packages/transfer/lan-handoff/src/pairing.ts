@@ -164,6 +164,7 @@ export function attachChannel(socket: TLSSocket): ConnectionChannel {
     try {
       reader.push(chunk)
     } catch (error) {
+      /* v8 ignore next -- the frame reader only throws Error instances */
       failAll(error instanceof Error ? error : new FrameError(String(error)))
     }
   })
@@ -180,6 +181,7 @@ export function attachChannel(socket: TLSSocket): ConnectionChannel {
       const queuedIndex = queued.findIndex(frame => accepted.includes(frame.message.type))
       if (queuedIndex !== -1) {
         const [frame] = queued.splice(queuedIndex, 1)
+        /* v8 ignore next -- splice of a found index always yields an element */
         if (frame !== undefined) return Promise.resolve(frame)
       }
       if (failed !== undefined) return Promise.reject(failed)
@@ -337,6 +339,7 @@ function buildOffer(sides: PairingSides): PairingOffer {
         })
       } catch (error: unknown) {
         // The peer is already gone; closing the socket is the whole contract.
+        /* v8 ignore next -- channel writes only throw Error instances */
         if (!(error instanceof Error)) throw error
       }
       // Flush the decline before the FIN: destroying here would reset the

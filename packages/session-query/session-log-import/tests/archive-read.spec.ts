@@ -58,3 +58,16 @@ it('refuses an archive without a root log and bytes that are not a ZIP', () => {
     .toThrow(/no root session log/u)
   expect(() => readSessionArchive(Uint8Array.from([0, 1, 2, 3]))).toThrow(/not a readable ZIP container/u)
 })
+
+it('ignores archive entries with unusable subagent, media, and file names', () => {
+  const contents = readSessionArchive(zipSync({
+    [LOG_NAME]: encoder.encode('{}\n'),
+    'subagents/nofile': encoder.encode('x'),
+    'subagents/x/other.jsonl': encoder.encode('x'),
+    'media/sha256:aa.bmp': Uint8Array.from([1]),
+    ['files/zz/' + '0'.repeat(63) + '/short.txt']: Uint8Array.from([1]),
+  }, { level: 0 }))
+  expect(contents.subagentLogs).toEqual([])
+  expect(contents.media).toEqual([])
+  expect(contents.files).toEqual([])
+})

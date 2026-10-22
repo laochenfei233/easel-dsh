@@ -103,16 +103,20 @@ export function readSessionArchive(archive: Uint8Array): ArchiveContents {
     }
     const mediaMatch = MEDIA_ENTRY.exec(path)
     if (mediaMatch !== null) {
+      /* v8 ignore start -- both capture groups are mandatory in MEDIA_ENTRY; the guards are type narrowing only */
       const [, id, extension] = mediaMatch
       if (id !== undefined && extension !== undefined) {
         media.push({ id, mediaType: ARCHIVE_MEDIA_TYPES[extension as keyof typeof ARCHIVE_MEDIA_TYPES], data })
       }
+      /* v8 ignore stop */
       continue
     }
     const fileMatch = FILE_ENTRY.exec(path)
     if (fileMatch !== null) {
+      /* v8 ignore start -- both capture groups are mandatory in FILE_ENTRY; the guards are type narrowing only */
       const [, digest, name] = fileMatch
       if (digest !== undefined && name !== undefined) files.push({ digest, name, data })
+      /* v8 ignore stop */
     }
     // Other entries are ignored: a newer exporter may add content.
   }

@@ -120,10 +120,11 @@ export class SessionLogImporter extends Service {
       ...contents.subagentLogs.map((text, index) => parseSessionLog(text, `subagent log ${index + 1}`)),
     ]
     const root = parsed[0]
+    /* v8 ignore start -- readSessionArchive refuses a missing root before this point */
     if (root === undefined) {
-      /* v8 ignore next -- readSessionArchive refuses a missing root before this point */
       throw new SessionImportFormatError(undefined, 'archive has no root session log')
     }
+    /* v8 ignore stop */
     const persistence = this.host.sessionPersistence
     await this.refuseCollisions(persistence, parsed, options)
     signal?.throwIfAborted()
