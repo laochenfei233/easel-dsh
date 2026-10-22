@@ -107,3 +107,23 @@ test('send requires both identifiers', async () => {
     error => error instanceof ApiError && error.status === 400,
   )
 })
+
+test('workspaces route lists registered projects', async () => {
+  const ctx = {
+    get: name => name === 'workspaceRegistry'
+      ? { list: () => [{ path: 'C:\easel-root\projects\p1', title: '项目甲' }] }
+      : undefined,
+  }
+  const result = await dispatchLocalApi(
+    settings, 'GET', ['handoff', 'workspaces'], new URLSearchParams(), async () => ({}), {}, createHandoffRoutes(ctx),
+  )
+  assert.deepEqual(result.json, { workspaces: [{ path: 'C:\easel-root\projects\p1', title: '项目甲' }] })
+})
+
+test('workspaces route answers empty without a workspace registry', async () => {
+  const ctx = { get: () => undefined }
+  const result = await dispatchLocalApi(
+    settings, 'GET', ['handoff', 'workspaces'], new URLSearchParams(), async () => ({}), {}, createHandoffRoutes(ctx),
+  )
+  assert.deepEqual(result.json, { workspaces: [] })
+})

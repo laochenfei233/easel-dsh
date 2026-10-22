@@ -1774,6 +1774,13 @@ export function createHandoffRoutes(ctx) {
       await requireLan().rejectPairing(String(c.params.id))
       return { json: { ok: true } }
     }],
+    ['GET', ['handoff', 'workspaces'], async () => {
+      const registry = ctx.get?.('workspaceRegistry')
+      if (registry === undefined) return { json: { workspaces: [] } }
+      return { json: {
+        workspaces: registry.list().map(workspace => ({ path: workspace.path, title: workspace.title })),
+      } }
+    }],
     ['POST', ['handoff', 'send'], async (c) => {
       const service = requireLan()
       const body = await c.body()

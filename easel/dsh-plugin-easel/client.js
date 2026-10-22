@@ -23,14 +23,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// easel/dsh-plugin-easel/src/client.tsx
+// src/client.tsx
 var client_exports = {};
 __export(client_exports, {
   default: () => client_default
 });
 module.exports = __toCommonJS(client_exports);
 
-// easel/dsh-plugin-easel/src/generated/easel-css.js
+// src/generated/easel-css.js
 var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .easel-scope {
   color-scheme: dark;
   --bg: #14171e;
@@ -893,10 +893,10 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
     box-shadow: inset 0 0 0 1px var(--border-strong);
   }}`;
 
-// easel/dsh-plugin-easel/src/lib/shell.tsx
+// src/lib/shell.tsx
 var import_react = require("react");
 
-// easel/dsh-plugin-easel/src/lib/task.ts
+// src/lib/task.ts
 var getServices = null;
 var cwdResolver = null;
 function configureTasks(cfg) {
@@ -1000,7 +1000,7 @@ async function resolveHomeWorkspaceId(projectDir) {
   return root ? findWorkspaceByPath(root)?.workspaceId ?? null : null;
 }
 
-// easel/dsh-plugin-easel/src/lib/shell.tsx
+// src/lib/shell.tsx
 function pageKey(view11) {
   return `easel.${view11}`;
 }
@@ -1130,7 +1130,7 @@ function createShellBridge(ctx, t) {
   return { useShellProps, navigate, useTopic, t, refresh: shell.refresh, setPersona: shell.setPersona };
 }
 
-// easel/dsh-plugin-easel/src/features/dashboard.tsx
+// src/features/dashboard.tsx
 var dashboard_exports = {};
 __export(dashboard_exports, {
   Component: () => Component,
@@ -1141,7 +1141,7 @@ __export(dashboard_exports, {
   view: () => view
 });
 
-// easel/dsh-plugin-easel/src/components/icons.tsx
+// src/components/icons.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 var svg = (size = 18, sw = 1.8) => ({
   width: size,
@@ -1268,10 +1268,10 @@ var IconPublish = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, impo
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6" })
 ] });
 
-// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
+// src/components/DashboardPage.tsx
 var import_react2 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/api.ts
+// src/lib/api.ts
 var BASE = "/easel";
 async function request(url, options) {
   const res = await fetch(`${BASE}${url}`, { cache: "no-store", ...options });
@@ -1451,7 +1451,7 @@ function projectizeTopic(body) {
   return request("/api/projectize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 }
 
-// easel/dsh-plugin-easel/src/lib/whoami.ts
+// src/lib/whoami.ts
 var KEY = "easel_whoami";
 var WHOAMI_TTL_MS = 6e5;
 function getWhoamiCache() {
@@ -1497,7 +1497,7 @@ function verifyStale(platforms, opts = {}) {
   );
 }
 
-// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
+// src/components/DashboardPage.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
 function fmtNum(n) {
   if (n == null) return "\u2014";
@@ -1785,7 +1785,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/dashboard.tsx
+// src/features/dashboard.tsx
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var view = "dashboard";
 var order = 30;
@@ -1817,7 +1817,7 @@ var plugin = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/trends.tsx
+// src/features/trends.tsx
 var trends_exports = {};
 __export(trends_exports, {
   Component: () => Component2,
@@ -1828,7 +1828,7 @@ __export(trends_exports, {
   view: () => view2
 });
 
-// easel/dsh-plugin-easel/src/components/TrendsPage.tsx
+// src/components/TrendsPage.tsx
 var import_react3 = require("react");
 var import_jsx_runtime4 = require("react/jsx-runtime");
 var ALL_PLATFORMS = [
@@ -2198,7 +2198,7 @@ function TrendsPage({ onUseTopic }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/trends.tsx
+// src/features/trends.tsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
 var view2 = "trends";
 var order2 = 31;
@@ -2230,7 +2230,7 @@ var plugin2 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/ideas.tsx
+// src/features/ideas.tsx
 var ideas_exports = {};
 __export(ideas_exports, {
   Component: () => Component3,
@@ -2241,7 +2241,7 @@ __export(ideas_exports, {
   view: () => view3
 });
 
-// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
+// src/components/IdeasPage.tsx
 var import_react4 = require("react");
 var import_jsx_runtime6 = require("react/jsx-runtime");
 var COLUMNS = [
@@ -2477,7 +2477,7 @@ function IdeasPage({ onUseTopic }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/ideas.tsx
+// src/features/ideas.tsx
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var view3 = "ideas";
 var order3 = 32;
@@ -2509,7 +2509,7 @@ var plugin3 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/calendar.tsx
+// src/features/calendar.tsx
 var calendar_exports = {};
 __export(calendar_exports, {
   Component: () => Component4,
@@ -2520,7 +2520,7 @@ __export(calendar_exports, {
   view: () => view4
 });
 
-// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
+// src/components/CalendarPage.tsx
 var import_react5 = require("react");
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var STATUS_META = {
@@ -2915,7 +2915,7 @@ function CalendarPage() {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/calendar.tsx
+// src/features/calendar.tsx
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var view4 = "calendar";
 var order4 = 33;
@@ -2947,7 +2947,7 @@ var plugin4 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/skills.tsx
+// src/features/skills.tsx
 var skills_exports = {};
 __export(skills_exports, {
   Component: () => Component5,
@@ -2958,13 +2958,13 @@ __export(skills_exports, {
   view: () => view5
 });
 
-// easel/dsh-plugin-easel/src/components/SkillPage.tsx
+// src/components/SkillPage.tsx
 var import_react7 = require("react");
 
-// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
+// src/components/SkillDrawer.tsx
 var import_react6 = require("react");
 
-// node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -4121,7 +4121,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -6096,7 +6096,7 @@ function createDOMPurify() {
 }
 var purify_default = createDOMPurify();
 
-// easel/dsh-plugin-easel/src/lib/sanitize.ts
+// src/lib/sanitize.ts
 k.setOptions({ breaks: true, gfm: true });
 function renderMarkdown(md) {
   if (!md) return "";
@@ -6104,7 +6104,7 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
-// easel/dsh-plugin-easel/src/lib/skillDisplayNames.ts
+// src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
   "ai-image-gen": "AI \u751F\u56FE",
   "ai-music": "BGM / \u97F3\u4E50\u751F\u6210",
@@ -6224,7 +6224,7 @@ function displayName(raw) {
   return SKILL_DISPLAY_NAMES[raw] || raw;
 }
 
-// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
+// src/components/SkillDrawer.tsx
 var import_jsx_runtime10 = require("react/jsx-runtime");
 function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) {
   const [detail, setDetail] = (0, import_react6.useState)(null);
@@ -6445,7 +6445,7 @@ ${input.trim()}
   ] }) });
 }
 
-// easel/dsh-plugin-easel/src/components/SkillPage.tsx
+// src/components/SkillPage.tsx
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var LAYERS = [
   { key: "discover", label: "\u53D1\u73B0", Icon: IconSearch, color: "var(--layer-discover)" },
@@ -6591,7 +6591,7 @@ function SkillPage({ persona, onNavigate }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/skills.tsx
+// src/features/skills.tsx
 var import_jsx_runtime12 = require("react/jsx-runtime");
 var view5 = "skills";
 var order5 = 34;
@@ -6623,7 +6623,7 @@ var plugin5 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/outputs.tsx
+// src/features/outputs.tsx
 var outputs_exports = {};
 __export(outputs_exports, {
   Component: () => Component6,
@@ -6634,7 +6634,7 @@ __export(outputs_exports, {
   view: () => view6
 });
 
-// easel/dsh-plugin-easel/src/components/OutputsPage.tsx
+// src/components/OutputsPage.tsx
 var import_react8 = require("react");
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var FILTERS = [
@@ -6940,7 +6940,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/outputs.tsx
+// src/features/outputs.tsx
 var import_jsx_runtime14 = require("react/jsx-runtime");
 var view6 = "outputs";
 var order6 = 35;
@@ -6972,7 +6972,7 @@ var plugin6 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/publish.tsx
+// src/features/publish.tsx
 var publish_exports = {};
 __export(publish_exports, {
   Component: () => Component7,
@@ -6983,10 +6983,10 @@ __export(publish_exports, {
   view: () => view7
 });
 
-// easel/dsh-plugin-easel/src/components/PublishPage.tsx
+// src/components/PublishPage.tsx
 var import_react9 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/store.ts
+// src/lib/store.ts
 var PUBLISH_KEY = "easel_publish_draft";
 var PREVIOUS_BRAND = ["post", "craft"].join("");
 function readMigratedLocalValue(key, suffix) {
@@ -7023,7 +7023,7 @@ function savePublishDraft(d2) {
   }
 }
 
-// easel/dsh-plugin-easel/src/components/PublishPage.tsx
+// src/components/PublishPage.tsx
 var import_jsx_runtime15 = require("react/jsx-runtime");
 var PLATFORMS2 = [
   { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", titleLimit: 20, bodyLimit: 1e3, hint: "\u6807\u9898\u226420\uFF0C\u6B63\u6587\u22641000\uFF0C\u91CD\u60C5\u7EEA+\u8BDD\u9898\u6807\u7B7E" },
@@ -7572,7 +7572,7 @@ function PublishPage({ persona }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/publish.tsx
+// src/features/publish.tsx
 var import_jsx_runtime16 = require("react/jsx-runtime");
 var view7 = "publish";
 var order7 = 36;
@@ -7604,7 +7604,7 @@ var plugin7 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/accounts.tsx
+// src/features/accounts.tsx
 var accounts_exports = {};
 __export(accounts_exports, {
   Component: () => Component8,
@@ -7615,7 +7615,7 @@ __export(accounts_exports, {
   view: () => view8
 });
 
-// easel/dsh-plugin-easel/src/components/AccountsPage.tsx
+// src/components/AccountsPage.tsx
 var import_react10 = require("react");
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var STATE_LABEL = {
@@ -8272,7 +8272,7 @@ function AccountsPage() {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/accounts.tsx
+// src/features/accounts.tsx
 var import_jsx_runtime18 = require("react/jsx-runtime");
 var view8 = "accounts";
 var order8 = 37;
@@ -8304,7 +8304,7 @@ var plugin8 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/profile.tsx
+// src/features/profile.tsx
 var profile_exports = {};
 __export(profile_exports, {
   Component: () => Component9,
@@ -8315,10 +8315,10 @@ __export(profile_exports, {
   view: () => view9
 });
 
-// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
+// src/components/PersonaBrowser.tsx
 var import_react13 = require("react");
 
-// easel/dsh-plugin-easel/src/components/ProfilePage.tsx
+// src/components/ProfilePage.tsx
 var import_react11 = require("react");
 var import_jsx_runtime19 = require("react/jsx-runtime");
 function fanTier(n) {
@@ -8546,7 +8546,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/components/OnboardingWizard.tsx
+// src/components/OnboardingWizard.tsx
 var import_react12 = require("react");
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var PLATFORMS3 = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u89C6\u9891\u53F7", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
@@ -8778,7 +8778,7 @@ ${formToInstruction(name, form)}`;
   ] }) });
 }
 
-// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
+// src/components/PersonaBrowser.tsx
 var import_jsx_runtime21 = require("react/jsx-runtime");
 function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }) {
   const [wizardOpen, setWizardOpen] = (0, import_react13.useState)(false);
@@ -8848,7 +8848,7 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/profile.tsx
+// src/features/profile.tsx
 var import_jsx_runtime22 = require("react/jsx-runtime");
 var view9 = "profile";
 var order9 = 38;
@@ -8880,7 +8880,7 @@ var plugin9 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/breakdown.tsx
+// src/features/breakdown.tsx
 var breakdown_exports = {};
 __export(breakdown_exports, {
   Component: () => Component10,
@@ -8891,7 +8891,7 @@ __export(breakdown_exports, {
   view: () => view10
 });
 
-// easel/dsh-plugin-easel/src/components/BreakdownPage.tsx
+// src/components/BreakdownPage.tsx
 var import_react14 = require("react");
 var import_jsx_runtime23 = require("react/jsx-runtime");
 var FETCH_STAGES = [
@@ -9219,7 +9219,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/breakdown.tsx
+// src/features/breakdown.tsx
 var import_jsx_runtime24 = require("react/jsx-runtime");
 var view10 = "breakdown";
 var order10 = 39;
@@ -9251,10 +9251,10 @@ var plugin10 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/media-preview.tsx
+// src/lib/media-preview.tsx
 var import_react15 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/media-url.js
+// src/lib/media-url.js
 var VIDEO_EXTENSIONS = ["mp4", "m4v", "mov", "webm", "mkv"];
 var AUDIO_EXTENSIONS = ["mp3", "wav", "m4a", "aac", "flac", "ogg", "opus"];
 var MEDIA_EXTENSIONS = [...VIDEO_EXTENSIONS, ...AUDIO_EXTENSIONS];
@@ -9285,7 +9285,7 @@ function workspaceMediaPath(absolutePath, projectRoot2) {
   return rel;
 }
 
-// easel/dsh-plugin-easel/src/lib/media-preview.tsx
+// src/lib/media-preview.tsx
 var import_jsx_runtime25 = require("react/jsx-runtime");
 var MEDIA_BODY_ID = "easel-media-player";
 var MEDIA_COPY = {
@@ -9433,7 +9433,7 @@ function registerMediaPreview(ctx) {
   else if (ctx.get?.("documentPreviews") !== void 0) attach(ctx);
 }
 
-// easel/dsh-plugin-easel/src/features/media.ts
+// src/features/media.ts
 var plugin11 = {
   name: "easel-media",
   inject: ["slots", "locale"],
@@ -9446,7 +9446,7 @@ var plugin11 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/context-menu-model.js
+// src/lib/context-menu-model.js
 var FILE_ROW_SELECTOR = "[data-files-entry]";
 var FILE_ROOT_SELECTOR = "[data-files-root]";
 var EDITABLE_SELECTOR = [
@@ -9472,19 +9472,19 @@ function isFilePath(value) {
   return /\.[A-Za-z0-9]{1,8}$/.test(base);
 }
 function fileLinkSurface(target) {
-  const card = target.closest(PRESENTED_FILE_SELECTOR);
-  if (card != null) {
-    const preview = card.querySelector?.("button[title]") ?? null;
+  const card2 = target.closest(PRESENTED_FILE_SELECTOR);
+  if (card2 != null) {
+    const preview = card2.querySelector?.("button[title]") ?? null;
     const path2 = preview?.getAttribute?.("title")?.trim();
     if (preview !== null && isFilePath(path2)) {
       return { kind: "file", path: path2, root: void 0, entry: "file", preview };
     }
     return null;
   }
-  const button = target.closest(FILE_LINK_SELECTOR);
-  const path = button?.getAttribute?.("title")?.trim();
-  if (button != null && isFilePath(path)) {
-    return { kind: "file", path, root: void 0, entry: "file", preview: button };
+  const button2 = target.closest(FILE_LINK_SELECTOR);
+  const path = button2?.getAttribute?.("title")?.trim();
+  if (button2 != null && isFilePath(path)) {
+    return { kind: "file", path, root: void 0, entry: "file", preview: button2 };
   }
   return null;
 }
@@ -9564,7 +9564,7 @@ function fileNameOf(path) {
   return parts[parts.length - 1] ?? "";
 }
 
-// easel/dsh-plugin-easel/src/features/context-menu.js
+// src/features/context-menu.js
 var STYLE_ID = "easel-context-menu-style";
 var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
@@ -9854,24 +9854,24 @@ function showMenu({ x: x2, y: y2, items, onClosed, onError }) {
   return close;
 }
 function itemElement(item, close, restoreFocus, render, onError) {
-  const button = document.createElement("button");
-  button.type = "button";
-  button.className = ITEM_CLASS;
-  button.setAttribute("role", "menuitem");
-  button.disabled = item.disabled === true;
+  const button2 = document.createElement("button");
+  button2.type = "button";
+  button2.className = ITEM_CLASS;
+  button2.setAttribute("role", "menuitem");
+  button2.disabled = item.disabled === true;
   const label = document.createElement("span");
   label.textContent = item.label;
-  button.append(label);
+  button2.append(label);
   if (typeof item.hint === "string" && item.hint !== "") {
     const hint = document.createElement("span");
     hint.className = HINT_CLASS;
     hint.textContent = item.hint;
-    button.append(hint);
+    button2.append(hint);
   }
-  button.addEventListener("click", (event) => {
+  button2.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (button.disabled) return;
+    if (button2.disabled) return;
     const report = onError ?? ((error) => {
       console.warn("easel-context-menu:", error);
     });
@@ -9890,7 +9890,7 @@ function itemElement(item, close, restoreFocus, render, onError) {
     restoreFocus();
     run();
   });
-  return button;
+  return button2;
 }
 function separatorElement() {
   const separator = document.createElement("div");
@@ -10126,7 +10126,322 @@ function reportError(ctx, error) {
   }
 }
 
-// easel/dsh-plugin-easel/src/features/index.ts
+// src/components/HandoffSettings.tsx
+var import_react16 = require("react");
+
+// src/lib/handoff-api.ts
+var BASE2 = "/easel";
+async function request2(url, options) {
+  const res = await fetch(`${BASE2}${url}`, { cache: "no-store", ...options });
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const payload = await res.json();
+      detail = payload && (payload.detail || payload.error) || "";
+    } catch {
+    }
+    throw new Error(detail || `\u8BF7\u6C42\u5931\u8D25\uFF08${res.status} ${res.statusText}\uFF09`);
+  }
+  return res.json();
+}
+function getHandoffStatus() {
+  return request2("/api/handoff/status");
+}
+function getHandoffWorkspaces() {
+  return request2("/api/handoff/workspaces");
+}
+function pairWithPeer(peerId) {
+  return request2("/api/handoff/pair", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ peerId })
+  });
+}
+function acceptPairing(id) {
+  return request2(`/api/handoff/pair/${encodeURIComponent(id)}/accept`, { method: "POST" });
+}
+function rejectPairing(id) {
+  return request2(`/api/handoff/pair/${encodeURIComponent(id)}/reject`, { method: "POST" });
+}
+function sendHandoff(peerId, workspacePath) {
+  return request2("/api/handoff/send", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ peerId, workspacePath })
+  });
+}
+
+// src/components/HandoffSettings.tsx
+var import_jsx_runtime26 = require("react/jsx-runtime");
+var COPY = {
+  en: {
+    title: "LAN project handoff",
+    description: "Send a project and its agent sessions to another device on this network, or receive one.",
+    unavailable: "LAN handoff is not enabled in this profile.",
+    device: "This device",
+    paired: "Paired devices",
+    noPaired: "No paired devices yet.",
+    nearby: "Nearby devices",
+    noNearby: "Nothing discovered yet. Keep both apps open on the same network.",
+    pair: "Pair",
+    pending: "Waiting for confirmation",
+    sasHint: "Compare this number on both screens; confirm only when they match.",
+    confirm: "Match, pair",
+    reject: "Decline",
+    sendTitle: "Send a project",
+    pickWorkspace: "Choose a project",
+    pickPeer: "Choose a device",
+    send: "Send",
+    sending: "Sending\u2026",
+    sent: "Handoff complete.",
+    failed: "Handoff failed",
+    refresh: "Refresh"
+  },
+  zh: {
+    title: "\u5C40\u57DF\u7F51\u9879\u76EE\u4EA4\u63A5",
+    description: "\u628A\u9879\u76EE\u8FDE\u540C agent \u4F1A\u8BDD\u53D1\u5230\u672C\u7F51\u7EDC\u7684\u53E6\u4E00\u53F0\u8BBE\u5907\uFF0C\u6216\u4ECE\u53E6\u4E00\u53F0\u8BBE\u5907\u63A5\u6536\u3002",
+    unavailable: "\u5F53\u524D profile \u672A\u542F\u7528\u5C40\u57DF\u7F51\u4EA4\u63A5\u3002",
+    device: "\u672C\u673A",
+    paired: "\u5DF2\u914D\u5BF9\u8BBE\u5907",
+    noPaired: "\u8FD8\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907\u3002",
+    nearby: "\u9644\u8FD1\u8BBE\u5907",
+    noNearby: "\u5C1A\u672A\u53D1\u73B0\u8BBE\u5907\u3002\u8BF7\u8BA9\u4E24\u53F0\u8BBE\u5907\u90FD\u5F00\u7740\u5E94\u7528\u5E76\u5904\u4E8E\u540C\u4E00\u7F51\u7EDC\u3002",
+    pair: "\u914D\u5BF9",
+    pending: "\u7B49\u5F85\u786E\u8BA4",
+    sasHint: "\u8BF7\u6838\u5BF9\u4E24\u53F0\u5C4F\u5E55\u4E0A\u662F\u5426\u663E\u793A\u540C\u4E00\u4E32\u6570\u5B57\uFF1B\u4E00\u81F4\u624D\u70B9\u786E\u8BA4\u3002",
+    confirm: "\u4E00\u81F4\uFF0C\u914D\u5BF9",
+    reject: "\u62D2\u7EDD",
+    sendTitle: "\u53D1\u9001\u9879\u76EE",
+    pickWorkspace: "\u9009\u62E9\u9879\u76EE",
+    pickPeer: "\u9009\u62E9\u8BBE\u5907",
+    send: "\u53D1\u9001",
+    sending: "\u53D1\u9001\u4E2D\u2026",
+    sent: "\u4EA4\u63A5\u5B8C\u6210\u3002",
+    failed: "\u4EA4\u63A5\u5931\u8D25",
+    refresh: "\u5237\u65B0"
+  }
+};
+var card = {
+  border: "1px solid var(--dsh-border, rgba(0,0,0,0.12))",
+  borderRadius: 12,
+  padding: "14px 16px",
+  display: "flex",
+  flexDirection: "column",
+  gap: 10,
+  maxWidth: 560
+};
+var rowStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 };
+var muted = { opacity: 0.62, fontSize: 12 };
+var sasStyle = { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 22, letterSpacing: 4 };
+var button = {
+  border: "1px solid rgba(0,0,0,0.18)",
+  background: "transparent",
+  borderRadius: 8,
+  padding: "4px 10px",
+  cursor: "pointer",
+  fontSize: 13
+};
+function HandoffSettings({ t }) {
+  const [status, setStatus] = (0, import_react16.useState)(void 0);
+  const [workspaces, setWorkspaces] = (0, import_react16.useState)([]);
+  const [error, setError] = (0, import_react16.useState)("");
+  const [busy, setBusy] = (0, import_react16.useState)(false);
+  const [workspacePath, setWorkspacePath] = (0, import_react16.useState)("");
+  const [peerId, setPeerId] = (0, import_react16.useState)("");
+  const [outcome, setOutcome] = (0, import_react16.useState)("");
+  const refresh = async () => {
+    try {
+      const next = await getHandoffStatus();
+      setStatus(next);
+      if (next.available) {
+        const listing = await getHandoffWorkspaces();
+        setWorkspaces(listing.workspaces);
+        setWorkspacePath((current) => current || listing.workspaces[0]?.path || "");
+        setPeerId((current) => current || next.paired[0]?.id || "");
+      }
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : String(failure));
+    }
+  };
+  (0, import_react16.useEffect)(() => {
+    void refresh();
+    const timer = setInterval(() => {
+      void refresh();
+    }, 3e3);
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+  const run = async (action, success) => {
+    setBusy(true);
+    setError("");
+    setOutcome("");
+    try {
+      await action();
+      setOutcome(success);
+      await refresh();
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : String(failure));
+    } finally {
+      setBusy(false);
+    }
+  };
+  if (status === void 0) {
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: card, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: error || "\u2026" }) });
+  }
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: card, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: { fontWeight: 600 }, children: t("title") }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("description") })
+    ] }),
+    !status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: status.reason ?? t("unavailable") }),
+    status.available && status.device && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: rowStyle, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { style: muted, children: t("device") }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
+        status.device.name,
+        " \xB7 ",
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { children: status.device.id.slice(0, 10) }),
+        " \xB7 :",
+        status.device.port
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { style: button, disabled: busy, onClick: () => {
+        void refresh();
+      }, children: t("refresh") })
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("paired") }),
+      status.paired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("noPaired") }) : status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: rowStyle, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
+          peer.name,
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { style: muted, children: [
+            "(",
+            peer.platform,
+            ")"
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { style: muted, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { children: peer.id.slice(0, 10) }) })
+      ] }, peer.id))
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("nearby") }),
+      status.discovered.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("noNearby") }) : status.discovered.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: rowStyle, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
+          peer.name,
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { style: muted, children: [
+            "(",
+            peer.platform,
+            ")"
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "button",
+          {
+            style: button,
+            disabled: busy || status.paired.some((paired) => paired.id === peer.id),
+            onClick: () => {
+              void run(() => pairWithPeer(peer.id), "");
+            },
+            children: t("pair")
+          }
+        )
+      ] }, peer.id))
+    ] }),
+    status.available && status.pending.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("pending") }),
+      status.pending.map((pending) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 6, padding: "8px 0" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: rowStyle, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
+            pending.peer.name,
+            " ",
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { style: muted, children: [
+              "(",
+              pending.peer.platform,
+              ")"
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { style: sasStyle, children: pending.sas })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("sasHint") }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: rowStyle, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "button",
+            {
+              style: button,
+              disabled: busy,
+              onClick: () => {
+                void run(() => acceptPairing(pending.id), "");
+              },
+              children: t("confirm")
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "button",
+            {
+              style: button,
+              disabled: busy,
+              onClick: () => {
+                void run(() => rejectPairing(pending.id), "");
+              },
+              children: t("reject")
+            }
+          )
+        ] })
+      ] }, pending.id))
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("sendTitle") }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("select", { value: workspacePath, onChange: (event) => {
+          setWorkspacePath(event.target.value);
+        }, children: [
+          workspaces.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t("pickWorkspace") }),
+          workspaces.map((workspace) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: workspace.path, children: workspace.title }, workspace.path))
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("select", { value: peerId, onChange: (event) => {
+          setPeerId(event.target.value);
+        }, children: [
+          status.paired.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t("pickPeer") }),
+          status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: peer.id, children: peer.name }, peer.id))
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "button",
+          {
+            style: button,
+            disabled: busy || workspacePath === "" || peerId === "",
+            onClick: () => {
+              void run(() => sendHandoff(peerId, workspacePath), t("sent"));
+            },
+            children: busy ? t("sending") : t("send")
+          }
+        )
+      ] }),
+      status.last && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: status.last.ok ? t("sent") : `${t("failed")}: ${status.last.detail}` })
+    ] }),
+    outcome !== "" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: outcome }),
+    error !== "" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: { ...muted, color: "crimson" }, children: error })
+  ] });
+}
+
+// src/features/handoff.tsx
+var NS = "easel.handoff";
+var plugin13 = {
+  name: "easel-handoff-settings",
+  inject: ["slots", "locale"],
+  apply(ctx) {
+    ctx.effect(() => ctx.locale.register(NS, COPY), "easel: handoff dictionaries");
+    const t = ctx.locale.bind(NS);
+    ctx.slots.inject("settings.general.item", () => ctx.slots.register({
+      name: "settings.general.item",
+      id: "easel-handoff",
+      order: 95,
+      inject: () => ({ t })
+    }, HandoffSettings));
+  }
+};
+
+// src/features/index.ts
 var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
 var FEATURES = views.map((module2) => ({
   view: module2.view,
@@ -10134,20 +10449,20 @@ var FEATURES = views.map((module2) => ({
   labels: module2.labels,
   plugin: module2.plugin
 }));
-var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12];
+var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12, plugin13];
 
-// easel/dsh-plugin-easel/src/client.tsx
-var NS = "easel.panel";
+// src/client.tsx
+var NS2 = "easel.panel";
 var STYLE_ID2 = "dsh-plugin-easel-style";
 var STYLES = EASEL_CSS;
-var COPY = {
+var COPY2 = {
   zh: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.zh])),
   en: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.en]))
 };
 var client_default = {
   inject: ["slots", "locale", "uiSidebarPanels", "sessions", "uiWorkspace", "remote", "remote.session"],
   apply(ctx) {
-    ctx.effect(() => ctx.locale.register(NS, COPY), "easel: rail dictionaries");
+    ctx.effect(() => ctx.locale.register(NS2, COPY2), "easel: rail dictionaries");
     ctx.effect(() => {
       const style = document.createElement("style");
       style.id = STYLE_ID2;
@@ -10156,9 +10471,9 @@ var client_default = {
       return () => style.remove();
     }, "easel: workbench styles");
     ctx.effect(() => ctx.uiSidebarPanels.hidden("schedules"), "easel: hide schedules rail icon");
-    const t = ctx.locale.bind(NS);
+    const t = ctx.locale.bind(NS2);
     ctx.provide("easelShell", createShellBridge(ctx, t));
-    for (const plugin13 of CLIENT_PLUGINS) ctx.plugin(plugin13);
+    for (const plugin14 of CLIENT_PLUGINS) ctx.plugin(plugin14);
   }
 };
 
