@@ -11,8 +11,8 @@ commits: # filled at delivery
 ## Report
 
 工作区：`.worktrees/easel-lan-handoff`（基线 2926be2078d）。T1–T6 全部落地并有测试；T7 宿主路由已交付，客户端页面未做；T8 未完成（见任务勾选）。
-已过门：全仓 `pnpm run typecheck` 5/5、lan-handoff 50 测试、easel 插件 98 测试（含 6 条 handoff 路由测试）、oxlint 0 告警。
-未过门：快照、`build:check`、覆盖率实测、真机双端验收（含 Windows 防火墙首包提示）。
+已过门：全仓 `pnpm run typecheck` 5/5、lan-handoff+导入包 125 测试、easel 插件 104 测试、oxlint 0 告警、`build:artifacts`+`build:check` 绿、两包覆盖率 100%、双语配对校验。
+未过门/未做：快照与 e2e（需出货 profile 行）、真机双端验收（Windows 防火墙首包）。`verify-cordis-config` 在基线检出上即失败（PRE-EXISTING：apps/cli/tests/profiles/acp/cordis.yml 非 Loader 数组），与本次改动无关。
 
 ## [S1] Problem
 
@@ -106,8 +106,11 @@ agent 会话。换设备继续干目前只能手工拷文件——会话上下�
       （commit 54751d5ba5）
 - [x] T6: 导入端装配 + 接收树三方对账 + `WorkspaceRegistry` 建区挂靠（commit 54751d5ba5）
 - [x] T7a: Easel 宿主路由（status/pair/accept/reject/send，经 `ctx.get('lanHandoff')` 转发）（commit 42cf53dc23）
-- [ ] T7b: Easel 客户端页面（设备列表/发送/接收 UI，locale 文案、client half）
-- [ ] T8: 快照/回环端到端验收 + docs 收尾 + `build:check` + 覆盖率实测 + `apps/cli`/壳激活行接线 + 真机双端验收
+- [x] T7b: Easel 客户端页面（设置项形式）：设备/已配对/附近设备/对码确认/发送 全部在 `settings.general.item`，
+      locale 词典随插件注册；`client.js` 已重建
+- [x] T8a: 打包激活接线（`apps/cli` 依赖 + 壳 patch 行带 `handoffDirectory`）+ `build:artifacts`/`build:check` +
+      两包覆盖率 100%（lines/branches/functions/statements）
+- [ ] T8b: 快照/e2e（录制会话回放需先有出货 profile 行）+ 真机双端验收（含 Windows 防火墙首包）
 
 ## [S4] Acceptance
 
