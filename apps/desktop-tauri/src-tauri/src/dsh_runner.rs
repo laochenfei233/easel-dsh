@@ -10,8 +10,8 @@ use std::sync::Mutex as LaunchUrlMutex;
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
-// The WebView2 path is the only one that pre-installs a native cookie.
-#[cfg(windows)]
+// Both flows carry the session in a native cookie: WebView2 pre-installs the
+// iframe copy, and WebKit pre-installs the top-level fallback.
 use tauri::webview::{
     cookie::{time::Duration as CookieDuration, SameSite},
     Cookie,
@@ -158,6 +158,10 @@ impl DshHandle {
                 tokio::time::sleep(Duration::from_secs(2)).await;
                 continue;
             }
+            // A ready server proves this boot is not the startup crash loop the
+            // restart limit guards; a settings-page relocation exits cleanly
+            // after ready and must not count toward it.
+            restarts = 0;
             let launch_url = self.launch_url.lock().expect("launch-url mutex").clone();
             if let Some(url) = launch_url.as_deref() {
                 let pid = self.child.lock().await.as_ref().and_then(|child| child.id());
@@ -173,7 +177,7 @@ impl DshHandle {
             );
             reveal_main_window(&app);
             if let Some(url) = launch_url.as_deref() {
-                navigate_ready(&app, url);
+                navigate_ready(&app, url).await;
             }
 
             // Wait for the child to exit (or the stopping flag).
@@ -234,7 +238,7 @@ impl DshHandle {
                     },
                 );
                 reveal_main_window(&app);
-                navigate_ready(&app, &url);
+                navigate_ready(&app, &url).await;
                 wait_port_closed(port, self.stopping.clone()).await;
                 *self.launch_url.lock().expect("launch-url mutex") = None;
                 continue;
@@ -282,7 +286,7 @@ impl DshHandle {
             },
         );
         reveal_main_window(app);
-        navigate_ready(app, &record.url);
+        navigate_ready(app, &record.url).await;
         Some(record.port)
     }
 
@@ -1213,18 +1217,21 @@ fn same_origin(a: &Url, b: &Url) -> bool {
 /// Open the dsh UI in its own window on WebKit shells, or navigate the window
 /// that already hosts it.
 ///
-/// WebKit anchors SameSite decisions to the CURRENT document: a navigation
-/// started from the `tauri://localhost` shell page counts as cross-site, so
-/// the server's `HttpOnly; SameSite=Strict` exchange cookie is neither stored
-/// nor sent and every launch lands on the 401 body. A window created directly
-/// against the launch URL has no document to anchor to — the first load
-/// behaves exactly like a browser tab opening the printed URL: the 303 mints
-/// the cookie first-party, the redirect carries it, and everything after that
-/// is the app document's own same-origin traffic. Later readiness (a restarted
-/// server on another port) navigates the existing app window, which is a
-/// same-site navigation from the app document and keeps working.
+/// Field evidence: even a window created directly against the launch URL
+/// rendered the 401 body, while the same URL works in Safari and a raw loopback
+/// exchange returns the expected 303 + session cookie — so WKWebView drops the
+/// 303's `SameSite=Strict` cookie somewhere in the webview's own cookie
+/// pipeline. The exchange this shell already performs hands us the signed
+/// session value, so it is pre-installed into the shared WebView cookie store
+/// as `SameSite=Lax` (sent on the top-level GET that follows the 303 and on
+/// every same-origin request; `Lax` needs no `Secure` over plain HTTP). The
+/// token URL still loads, so two independent channels authenticate the app
+/// document: the server's own Strict mint when the webview honours it, the
+/// pre-installed Lax copy otherwise. Later readiness (a restarted server on
+/// another port) navigates the existing app window, a same-site navigation
+/// from the app document.
 #[cfg(not(windows))]
-pub(crate) fn open_app_window(app: &AppHandle, url: &str) -> Result<(), String> {
+pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), String> {
     let parsed = url
         .parse::<Url>()
         .map_err(|e| format!("invalid dsh web launch URL: {e}"))?;
@@ -1246,6 +1253,10 @@ pub(crate) fn open_app_window(app: &AppHandle, url: &str) -> Result<(), String> 
         ));
         return Ok(());
     }
+    // The exchange is the liveness probe AND the cookie source: a failed
+    // exchange fails here, before any window exists.
+    let (cookie, _clean_url, _token_url) = launch_exchange(parsed.clone()).await?;
+    preinstall_session_cookie(app, &cookie)?;
     // Window creation must run on the main thread; the supervisor runs on the
     // async runtime.
     let handle = app.clone();
@@ -1280,17 +1291,66 @@ pub(crate) fn open_app_window(app: &AppHandle, url: &str) -> Result<(), String> 
             Err(err) => append_startup_log(&format!("open app window failed: {err}")),
         }
     })
-    .map_err(|e| format!("open app window dispatch failed: {e}"))
+    .map_err(|e| format!("open app window dispatch failed: {e}"))?;
+    log_app_window_url(app);
+    Ok(())
+}
+
+/// Install the exchanged session into the shared WebKit cookie store before the
+/// app window loads, using `SameSite=Lax` and no `Secure` so plain-HTTP
+/// loopback requests carry it. See `open_app_window` for why.
+#[cfg(not(windows))]
+fn preinstall_session_cookie(app: &AppHandle, cookie: &AuthCookie) -> Result<(), String> {
+    let window = app
+        .get_webview_window("main")
+        .ok_or("main webview unavailable")?;
+    let built = Cookie::build((cookie.name.clone(), cookie.value.clone()))
+        .domain("127.0.0.1")
+        .path("/")
+        .http_only(true)
+        .same_site(SameSite::Lax)
+        .secure(false)
+        .max_age(CookieDuration::seconds(cookie.max_age))
+        .build();
+    window
+        .set_cookie(built)
+        .map_err(|e| format!("browser-cookie pre-install failed: {e}"))
+}
+
+/// Record where the app window actually landed (origin only; the token query
+/// is reduced to its presence), so a future failure is diagnosable from
+/// `desktop-startup.log` without another round trip.
+#[cfg(not(windows))]
+fn log_app_window_url(app: &AppHandle) {
+    let probe = app.clone();
+    tauri::async_runtime::spawn(async move {
+        for delay in [2u64, 6, 15] {
+            tokio::time::sleep(Duration::from_secs(delay)).await;
+            let Some(window) = probe.get_webview_window(APP_WINDOW) else {
+                return;
+            };
+            match window.url() {
+                Ok(mut current) => {
+                    let had_token = current.query().is_some();
+                    current.set_query(None);
+                    append_startup_log(&format!(
+                        "app window url +{delay}s: {current} token={had_token}"
+                    ));
+                }
+                Err(err) => append_startup_log(&format!("app window url +{delay}s failed: {err}")),
+            }
+        }
+    });
 }
 
 /// The UI-facing entry point of the window above: the shell page calls it
 /// once a `ready` arrives (including the wizard-completion reload, which races
 /// the supervisor's own call — the window lookup deduplicates).
 #[tauri::command]
-pub fn navigate_main(app: AppHandle, url: String) -> Result<(), String> {
+pub async fn navigate_main(app: AppHandle, url: String) -> Result<(), String> {
     #[cfg(not(windows))]
     {
-        return open_app_window(&app, &url);
+        return open_app_window(&app, &url).await;
     }
     #[cfg(windows)]
     {
@@ -1302,12 +1362,12 @@ pub fn navigate_main(app: AppHandle, url: String) -> Result<(), String> {
 /// owns the window: its completion flow reloads the shell page, whose status
 /// polling reaches `navigate_main` on its own. WebView2 keeps the shell page +
 /// iframe design and never navigates here.
-fn navigate_ready(app: &AppHandle, url: &str) {
+async fn navigate_ready(app: &AppHandle, url: &str) {
     if !crate::setup::is_initialized() {
         return;
     }
     #[cfg(not(windows))]
-    if let Err(err) = open_app_window(app, url) {
+    if let Err(err) = open_app_window(app, url).await {
         append_startup_log(&format!("open app window for the dsh web: {err}"));
     }
     #[cfg(windows)]

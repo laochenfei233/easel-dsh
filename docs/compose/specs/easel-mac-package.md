@@ -57,6 +57,17 @@ commits: dsh 71ea5c0568..8a66b85fdc2（5e012932a2 vendoring、3d1de6a9d6 stageEa
    窗口共用。Windows（Chromium WebView2）保持壳页 + iframe + 预装 `SameSite=None; Secure` 链路
    不动（Chromium 在第三方 iframe 里拒绝 SET Strict cookie）；同时修正 v2 在 Windows 上也会
    触发 `navigate_ready` 主窗口导航的问题（改为 cfg 分平台的空操作）。
+7. **mac 实机反馈② 收尾（第四层证据 + Lax 预装兜底）**：v3 装包后 `app window app created`
+   日志确认独立窗口按设计创建，但 401 仍复现。三组证据把范围钉死：① `ps` 无残留旧进程（确为
+   新构建）；② `curl -i` 打日志里同一个 token 返回 303 + 正确 `set-cookie`
+   （`HttpOnly; SameSite=Strict; Path=/; Max-Age=2592000`），服务端换证完全正常；③ 同一 URL 在
+   Safari 正常进入界面。结论：**WKWebView 在 303 跟随请求上丢了服务端刚种的 Strict cookie**
+   （与内嵌/顶层、窗口新旧无关）。方案不再赌 cookie 语义，改为**双通道**：`open_app_window`
+   先复用 `launch_exchange`（保持存活探测语义）拿回签好的会话值，以 `SameSite=Lax`、不带
+   `Secure` 预装进共享 WebView cookie 存储，再创建 app 窗口加载 token URL——跟随请求由 303 的
+   Strict cookie（若 webview 认）或预装 Lax 副本（顶层 GET 与同源请求都携带）任一认证；同时
+   新增 app 窗口 URL 诊断日志（+2s/+6s/+15s 记录落点 origin 与 token 是否仍在 query），把下次
+   异常从"再猜一轮"降为"看一行日志"。
 
 **Verification** — cargo test --lib 22/22（含新归一/双安装形态断言）；插件
 node --test 92/92；web/ 删除后 `node build.mjs`（Easel 布局）+ vendored 布局
@@ -147,6 +158,7 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
 - [x] T11: mac 实机反馈修复② v1（已废）：authenticate_webview 分流 + iframe 直载 token URL——实机仍 401，根因见 Report 6 第二层（depends: none）
 - [x] T12: mac 实机反馈修复② v2：dsh_runner.rs 顶层原生导航 navigate_main/supervisor 钩子 + on_navigation 策略 + return_to_shell_page + app.js 分流（depends: T11）
 - [x] T13: mac 实机反馈修复② v3：独立 app 窗口承载 dsh UI（首文档=token URL）+ 壳页保留兜底 + 托盘/open_ui 唤起优先级 + Windows navigate_ready 空操作修正（depends: T12）
+- [x] T14: mac 实机反馈修复② v4：Lax 预装 cookie 兜底通道（launch_exchange 复用为 cookie 来源 + 共享 WebView store 预装）+ app 窗口 URL 诊断日志（depends: T13）
 
 ## [S4] Acceptance
 
@@ -180,5 +192,11 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
 - [x] T13 验证：cargo check/test 27/27 + clippy 仅存量告警；tauri
       run_on_main_thread 建窗 / WebviewUrl::External / on_new_window /
       on_navigation 均按 2.11.5 库签名；app.js node --check；README 双语 +
-      i18n 配对 + spec 同步；mac 实机四验（独立窗口内首启直进主界面）待下轮
-      workflow 出包验收
+      i18n 配对 + spec 同步
+- [x] T13 实机：`app window app created`/`reused` 日志确认独立窗口创建，
+      401 仍复现 → 第四层证据（curl 303+set-cookie 正常、Safari 正常、
+      无旧进程）判定为 WKWebView 丢 303 的 Strict cookie（Report 7）
+- [x] T14 验证：cargo check/test 27/27 + clippy 仅存量告警；launch_exchange
+      复用为 cookie 来源（存活探测语义保留）；Lax 预装写共享 WebView store；
+      URL 诊断日志 +2s/+6s/+15s；README 双语 + i18n 配对 + spec 同步；mac
+      实机五验（首启双通道认证直进主界面）待下轮 workflow 出包验收
