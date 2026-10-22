@@ -78,6 +78,7 @@ commits: dsh 71ea5c0568..8a66b85fdc2（5e012932a2 vendoring、3d1de6a9d6 stageEa
    `initialization_script` 注入重载重试（识别 401 文案，sessionStorage 上限 3 次，兜住
    cookie 存储到网络进程的传播竞态）；开窗加全局互斥消除并发竞态。后续就绪：预装新会话 +
    既有 app 窗口同源导航。
+9. **mac 实机反馈② 终态（第六层：WKWebView 存而不发 → 壳内代理）**：v7 日志证明会话 cookie 确实写进了 WKWebView 存储（`dsh-auth-…@localhost`），窗口也加载了 `http://localhost:3081/`，但 WebKit 始终不把它发到 app 文档自己的请求上（Safari 同一 URL 正常、curl 正常）。放弃 webview cookie 链路：新增 `src-tauri/src/proxy.rs`（本机回环代理，注入 `Cookie`/改写 `Host`/`Origin`/`Referer`，普通请求 `Connection: close` 每连接一请求、WS 升级后转原始双工管道，`rewrite_head`/`find_head_end` 带单测）；`open_app_window` 交换后把会话交给代理、窗口加载 `http://localhost:PROXY/`；代理端口固定，服务换端口只更新会话。预览时同轮修复了 `find_head_end` 单测初值笔误（21→24）。
 
 **Verification** — cargo test --lib 22/22（含新归一/双安装形态断言）；插件
 node --test 92/92；web/ 删除后 `node build.mjs`（Easel 布局）+ vendored 布局
@@ -170,6 +171,7 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
 - [x] T13: mac 实机反馈修复② v3：独立 app 窗口承载 dsh UI（首文档=token URL）+ 壳页保留兜底 + 托盘/open_ui 唤起优先级 + Windows navigate_ready 空操作修正（depends: T12）
 - [x] T14: mac 实机反馈修复② v4：Lax 预装 cookie 兜底通道（launch_exchange 复用为 cookie 来源 + 共享 WebView store 预装）+ app 窗口 URL 诊断日志（depends: T13）
 - [x] T15: mac 实机反馈修复② v5：app 窗口改载干净 origin（绕开 303 同名覆盖）+ 预装后 300ms 传播等待 + 注入重载重试脚本（sessionStorage 限 3 次）+ cookie 落库可见性日志 + 开窗互斥（depends: T14）
+- [x] T17: mac 实机反馈修复② v7（终态）：壳内本机代理注入会话（proxy.rs：Cookie/Host/Origin/Referer 改写 + 每连接一请求 + WS 双工管道 + 4 个纯函数单测）+ app 窗口指向代理 origin（端口固定、换端口只更新会话不导航）（depends: T16）
 - [x] T16: mac 实机反馈修复② v6：域名从裸 IP 改 localhost（WKWebView store 丢裸 IP 域；交换 Host 同步）+ bundle Info.plist 加 NSAllowsLocalNetworking ATS 例外 + 日志改用不过滤的 cookies()（wry 的 cookies_for_url 按 Url::domain() 过滤，IP 主机恒为空——此前 [] 是读取假象）+ 开窗等待 oneshot 收进互斥（depends: T15）
 
 ## [S4] Acceptance
