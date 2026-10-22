@@ -1,6 +1,6 @@
 ---
 description: "LAN project handoff peer service: persistent device identity, TLS listener, and mDNS discovery for moving project bundles between devices."
-kind: "package-library"
+kind: "package-reference"
 ---
 
 # @deepseek-ai/dsh-lan-handoff
@@ -14,10 +14,25 @@ One running harness home builds the LAN half of a project handoff: it mints a pe
 ## Table of Contents
 
 - [Use this package](#use_this_package)
+- [Known Limitations and Deferred Work](#known-limitations-and-deferred-work)
+- [Dev Note](#dev-note)
 
 <a id="use_this_package"></a>
 ## Use this package
 
 Mount the package as a plugin and read `ctx.lanHandoff.ready` for this device's identity, bound port, and receipt directory, plus `peersSnapshot()` for currently discoverable peers. Configuration accepts an optional display name (default: the operating-system host name), an optional listener port (default: OS-assigned), and the absolute `handoffDirectory` received projects land in (the Easel shell points it at the project root's `projects` directory).
 
-Handoff itself is four service calls: `pairWithPeer` or `pairWithDiscoveredPeer` opens a pairing and parks it in `pairingOffers()`; the UI shows each offer's six-digit string and settles it with `acceptPairing(id)` or `rejectPairing(id)`. `sendProjectToPeer(peerId, workspacePath)` exports the workspace's sessions, hashes its project tree, and streams the bundle; incoming bundles are received automatically into `handoffDirectory`, imported through the mounted `sessionLogImporter`, and attached to a workspace through the mounted workspace registry. Deleting `$DSH_HOME/lan-handoff/identity.json` remints the identity, and every peer that recorded the previous key must re-pair — the same lifetime contract as the anonymous user id file.
+Handoff itself is four service calls: `pairWithPeer` or `pairWithDiscoveredPeer` opens a pairing and parks it in `pairingOffers()`; the UI shows each offer's six-digit string and settles it with `acceptPairing(id)` or `rejectPairing(id)`. `sendProjectToPeer(peerId, workspacePath)` exports the workspace's sessions, hashes its project tree, and streams the bundle; incoming bundles are received automatically into `handoffDirectory`, imported through the mounted `sessionLogImporter`, and attached to a workspace through the mounted workspace registry. Deleting `$DSH_HOME/lan-handoff/identity.json` remints the identity, and every peer that recorded Deleting the previous key must re-pair — the same lifetime contract as the anonymous user id file.
+
+<a id="known-limitations-and-deferred-work"></a>
+## Known Limitations and Deferred Work
+
+- v1 resumes at entry granularity only: a partially transferred file restarts from its beginning.
+- Received archives are decompressed in memory before their sessions are imported.
+- mDNS discovery is unit-tested through injected hosts; real multicast runs on devices and can be blocked by routers, in which case discovery falls back to manual addresses.
+- The agent-facing handoff tool (letting the model initiate a transfer itself) is deferred; v1 is user-driven.
+
+<a id="dev-note"></a>
+### Dev Note
+
+None.

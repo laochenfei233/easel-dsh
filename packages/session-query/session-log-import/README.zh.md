@@ -1,6 +1,6 @@
 ---
 description: "宿主侧导入导出的会话 ZIP：把会话物化进本地持久化、把工作目录重映射到本机，并恢复引用的附件。"
-kind: "package-library"
+kind: "package-reference"
 ---
 
 # @deepseek-ai/dsh-session-log-import
@@ -14,8 +14,22 @@ kind: "package-library"
 ## 目录
 
 - [使用本包](#use_this_package)
+- [已知限制与后续工作](#known-limitations-and-deferred-work)
+- [开发备注](#dev-note)
 
 <a id="use_this_package"></a>
 ## 使用本包
 
 把本包作为插件挂载，然后调用 `ctx.sessionLogImporter.importArchive(zipBytes, { targetCwd })`，`targetCwd` 取本机绝对路径。调用返回已存储的根会话及其子会话。`targetCwd` 必填：导入会话的工具必须操作本机这份项目副本，因此会话头的 `cwd` 会被改写而不是保留。日志本身没有记录工作目录的会话保持无 cwd。会话 id 冲突、格式版本不受支持、或附件重新物化出的 id 与记录不一致，都会以类型化错误显式失败；不会静默改名，也不会产生半链接状态。
+
+<a id="known-limitations-and-deferred-work"></a>
+## 已知限制与后续工作
+
+- 归档在内存中解压；超大原文件需要逐条目流式解压作为升级路径。
+- 图片往返依赖两端同一套归一化管线产出相同 attachment id；不一致时拒绝导入，而不是链接一个坏引用。
+- 导入按归档逐个进行；中途失败时之前的会话已经物化并如实报告，而不是整体回滚。
+
+<a id="dev-note"></a>
+### 开发备注
+
+无。

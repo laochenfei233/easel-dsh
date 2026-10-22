@@ -100,7 +100,9 @@ export interface LanDiscoveryEntry {
   readonly txt: Readonly<Record<string, unknown>>
 }
 
-/** Resolve this process's advertised platform label. @returns the platform label.
+/**
+ * Resolve this process's advertised platform label.
+ * @returns the platform label.
  */
 export function lanPlatformOfHost(): LanPlatform {
   /* v8 ignore next 3 -- the non-host platform branches run on the other OS lanes */
@@ -251,7 +253,10 @@ export function browseLanHandoff(
 
 /* v8 ignore start -- live mDNS multicast sockets stay out of loopback tests; the adapter
    is exercised against real devices during acceptance. */
-/** Real mDNS-backed discovery host backed by `bonjour-service`. @returns the live discovery host. */
+/**
+ * Real mDNS-backed discovery host backed by `bonjour-service`.
+ * @returns the live discovery host.
+ */
 export function createBonjourDiscovery(): LanDiscoveryHost {
   const bonjour = new Bonjour()
   return {
