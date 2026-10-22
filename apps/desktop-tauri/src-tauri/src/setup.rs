@@ -514,6 +514,17 @@ pub(crate) fn ensure_easel_bundle_at(
         "easel-deconstruct",
         "insert:\n  - id: easel-deconstruct\n    name: dsh-plugin-easel/deconstruct\n",
     )?;
+    // LAN project handoff: the package ships inside the CLI deploy closure;
+    // this row mounts its service, and received projects land under the
+    // project root's `projects` directory beside the 立项 workspaces.
+    let handoff_dir = yaml_scalar(&Path::new(&root_dir).join("projects").to_string_lossy())?;
+    ensure_easel_row(
+        &mut rows,
+        "easel-lan-handoff",
+        &format!(
+            "insert:\n  - id: easel-lan-handoff\n    name: '@deepseek-ai/dsh-lan-handoff'\n    config:\n      handoffDirectory: {handoff_dir}\n"
+        ),
+    )?;
     if !rows
         .iter()
         .any(|row| row_has_id(row, "ui-plugin-manager"))

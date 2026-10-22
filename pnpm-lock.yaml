@@ -359,6 +359,9 @@ importers:
       '@deepseek-ai/dsh-jobs-local':
         specifier: workspace:*
         version: link:../../packages/jobs/jobs-local
+      '@deepseek-ai/dsh-lan-handoff':
+        specifier: workspace:*
+        version: link:../../packages/transfer/lan-handoff
       '@deepseek-ai/dsh-launch-environment':
         specifier: workspace:*
         version: link:../../packages/util/launch-environment
@@ -14924,6 +14927,12 @@ importers:
       '@deepseek-ai/dsh-home-paths':
         specifier: workspace:*
         version: link:../../util/home-paths
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:*
+        version: link:../../core/session
+      '@deepseek-ai/dsh-session-log-export':
+        specifier: workspace:*
+        version: link:../../session-query/session-log-export
       bonjour-service:
         specifier: ^1.4.4
         version: 1.4.4
@@ -14934,6 +14943,15 @@ importers:
       '@deepseek-ai/cordis':
         specifier: workspace:~
         version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-session-log-import':
+        specifier: workspace:*
+        version: link:../../session-query/session-log-import
+      '@deepseek-ai/dsh-session-query':
+        specifier: workspace:*
+        version: link:../../session-query/session-query
+      '@deepseek-ai/dsh-workspace':
+        specifier: workspace:*
+        version: link:../../workspace/workspace
 
   packages/typert/generator:
     dependencies:
