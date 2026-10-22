@@ -170,6 +170,7 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
 - [x] T13: mac 实机反馈修复② v3：独立 app 窗口承载 dsh UI（首文档=token URL）+ 壳页保留兜底 + 托盘/open_ui 唤起优先级 + Windows navigate_ready 空操作修正（depends: T12）
 - [x] T14: mac 实机反馈修复② v4：Lax 预装 cookie 兜底通道（launch_exchange 复用为 cookie 来源 + 共享 WebView store 预装）+ app 窗口 URL 诊断日志（depends: T13）
 - [x] T15: mac 实机反馈修复② v5：app 窗口改载干净 origin（绕开 303 同名覆盖）+ 预装后 300ms 传播等待 + 注入重载重试脚本（sessionStorage 限 3 次）+ cookie 落库可见性日志 + 开窗互斥（depends: T14）
+- [x] T16: mac 实机反馈修复② v6：域名从裸 IP 改 localhost（WKWebView store 丢裸 IP 域；交换 Host 同步）+ bundle Info.plist 加 NSAllowsLocalNetworking ATS 例外 + 日志改用不过滤的 cookies()（wry 的 cookies_for_url 按 Url::domain() 过滤，IP 主机恒为空——此前 [] 是读取假象）+ 开窗等待 oneshot 收进互斥（depends: T15）
 
 ## [S4] Acceptance
 

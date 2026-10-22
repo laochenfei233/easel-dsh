@@ -1099,7 +1099,12 @@ fn auth_cookie_from_response(response: &str) -> Option<AuthCookie> {
 /// shell may load: the clean origin for a cookie-carried session and the
 /// original token URL for the WebKit in-iframe load. The exchange doubles as a
 /// liveness probe, failing before the iframe can display the 401 body.
-async fn launch_exchange(parsed: Url) -> Result<(AuthCookie, String, String), String> {
+///
+/// `host` is the authority the session is minted for: the WebView2 iframe uses
+/// `127.0.0.1`, WebKit shells use `localhost` so the cookie lives on a named
+/// host (WKWebView's cookie store silently misbehaves on bare-IP domains).
+async fn launch_exchange(parsed: Url, host: &str) -> Result<(AuthCookie, String, String), String> {
+    let host = host.to_owned();
     let (cookie, clean_url, token_url) = tauri::async_runtime::spawn_blocking(move || {
         let token_url = parsed.to_string();
         let port = parsed.port().ok_or("invalid dsh web launch URL")?;
@@ -1116,7 +1121,7 @@ async fn launch_exchange(parsed: Url) -> Result<(AuthCookie, String, String), St
         stream
             .write_all(
                 format!(
-                    "GET {target} HTTP/1.1\r\nHost: 127.0.0.1:{port}\r\nConnection: close\r\n\r\n"
+                    "GET {target} HTTP/1.1\r\nHost: {host}:{port}\r\nConnection: close\r\n\r\n"
                 )
                 .as_bytes(),
             )
@@ -1161,9 +1166,14 @@ pub async fn authenticate_webview(app: AppHandle, url: String) -> Result<Webview
         .ok_or("invalid dsh web launch URL")?;
     // Each platform consumes a subset (Windows: {cookie, clean_url}; WebKit:
     // {token_url}); the statement allow keeps the other target's fields
-    // warning-free.
+    // warning-free. The session is minted for the same authority the consuming
+    // webview will use.
     #[allow(unused_variables)]
-    let (cookie, clean_url, token_url) = launch_exchange(parsed).await?;
+    let (cookie, clean_url, token_url) = launch_exchange(
+        parsed,
+        if cfg!(windows) { "127.0.0.1" } else { "localhost" },
+    )
+    .await?;
     let _ = &app;
     #[cfg(windows)]
     {
@@ -1232,9 +1242,12 @@ fn same_origin(a: &Url, b: &Url) -> bool {
 /// shared WebView cookie store as `SameSite=Lax` without `Secure` — sent on
 /// that very first top-level GET and every same-origin request after it — and
 /// a small injected retry reloads the page a few times if the cookie store had
-/// not propagated to the network process yet. Later readiness (a restarted
-/// server on another port) pre-installs the new session and navigates the
-/// existing app window, a same-site navigation from the app document.
+/// not propagated to the network process yet. Both the cookie and the window
+/// use the `localhost` host: WKWebView's cookie store drops bare-IP domains,
+/// which is why every `127.0.0.1` attempt stayed empty. Later readiness (a
+/// restarted server on another port) pre-installs the new session and
+/// navigates the existing app window, a same-site navigation from the app
+/// document.
 #[cfg(not(windows))]
 pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), String> {
     // The UI and the supervisor can race here; the second caller must see the
@@ -1244,12 +1257,15 @@ pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), St
     let parsed = url
         .parse::<Url>()
         .map_err(|e| format!("invalid dsh web launch URL: {e}"))?;
+    let port = parsed
+        .port()
+        .ok_or("invalid dsh web launch URL: missing port")?;
+    // The app window and the minted session share this authority.
+    let clean = Url::parse(&format!("http://localhost:{port}/"))
+        .map_err(|e| format!("invalid dsh web origin: {e}"))?;
     // The exchange is the liveness probe AND the cookie source: a failed
     // exchange fails here, before any window exists.
-    let (cookie, clean_url, _token_url) = launch_exchange(parsed.clone()).await?;
-    let clean = clean_url
-        .parse::<Url>()
-        .map_err(|e| format!("invalid dsh web origin: {e}"))?;
+    let (cookie, _clean_url, _token_url) = launch_exchange(parsed.clone(), "localhost").await?;
     if let Some(window) = app.get_webview_window(APP_WINDOW) {
         preinstall_session_cookie(app, &cookie)?;
         let navigated = window.url().ok().map(|current| !same_origin(&current, &clean)).unwrap_or(true);
@@ -1270,13 +1286,15 @@ pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), St
         return Ok(());
     }
     preinstall_session_cookie(app, &cookie)?;
-    log_cookie_store(app, &clean);
+    log_cookie_store(app);
     // The cookie store write is visible to the UI process when `set_cookie`
     // returns; the network process that serves the first request mirrors it
     // asynchronously.
     tokio::time::sleep(Duration::from_millis(300)).await;
     // Window creation must run on the main thread; the supervisor runs on the
-    // async runtime.
+    // async runtime. The oneshot keeps the creation inside the lock, so a
+    // second caller cannot race into the "already exists" error.
+    let (created, finished) = tokio::sync::oneshot::channel::<()>();
     let handle = app.clone();
     app.run_on_main_thread(move || {
         let built = tauri::WebviewWindowBuilder::new(
@@ -1309,8 +1327,11 @@ pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), St
             }
             Err(err) => append_startup_log(&format!("open app window failed: {err}")),
         }
+        let _ = created.send(());
     })
     .map_err(|e| format!("open app window dispatch failed: {e}"))?;
+    let _ = finished.await;
+    log_cookie_store(app);
     log_app_window_url(app);
     Ok(())
 }
@@ -1339,17 +1360,23 @@ const AUTH_RETRY_SCRIPT: &str = r#"
 })();
 "#;
 
-/// Record which dsh session-cookie names the shared store holds for the app
-/// origin, so a missing pre-install is visible in the startup log.
+/// Record every cookie the shared store holds (name@domain), so a missing
+/// pre-install is visible in the startup log. The unfiltered list is used on
+/// purpose: wry's per-URL filter compares against `Url::domain()`, which is
+/// null for bare-IP hosts, so a filtered read cannot tell "absent" from
+/// "IP-hosted".
 #[cfg(not(windows))]
-fn log_cookie_store(app: &AppHandle, origin: &Url) {
+fn log_cookie_store(app: &AppHandle) {
     let Some(window) = app.get_webview_window("main") else {
         return;
     };
-    match window.cookies_for_url(origin.clone()) {
+    match window.cookies() {
         Ok(cookies) => {
-            let names: Vec<String> = cookies.iter().map(|c| c.name().to_owned()).collect();
-            append_startup_log(&format!("cookie store for app origin: {names:?}"));
+            let entries: Vec<String> = cookies
+                .iter()
+                .map(|c| format!("{}@{}", c.name(), c.domain().unwrap_or("-")))
+                .collect();
+            append_startup_log(&format!("cookie store: {entries:?}"));
         }
         Err(err) => append_startup_log(&format!("cookie store read failed: {err}")),
     }
@@ -1357,14 +1384,15 @@ fn log_cookie_store(app: &AppHandle, origin: &Url) {
 
 /// Install the exchanged session into the shared WebKit cookie store before the
 /// app window loads, using `SameSite=Lax` and no `Secure` so plain-HTTP
-/// loopback requests carry it. See `open_app_window` for why.
+/// loopback requests carry it, on the `localhost` domain the app window uses
+/// (WKWebView's store drops bare-IP domains). See `open_app_window` for why.
 #[cfg(not(windows))]
 fn preinstall_session_cookie(app: &AppHandle, cookie: &AuthCookie) -> Result<(), String> {
     let window = app
         .get_webview_window("main")
         .ok_or("main webview unavailable")?;
     let built = Cookie::build((cookie.name.clone(), cookie.value.clone()))
-        .domain("127.0.0.1")
+        .domain("localhost")
         .path("/")
         .http_only(true)
         .same_site(SameSite::Lax)
