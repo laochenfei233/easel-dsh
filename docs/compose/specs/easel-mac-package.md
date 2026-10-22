@@ -68,6 +68,16 @@ commits: dsh 71ea5c0568..8a66b85fdc2（5e012932a2 vendoring、3d1de6a9d6 stageEa
    Strict cookie（若 webview 认）或预装 Lax 副本（顶层 GET 与同源请求都携带）任一认证；同时
    新增 app 窗口 URL 诊断日志（+2s/+6s/+15s 记录落点 origin 与 token 是否仍在 query），把下次
    异常从"再猜一轮"降为"看一行日志"。
+8. **mac 实机反馈② 定案（第五层：同名覆盖）**：v4 装包后诊断日志给出决定性事实——app 窗口
+   最终落在干净 URL `http://127.0.0.1:3081/`（token=false），即 303 被跟随，但两套 cookie
+   都没送达；同时日志暴露 UI/supervisor 并发开窗竞态（`a webview with label 'app' already
+   exists`）。解释：**303 的 `Set-Cookie` 与壳预装的 cookie 同名**，把可用的 Lax 副本覆盖成
+   了 WKWebView 必丢的 Strict 变体，两条通道因此合一失效。终版 = **app 窗口改载干净 origin**：
+   交换（存活探测）→ Lax 预装 → `cookies_for_url` 落库日志 → 300ms 传播等待 → 创建窗口加载
+   `http://127.0.0.1:PORT/`（首个顶层 GET 即携带预装 cookie，无 303、无覆盖、无丢弃）→
+   `initialization_script` 注入重载重试（识别 401 文案，sessionStorage 上限 3 次，兜住
+   cookie 存储到网络进程的传播竞态）；开窗加全局互斥消除并发竞态。后续就绪：预装新会话 +
+   既有 app 窗口同源导航。
 
 **Verification** — cargo test --lib 22/22（含新归一/双安装形态断言）；插件
 node --test 92/92；web/ 删除后 `node build.mjs`（Easel 布局）+ vendored 布局
@@ -159,6 +169,7 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
 - [x] T12: mac 实机反馈修复② v2：dsh_runner.rs 顶层原生导航 navigate_main/supervisor 钩子 + on_navigation 策略 + return_to_shell_page + app.js 分流（depends: T11）
 - [x] T13: mac 实机反馈修复② v3：独立 app 窗口承载 dsh UI（首文档=token URL）+ 壳页保留兜底 + 托盘/open_ui 唤起优先级 + Windows navigate_ready 空操作修正（depends: T12）
 - [x] T14: mac 实机反馈修复② v4：Lax 预装 cookie 兜底通道（launch_exchange 复用为 cookie 来源 + 共享 WebView store 预装）+ app 窗口 URL 诊断日志（depends: T13）
+- [x] T15: mac 实机反馈修复② v5：app 窗口改载干净 origin（绕开 303 同名覆盖）+ 预装后 300ms 传播等待 + 注入重载重试脚本（sessionStorage 限 3 次）+ cookie 落库可见性日志 + 开窗互斥（depends: T14）
 
 ## [S4] Acceptance
 
@@ -198,5 +209,13 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
       无旧进程）判定为 WKWebView 丢 303 的 Strict cookie（Report 7）
 - [x] T14 验证：cargo check/test 27/27 + clippy 仅存量告警；launch_exchange
       复用为 cookie 来源（存活探测语义保留）；Lax 预装写共享 WebView store；
-      URL 诊断日志 +2s/+6s/+15s；README 双语 + i18n 配对 + spec 同步；mac
-      实机五验（首启双通道认证直进主界面）待下轮 workflow 出包验收
+      URL 诊断日志 +2s/+6s/+15s；README 双语 + i18n 配对 + spec 同步
+- [x] T14 实机：诊断日志给出决定性事实——app 窗口落在干净 URL
+      `http://127.0.0.1:3081/`（token=false，303 已跟随）但两通道 cookie
+      都没带上；同时暴露 UI/supervisor 并发开窗竞态（`already exists`）。
+      判定：303 的 Set-Cookie 与预装 cookie 同名，把 Lax 副本覆盖成必丢的
+      Strict（Report 8）
+- [x] T15 验证：cargo check/test 全绿 + clippy 仅存量告警；clean origin 首载、
+      300ms 传播等待、初始化脚本重载重试（sessionStorage 上限 3）、
+      `cookies_for_url` 落库日志、开窗互斥；README 双语 + i18n 配对 + spec
+      同步；mac 实机六验（首启干净 origin 直进主界面）待下轮 workflow 出包验收

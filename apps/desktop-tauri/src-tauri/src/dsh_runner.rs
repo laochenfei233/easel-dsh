@@ -155,13 +155,15 @@ impl DshHandle {
                 let _ = app.emit("dsh://failed", "dsh exited during startup");
                 self.child.lock().await.take();
                 *self.launch_url.lock().expect("launch-url mutex") = None;
+                if restarts >= RESTART_LIMIT {
+                    let _ = app.emit("dsh://failed", "dsh crashed repeatedly");
+                    return;
+                }
+                restarts += 1;
+                let _ = app.emit("dsh://restarting", restarts);
                 tokio::time::sleep(Duration::from_secs(2)).await;
                 continue;
             }
-            // A ready server proves this boot is not the startup crash loop the
-            // restart limit guards; a settings-page relocation exits cleanly
-            // after ready and must not count toward it.
-            restarts = 0;
             let launch_url = self.launch_url.lock().expect("launch-url mutex").clone();
             if let Some(url) = launch_url.as_deref() {
                 let pid = self.child.lock().await.as_ref().and_then(|child| child.id());
@@ -243,6 +245,9 @@ impl DshHandle {
                 *self.launch_url.lock().expect("launch-url mutex") = None;
                 continue;
             }
+            // A ready server that exited is restarted; the limit still guards
+            // a server that repeatedly dies (settings relocations reset the
+            // counter through the pending check at the top of the loop).
             if restarts >= RESTART_LIMIT {
                 let _ = app.emit("dsh://failed", "dsh crashed repeatedly");
                 return;
@@ -1217,29 +1222,40 @@ fn same_origin(a: &Url, b: &Url) -> bool {
 /// Open the dsh UI in its own window on WebKit shells, or navigate the window
 /// that already hosts it.
 ///
-/// Field evidence: even a window created directly against the launch URL
-/// rendered the 401 body, while the same URL works in Safari and a raw loopback
-/// exchange returns the expected 303 + session cookie — so WKWebView drops the
-/// 303's `SameSite=Strict` cookie somewhere in the webview's own cookie
-/// pipeline. The exchange this shell already performs hands us the signed
-/// session value, so it is pre-installed into the shared WebView cookie store
-/// as `SameSite=Lax` (sent on the top-level GET that follows the 303 and on
-/// every same-origin request; `Lax` needs no `Secure` over plain HTTP). The
-/// token URL still loads, so two independent channels authenticate the app
-/// document: the server's own Strict mint when the webview honours it, the
-/// pre-installed Lax copy otherwise. Later readiness (a restarted server on
-/// another port) navigates the existing app window, a same-site navigation
-/// from the app document.
+/// Field evidence: a fresh window created directly against the launch URL also
+/// rendered the 401 body — it followed the 303 to the clean URL but the
+/// follow-up request carried no cookie. The 303 re-mints the same cookie name
+/// the shell had pre-installed, so the webview's dropped `SameSite=Strict`
+/// replacement clobbered the usable copy. The app window therefore loads the
+/// CLEAN origin instead of the token URL: the exchange below (also the
+/// liveness probe) yields the signed session, which is pre-installed into the
+/// shared WebView cookie store as `SameSite=Lax` without `Secure` — sent on
+/// that very first top-level GET and every same-origin request after it — and
+/// a small injected retry reloads the page a few times if the cookie store had
+/// not propagated to the network process yet. Later readiness (a restarted
+/// server on another port) pre-installs the new session and navigates the
+/// existing app window, a same-site navigation from the app document.
 #[cfg(not(windows))]
 pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), String> {
+    // The UI and the supervisor can race here; the second caller must see the
+    // window the first one created instead of failing window creation.
+    static OPEN_LOCK: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
+    let _guard = OPEN_LOCK.lock().await;
     let parsed = url
         .parse::<Url>()
         .map_err(|e| format!("invalid dsh web launch URL: {e}"))?;
+    // The exchange is the liveness probe AND the cookie source: a failed
+    // exchange fails here, before any window exists.
+    let (cookie, clean_url, _token_url) = launch_exchange(parsed.clone()).await?;
+    let clean = clean_url
+        .parse::<Url>()
+        .map_err(|e| format!("invalid dsh web origin: {e}"))?;
     if let Some(window) = app.get_webview_window(APP_WINDOW) {
-        let navigated = window.url().ok().map(|current| !same_origin(&current, &parsed)).unwrap_or(true);
+        preinstall_session_cookie(app, &cookie)?;
+        let navigated = window.url().ok().map(|current| !same_origin(&current, &clean)).unwrap_or(true);
         if navigated {
             window
-                .navigate(parsed)
+                .navigate(clean)
                 .map_err(|e| format!("navigate the app window failed: {e}"))?;
         }
         show_window(&window);
@@ -1253,10 +1269,12 @@ pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), St
         ));
         return Ok(());
     }
-    // The exchange is the liveness probe AND the cookie source: a failed
-    // exchange fails here, before any window exists.
-    let (cookie, _clean_url, _token_url) = launch_exchange(parsed.clone()).await?;
     preinstall_session_cookie(app, &cookie)?;
+    log_cookie_store(app, &clean);
+    // The cookie store write is visible to the UI process when `set_cookie`
+    // returns; the network process that serves the first request mirrors it
+    // asynchronously.
+    tokio::time::sleep(Duration::from_millis(300)).await;
     // Window creation must run on the main thread; the supervisor runs on the
     // async runtime.
     let handle = app.clone();
@@ -1264,11 +1282,12 @@ pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), St
         let built = tauri::WebviewWindowBuilder::new(
             &handle,
             APP_WINDOW,
-            tauri::WebviewUrl::External(parsed),
+            tauri::WebviewUrl::External(clean),
         )
         .title("Easel-dsh")
         .inner_size(1280.0, 820.0)
         .min_inner_size(800.0, 600.0)
+        .initialization_script(AUTH_RETRY_SCRIPT)
         .on_new_window({
             let handle = handle.clone();
             move |url, _features: NewWindowFeatures| {
@@ -1294,6 +1313,46 @@ pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), St
     .map_err(|e| format!("open app window dispatch failed: {e}"))?;
     log_app_window_url(app);
     Ok(())
+}
+
+/// Reload the app window while it still shows the server's authentication
+/// notice, covering the window between the cookie-store write and the network
+/// process that serves requests. Bounded through `sessionStorage` so a missing
+/// session can never loop.
+#[cfg(not(windows))]
+const AUTH_RETRY_SCRIPT: &str = r#"
+(() => {
+  const key = 'dsh-auth-retries';
+  const check = () => {
+    const text = document.body ? document.body.textContent || '' : '';
+    if (!text.includes('dsh web authentication required')) {
+      sessionStorage.removeItem(key);
+      return;
+    }
+    const used = Number(sessionStorage.getItem(key) || '0');
+    if (used >= 3) return;
+    sessionStorage.setItem(key, String(used + 1));
+    setTimeout(() => location.reload(), 400);
+  };
+  if (document.readyState === 'complete') check();
+  else window.addEventListener('load', check, { once: true });
+})();
+"#;
+
+/// Record which dsh session-cookie names the shared store holds for the app
+/// origin, so a missing pre-install is visible in the startup log.
+#[cfg(not(windows))]
+fn log_cookie_store(app: &AppHandle, origin: &Url) {
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+    match window.cookies_for_url(origin.clone()) {
+        Ok(cookies) => {
+            let names: Vec<String> = cookies.iter().map(|c| c.name().to_owned()).collect();
+            append_startup_log(&format!("cookie store for app origin: {names:?}"));
+        }
+        Err(err) => append_startup_log(&format!("cookie store read failed: {err}")),
+    }
 }
 
 /// Install the exchanged session into the shared WebKit cookie store before the
