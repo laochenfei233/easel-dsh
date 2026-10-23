@@ -207,13 +207,13 @@ function itemsFor(ctx, surface) {
 /**
  * Trend-row menu rows; every action is HTTP/plain-DOM so the menu does not
  * need the React tree.
- * @param {{title: string, url: string, source: string}} trend - the row payload.
+ * @param {{title: string, url: string, source: string, platform: string, rank?: number, hot?: string}} trend - the row payload.
  * @returns the menu rows.
  */
 function trendItems(trend) {
   const { title, url, source } = trend
   return [
-    menuRow('抓取正文并入库', () => captureTrend(title, url, source), {
+    menuRow('抓取正文并入库', () => captureTrend(trend), {
       disabled: url === '', hint: url === '' ? '无原文链接' : undefined,
     }),
     menuRow('仅收藏标题到选题库', () => saveTrendTitle(title, source)),
@@ -225,16 +225,19 @@ function trendItems(trend) {
 }
 
 /** Fetch the article body into the content library and upsert the idea. */
-async function captureTrend(title, url, source) {
+async function captureTrend(trend) {
   trendToast('正在抓取正文…', 'info')
   try {
-    const result = await captureTrendArticle({ title, url, source })
+    const result = await captureTrendArticle({
+      title: trend.title, url: trend.url, source: trend.source,
+      platform: trend.platform, rank: trend.rank, hot: trend.hot,
+    })
     if (typeof result.warning === 'string' && result.warning !== '') {
       trendToast(`已入库 · ${result.warning}`, 'warn')
     } else {
       trendToast(result.reused === true ? '正文已更新' : '已存入内容库与选题库', 'ok')
     }
-    notifyTrendSaved(title)
+    notifyTrendSaved(trend.title)
   } catch (error) {
     trendToast(`抓取失败：${messageOf(error)}`, 'error')
   }

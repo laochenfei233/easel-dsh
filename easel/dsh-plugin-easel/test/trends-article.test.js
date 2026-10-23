@@ -34,6 +34,7 @@ function makeIo(root) {
       writeFileSync(path, content, 'utf8')
     },
     ideas: [],
+    async readIdeas() { return this.ideas },
     async mutateIdeas(_settings, mutator) {
       const { items, idea, reused } = mutator(this.ideas)
       this.ideas = items
@@ -179,6 +180,26 @@ test('capture handler: login wall keeps the idea but writes no fake body', async
   assert.equal(res.json.bodyPath, undefined)
   assert.equal(io.ideas.length, 1)
   assert.equal(io.ideas[0].url, 'https://news.example.com/paywall')
+  rmSync(root, { recursive: true, force: true })
+})
+
+test('capture handler: same URL with a changed title reuses the existing body file', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-capture-'))
+  mkdirSync(join(root, 'outputs'), { recursive: true })
+  const io = makeIo(root)
+  const handler = createCaptureHandler({ fetchPage: okFetch(), lookupHost: okLookup, io })
+  await handler({ settings: settingsFor(root), body: async () => (
+    { title: '原标题', url: 'https://news.example.com/a', source: '微博热搜' }
+  ) })
+  const second = await handler({ settings: settingsFor(root), body: async () => (
+    { title: '换成完全不同的标题', url: 'https://news.example.com/a', source: '微博热搜' }
+  ) })
+  assert.equal(io.ideas.length, 1, 'same URL still one idea')
+  assert.equal(second.json.reused, true)
+  assert.equal(second.json.idea.title, '原标题', 'user-edited title survives re-capture')
+  const files = readdirSync(join(root, 'outputs', '热点正文'))
+  assert.equal(files.length, 1, 'no second file for a renamed re-capture')
+  assert.equal(second.json.bodyPath, io.ideas[0].bodyPath)
   rmSync(root, { recursive: true, force: true })
 })
 

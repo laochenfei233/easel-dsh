@@ -66,9 +66,8 @@ function TrendRow({ row, showPlatform, saved, onSave, onUse }: {
   const rank = row.rank ?? 0;
   return (
     <div className="trend-item" data-easel-trend={payload}>
-      <span className={`trend-rank ${rank > 0 && rank <= 3 ? 'top' : ''}`}>
-        {showPlatform ? <span className="trend-plat">{row.label}</span> : rank || '·'}
-      </span>
+      <span className={`trend-rank ${rank > 0 && rank <= 3 ? 'top' : ''}`}>{rank || '·'}</span>
+      {showPlatform && <span className="trend-plat">{row.label}</span>}
       <div className="trend-main">
         <a className="trend-title" href={row.url || undefined} target="_blank" rel="noreferrer"
           title={row.title}>{row.title}</a>

@@ -105,9 +105,16 @@ test('clusterTrends merges cross-platform same titles and keeps singletons', () 
   assert.equal(clusters[0].platforms.join(','), 'weibo,toutiao,zhihu')
   assert.equal(clusters[0].bestRank, 1)
   assert.equal(clusters[0].isNew, true)
+  assert.deepEqual(clusters[0].items.map(it => [it.platform, it.label, it.rank]), [
+    ['weibo', '微博', 1],
+    ['toutiao', '头条', 1],
+    ['zhihu', '知乎', 4],
+  ], 'cluster body rows carry their source for the card and the right-click payload')
+  assert.ok(clusters[0].items.every(it => !('key' in it) && !('firstSeen' in it)), 'internal fields stripped from cluster payload')
   assert.equal(clusters[0].items.length, 3)
   assert.equal(clusters.length, 2, 'unrelated topic stays its own cluster')
   assert.equal(clusters[1].platforms.length, 1)
+  assert.deepEqual(clusters[1].items[0].title, '完全不相关的话题')
 })
 
 test('clusterTrends: short titles only merge on exact match', () => {

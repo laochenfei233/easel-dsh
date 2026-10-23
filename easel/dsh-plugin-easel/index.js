@@ -1513,6 +1513,7 @@ const captureArticle = createCaptureHandler({
       await rename(tmp, path)
     },
     mutateIdeas,
+    readIdeas: async (settings) => readStoreList(settings, IDEAS_FILE),
     proxyUrl: async (settings) => {
       const cfg = await readRadarConfig(settings)
       return cfg.proxyEnabled ? cfg.proxyUrl : ''

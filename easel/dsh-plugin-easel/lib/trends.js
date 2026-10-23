@@ -185,7 +185,8 @@ function isSameTitle(keyA, keyB) {
  * 无模型、可解释；误并/漏并明显时再换全成员比较。
  * @param {Array<{platform: string, label: string, items: object[]}>} groups - 已装饰的源列表。
  * @param {{maxClusters?: number}} [options]
- * @returns {Array<object>} 簇列表，含单平台簇；多平台在前。
+ * @returns {Array<object>} 簇列表，item 带 platform/label（卡体行与右键直接可用），
+ *   不带内部字段 key/firstSeen；含单平台簇，多平台在前。
  */
 export function clusterTrends(groups, { maxClusters = 60 } = {}) {
   const clusters = []
@@ -200,13 +201,15 @@ export function clusterTrends(groups, { maxClusters = 60 } = {}) {
         if (normalizedUrl !== '' && cluster.normalizedUrl === normalizedUrl) return true
         return isSameTitle(cluster.key, key)
       })
+      // 卡体行与右键都需要来源：扫描时就把平台与展示名盖在条目上（TrendRef）。
+      const ref = { ...item, platform: group.platform, label: group.label }
       if (target === undefined) {
         clusters.push({
-          key, normalizedUrl, title: item.title, items: [item],
+          key, normalizedUrl, title: item.title, items: [ref],
           platforms: [group.platform], labels: [group.label],
         })
       } else {
-        target.items.push(item)
+        target.items.push(ref)
         if (!target.platforms.includes(group.platform)) {
           target.platforms.push(group.platform)
           target.labels.push(group.label)
@@ -216,15 +219,16 @@ export function clusterTrends(groups, { maxClusters = 60 } = {}) {
   }
   const shaped = clusters.map((cluster) => {
     const items = [...cluster.items].sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))
+    const ranks = items.map(item => item.rank).filter(rank => typeof rank === 'number' && rank > 0)
     return {
       id: cluster.key,
       title: cluster.title,
       platforms: cluster.platforms,
       labels: cluster.labels,
-      bestRank: Math.min(...items.map(item => item.rank ?? 0).filter(rank => rank > 0)),
+      bestRank: ranks.length > 0 ? Math.min(...ranks) : 1,
       firstSeen: Math.min(...items.map(item => item.firstSeen ?? Number.MAX_SAFE_INTEGER)),
       isNew: items.some(item => item.isNew === true),
-      items,
+      items: items.map(({ key, firstSeen, ...rest }) => rest),
     }
   })
   shaped.sort((a, b) =>
@@ -236,6 +240,7 @@ export function clusterTrends(groups, { maxClusters = 60 } = {}) {
 
 /**
  * 给一份已装饰的条目列表标注命中的关注词（归一化后的子串匹配）。
+ * 无命中时删掉 watch：换词/清词后，缓存与离线快照里的旧命中不再外泄。
  * @param {object[]} items - decorateFetched 的输出。
  * @param {string[]} keywords - normalizeKeywords 的输出。
  */
@@ -247,6 +252,7 @@ export function applyWatch(items, keywords) {
     const key = typeof item.key === 'string' && item.key !== '' ? item.key : normalizeTrendTitle(item.title)
     const hits = prepared.filter(({ key: wordKey }) => key.includes(wordKey)).map(({ keyword }) => keyword)
     if (hits.length > 0) item.watch = hits
+    else delete item.watch
   }
 }
 

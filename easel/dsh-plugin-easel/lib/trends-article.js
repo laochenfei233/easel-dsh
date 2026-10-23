@@ -282,7 +282,7 @@ const NON_HTML_TYPES = /html|xml|plain/i
  *   单跳抓取（不跟随重定向），网络错误直接抛。
  * @param {Function} deps.lookupHost - dns lookup 注入点。
  * @param {object} deps.io - 宿主半的 IO 能力：`writeText(path, content)`、
- *   `mutateIdeas(settings, mutator)`、`proxyUrl(settings)`。
+ *   `mutateIdeas(settings, mutator)`、`readIdeas(settings)`、`proxyUrl(settings)`。
  * @returns {(c: object) => Promise<object>} dispatch 兼容的 handler。
  */
 export function createCaptureHandler({ fetchPage, lookupHost, io }) {
@@ -295,11 +295,11 @@ export function createCaptureHandler({ fetchPage, lookupHost, io }) {
 
     const warnings = []
     let html = null
-    let finalUrl = ''
+    let resolvedUrl = ''
     if (urlRaw !== '') {
       try {
         const res = await fetchArticleDocument(urlRaw, { fetchPage, lookupHost, proxyUrl })
-        finalUrl = res.url
+        resolvedUrl = res.url
         if (res.status < 200 || res.status >= 300) {
           warnings.push(`上游返回 ${res.status}`)
         } else if (!NON_HTML_TYPES.test(res.contentType)) {
@@ -330,10 +330,14 @@ export function createCaptureHandler({ fetchPage, lookupHost, io }) {
 
     let bodyPath
     if (text !== '') {
-      bodyPath = `热点正文/${articleFileName(title, finalUrl || urlRaw)}`
+      // 同 URL 再抓复用既有 bodyPath：同一选题改标题也不新建第二个文件（spec D6 边界）。
+      // 查重用最终 URL（首抓即存 finalUrl），在写文件前完成。
+      const existingIdea = resolvedUrl === '' ? undefined : (await io.readIdeas(c.settings))
+        .find(item => item !== null && typeof item === 'object' && item.url === resolvedUrl)
+      bodyPath = existingIdea?.bodyPath ?? `热点正文/${articleFileName(title, resolvedUrl)}`
       const markdown = composeArticleMarkdown({
         title, source: String(body?.source ?? ''), rank: body?.rank, hot: body?.hot,
-        url: finalUrl || urlRaw, fetchedAt: new Date(), body: text,
+        url: resolvedUrl, fetchedAt: new Date(), body: text,
       })
       try {
         await io.writeText(join(c.settings.projectRoot, 'outputs', ...bodyPath.split('/')), markdown)
@@ -348,7 +352,7 @@ export function createCaptureHandler({ fetchPage, lookupHost, io }) {
       title,
       note: description.trim().slice(0, 200),
       source: String(body?.source ?? '').trim(),
-      url: finalUrl || urlRaw,
+      url: resolvedUrl,
       bodyPath,
       created: Math.floor(Date.now() / 1000),
     }))

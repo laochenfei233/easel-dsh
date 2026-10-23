@@ -1900,7 +1900,8 @@ function TrendRow({ row, showPlatform, saved, onSave, onUse }) {
   });
   const rank = row.rank ?? 0;
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-item", "data-easel-trend": payload, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${rank > 0 && rank <= 3 ? "top" : ""}`, children: showPlatform ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-plat", children: row.label }) : rank || "\xB7" }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${rank > 0 && rank <= 3 ? "top" : ""}`, children: rank || "\xB7" }),
+    showPlatform && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-plat", children: row.label }),
     /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
         "a",
@@ -10015,7 +10016,7 @@ function itemsFor(ctx, surface) {
 function trendItems(trend) {
   const { title, url, source } = trend;
   return [
-    menuRow("\u6293\u53D6\u6B63\u6587\u5E76\u5165\u5E93", () => captureTrend(title, url, source), {
+    menuRow("\u6293\u53D6\u6B63\u6587\u5E76\u5165\u5E93", () => captureTrend(trend), {
       disabled: url === "",
       hint: url === "" ? "\u65E0\u539F\u6587\u94FE\u63A5" : void 0
     }),
@@ -10026,16 +10027,23 @@ function trendItems(trend) {
     menuRow("\u6253\u5F00\u539F\u6587", () => openTrendUrl(url), { disabled: url === "" })
   ];
 }
-async function captureTrend(title, url, source) {
+async function captureTrend(trend) {
   trendToast("\u6B63\u5728\u6293\u53D6\u6B63\u6587\u2026", "info");
   try {
-    const result = await captureTrendArticle({ title, url, source });
+    const result = await captureTrendArticle({
+      title: trend.title,
+      url: trend.url,
+      source: trend.source,
+      platform: trend.platform,
+      rank: trend.rank,
+      hot: trend.hot
+    });
     if (typeof result.warning === "string" && result.warning !== "") {
       trendToast(`\u5DF2\u5165\u5E93 \xB7 ${result.warning}`, "warn");
     } else {
       trendToast(result.reused === true ? "\u6B63\u6587\u5DF2\u66F4\u65B0" : "\u5DF2\u5B58\u5165\u5185\u5BB9\u5E93\u4E0E\u9009\u9898\u5E93", "ok");
     }
-    notifyTrendSaved(title);
+    notifyTrendSaved(trend.title);
   } catch (error) {
     trendToast(`\u6293\u53D6\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
   }
