@@ -9472,19 +9472,19 @@ function isFilePath(value) {
   return /\.[A-Za-z0-9]{1,8}$/.test(base);
 }
 function fileLinkSurface(target) {
-  const card2 = target.closest(PRESENTED_FILE_SELECTOR);
-  if (card2 != null) {
-    const preview = card2.querySelector?.("button[title]") ?? null;
+  const card = target.closest(PRESENTED_FILE_SELECTOR);
+  if (card != null) {
+    const preview = card.querySelector?.("button[title]") ?? null;
     const path2 = preview?.getAttribute?.("title")?.trim();
     if (preview !== null && isFilePath(path2)) {
       return { kind: "file", path: path2, root: void 0, entry: "file", preview };
     }
     return null;
   }
-  const button2 = target.closest(FILE_LINK_SELECTOR);
-  const path = button2?.getAttribute?.("title")?.trim();
-  if (button2 != null && isFilePath(path)) {
-    return { kind: "file", path, root: void 0, entry: "file", preview: button2 };
+  const button = target.closest(FILE_LINK_SELECTOR);
+  const path = button?.getAttribute?.("title")?.trim();
+  if (button != null && isFilePath(path)) {
+    return { kind: "file", path, root: void 0, entry: "file", preview: button };
   }
   return null;
 }
@@ -9854,24 +9854,24 @@ function showMenu({ x: x2, y: y2, items, onClosed, onError }) {
   return close;
 }
 function itemElement(item, close, restoreFocus, render, onError) {
-  const button2 = document.createElement("button");
-  button2.type = "button";
-  button2.className = ITEM_CLASS;
-  button2.setAttribute("role", "menuitem");
-  button2.disabled = item.disabled === true;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = ITEM_CLASS;
+  button.setAttribute("role", "menuitem");
+  button.disabled = item.disabled === true;
   const label = document.createElement("span");
   label.textContent = item.label;
-  button2.append(label);
+  button.append(label);
   if (typeof item.hint === "string" && item.hint !== "") {
     const hint = document.createElement("span");
     hint.className = HINT_CLASS;
     hint.textContent = item.hint;
-    button2.append(hint);
+    button.append(hint);
   }
-  button2.addEventListener("click", (event) => {
+  button.addEventListener("click", (event) => {
     event.preventDefault();
     event.stopPropagation();
-    if (button2.disabled) return;
+    if (button.disabled) return;
     const report = onError ?? ((error) => {
       console.warn("easel-context-menu:", error);
     });
@@ -9890,7 +9890,7 @@ function itemElement(item, close, restoreFocus, render, onError) {
     restoreFocus();
     run();
   });
-  return button2;
+  return button;
 }
 function separatorElement() {
   const separator = document.createElement("div");
@@ -10176,18 +10176,20 @@ var import_jsx_runtime26 = require("react/jsx-runtime");
 var COPY = {
   en: {
     nav: "LAN handoff",
-    title: "LAN project handoff",
-    description: "Send a project and its agent sessions to another device on this network, or receive one.",
+    intro: "Send a project and its agent sessions to another device on this network, or receive one. Both devices stay on the same network with the app open.",
     unavailable: "LAN handoff is not enabled in this profile.",
     device: "This device",
+    port: "port",
+    refresh: "Refresh",
     paired: "Paired devices",
-    noPaired: "No paired devices yet.",
+    pairedBadge: "Paired",
+    noPaired: "Nothing paired yet. Pair a nearby device first.",
     nearby: "Nearby devices",
-    noNearby: "Nothing discovered yet. Keep both apps open on the same network.",
+    noNearby: "No devices found. Keep both apps open on the same network, then refresh.",
     pair: "Pair",
     pending: "Waiting for confirmation",
-    sasHint: "Compare this number on both screens; confirm only when they match.",
-    confirm: "Match, pair",
+    sasHint: "Check that both screens show this number, then confirm on each. Only pair when they match.",
+    confirm: "They match \u2014 pair",
     reject: "Decline",
     sendTitle: "Send a project",
     pickWorkspace: "Choose a project",
@@ -10195,22 +10197,23 @@ var COPY = {
     send: "Send",
     sending: "Sending\u2026",
     sent: "Handoff complete.",
-    failed: "Handoff failed",
-    refresh: "Refresh"
+    failed: "Handoff failed"
   },
   zh: {
     nav: "\u5C40\u57DF\u7F51\u4EA4\u63A5",
-    title: "\u5C40\u57DF\u7F51\u9879\u76EE\u4EA4\u63A5",
-    description: "\u628A\u9879\u76EE\u8FDE\u540C agent \u4F1A\u8BDD\u53D1\u5230\u672C\u7F51\u7EDC\u7684\u53E6\u4E00\u53F0\u8BBE\u5907\uFF0C\u6216\u4ECE\u53E6\u4E00\u53F0\u8BBE\u5907\u63A5\u6536\u3002",
+    intro: "\u628A\u9879\u76EE\u8FDE\u540C agent \u4F1A\u8BDD\u53D1\u5230\u672C\u7F51\u7EDC\u7684\u53E6\u4E00\u53F0\u8BBE\u5907\uFF0C\u6216\u4ECE\u53E6\u4E00\u53F0\u8BBE\u5907\u63A5\u6536\u3002\u4E24\u53F0\u8BBE\u5907\u9700\u5728\u540C\u4E00\u7F51\u7EDC\u5E76\u90FD\u4FDD\u6301\u5E94\u7528\u5F00\u542F\u3002",
     unavailable: "\u5F53\u524D profile \u672A\u542F\u7528\u5C40\u57DF\u7F51\u4EA4\u63A5\u3002",
     device: "\u672C\u673A",
+    port: "\u7AEF\u53E3",
+    refresh: "\u5237\u65B0",
     paired: "\u5DF2\u914D\u5BF9\u8BBE\u5907",
-    noPaired: "\u8FD8\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907\u3002",
+    pairedBadge: "\u5DF2\u914D\u5BF9",
+    noPaired: "\u8FD8\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907\uFF0C\u5148\u5728\u9644\u8FD1\u8BBE\u5907\u91CC\u914D\u5BF9\u3002",
     nearby: "\u9644\u8FD1\u8BBE\u5907",
-    noNearby: "\u5C1A\u672A\u53D1\u73B0\u8BBE\u5907\u3002\u8BF7\u8BA9\u4E24\u53F0\u8BBE\u5907\u90FD\u5F00\u7740\u5E94\u7528\u5E76\u5904\u4E8E\u540C\u4E00\u7F51\u7EDC\u3002",
+    noNearby: "\u5C1A\u672A\u53D1\u73B0\u8BBE\u5907\u3002\u8BF7\u8BA9\u4E24\u53F0\u8BBE\u5907\u90FD\u5F00\u7740\u5E94\u7528\u5E76\u5904\u4E8E\u540C\u4E00\u7F51\u7EDC\uFF0C\u7136\u540E\u5237\u65B0\u3002",
     pair: "\u914D\u5BF9",
     pending: "\u7B49\u5F85\u786E\u8BA4",
-    sasHint: "\u8BF7\u6838\u5BF9\u4E24\u53F0\u5C4F\u5E55\u4E0A\u662F\u5426\u663E\u793A\u540C\u4E00\u4E32\u6570\u5B57\uFF1B\u4E00\u81F4\u624D\u70B9\u786E\u8BA4\u3002",
+    sasHint: "\u8BF7\u6838\u5BF9\u4E24\u53F0\u5C4F\u5E55\u663E\u793A\u7684\u662F\u540C\u4E00\u4E32\u6570\u5B57\uFF0C\u518D\u5206\u522B\u5728\u5404\u81EA\u8BBE\u5907\u4E0A\u786E\u8BA4\uFF1B\u4E00\u81F4\u624D\u914D\u5BF9\u3002",
     confirm: "\u4E00\u81F4\uFF0C\u914D\u5BF9",
     reject: "\u62D2\u7EDD",
     sendTitle: "\u53D1\u9001\u9879\u76EE",
@@ -10219,217 +10222,369 @@ var COPY = {
     send: "\u53D1\u9001",
     sending: "\u53D1\u9001\u4E2D\u2026",
     sent: "\u4EA4\u63A5\u5B8C\u6210\u3002",
-    failed: "\u4EA4\u63A5\u5931\u8D25",
-    refresh: "\u5237\u65B0"
+    failed: "\u4EA4\u63A5\u5931\u8D25"
   }
 };
-var card = {
-  display: "flex",
-  flexDirection: "column",
-  gap: 10,
-  maxWidth: 560
-};
-var rowStyle = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 };
-var muted = { opacity: 0.62, fontSize: 12 };
-var sasStyle = { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 22, letterSpacing: 4 };
-var button = {
-  border: "1px solid rgba(0,0,0,0.18)",
-  background: "transparent",
-  borderRadius: 8,
-  padding: "4px 10px",
-  cursor: "pointer",
-  fontSize: 13
-};
+var HANDOFF_STYLES = `
+.ehs-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+}
+.ehs-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 0.5px solid var(--dsw-alias-settings-card-stroke);
+  border-radius: var(--dsw-radius-xl);
+  background: var(--dsw-alias-settings-card-fill);
+}
+.ehs-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+}
+.ehs-pending { border-color: var(--dsw-alias-state-business-primary); }
+.ehs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+}
+.ehs-row + .ehs-row { border-top: 0.5px solid var(--dsw-alias-border-l2); }
+.ehs-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ehs-row-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ehs-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-device { display: flex; flex-direction: column; gap: 2px; }
+.ehs-device-name { font-size: 14px; line-height: 22px; }
+.ehs-device-meta { display: flex; align-items: center; gap: 8px; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-device-meta code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.02em; }
+.ehs-sas-block { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 0 2px; text-align: center; }
+.ehs-sas {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  padding-left: 0.18em;
+}
+.ehs-actions { display: flex; gap: 8px; justify-content: center; }
+.ehs-empty { padding: 6px 0; color: var(--dsw-alias-label-secondary); }
+.ehs-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--dsw-radius-sm);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-primary);
+  background: transparent;
+  transition: transform 100ms ease-out, background-color 120ms ease-out;
+}
+.ehs-btn-md { height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md); font-size: 14px; line-height: 22px; }
+.ehs-btn:active:not(:disabled) { transform: scale(0.97); }
+.ehs-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+.ehs-btn:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.ehs-btn-primary { background: var(--dsw-alias-button-primary-fill); color: var(--dsw-alias-label-primary-foreground); }
+.ehs-btn-primary:hover:not(:disabled) { background: var(--dsw-alias-button-primary-hover); }
+.ehs-btn-outline { border: 0.5px solid var(--dsw-alias-border-l3); }
+.ehs-btn-outline:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
+.ehs-btn-ghost:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
+.ehs-chip {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: var(--dsw-radius-sm);
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+.ehs-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.ehs-field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 1; }
+.ehs-field > span { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-select {
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px;
+  border: 0.5px solid var(--dsw-alias-border-l4);
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 22px;
+}
+.ehs-select:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+.ehs-outcome { font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); }
+.ehs-outcome[data-tone='ok'] { color: var(--dsw-alias-state-success-primary); }
+.ehs-outcome[data-tone='fail'] { color: var(--dsw-alias-state-error-primary); }
+.ehs-error { margin: 0; color: var(--dsw-alias-state-error-primary); font-size: 12px; line-height: 18px; }
+@media (prefers-reduced-motion: reduce) {
+  .ehs-btn { transition: none; }
+  .ehs-btn:active:not(:disabled) { transform: none; }
+}
+`;
 function HandoffSettings({ t }) {
   const [status, setStatus] = (0, import_react16.useState)(void 0);
   const [workspaces, setWorkspaces] = (0, import_react16.useState)([]);
   const [error, setError] = (0, import_react16.useState)("");
-  const [busy, setBusy] = (0, import_react16.useState)(false);
+  const [busy, setBusy] = (0, import_react16.useState)(void 0);
   const [workspacePath, setWorkspacePath] = (0, import_react16.useState)("");
   const [peerId, setPeerId] = (0, import_react16.useState)("");
-  const [outcome, setOutcome] = (0, import_react16.useState)("");
-  const refresh = async () => {
+  const mounted = (0, import_react16.useRef)(true);
+  (0, import_react16.useEffect)(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const refresh = (0, import_react16.useCallback)(async () => {
     try {
       const next = await getHandoffStatus();
+      if (!mounted.current) return;
       setStatus(next);
       if (next.available) {
         const listing = await getHandoffWorkspaces();
+        if (!mounted.current) return;
         setWorkspaces(listing.workspaces);
-        setWorkspacePath((current) => current || listing.workspaces[0]?.path || "");
-        setPeerId((current) => current || next.paired[0]?.id || "");
+        setWorkspacePath((current) => current !== "" && listing.workspaces.some((item) => item.path === current) ? current : listing.workspaces[0]?.path ?? "");
+        setPeerId((current) => current !== "" && next.paired.some((item) => item.id === current) ? current : next.paired[0]?.id ?? "");
       }
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : String(failure));
+      if (mounted.current) setError(failure instanceof Error ? failure.message : String(failure));
     }
-  };
+  }, []);
   (0, import_react16.useEffect)(() => {
     void refresh();
     const timer = setInterval(() => {
-      void refresh();
+      if (!document.hidden) void refresh();
     }, 3e3);
     return () => {
       clearInterval(timer);
     };
-  }, []);
-  const run = async (action, success) => {
-    setBusy(true);
+  }, [refresh]);
+  const run = async (action, work) => {
+    setBusy(action);
     setError("");
-    setOutcome("");
     try {
-      await action();
-      setOutcome(success);
+      await work();
       await refresh();
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : String(failure));
+      if (mounted.current) setError(failure instanceof Error ? failure.message : String(failure));
     } finally {
-      setBusy(false);
+      if (mounted.current) setBusy(void 0);
     }
   };
   if (status === void 0) {
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: card, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: error || "\u2026" }) });
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-root", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-muted", children: error || "\u2026" }) });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: card, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: { fontWeight: 600 }, children: t("title") }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("description") })
-    ] }),
-    !status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: status.reason ?? t("unavailable") }),
-    status.available && status.device && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: rowStyle, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { style: muted, children: t("device") }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
-        status.device.name,
-        " \xB7 ",
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { children: status.device.id.slice(0, 10) }),
-        " \xB7 :",
-        status.device.port
+  const pending = status.pending;
+  const unpaired = status.discovered.filter((peer) => !status.paired.some((paired) => paired.id === peer.id));
+  const last = status.last ?? void 0;
+  const canSend = workspacePath !== "" && peerId !== "";
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-intro", children: t("intro") }),
+    status.available && status.device !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("device") }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "ehs-btn ehs-btn-ghost",
+            disabled: busy !== void 0,
+            onClick: () => {
+              void run("refresh", refresh);
+            },
+            children: t("refresh")
+          }
+        )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { style: button, disabled: busy, onClick: () => {
-        void refresh();
-      }, children: t("refresh") })
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-device", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-device-name", children: status.device.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-device-meta", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { children: status.device.id.slice(0, 12) }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: "\xB7" }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
+            t("port"),
+            " ",
+            status.device.port
+          ] })
+        ] })
+      ] })
     ] }),
-    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("paired") }),
-      status.paired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("noPaired") }) : status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: rowStyle, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
-          peer.name,
+    !status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-empty", children: status.reason ?? t("unavailable") }),
+    status.available && pending.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card ehs-pending", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("pending") }) }),
+      pending.map((offer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-sas-block", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+          offer.peer.name,
           " ",
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { style: muted, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ehs-muted", children: [
             "(",
-            peer.platform,
+            offer.peer.platform,
             ")"
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { style: muted, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { children: peer.id.slice(0, 10) }) })
-      ] }, peer.id))
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-sas", "aria-label": `${offer.sas}`, children: offer.sas }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-muted", children: t("sasHint") }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-actions", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "button",
+            {
+              type: "button",
+              className: "ehs-btn ehs-btn-outline",
+              disabled: busy !== void 0,
+              onClick: () => {
+                void run(`reject:${offer.id}`, () => rejectPairing(offer.id));
+              },
+              children: t("reject")
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "button",
+            {
+              type: "button",
+              className: "ehs-btn ehs-btn-primary",
+              disabled: busy !== void 0,
+              onClick: () => {
+                void run(`accept:${offer.id}`, () => acceptPairing(offer.id));
+              },
+              children: t("confirm")
+            }
+          )
+        ] })
+      ] }, offer.id))
     ] }),
-    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("nearby") }),
-      status.discovered.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("noNearby") }) : status.discovered.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: rowStyle, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
-          peer.name,
-          " ",
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { style: muted, children: [
-            "(",
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("nearby") }) }),
+      unpaired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-empty", children: t("noNearby") }) : unpaired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row-main", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-row-title", children: peer.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ehs-muted", children: [
             peer.platform,
-            ")"
+            peer.compatible === false ? " \xB7 \u26A0" : ""
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           "button",
           {
-            style: button,
-            disabled: busy || status.paired.some((paired) => paired.id === peer.id),
+            type: "button",
+            className: "ehs-btn ehs-btn-outline",
+            disabled: busy !== void 0,
             onClick: () => {
-              void run(() => pairWithPeer(peer.id), "");
+              void run(`pair:${peer.id}`, () => pairWithPeer(peer.id));
             },
             children: t("pair")
           }
         )
       ] }, peer.id))
     ] }),
-    status.available && status.pending.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("pending") }),
-      status.pending.map((pending) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: { display: "flex", flexDirection: "column", gap: 6, padding: "8px 0" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: rowStyle, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
-            pending.peer.name,
-            " ",
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { style: muted, children: [
-              "(",
-              pending.peer.platform,
-              ")"
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { style: sasStyle, children: pending.sas })
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("paired") }) }),
+      status.paired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-empty", children: t("noPaired") }) : status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row-main", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-row-title", children: peer.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ehs-muted", children: [
+            peer.platform,
+            " \xB7 ",
+            peer.id.slice(0, 8)
+          ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("sasHint") }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: rowStyle, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-            "button",
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-chip", children: t("pairedBadge") })
+      ] }, peer.id))
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("sendTitle") }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-form", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("pickWorkspace") }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+            "select",
             {
-              style: button,
-              disabled: busy,
-              onClick: () => {
-                void run(() => acceptPairing(pending.id), "");
+              className: "ehs-select",
+              value: workspacePath,
+              onChange: (event) => {
+                setWorkspacePath(event.target.value);
               },
-              children: t("confirm")
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-            "button",
-            {
-              style: button,
-              disabled: busy,
-              onClick: () => {
-                void run(() => rejectPairing(pending.id), "");
-              },
-              children: t("reject")
+              children: [
+                workspaces.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t("pickWorkspace") }),
+                workspaces.map((workspace) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: workspace.path, children: workspace.title }, workspace.path))
+              ]
             }
           )
-        ] })
-      ] }, pending.id))
-    ] }),
-    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: t("sendTitle") }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("select", { value: workspacePath, onChange: (event) => {
-          setWorkspacePath(event.target.value);
-        }, children: [
-          workspaces.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t("pickWorkspace") }),
-          workspaces.map((workspace) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: workspace.path, children: workspace.title }, workspace.path))
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("select", { value: peerId, onChange: (event) => {
-          setPeerId(event.target.value);
-        }, children: [
-          status.paired.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t("pickPeer") }),
-          status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: peer.id, children: peer.name }, peer.id))
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("pickPeer") }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+            "select",
+            {
+              className: "ehs-select",
+              value: peerId,
+              onChange: (event) => {
+                setPeerId(event.target.value);
+              },
+              children: [
+                status.paired.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t("pickPeer") }),
+                status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: peer.id, children: peer.name }, peer.id))
+              ]
+            }
+          )
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           "button",
           {
-            style: button,
-            disabled: busy || workspacePath === "" || peerId === "",
+            type: "button",
+            className: "ehs-btn ehs-btn-md ehs-btn-primary",
+            disabled: busy !== void 0 || !canSend,
             onClick: () => {
-              void run(() => sendHandoff(peerId, workspacePath), t("sent"));
+              void run("send", () => sendHandoff(peerId, workspacePath));
             },
-            children: busy ? t("sending") : t("send")
+            children: busy === "send" ? t("sending") : t("send")
           }
         )
       ] }),
-      status.last && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: status.last.ok ? t("sent") : `${t("failed")}: ${status.last.detail}` })
+      last !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-outcome", "data-tone": last.ok ? "ok" : "fail", "aria-live": "polite", children: last.ok ? t("sent") : `${t("failed")}\uFF1A${last.detail}` })
     ] }),
-    outcome !== "" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: muted, children: outcome }),
-    error !== "" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: { ...muted, color: "crimson" }, children: error })
+    error !== "" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-error", role: "alert", children: error })
   ] });
 }
 
 // src/features/handoff.tsx
 var NS = "easel.handoff";
+var STYLE_ID2 = "easel-handoff-settings-styles";
 var plugin13 = {
   name: "easel-handoff-settings",
   inject: ["slots", "locale"],
   apply(ctx) {
     ctx.effect(() => ctx.locale.register(NS, COPY), "easel: handoff dictionaries");
+    ctx.effect(() => {
+      const style = document.createElement("style");
+      style.id = STYLE_ID2;
+      style.textContent = HANDOFF_STYLES;
+      document.head.append(style);
+      return () => {
+        style.remove();
+      };
+    }, "easel: handoff styles");
     const t = ctx.locale.bind(NS);
     ctx.slots.inject("settings.section", () => ctx.slots.register({
       name: "settings.section",
@@ -10454,7 +10609,7 @@ var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, pl
 
 // src/client.tsx
 var NS2 = "easel.panel";
-var STYLE_ID2 = "dsh-plugin-easel-style";
+var STYLE_ID3 = "dsh-plugin-easel-style";
 var STYLES = EASEL_CSS;
 var COPY2 = {
   zh: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.zh])),
@@ -10466,7 +10621,7 @@ var client_default = {
     ctx.effect(() => ctx.locale.register(NS2, COPY2), "easel: rail dictionaries");
     ctx.effect(() => {
       const style = document.createElement("style");
-      style.id = STYLE_ID2;
+      style.id = STYLE_ID3;
       style.textContent = STYLES;
       document.head.append(style);
       return () => style.remove();

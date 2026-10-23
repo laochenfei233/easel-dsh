@@ -1,9 +1,9 @@
-// LAN handoff settings item: device identity, paired list, discovery, the
-// six-digit confirmation step, and the send control. It mounts as one row in
-// the shared settings dialog (`settings.general.item`) rather than a rail page,
-// and draws with inline styles because the settings dialog sits outside the
-// plugin's scoped stylesheets.
-import { useEffect, useState } from 'react'
+// LAN handoff settings section. Visual language follows the shared settings
+// surfaces: 0.5px card strokes on --dsw-alias-settings-card-*, --dsw-radius-xl
+// corners, 13/22 body type, and the sm/md control scale. The one deliberate
+// flourish is the pairing code — tabular monospace digits, wide tracking — the
+// single number both people look at before trusting a device.
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   acceptPairing,
   getHandoffStatus,
@@ -11,26 +11,29 @@ import {
   pairWithPeer,
   rejectPairing,
   sendHandoff,
+  type HandoffPending,
   type HandoffStatus,
   type HandoffWorkspace,
 } from '../lib/handoff-api'
 
-/** Bilingual copy for the settings item. */
+/** Bilingual copy for the settings section. */
 export const COPY = {
   en: {
     nav: 'LAN handoff',
-    title: 'LAN project handoff',
-    description: 'Send a project and its agent sessions to another device on this network, or receive one.',
+    intro: 'Send a project and its agent sessions to another device on this network, or receive one. Both devices stay on the same network with the app open.',
     unavailable: 'LAN handoff is not enabled in this profile.',
     device: 'This device',
+    port: 'port',
+    refresh: 'Refresh',
     paired: 'Paired devices',
-    noPaired: 'No paired devices yet.',
+    pairedBadge: 'Paired',
+    noPaired: 'Nothing paired yet. Pair a nearby device first.',
     nearby: 'Nearby devices',
-    noNearby: 'Nothing discovered yet. Keep both apps open on the same network.',
+    noNearby: 'No devices found. Keep both apps open on the same network, then refresh.',
     pair: 'Pair',
     pending: 'Waiting for confirmation',
-    sasHint: 'Compare this number on both screens; confirm only when they match.',
-    confirm: 'Match, pair',
+    sasHint: 'Check that both screens show this number, then confirm on each. Only pair when they match.',
+    confirm: 'They match — pair',
     reject: 'Decline',
     sendTitle: 'Send a project',
     pickWorkspace: 'Choose a project',
@@ -39,21 +42,22 @@ export const COPY = {
     sending: 'Sending…',
     sent: 'Handoff complete.',
     failed: 'Handoff failed',
-    refresh: 'Refresh',
   },
   zh: {
     nav: '局域网交接',
-    title: '局域网项目交接',
-    description: '把项目连同 agent 会话发到本网络的另一台设备，或从另一台设备接收。',
+    intro: '把项目连同 agent 会话发到本网络的另一台设备，或从另一台设备接收。两台设备需在同一网络并都保持应用开启。',
     unavailable: '当前 profile 未启用局域网交接。',
     device: '本机',
+    port: '端口',
+    refresh: '刷新',
     paired: '已配对设备',
-    noPaired: '还没有已配对的设备。',
+    pairedBadge: '已配对',
+    noPaired: '还没有已配对的设备，先在附近设备里配对。',
     nearby: '附近设备',
-    noNearby: '尚未发现设备。请让两台设备都开着应用并处于同一网络。',
+    noNearby: '尚未发现设备。请让两台设备都开着应用并处于同一网络，然后刷新。',
     pair: '配对',
     pending: '等待确认',
-    sasHint: '请核对两台屏幕上是否显示同一串数字；一致才点确认。',
+    sasHint: '请核对两台屏幕显示的是同一串数字，再分别在各自设备上确认；一致才配对。',
     confirm: '一致，配对',
     reject: '拒绝',
     sendTitle: '发送项目',
@@ -63,193 +67,346 @@ export const COPY = {
     sending: '发送中…',
     sent: '交接完成。',
     failed: '交接失败',
-    refresh: '刷新',
   },
 } as const
 
 export type HandoffCopy = { [K in keyof typeof COPY.en]: string }
 
+/** Stylesheet injected once per client by the section plugin. */
+export const HANDOFF_STYLES = `
+.ehs-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+}
+.ehs-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 0.5px solid var(--dsw-alias-settings-card-stroke);
+  border-radius: var(--dsw-radius-xl);
+  background: var(--dsw-alias-settings-card-fill);
+}
+.ehs-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+}
+.ehs-pending { border-color: var(--dsw-alias-state-business-primary); }
+.ehs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+}
+.ehs-row + .ehs-row { border-top: 0.5px solid var(--dsw-alias-border-l2); }
+.ehs-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ehs-row-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ehs-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-device { display: flex; flex-direction: column; gap: 2px; }
+.ehs-device-name { font-size: 14px; line-height: 22px; }
+.ehs-device-meta { display: flex; align-items: center; gap: 8px; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-device-meta code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.02em; }
+.ehs-sas-block { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 0 2px; text-align: center; }
+.ehs-sas {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  padding-left: 0.18em;
+}
+.ehs-actions { display: flex; gap: 8px; justify-content: center; }
+.ehs-empty { padding: 6px 0; color: var(--dsw-alias-label-secondary); }
+.ehs-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--dsw-radius-sm);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-primary);
+  background: transparent;
+  transition: transform 100ms ease-out, background-color 120ms ease-out;
+}
+.ehs-btn-md { height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md); font-size: 14px; line-height: 22px; }
+.ehs-btn:active:not(:disabled) { transform: scale(0.97); }
+.ehs-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+.ehs-btn:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.ehs-btn-primary { background: var(--dsw-alias-button-primary-fill); color: var(--dsw-alias-label-primary-foreground); }
+.ehs-btn-primary:hover:not(:disabled) { background: var(--dsw-alias-button-primary-hover); }
+.ehs-btn-outline { border: 0.5px solid var(--dsw-alias-border-l3); }
+.ehs-btn-outline:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
+.ehs-btn-ghost:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
+.ehs-chip {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: var(--dsw-radius-sm);
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+.ehs-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.ehs-field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 1; }
+.ehs-field > span { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-select {
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px;
+  border: 0.5px solid var(--dsw-alias-border-l4);
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 22px;
+}
+.ehs-select:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+.ehs-outcome { font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); }
+.ehs-outcome[data-tone='ok'] { color: var(--dsw-alias-state-success-primary); }
+.ehs-outcome[data-tone='fail'] { color: var(--dsw-alias-state-error-primary); }
+.ehs-error { margin: 0; color: var(--dsw-alias-state-error-primary); font-size: 12px; line-height: 18px; }
+@media (prefers-reduced-motion: reduce) {
+  .ehs-btn { transition: none; }
+  .ehs-btn:active:not(:disabled) { transform: none; }
+}
+`
+
 interface HandoffSettingsProps {
   t: (key: keyof HandoffCopy) => string
 }
 
-const card = {
-  display: 'flex',
-  flexDirection: 'column' as const,
-  gap: 10,
-  maxWidth: 560,
-}
-
-const rowStyle = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }
-const muted = { opacity: 0.62, fontSize: 12 }
-const sasStyle = { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 22, letterSpacing: 4 }
-const button = {
-  border: '1px solid rgba(0,0,0,0.18)',
-  background: 'transparent',
-  borderRadius: 8,
-  padding: '4px 10px',
-  cursor: 'pointer',
-  fontSize: 13,
-}
+type BusyAction = 'refresh' | 'send' | `pair:${string}` | `accept:${string}` | `reject:${string}`
 
 /**
- * Render the LAN handoff settings item.
+ * Render the LAN handoff settings section.
  * @param props - the bound copy function.
- * @returns the settings row.
+ * @returns the section content.
  */
 export default function HandoffSettings({ t }: HandoffSettingsProps) {
   const [status, setStatus] = useState<HandoffStatus | undefined>(undefined)
   const [workspaces, setWorkspaces] = useState<HandoffWorkspace[]>([])
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<BusyAction | undefined>(undefined)
   const [workspacePath, setWorkspacePath] = useState('')
   const [peerId, setPeerId] = useState('')
-  const [outcome, setOutcome] = useState('')
+  const mounted = useRef(true)
 
-  const refresh = async (): Promise<void> => {
+  useEffect(() => {
+    mounted.current = true
+    return () => { mounted.current = false }
+  }, [])
+
+  const refresh = useCallback(async (): Promise<void> => {
     try {
       const next = await getHandoffStatus()
+      if (!mounted.current) return
       setStatus(next)
       if (next.available) {
         const listing = await getHandoffWorkspaces()
+        if (!mounted.current) return
         setWorkspaces(listing.workspaces)
-        setWorkspacePath(current => current || listing.workspaces[0]?.path || '')
-        setPeerId(current => current || next.paired[0]?.id || '')
+        setWorkspacePath(current => current !== '' && listing.workspaces.some(item => item.path === current)
+          ? current
+          : listing.workspaces[0]?.path ?? '')
+        setPeerId(current => current !== '' && next.paired.some(item => item.id === current)
+          ? current
+          : next.paired[0]?.id ?? '')
       }
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : String(failure))
+      if (mounted.current) setError(failure instanceof Error ? failure.message : String(failure))
     }
-  }
+  }, [])
 
   useEffect(() => {
     void refresh()
-    const timer = setInterval(() => { void refresh() }, 3000)
+    const timer = setInterval(() => {
+      if (!document.hidden) void refresh()
+    }, 3000)
     return () => { clearInterval(timer) }
-  }, [])
+  }, [refresh])
 
-  const run = async (action: () => Promise<unknown>, success: string): Promise<void> => {
-    setBusy(true)
+  const run = async (action: BusyAction, work: () => Promise<unknown>): Promise<void> => {
+    setBusy(action)
     setError('')
-    setOutcome('')
     try {
-      await action()
-      setOutcome(success)
+      await work()
       await refresh()
     } catch (failure) {
-      setError(failure instanceof Error ? failure.message : String(failure))
+      if (mounted.current) setError(failure instanceof Error ? failure.message : String(failure))
     } finally {
-      setBusy(false)
+      if (mounted.current) setBusy(undefined)
     }
   }
 
   if (status === undefined) {
-    return <div style={card}><div style={muted}>{error || '…'}</div></div>
+    return <div className="ehs-root"><p className="ehs-muted">{error || '…'}</p></div>
   }
 
+  const pending: readonly HandoffPending[] = status.pending
+  const unpaired = status.discovered.filter(peer => !status.paired.some(paired => paired.id === peer.id))
+  const last = status.last ?? undefined
+  const canSend = workspacePath !== '' && peerId !== ''
+
   return (
-    <div style={card}>
-      <div>
-        <div style={{ fontWeight: 600 }}>{t('title')}</div>
-        <div style={muted}>{t('description')}</div>
-      </div>
-      {!status.available && <div style={muted}>{status.reason ?? t('unavailable')}</div>}
-      {status.available && status.device && (
-        <div style={rowStyle}>
-          <span style={muted}>{t('device')}</span>
-          <span>
-            {status.device.name} · <code>{status.device.id.slice(0, 10)}</code> · :{status.device.port}
-          </span>
-          <button style={button} disabled={busy} onClick={() => { void refresh() }}>{t('refresh')}</button>
-        </div>
+    <div className="ehs-root">
+      <p className="ehs-intro">{t('intro')}</p>
+
+      {status.available && status.device !== undefined && (
+        <section className="ehs-card">
+          <div className="ehs-card-head">
+            <span>{t('device')}</span>
+            <button
+              type="button"
+              className="ehs-btn ehs-btn-ghost"
+              disabled={busy !== undefined}
+              onClick={() => { void run('refresh', refresh) }}
+            >{t('refresh')}</button>
+          </div>
+          <div className="ehs-device">
+            <div className="ehs-device-name">{status.device.name}</div>
+            <div className="ehs-device-meta">
+              <code>{status.device.id.slice(0, 12)}</code>
+              <span>·</span>
+              <span>{t('port')} {status.device.port}</span>
+            </div>
+          </div>
+        </section>
       )}
 
-      {status.available && (
-        <div>
-          <div style={muted}>{t('paired')}</div>
-          {status.paired.length === 0
-            ? <div style={muted}>{t('noPaired')}</div>
-            : status.paired.map(peer => (
-              <div key={peer.id} style={rowStyle}>
-                <span>{peer.name} <span style={muted}>({peer.platform})</span></span>
-                <span style={muted}><code>{peer.id.slice(0, 10)}</code></span>
-              </div>
-            ))}
-        </div>
-      )}
+      {!status.available && <p className="ehs-empty">{status.reason ?? t('unavailable')}</p>}
 
-      {status.available && (
-        <div>
-          <div style={muted}>{t('nearby')}</div>
-          {status.discovered.length === 0
-            ? <div style={muted}>{t('noNearby')}</div>
-            : status.discovered.map(peer => (
-              <div key={peer.id} style={rowStyle}>
-                <span>{peer.name} <span style={muted}>({peer.platform})</span></span>
+      {status.available && pending.length > 0 && (
+        <section className="ehs-card ehs-pending">
+          <div className="ehs-card-head"><span>{t('pending')}</span></div>
+          {pending.map(offer => (
+            <div className="ehs-sas-block" key={offer.id}>
+              <div>{offer.peer.name} <span className="ehs-muted">({offer.peer.platform})</span></div>
+              <div className="ehs-sas" aria-label={`${offer.sas}`}>{offer.sas}</div>
+              <div className="ehs-muted">{t('sasHint')}</div>
+              <div className="ehs-actions">
                 <button
-                  style={button}
-                  disabled={busy || status.paired.some(paired => paired.id === peer.id)}
-                  onClick={() => { void run(() => pairWithPeer(peer.id), '') }}
-                >{t('pair')}</button>
-              </div>
-            ))}
-        </div>
-      )}
-
-      {status.available && status.pending.length > 0 && (
-        <div>
-          <div style={muted}>{t('pending')}</div>
-          {status.pending.map(pending => (
-            <div key={pending.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '8px 0' }}>
-              <div style={rowStyle}>
-                <span>{pending.peer.name} <span style={muted}>({pending.peer.platform})</span></span>
-                <span style={sasStyle}>{pending.sas}</span>
-              </div>
-              <div style={muted}>{t('sasHint')}</div>
-              <div style={rowStyle}>
-                <button style={button} disabled={busy}
-                  onClick={() => { void run(() => acceptPairing(pending.id), '') }}>{t('confirm')}</button>
-                <button style={button} disabled={busy}
-                  onClick={() => { void run(() => rejectPairing(pending.id), '') }}>{t('reject')}</button>
+                  type="button"
+                  className="ehs-btn ehs-btn-outline"
+                  disabled={busy !== undefined}
+                  onClick={() => { void run(`reject:${offer.id}`, () => rejectPairing(offer.id)) }}
+                >{t('reject')}</button>
+                <button
+                  type="button"
+                  className="ehs-btn ehs-btn-primary"
+                  disabled={busy !== undefined}
+                  onClick={() => { void run(`accept:${offer.id}`, () => acceptPairing(offer.id)) }}
+                >{t('confirm')}</button>
               </div>
             </div>
           ))}
-        </div>
+        </section>
       )}
 
       {status.available && (
-        <div>
-          <div style={muted}>{t('sendTitle')}</div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <select value={workspacePath} onChange={event => { setWorkspacePath(event.target.value) }}>
-              {workspaces.length === 0 && <option value="">{t('pickWorkspace')}</option>}
-              {workspaces.map(workspace => (
-                <option key={workspace.path} value={workspace.path}>{workspace.title}</option>
-              ))}
-            </select>
-            <select value={peerId} onChange={event => { setPeerId(event.target.value) }}>
-              {status.paired.length === 0 && <option value="">{t('pickPeer')}</option>}
-              {status.paired.map(peer => (
-                <option key={peer.id} value={peer.id}>{peer.name}</option>
-              ))}
-            </select>
-            <button
-              style={button}
-              disabled={busy || workspacePath === '' || peerId === ''}
-              onClick={() => {
-                void run(() => sendHandoff(peerId, workspacePath), t('sent'))
-              }}
-            >{busy ? t('sending') : t('send')}</button>
-          </div>
-          {status.last && (
-            <div style={muted}>
-              {status.last.ok ? t('sent') : `${t('failed')}: ${status.last.detail}`}
-            </div>
-          )}
-        </div>
+        <section className="ehs-card">
+          <div className="ehs-card-head"><span>{t('nearby')}</span></div>
+          {unpaired.length === 0
+            ? <div className="ehs-empty">{t('noNearby')}</div>
+            : unpaired.map(peer => (
+              <div className="ehs-row" key={peer.id}>
+                <div className="ehs-row-main">
+                  <span className="ehs-row-title">{peer.name}</span>
+                  <span className="ehs-muted">{peer.platform}{peer.compatible === false ? ' · ⚠' : ''}</span>
+                </div>
+                <button
+                  type="button"
+                  className="ehs-btn ehs-btn-outline"
+                  disabled={busy !== undefined}
+                  onClick={() => { void run(`pair:${peer.id}`, () => pairWithPeer(peer.id)) }}
+                >{t('pair')}</button>
+              </div>
+            ))}
+        </section>
       )}
 
-      {outcome !== '' && <div style={muted}>{outcome}</div>}
-      {error !== '' && <div style={{ ...muted, color: 'crimson' }}>{error}</div>}
+      {status.available && (
+        <section className="ehs-card">
+          <div className="ehs-card-head"><span>{t('paired')}</span></div>
+          {status.paired.length === 0
+            ? <div className="ehs-empty">{t('noPaired')}</div>
+            : status.paired.map(peer => (
+              <div className="ehs-row" key={peer.id}>
+                <div className="ehs-row-main">
+                  <span className="ehs-row-title">{peer.name}</span>
+                  <span className="ehs-muted">{peer.platform} · {peer.id.slice(0, 8)}</span>
+                </div>
+                <span className="ehs-chip">{t('pairedBadge')}</span>
+              </div>
+            ))}
+        </section>
+      )}
+
+      {status.available && (
+        <section className="ehs-card">
+          <div className="ehs-card-head"><span>{t('sendTitle')}</span></div>
+          <div className="ehs-form">
+            <label className="ehs-field">
+              <span>{t('pickWorkspace')}</span>
+              <select
+                className="ehs-select"
+                value={workspacePath}
+                onChange={event => { setWorkspacePath(event.target.value) }}
+              >
+                {workspaces.length === 0 && <option value="">{t('pickWorkspace')}</option>}
+                {workspaces.map(workspace => (
+                  <option key={workspace.path} value={workspace.path}>{workspace.title}</option>
+                ))}
+              </select>
+            </label>
+            <label className="ehs-field">
+              <span>{t('pickPeer')}</span>
+              <select
+                className="ehs-select"
+                value={peerId}
+                onChange={event => { setPeerId(event.target.value) }}
+              >
+                {status.paired.length === 0 && <option value="">{t('pickPeer')}</option>}
+                {status.paired.map(peer => (
+                  <option key={peer.id} value={peer.id}>{peer.name}</option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              className="ehs-btn ehs-btn-md ehs-btn-primary"
+              disabled={busy !== undefined || !canSend}
+              onClick={() => { void run('send', () => sendHandoff(peerId, workspacePath)) }}
+            >{busy === 'send' ? t('sending') : t('send')}</button>
+          </div>
+          {last !== undefined && (
+            <div className="ehs-outcome" data-tone={last.ok ? 'ok' : 'fail'} aria-live="polite">
+              {last.ok ? t('sent') : `${t('failed')}：${last.detail}`}
+            </div>
+          )}
+        </section>
+      )}
+
+      {error !== '' && <p className="ehs-error" role="alert">{error}</p>}
     </div>
   )
 }
