@@ -109,6 +109,10 @@ hide-workspace 规避）→ 修复后复审 CRITICAL-FREE。
    误推到 deepseek-harness origin 的分支在 easel-dsh 验证后删除。
 6. Rosetta 2 是自托管 ARM64 mac 跑 x64 腿的机器前置（staging 的 pnpm deploy
    会执行 darwin-x64 node）；首次 x64 job 前先手跑一次确认。
+7. 2026-10-23：mac 专用的两个工作流（自托管 easel-mac-package.yml、hosted
+   easel-mac-package-gh.yml）合并为唯一的多平台工作流
+   .github/workflows/easel-package.yml（matrix：mac-arm64 / mac-x64 /
+   windows-x64 / linux-x64，hosted runners，产物上传 artifact）。
 
 ## [S1] Problem
 

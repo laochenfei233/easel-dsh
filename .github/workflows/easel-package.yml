@@ -1,0 +1,144 @@
+name: Package Easel-dsh · all platforms (hosted)
+
+# One packaging workflow for every desktop target: macOS (arm64 native and x64
+# cross-compile), Windows (NSIS), and Linux (AppImage + deb). Hosted runners
+# only — unsigned trial builds, do not publish to release channels.
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: '打包源码：分支名或 dsh-v* tag'
+        type: string
+        default: master
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: easel-package-hosted
+  cancel-in-progress: false
+
+jobs:
+  package:
+    name: package-${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            name: mac-arm64
+            runtimeArgs: '--platform mac --arch arm64'
+            bundleArgs: '--bundles dmg'
+            artifactPath: apps/desktop-tauri/src-tauri/target/release/bundle/dmg/*.dmg
+          - os: macos-latest
+            name: mac-x64
+            rustTarget: x86_64-apple-darwin
+            runtimeArgs: '--platform mac --arch x64'
+            bundleArgs: '--bundles dmg --target x86_64-apple-darwin'
+            artifactPath: apps/desktop-tauri/src-tauri/target/x86_64-apple-darwin/release/bundle/dmg/*.dmg
+          - os: windows-latest
+            name: windows-x64
+            runtimeArgs: '--platform win --arch x64'
+            bundleArgs: '--bundles nsis'
+            artifactPath: apps/desktop-tauri/src-tauri/target/release/bundle/nsis/*-setup.exe
+          - os: ubuntu-22.04
+            name: linux-x64
+            runtimeArgs: '--platform linux --arch x64'
+            bundleArgs: '--bundles appimage,deb'
+            artifactPath: |
+              apps/desktop-tauri/src-tauri/target/release/bundle/appimage/*.AppImage
+              apps/desktop-tauri/src-tauri/target/release/bundle/deb/*.deb
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+    permissions:
+      contents: read
+    env:
+      DSH_TELEMETRY_DISABLED: '1'
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          clean: true
+          ref: ${{ inputs.source_ref }}
+      - name: Install Linux desktop dependencies
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - uses: pnpm/action-setup@v4
+        with:
+          dest: ${{ runner.temp }}/setup-pnpm-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: pnpm
+      - name: Add the macOS x64 Rust target
+        if: matrix.rustTarget
+        shell: bash
+        run: rustup target add '${{ matrix.rustTarget }}'
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop-tauri/src-tauri
+      - name: Install workspace dependencies
+        shell: bash
+        run: pnpm install --frozen-lockfile
+      - name: Build repository artifacts (lib + web dist)
+        shell: bash
+        run: pnpm run build
+      - name: Stage the bundled runtime
+        working-directory: apps/desktop-tauri
+        shell: bash
+        run: node scripts/bundle-runtime.mjs ${{ matrix.runtimeArgs }}
+      # The tauri CLI runs a workspace-level production install check that
+      # executes the repo root postinstall (lefthook) and fails without
+      # devDependencies. Hide the workspace declarations around the tauri
+      # build; the shell has no workspace memberships of its own.
+      - name: Hide workspace root from tauri deps check (POSIX)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mv pnpm-workspace.yaml pnpm-workspace.yaml.bak
+          node -e 'const fs=require("fs");const p="package.json";const j=JSON.parse(fs.readFileSync(p,"utf8"));delete j.workspaces;fs.writeFileSync(p,JSON.stringify(j,null,2)+"\n")'
+      - name: Hide workspace root from tauri deps check (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Move-Item pnpm-workspace.yaml pnpm-workspace.yaml.bak
+          node -e "const fs=require('fs');const p='package.json';const j=JSON.parse(fs.readFileSync(p,'utf8'));delete j.workspaces;fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n')"
+      - name: Build Tauri app (${{ matrix.name }})
+        working-directory: apps/desktop-tauri
+        shell: bash
+        run: pnpm tauri build --verbose ${{ matrix.bundleArgs }}
+      - name: Restore workspace declarations
+        if: always()
+        shell: bash
+        run: |
+          [ -f pnpm-workspace.yaml.bak ] && mv -f pnpm-workspace.yaml.bak pnpm-workspace.yaml || true
+          git checkout -- package.json
+      - name: Resolve the artifact version
+        if: success()
+        shell: bash
+        run: echo "VERSION=$(node -p "require('./apps/desktop-tauri/src-tauri/tauri.conf.json').version")" >> "$GITHUB_ENV"
+      - name: Retain the installer
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: easel-dsh-${{ matrix.name }}-${{ env.VERSION }}-${{ github.run_id }}
+          include-hidden-files: true
+          path: ${{ matrix.artifactPath }}
+          if-no-files-found: error
+          retention-days: 14
+      - name: Retain build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: easel-dsh-${{ matrix.name }}-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          include-hidden-files: true
+          path: |
+            apps/desktop-tauri/runtime/manifest.json
+          if-no-files-found: warn
+          retention-days: 7
