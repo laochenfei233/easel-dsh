@@ -1,0 +1,25 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/transfer/README.md
+/:
+  en: f2d2577d8a3cbd36
+  zh: c30e9d4484415503
+/transfer-lan-peer-transfer:
+  en: a6ac233b917c2394
+  zh: 3b4906cde5f6c0c2
+/transfer-lan-peer-transfer/summary:
+  en: f3bdda3dd3a824cb
+  zh: c61a40234beae161
+/transfer-lan-peer-transfer/table-of-contents:
+  en: 09848f4d056e4fc1
+  zh: 9d300a0433cba3f6
+/transfer-lan-peer-transfer/packages:
+  en: 8d5320b0e7df48b2
+  zh: c5f65be446906ad9
+/transfer-lan-peer-transfer/related-documentation:
+  en: 239a8e624df1cb0f
+  zh: b97c24de2fca5093
+/transfer-lan-peer-transfer/dev-note:
+  en: b75c8458928b72b9
+  zh: 02cbcc6baa338b07

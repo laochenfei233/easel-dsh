@@ -23,14 +23,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// easel/dsh-plugin-easel/src/client.tsx
+// src/client.tsx
 var client_exports = {};
 __export(client_exports, {
   default: () => client_default
 });
 module.exports = __toCommonJS(client_exports);
 
-// easel/dsh-plugin-easel/src/generated/easel-css.js
+// src/generated/easel-css.js
 var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .easel-scope {
   color-scheme: dark;
   --bg: #14171e;
@@ -893,10 +893,10 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
     box-shadow: inset 0 0 0 1px var(--border-strong);
   }}`;
 
-// easel/dsh-plugin-easel/src/lib/shell.tsx
+// src/lib/shell.tsx
 var import_react = require("react");
 
-// easel/dsh-plugin-easel/src/lib/task.ts
+// src/lib/task.ts
 var getServices = null;
 var cwdResolver = null;
 function configureTasks(cfg) {
@@ -1000,7 +1000,7 @@ async function resolveHomeWorkspaceId(projectDir) {
   return root ? findWorkspaceByPath(root)?.workspaceId ?? null : null;
 }
 
-// easel/dsh-plugin-easel/src/lib/shell.tsx
+// src/lib/shell.tsx
 function pageKey(view11) {
   return `easel.${view11}`;
 }
@@ -1130,7 +1130,7 @@ function createShellBridge(ctx, t) {
   return { useShellProps, navigate, useTopic, t, refresh: shell.refresh, setPersona: shell.setPersona };
 }
 
-// easel/dsh-plugin-easel/src/features/dashboard.tsx
+// src/features/dashboard.tsx
 var dashboard_exports = {};
 __export(dashboard_exports, {
   Component: () => Component,
@@ -1141,7 +1141,7 @@ __export(dashboard_exports, {
   view: () => view
 });
 
-// easel/dsh-plugin-easel/src/components/icons.tsx
+// src/components/icons.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 var svg = (size = 18, sw = 1.8) => ({
   width: size,
@@ -1268,10 +1268,10 @@ var IconPublish = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, impo
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6" })
 ] });
 
-// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
+// src/components/DashboardPage.tsx
 var import_react2 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/api.ts
+// src/lib/api.ts
 var BASE = "/easel";
 async function request(url, options) {
   const res = await fetch(`${BASE}${url}`, { cache: "no-store", ...options });
@@ -1451,7 +1451,7 @@ function projectizeTopic(body) {
   return request("/api/projectize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 }
 
-// easel/dsh-plugin-easel/src/lib/whoami.ts
+// src/lib/whoami.ts
 var KEY = "easel_whoami";
 var WHOAMI_TTL_MS = 6e5;
 function getWhoamiCache() {
@@ -1497,7 +1497,7 @@ function verifyStale(platforms, opts = {}) {
   );
 }
 
-// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
+// src/components/DashboardPage.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
 function fmtNum(n) {
   if (n == null) return "\u2014";
@@ -1785,7 +1785,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/dashboard.tsx
+// src/features/dashboard.tsx
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var view = "dashboard";
 var order = 30;
@@ -1817,7 +1817,7 @@ var plugin = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/trends.tsx
+// src/features/trends.tsx
 var trends_exports = {};
 __export(trends_exports, {
   Component: () => Component2,
@@ -1828,7 +1828,7 @@ __export(trends_exports, {
   view: () => view2
 });
 
-// easel/dsh-plugin-easel/src/components/TrendsPage.tsx
+// src/components/TrendsPage.tsx
 var import_react3 = require("react");
 var import_jsx_runtime4 = require("react/jsx-runtime");
 var ALL_PLATFORMS = [
@@ -2198,7 +2198,7 @@ function TrendsPage({ onUseTopic }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/trends.tsx
+// src/features/trends.tsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
 var view2 = "trends";
 var order2 = 31;
@@ -2230,7 +2230,7 @@ var plugin2 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/ideas.tsx
+// src/features/ideas.tsx
 var ideas_exports = {};
 __export(ideas_exports, {
   Component: () => Component3,
@@ -2241,7 +2241,7 @@ __export(ideas_exports, {
   view: () => view3
 });
 
-// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
+// src/components/IdeasPage.tsx
 var import_react4 = require("react");
 var import_jsx_runtime6 = require("react/jsx-runtime");
 var COLUMNS = [
@@ -2477,7 +2477,7 @@ function IdeasPage({ onUseTopic }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/ideas.tsx
+// src/features/ideas.tsx
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var view3 = "ideas";
 var order3 = 32;
@@ -2509,7 +2509,7 @@ var plugin3 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/calendar.tsx
+// src/features/calendar.tsx
 var calendar_exports = {};
 __export(calendar_exports, {
   Component: () => Component4,
@@ -2520,7 +2520,7 @@ __export(calendar_exports, {
   view: () => view4
 });
 
-// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
+// src/components/CalendarPage.tsx
 var import_react5 = require("react");
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var STATUS_META = {
@@ -2915,7 +2915,7 @@ function CalendarPage() {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/calendar.tsx
+// src/features/calendar.tsx
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var view4 = "calendar";
 var order4 = 33;
@@ -2947,7 +2947,7 @@ var plugin4 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/skills.tsx
+// src/features/skills.tsx
 var skills_exports = {};
 __export(skills_exports, {
   Component: () => Component5,
@@ -2958,13 +2958,13 @@ __export(skills_exports, {
   view: () => view5
 });
 
-// easel/dsh-plugin-easel/src/components/SkillPage.tsx
+// src/components/SkillPage.tsx
 var import_react7 = require("react");
 
-// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
+// src/components/SkillDrawer.tsx
 var import_react6 = require("react");
 
-// node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -4121,7 +4121,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -6096,7 +6096,7 @@ function createDOMPurify() {
 }
 var purify_default = createDOMPurify();
 
-// easel/dsh-plugin-easel/src/lib/sanitize.ts
+// src/lib/sanitize.ts
 k.setOptions({ breaks: true, gfm: true });
 function renderMarkdown(md) {
   if (!md) return "";
@@ -6104,7 +6104,7 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
-// easel/dsh-plugin-easel/src/lib/skillDisplayNames.ts
+// src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
   "ai-image-gen": "AI \u751F\u56FE",
   "ai-music": "BGM / \u97F3\u4E50\u751F\u6210",
@@ -6224,7 +6224,7 @@ function displayName(raw) {
   return SKILL_DISPLAY_NAMES[raw] || raw;
 }
 
-// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
+// src/components/SkillDrawer.tsx
 var import_jsx_runtime10 = require("react/jsx-runtime");
 function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) {
   const [detail, setDetail] = (0, import_react6.useState)(null);
@@ -6445,7 +6445,7 @@ ${input.trim()}
   ] }) });
 }
 
-// easel/dsh-plugin-easel/src/components/SkillPage.tsx
+// src/components/SkillPage.tsx
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var LAYERS = [
   { key: "discover", label: "\u53D1\u73B0", Icon: IconSearch, color: "var(--layer-discover)" },
@@ -6591,7 +6591,7 @@ function SkillPage({ persona, onNavigate }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/skills.tsx
+// src/features/skills.tsx
 var import_jsx_runtime12 = require("react/jsx-runtime");
 var view5 = "skills";
 var order5 = 34;
@@ -6623,7 +6623,7 @@ var plugin5 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/outputs.tsx
+// src/features/outputs.tsx
 var outputs_exports = {};
 __export(outputs_exports, {
   Component: () => Component6,
@@ -6634,7 +6634,7 @@ __export(outputs_exports, {
   view: () => view6
 });
 
-// easel/dsh-plugin-easel/src/components/OutputsPage.tsx
+// src/components/OutputsPage.tsx
 var import_react8 = require("react");
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var FILTERS = [
@@ -6940,7 +6940,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/outputs.tsx
+// src/features/outputs.tsx
 var import_jsx_runtime14 = require("react/jsx-runtime");
 var view6 = "outputs";
 var order6 = 35;
@@ -6972,7 +6972,7 @@ var plugin6 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/publish.tsx
+// src/features/publish.tsx
 var publish_exports = {};
 __export(publish_exports, {
   Component: () => Component7,
@@ -6983,10 +6983,10 @@ __export(publish_exports, {
   view: () => view7
 });
 
-// easel/dsh-plugin-easel/src/components/PublishPage.tsx
+// src/components/PublishPage.tsx
 var import_react9 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/store.ts
+// src/lib/store.ts
 var PUBLISH_KEY = "easel_publish_draft";
 var PREVIOUS_BRAND = ["post", "craft"].join("");
 function readMigratedLocalValue(key, suffix) {
@@ -7023,7 +7023,7 @@ function savePublishDraft(d2) {
   }
 }
 
-// easel/dsh-plugin-easel/src/components/PublishPage.tsx
+// src/components/PublishPage.tsx
 var import_jsx_runtime15 = require("react/jsx-runtime");
 var PLATFORMS2 = [
   { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", titleLimit: 20, bodyLimit: 1e3, hint: "\u6807\u9898\u226420\uFF0C\u6B63\u6587\u22641000\uFF0C\u91CD\u60C5\u7EEA+\u8BDD\u9898\u6807\u7B7E" },
@@ -7572,7 +7572,7 @@ function PublishPage({ persona }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/publish.tsx
+// src/features/publish.tsx
 var import_jsx_runtime16 = require("react/jsx-runtime");
 var view7 = "publish";
 var order7 = 36;
@@ -7604,7 +7604,7 @@ var plugin7 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/accounts.tsx
+// src/features/accounts.tsx
 var accounts_exports = {};
 __export(accounts_exports, {
   Component: () => Component8,
@@ -7615,7 +7615,7 @@ __export(accounts_exports, {
   view: () => view8
 });
 
-// easel/dsh-plugin-easel/src/components/AccountsPage.tsx
+// src/components/AccountsPage.tsx
 var import_react10 = require("react");
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var STATE_LABEL = {
@@ -8272,7 +8272,7 @@ function AccountsPage() {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/accounts.tsx
+// src/features/accounts.tsx
 var import_jsx_runtime18 = require("react/jsx-runtime");
 var view8 = "accounts";
 var order8 = 37;
@@ -8304,7 +8304,7 @@ var plugin8 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/profile.tsx
+// src/features/profile.tsx
 var profile_exports = {};
 __export(profile_exports, {
   Component: () => Component9,
@@ -8315,10 +8315,10 @@ __export(profile_exports, {
   view: () => view9
 });
 
-// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
+// src/components/PersonaBrowser.tsx
 var import_react13 = require("react");
 
-// easel/dsh-plugin-easel/src/components/ProfilePage.tsx
+// src/components/ProfilePage.tsx
 var import_react11 = require("react");
 var import_jsx_runtime19 = require("react/jsx-runtime");
 function fanTier(n) {
@@ -8546,7 +8546,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/components/OnboardingWizard.tsx
+// src/components/OnboardingWizard.tsx
 var import_react12 = require("react");
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var PLATFORMS3 = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u89C6\u9891\u53F7", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
@@ -8778,7 +8778,7 @@ ${formToInstruction(name, form)}`;
   ] }) });
 }
 
-// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
+// src/components/PersonaBrowser.tsx
 var import_jsx_runtime21 = require("react/jsx-runtime");
 function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }) {
   const [wizardOpen, setWizardOpen] = (0, import_react13.useState)(false);
@@ -8848,7 +8848,7 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/profile.tsx
+// src/features/profile.tsx
 var import_jsx_runtime22 = require("react/jsx-runtime");
 var view9 = "profile";
 var order9 = 38;
@@ -8880,7 +8880,7 @@ var plugin9 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/breakdown.tsx
+// src/features/breakdown.tsx
 var breakdown_exports = {};
 __export(breakdown_exports, {
   Component: () => Component10,
@@ -8891,7 +8891,7 @@ __export(breakdown_exports, {
   view: () => view10
 });
 
-// easel/dsh-plugin-easel/src/components/BreakdownPage.tsx
+// src/components/BreakdownPage.tsx
 var import_react14 = require("react");
 var import_jsx_runtime23 = require("react/jsx-runtime");
 var FETCH_STAGES = [
@@ -9219,7 +9219,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/breakdown.tsx
+// src/features/breakdown.tsx
 var import_jsx_runtime24 = require("react/jsx-runtime");
 var view10 = "breakdown";
 var order10 = 39;
@@ -9251,10 +9251,10 @@ var plugin10 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/media-preview.tsx
+// src/lib/media-preview.tsx
 var import_react15 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/media-url.js
+// src/lib/media-url.js
 var VIDEO_EXTENSIONS = ["mp4", "m4v", "mov", "webm", "mkv"];
 var AUDIO_EXTENSIONS = ["mp3", "wav", "m4a", "aac", "flac", "ogg", "opus"];
 var MEDIA_EXTENSIONS = [...VIDEO_EXTENSIONS, ...AUDIO_EXTENSIONS];
@@ -9285,7 +9285,7 @@ function workspaceMediaPath(absolutePath, projectRoot2) {
   return rel;
 }
 
-// easel/dsh-plugin-easel/src/lib/media-preview.tsx
+// src/lib/media-preview.tsx
 var import_jsx_runtime25 = require("react/jsx-runtime");
 var MEDIA_BODY_ID = "easel-media-player";
 var MEDIA_COPY = {
@@ -9433,7 +9433,7 @@ function registerMediaPreview(ctx) {
   else if (ctx.get?.("documentPreviews") !== void 0) attach(ctx);
 }
 
-// easel/dsh-plugin-easel/src/features/media.ts
+// src/features/media.ts
 var plugin11 = {
   name: "easel-media",
   inject: ["slots", "locale"],
@@ -9446,7 +9446,7 @@ var plugin11 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/context-menu-model.js
+// src/lib/context-menu-model.js
 var FILE_ROW_SELECTOR = "[data-files-entry]";
 var FILE_ROOT_SELECTOR = "[data-files-root]";
 var EDITABLE_SELECTOR = [
@@ -9564,7 +9564,7 @@ function fileNameOf(path) {
   return parts[parts.length - 1] ?? "";
 }
 
-// easel/dsh-plugin-easel/src/features/context-menu.js
+// src/features/context-menu.js
 var STYLE_ID = "easel-context-menu-style";
 var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
@@ -10126,7 +10126,478 @@ function reportError(ctx, error) {
   }
 }
 
-// easel/dsh-plugin-easel/src/features/index.ts
+// src/components/HandoffSettings.tsx
+var import_react16 = require("react");
+
+// src/lib/handoff-api.ts
+var BASE2 = "/easel";
+async function request2(url, options) {
+  const res = await fetch(`${BASE2}${url}`, { cache: "no-store", ...options });
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const payload = await res.json();
+      detail = payload && (payload.detail || payload.error) || "";
+    } catch {
+    }
+    throw new Error(detail || `\u8BF7\u6C42\u5931\u8D25\uFF08${res.status} ${res.statusText}\uFF09`);
+  }
+  return res.json();
+}
+function getHandoffStatus() {
+  return request2("/api/handoff/status");
+}
+function getHandoffWorkspaces() {
+  return request2("/api/handoff/workspaces");
+}
+function pairWithPeer(peerId) {
+  return request2("/api/handoff/pair", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ peerId })
+  });
+}
+function acceptPairing(id) {
+  return request2(`/api/handoff/pair/${encodeURIComponent(id)}/accept`, { method: "POST" });
+}
+function rejectPairing(id) {
+  return request2(`/api/handoff/pair/${encodeURIComponent(id)}/reject`, { method: "POST" });
+}
+function sendHandoff(peerId, workspacePath) {
+  return request2("/api/handoff/send", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ peerId, workspacePath })
+  });
+}
+
+// src/components/HandoffSettings.tsx
+var import_jsx_runtime26 = require("react/jsx-runtime");
+var COPY = {
+  en: {
+    nav: "LAN handoff",
+    intro: "Send a project and its agent sessions to another device on this network, or receive one. Both devices stay on the same network with the app open.",
+    unavailable: "LAN handoff is not enabled in this profile.",
+    device: "This device",
+    port: "port",
+    refresh: "Refresh",
+    paired: "Paired devices",
+    pairedBadge: "Paired",
+    noPaired: "Nothing paired yet. Pair a nearby device first.",
+    nearby: "Nearby devices",
+    noNearby: "No devices found. Keep both apps open on the same network, then refresh.",
+    pair: "Pair",
+    pending: "Waiting for confirmation",
+    sasHint: "Check that both screens show this number, then confirm on each. Only pair when they match.",
+    confirm: "They match \u2014 pair",
+    reject: "Decline",
+    sendTitle: "Send a project",
+    pickWorkspace: "Choose a project",
+    pickPeer: "Choose a device",
+    send: "Send",
+    sending: "Sending\u2026",
+    sent: "Handoff complete.",
+    failed: "Handoff failed"
+  },
+  zh: {
+    nav: "\u5C40\u57DF\u7F51\u4EA4\u63A5",
+    intro: "\u628A\u9879\u76EE\u8FDE\u540C agent \u4F1A\u8BDD\u53D1\u5230\u672C\u7F51\u7EDC\u7684\u53E6\u4E00\u53F0\u8BBE\u5907\uFF0C\u6216\u4ECE\u53E6\u4E00\u53F0\u8BBE\u5907\u63A5\u6536\u3002\u4E24\u53F0\u8BBE\u5907\u9700\u5728\u540C\u4E00\u7F51\u7EDC\u5E76\u90FD\u4FDD\u6301\u5E94\u7528\u5F00\u542F\u3002",
+    unavailable: "\u5F53\u524D profile \u672A\u542F\u7528\u5C40\u57DF\u7F51\u4EA4\u63A5\u3002",
+    device: "\u672C\u673A",
+    port: "\u7AEF\u53E3",
+    refresh: "\u5237\u65B0",
+    paired: "\u5DF2\u914D\u5BF9\u8BBE\u5907",
+    pairedBadge: "\u5DF2\u914D\u5BF9",
+    noPaired: "\u8FD8\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907\uFF0C\u5148\u5728\u9644\u8FD1\u8BBE\u5907\u91CC\u914D\u5BF9\u3002",
+    nearby: "\u9644\u8FD1\u8BBE\u5907",
+    noNearby: "\u5C1A\u672A\u53D1\u73B0\u8BBE\u5907\u3002\u8BF7\u8BA9\u4E24\u53F0\u8BBE\u5907\u90FD\u5F00\u7740\u5E94\u7528\u5E76\u5904\u4E8E\u540C\u4E00\u7F51\u7EDC\uFF0C\u7136\u540E\u5237\u65B0\u3002",
+    pair: "\u914D\u5BF9",
+    pending: "\u7B49\u5F85\u786E\u8BA4",
+    sasHint: "\u8BF7\u6838\u5BF9\u4E24\u53F0\u5C4F\u5E55\u663E\u793A\u7684\u662F\u540C\u4E00\u4E32\u6570\u5B57\uFF0C\u518D\u5206\u522B\u5728\u5404\u81EA\u8BBE\u5907\u4E0A\u786E\u8BA4\uFF1B\u4E00\u81F4\u624D\u914D\u5BF9\u3002",
+    confirm: "\u4E00\u81F4\uFF0C\u914D\u5BF9",
+    reject: "\u62D2\u7EDD",
+    sendTitle: "\u53D1\u9001\u9879\u76EE",
+    pickWorkspace: "\u9009\u62E9\u9879\u76EE",
+    pickPeer: "\u9009\u62E9\u8BBE\u5907",
+    send: "\u53D1\u9001",
+    sending: "\u53D1\u9001\u4E2D\u2026",
+    sent: "\u4EA4\u63A5\u5B8C\u6210\u3002",
+    failed: "\u4EA4\u63A5\u5931\u8D25"
+  }
+};
+var HANDOFF_STYLES = `
+.ehs-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+}
+.ehs-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 0.5px solid var(--dsw-alias-settings-card-stroke);
+  border-radius: var(--dsw-radius-xl);
+  background: var(--dsw-alias-settings-card-fill);
+}
+.ehs-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+}
+.ehs-pending { border-color: var(--dsw-alias-state-business-primary); }
+.ehs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+}
+.ehs-row + .ehs-row { border-top: 0.5px solid var(--dsw-alias-border-l2); }
+.ehs-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ehs-row-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ehs-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-device { display: flex; flex-direction: column; gap: 2px; }
+.ehs-device-name { font-size: 14px; line-height: 22px; }
+.ehs-device-meta { display: flex; align-items: center; gap: 8px; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-device-meta code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.02em; }
+.ehs-sas-block { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 0 2px; text-align: center; }
+.ehs-sas {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  padding-left: 0.18em;
+}
+.ehs-actions { display: flex; gap: 8px; justify-content: center; }
+.ehs-empty { padding: 6px 0; color: var(--dsw-alias-label-secondary); }
+.ehs-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--dsw-radius-sm);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-primary);
+  background: transparent;
+  transition: transform 100ms ease-out, background-color 120ms ease-out;
+}
+.ehs-btn-md { height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md); font-size: 14px; line-height: 22px; }
+.ehs-btn:active:not(:disabled) { transform: scale(0.97); }
+.ehs-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+.ehs-btn:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.ehs-btn-primary { background: var(--dsw-alias-button-primary-fill); color: var(--dsw-alias-label-primary-foreground); }
+.ehs-btn-primary:hover:not(:disabled) { background: var(--dsw-alias-button-primary-hover); }
+.ehs-btn-outline { border: 0.5px solid var(--dsw-alias-border-l3); }
+.ehs-btn-outline:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
+.ehs-btn-ghost:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
+.ehs-chip {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: var(--dsw-radius-sm);
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+.ehs-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.ehs-field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 1; }
+.ehs-field > span { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-select {
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px;
+  border: 0.5px solid var(--dsw-alias-border-l4);
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 22px;
+}
+.ehs-select:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+.ehs-outcome { font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); }
+.ehs-outcome[data-tone='ok'] { color: var(--dsw-alias-state-success-primary); }
+.ehs-outcome[data-tone='fail'] { color: var(--dsw-alias-state-error-primary); }
+.ehs-error { margin: 0; color: var(--dsw-alias-state-error-primary); font-size: 12px; line-height: 18px; }
+@media (prefers-reduced-motion: reduce) {
+  .ehs-btn { transition: none; }
+  .ehs-btn:active:not(:disabled) { transform: none; }
+}
+`;
+function HandoffSettings({ t }) {
+  const [status, setStatus] = (0, import_react16.useState)(void 0);
+  const [workspaces, setWorkspaces] = (0, import_react16.useState)([]);
+  const [error, setError] = (0, import_react16.useState)("");
+  const [busy, setBusy] = (0, import_react16.useState)(void 0);
+  const [workspacePath, setWorkspacePath] = (0, import_react16.useState)("");
+  const [peerId, setPeerId] = (0, import_react16.useState)("");
+  const mounted = (0, import_react16.useRef)(true);
+  (0, import_react16.useEffect)(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const refresh = (0, import_react16.useCallback)(async () => {
+    try {
+      const next = await getHandoffStatus();
+      if (!mounted.current) return;
+      setStatus(next);
+      if (next.available) {
+        const listing = await getHandoffWorkspaces();
+        if (!mounted.current) return;
+        setWorkspaces(listing.workspaces);
+        setWorkspacePath((current) => current !== "" && listing.workspaces.some((item) => item.path === current) ? current : listing.workspaces[0]?.path ?? "");
+        setPeerId((current) => current !== "" && next.paired.some((item) => item.id === current) ? current : next.paired[0]?.id ?? "");
+      }
+    } catch (failure) {
+      if (mounted.current) setError(failure instanceof Error ? failure.message : String(failure));
+    }
+  }, []);
+  (0, import_react16.useEffect)(() => {
+    void refresh();
+    const timer = setInterval(() => {
+      if (!document.hidden) void refresh();
+    }, 3e3);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [refresh]);
+  const run = async (action, work) => {
+    setBusy(action);
+    setError("");
+    try {
+      await work();
+      await refresh();
+    } catch (failure) {
+      if (mounted.current) setError(failure instanceof Error ? failure.message : String(failure));
+    } finally {
+      if (mounted.current) setBusy(void 0);
+    }
+  };
+  if (status === void 0) {
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-root", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-muted", children: error || "\u2026" }) });
+  }
+  const pending = status.pending;
+  const unpaired = status.discovered.filter((peer) => !status.paired.some((paired) => paired.id === peer.id));
+  const last = status.last ?? void 0;
+  const canSend = workspacePath !== "" && peerId !== "";
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-intro", children: t("intro") }),
+    status.available && status.device !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("device") }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "ehs-btn ehs-btn-ghost",
+            disabled: busy !== void 0,
+            onClick: () => {
+              void run("refresh", refresh);
+            },
+            children: t("refresh")
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-device", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-device-name", children: status.device.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-device-meta", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { children: status.device.id.slice(0, 12) }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: "\xB7" }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
+            t("port"),
+            " ",
+            status.device.port
+          ] })
+        ] })
+      ] })
+    ] }),
+    !status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-empty", children: status.reason ?? t("unavailable") }),
+    status.available && pending.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card ehs-pending", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("pending") }) }),
+      pending.map((offer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-sas-block", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
+          offer.peer.name,
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ehs-muted", children: [
+            "(",
+            offer.peer.platform,
+            ")"
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-sas", "aria-label": `${offer.sas}`, children: offer.sas }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-muted", children: t("sasHint") }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-actions", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "button",
+            {
+              type: "button",
+              className: "ehs-btn ehs-btn-outline",
+              disabled: busy !== void 0,
+              onClick: () => {
+                void run(`reject:${offer.id}`, () => rejectPairing(offer.id));
+              },
+              children: t("reject")
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "button",
+            {
+              type: "button",
+              className: "ehs-btn ehs-btn-primary",
+              disabled: busy !== void 0,
+              onClick: () => {
+                void run(`accept:${offer.id}`, () => acceptPairing(offer.id));
+              },
+              children: t("confirm")
+            }
+          )
+        ] })
+      ] }, offer.id))
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("nearby") }) }),
+      unpaired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-empty", children: t("noNearby") }) : unpaired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row-main", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-row-title", children: peer.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ehs-muted", children: [
+            peer.platform,
+            peer.compatible === false ? " \xB7 \u26A0" : ""
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "ehs-btn ehs-btn-outline",
+            disabled: busy !== void 0,
+            onClick: () => {
+              void run(`pair:${peer.id}`, () => pairWithPeer(peer.id));
+            },
+            children: t("pair")
+          }
+        )
+      ] }, peer.id))
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("paired") }) }),
+      status.paired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-empty", children: t("noPaired") }) : status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row-main", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-row-title", children: peer.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ehs-muted", children: [
+            peer.platform,
+            " \xB7 ",
+            peer.id.slice(0, 8)
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-chip", children: t("pairedBadge") })
+      ] }, peer.id))
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("sendTitle") }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-form", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("pickWorkspace") }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+            "select",
+            {
+              className: "ehs-select",
+              value: workspacePath,
+              onChange: (event) => {
+                setWorkspacePath(event.target.value);
+              },
+              children: [
+                workspaces.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t("pickWorkspace") }),
+                workspaces.map((workspace) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: workspace.path, children: workspace.title }, workspace.path))
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("pickPeer") }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+            "select",
+            {
+              className: "ehs-select",
+              value: peerId,
+              onChange: (event) => {
+                setPeerId(event.target.value);
+              },
+              children: [
+                status.paired.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t("pickPeer") }),
+                status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: peer.id, children: peer.name }, peer.id))
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "ehs-btn ehs-btn-md ehs-btn-primary",
+            disabled: busy !== void 0 || !canSend,
+            onClick: () => {
+              void run("send", () => sendHandoff(peerId, workspacePath));
+            },
+            children: busy === "send" ? t("sending") : t("send")
+          }
+        )
+      ] }),
+      last !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-outcome", "data-tone": last.ok ? "ok" : "fail", "aria-live": "polite", children: last.ok ? t("sent") : `${t("failed")}\uFF1A${last.detail}` })
+    ] }),
+    error !== "" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-error", role: "alert", children: error })
+  ] });
+}
+
+// src/features/handoff.tsx
+var NS = "easel.handoff";
+var STYLE_ID2 = "easel-handoff-settings-styles";
+var plugin13 = {
+  name: "easel-handoff-settings",
+  inject: ["slots", "locale"],
+  apply(ctx) {
+    ctx.effect(() => ctx.locale.register(NS, COPY), "easel: handoff dictionaries");
+    ctx.effect(() => {
+      const style = document.createElement("style");
+      style.id = STYLE_ID2;
+      style.textContent = HANDOFF_STYLES;
+      document.head.append(style);
+      return () => {
+        style.remove();
+      };
+    }, "easel: handoff styles");
+    const t = ctx.locale.bind(NS);
+    ctx.slots.inject("settings.section", () => ctx.slots.register({
+      name: "settings.section",
+      id: "easel-handoff",
+      order: 60,
+      locale: NS,
+      label: () => t("nav"),
+      inject: () => ({ t })
+    }, HandoffSettings));
+  }
+};
+
+// src/features/index.ts
 var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
 var FEATURES = views.map((module2) => ({
   view: module2.view,
@@ -10134,31 +10605,31 @@ var FEATURES = views.map((module2) => ({
   labels: module2.labels,
   plugin: module2.plugin
 }));
-var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12];
+var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12, plugin13];
 
-// easel/dsh-plugin-easel/src/client.tsx
-var NS = "easel.panel";
-var STYLE_ID2 = "dsh-plugin-easel-style";
+// src/client.tsx
+var NS2 = "easel.panel";
+var STYLE_ID3 = "dsh-plugin-easel-style";
 var STYLES = EASEL_CSS;
-var COPY = {
+var COPY2 = {
   zh: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.zh])),
   en: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.en]))
 };
 var client_default = {
   inject: ["slots", "locale", "uiSidebarPanels", "sessions", "uiWorkspace", "remote", "remote.session"],
   apply(ctx) {
-    ctx.effect(() => ctx.locale.register(NS, COPY), "easel: rail dictionaries");
+    ctx.effect(() => ctx.locale.register(NS2, COPY2), "easel: rail dictionaries");
     ctx.effect(() => {
       const style = document.createElement("style");
-      style.id = STYLE_ID2;
+      style.id = STYLE_ID3;
       style.textContent = STYLES;
       document.head.append(style);
       return () => style.remove();
     }, "easel: workbench styles");
     ctx.effect(() => ctx.uiSidebarPanels.hidden("schedules"), "easel: hide schedules rail icon");
-    const t = ctx.locale.bind(NS);
+    const t = ctx.locale.bind(NS2);
     ctx.provide("easelShell", createShellBridge(ctx, t));
-    for (const plugin13 of CLIENT_PLUGINS) ctx.plugin(plugin13);
+    for (const plugin14 of CLIENT_PLUGINS) ctx.plugin(plugin14);
   }
 };
 

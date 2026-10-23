@@ -37,6 +37,8 @@ const NO_MODEL_EXPERIENCE_SECTION: Readonly<Record<string, string>> = {
   'packages/util/workspace-path': 'The package only formats Workspace paths for browser UI; it never constructs model input.',
   'packages/util/values': 'The package only validates, snapshots, compares, freezes, or rejects caller-owned values; consumers own every model-facing use.',
   'packages/util/code-language': 'The package only maps a filename suffix to a syntax-highlighting language id; the read consumer owns the persisted hint.',
+  'packages/transfer/lan-handoff': 'The service moves files and sessions between devices; imported sessions reach the model through the ordinary Session log, owned by the persistence stack.',
+  'packages/session-query/session-log-import': 'The importer writes stored sessions and attachments; the resumed Session presents that log to the model exactly as persistence does.',
 }
 
 /**
