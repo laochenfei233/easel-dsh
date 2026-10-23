@@ -2,6 +2,7 @@
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { ApiError, createHandoffRoutes, dispatchLocalApi } from '../index.js'
 
 const settings = {
@@ -126,4 +127,11 @@ test('workspaces route answers empty without a workspace registry', async () => 
     settings, 'GET', ['handoff', 'workspaces'], new URLSearchParams(), async () => ({}), {}, createHandoffRoutes(ctx),
   )
   assert.deepEqual(result.json, { workspaces: [] })
+})
+
+test('the client bundle carries the standalone handoff settings section', () => {
+  const bundle = readFileSync(new URL('../client.js', import.meta.url), 'utf8')
+  assert.match(bundle, /settings\.section/)
+  assert.match(bundle, /easel-handoff/)
+  assert.match(bundle, /easel\.handoff/)
 })
