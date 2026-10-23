@@ -70,3 +70,11 @@ it('pads low confirmation values to the full digit count', () => {
   expect(deriveSasFromKeys(new Uint8Array(32), new Uint8Array(32), new Uint8Array(16), new Uint8Array(16)))
     .toMatch(/^[0-9]{6}$/u)
 })
+
+it('exposes the service as the loader-row default entry', async () => {
+  const module = await import('../src/index.ts')
+  const { Service } = await import('@deepseek-ai/cordis')
+  expect(typeof module.default).toBe('function')
+  expect(module.default.prototype instanceof Service).toBe(true)
+  expect(module.default.prototype.constructor.name).toBe('LanHandoffService')
+})

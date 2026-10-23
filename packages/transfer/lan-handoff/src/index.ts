@@ -832,3 +832,6 @@ async function secureDial(
   })
   return socket
 }
+
+/** The loader-row entry: the class plugin cordis instantiates for the LAN handoff package. */
+export default LanHandoffService
