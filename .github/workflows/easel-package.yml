@@ -92,7 +92,15 @@ jobs:
       - name: Stage the bundled runtime
         working-directory: apps/desktop-tauri
         shell: bash
-        run: node scripts/bundle-runtime.mjs ${{ matrix.runtimeArgs }}
+        run: |
+          # Git Bash's GNU tar parses `D:\...` as a remote host. Shadow only
+          # tar.exe with the system bsdtar so nothing else on PATH changes.
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            mkdir -p "$RUNNER_TEMP/tar-bin"
+            cp /c/Windows/System32/tar.exe "$RUNNER_TEMP/tar-bin/tar.exe"
+            export PATH="$RUNNER_TEMP/tar-bin:$PATH"
+          fi
+          node scripts/bundle-runtime.mjs ${{ matrix.runtimeArgs }}
       # The tauri CLI runs a workspace-level production install check that
       # executes the repo root postinstall (lefthook) and fails without
       # devDependencies. Hide the workspace declarations around the tauri
