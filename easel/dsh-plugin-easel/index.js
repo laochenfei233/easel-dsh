@@ -28,10 +28,16 @@ import { request as httpRequest } from 'node:http'
 import { request as httpsRequest } from 'node:https'
 import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path'
 import { homedir } from 'node:os'
+import { lookup as dnsLookup } from 'node:dns/promises'
 import { randomBytes } from 'node:crypto'
 import net from 'node:net'
 import tls from 'node:tls'
 import { seedProjectWorkspace } from './lib/projectize.js'
+import {
+  applyWatch, buildWatchGroups, clusterTrends, decorateFetched, normalizeKeywords,
+  pruneSnapshot, readRadarHistory, staleItemsFromHistory,
+} from './lib/trends.js'
+import { RadarArticleError, createCaptureHandler } from './lib/trends-article.js'
 
 /** Cordis plugin name; also the `name` of this plugin's loader row. */
 export const name = 'easel'
@@ -1007,6 +1013,7 @@ const RADAR_SOURCE_KINDS = new Set(['rss', 'json'])
 export const SCHEDULE_FILE = '_schedule.json'
 const IDEAS_FILE = '_ideas.json'
 const RADAR_CONFIG_FILE = '_radar_config.json'
+const RADAR_HISTORY_FILE = '_radar_history.json'
 const SCHEDULE_STATUSES = new Set(['idea', 'draft', 'scheduled', 'published'])
 const SCHEDULE_KINDS = new Set(['content', 'event'])
 const SCHEDULE_SOURCES = new Set(['manual', 'publish-page', 'chat', 'scheduler'])
@@ -1020,12 +1027,13 @@ export async function readStoreList(settings, file) {
 }
 
 export async function readRadarConfig(settings) {
-  const cfg = { proxyUrl: '', proxyEnabled: false, cdpEndpoint: 'http://127.0.0.1:9222', sources: [] }
+  const cfg = { proxyUrl: '', proxyEnabled: false, cdpEndpoint: 'http://127.0.0.1:9222', sources: [], keywords: [] }
   const raw = await readJsonFile(join(settings.projectRoot, 'outputs', RADAR_CONFIG_FILE), null)
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return cfg
   if (typeof raw.proxyUrl === 'string') cfg.proxyUrl = raw.proxyUrl.trim()
   cfg.proxyEnabled = raw.proxyEnabled === true && cfg.proxyUrl.length > 0
   if (typeof raw.cdpEndpoint === 'string' && raw.cdpEndpoint.trim()) cfg.cdpEndpoint = raw.cdpEndpoint.trim()
+  cfg.keywords = normalizeKeywords(raw.keywords)
   const sources = []
   for (const item of Array.isArray(raw.sources) ? raw.sources : []) {
     if (item === null || typeof item !== 'object') continue
@@ -1042,13 +1050,14 @@ export async function readRadarConfig(settings) {
 
 async function apiRadarConfigGet(c) {
   const cfg = await readRadarConfig(c.settings)
-  return { json: { proxyUrl: cfg.proxyUrl, proxyEnabled: cfg.proxyEnabled, cdpEndpoint: cfg.cdpEndpoint, proxyEnv: process.env.EASEL_PROXY ?? '', sources: cfg.sources } }
+  return { json: { proxyUrl: cfg.proxyUrl, proxyEnabled: cfg.proxyEnabled, cdpEndpoint: cfg.cdpEndpoint, proxyEnv: process.env.EASEL_PROXY ?? '', sources: cfg.sources, keywords: cfg.keywords } }
 }
 
 async function apiRadarConfigSet(c) {
   const body = await c.body()
   const proxyUrl = String(body?.proxyUrl ?? '').trim()
   const cdp = typeof body?.cdpEndpoint === 'string' && body.cdpEndpoint.trim() ? body.cdpEndpoint.trim() : 'http://127.0.0.1:9222'
+  const keywords = normalizeKeywords(body?.keywords)
   const sources = (Array.isArray(body?.sources) ? body.sources : []).map(item => ({
     name: String(item?.name ?? ''),
     url: String(item?.url ?? ''),
@@ -1060,6 +1069,7 @@ async function apiRadarConfigSet(c) {
     proxyUrl,
     proxyEnabled: body?.proxyEnabled === true && proxyUrl.length > 0,
     cdpEndpoint: cdp,
+    keywords,
     sources,
   })
   return { json: { ok: true } }
@@ -1069,9 +1079,23 @@ async function apiIdeasList(c) {
   return { json: await readStoreList(c.settings, IDEAS_FILE) }
 }
 
+// _ideas.json 的读改写串行队列：选题 CRUD、立项置位与热点正文入库都会改这
+// 一个文件，并发交织会互相覆盖丢条目。队列保证同一进程内一次只有一个写者。
+let ideasQueue = Promise.resolve()
+export async function mutateIdeas(settings, mutator) {
+  const run = ideasQueue.then(async () => {
+    const result = await mutator(await readStoreList(settings, IDEAS_FILE))
+    if (Array.isArray(result.items)) {
+      await writeJsonFile(join(settings.projectRoot, 'outputs', IDEAS_FILE), result.items)
+    }
+    return result
+  })
+  ideasQueue = run.catch(() => {})
+  return run
+}
+
 async function apiIdeasCreate(c) {
   const body = await c.body()
-  const items = await readStoreList(c.settings, IDEAS_FILE)
   const item = {
     id: randomBytes(6).toString('hex'),
     title: String(body?.title ?? '').trim() || '未命名选题',
@@ -1080,32 +1104,33 @@ async function apiIdeasCreate(c) {
     status: IDEA_STATUSES.has(body?.status) ? body.status : 'pending',
     created: Math.floor(Date.now() / 1000),
   }
-  items.unshift(item)
-  await writeJsonFile(join(c.settings.projectRoot, 'outputs', IDEAS_FILE), items)
-  return { json: item }
+  const { json } = await mutateIdeas(c.settings, items => ({ items: [item, ...items], json: item }))
+  return { json }
 }
 
 async function apiIdeasUpdate(c) {
   const body = await c.body()
-  const items = await readStoreList(c.settings, IDEAS_FILE)
-  const item = items.find(entry => entry.id === c.params.iid)
-  if (item === undefined) throw new ApiError(404, '选题不存在')
-  Object.assign(item, {
-    title: String(body?.title ?? '').trim() || (typeof item.title === 'string' && item.title ? item.title : '未命名选题'),
-    note: String(body?.note ?? ''),
-    source: String(body?.source ?? ''),
-    status: IDEA_STATUSES.has(body?.status) ? body.status : (typeof item.status === 'string' && item.status ? item.status : 'pending'),
+  const { json } = await mutateIdeas(c.settings, (items) => {
+    const item = items.find(entry => entry.id === c.params.iid)
+    if (item === undefined) throw new ApiError(404, '选题不存在')
+    Object.assign(item, {
+      title: String(body?.title ?? '').trim() || (typeof item.title === 'string' && item.title ? item.title : '未命名选题'),
+      note: String(body?.note ?? ''),
+      source: String(body?.source ?? ''),
+      status: IDEA_STATUSES.has(body?.status) ? body.status : (typeof item.status === 'string' && item.status ? item.status : 'pending'),
+    })
+    return { items, json: item }
   })
-  await writeJsonFile(join(c.settings.projectRoot, 'outputs', IDEAS_FILE), items)
-  return { json: item }
+  return { json }
 }
 
 async function apiIdeasDelete(c) {
-  const items = await readStoreList(c.settings, IDEAS_FILE)
-  const rest = items.filter(entry => entry.id !== c.params.iid)
-  if (rest.length === items.length) throw new ApiError(404, '选题不存在')
-  await writeJsonFile(join(c.settings.projectRoot, 'outputs', IDEAS_FILE), rest)
-  return { json: { ok: true, deleted: c.params.iid } }
+  const { json } = await mutateIdeas(c.settings, (items) => {
+    const rest = items.filter(entry => entry.id !== c.params.iid)
+    if (rest.length === items.length) throw new ApiError(404, '选题不存在')
+    return { items: rest, json: { ok: true, deleted: c.params.iid } }
+  })
+  return { json }
 }
 
 async function apiScheduleList(c) {
@@ -1288,7 +1313,7 @@ function rawRequest(urlStr, { timeout = 8000, headers = {}, proxyUrl = '' } = {}
           }
           chunks.push(chunk)
         })
-        answer.on('end', () => resolveRequest({ status: answer.statusCode ?? 0, body: Buffer.concat(chunks) }))
+        answer.on('end', () => resolveRequest({ status: answer.statusCode ?? 0, headers: answer.headers ?? {}, body: Buffer.concat(chunks) }))
         answer.on('error', rejectRequest)
       })
       request.on('timeout', () => request.destroy(new Error('timeout')))
@@ -1365,47 +1390,144 @@ async function fetchCustomSource(src, proxyUrl) {
   return parseRssItems(await fetchText(src.url, proxyUrl, 10000, 'application/rss+xml, application/xml, text/xml, */*'))
 }
 
+// 离线兜底的快照年龄上限：更旧的热榜宁可空着，不冒充实时数据。
+const TREND_STALE_MAX_AGE_SECONDS = 24 * 60 * 60
+
+/**
+ * 单个源的取数链（spec easel-hotspot-radar §D2）：新鲜缓存 → 抓取并合并轨迹 →
+ * 失败时回退内存/落盘快照（≤24h，标 stale）→ 空。
+ * @returns {Promise<{at: number|undefined, items: object[], entries?: object[], stale: boolean, ok: boolean}>}
+ */
+async function loadTrendSource({ now, force, cached, prev, fetcher }) {
+  if (cached !== undefined && !force && now - cached.at < 300) {
+    return { at: cached.at, items: cached.items, stale: false, ok: true }
+  }
+  let fresh = null
+  try {
+    const fetched = await fetcher()
+    if (fetched.length > 0) {
+      const { items, entries } = decorateFetched(prev, fetched, now)
+      fresh = { at: Math.floor(now), items, entries, stale: false, ok: true }
+    }
+  } catch { /* 抓取失败 → 走降级链 */ }
+  if (fresh !== null) return fresh
+  if (cached !== undefined && now - cached.at <= TREND_STALE_MAX_AGE_SECONDS) {
+    return { at: cached.at, items: cached.items, stale: true, ok: true }
+  }
+  const disk = staleItemsFromHistory(prev, now)
+  if (disk !== null) return { at: prev.at, items: disk, stale: true, ok: true }
+  return { at: undefined, items: [], stale: false, ok: false }
+}
+
+/** 响应条目：剥掉内部字段（key/firstSeen 只服务聚类与徽标计算）。 */
+function trendPayload(items, limit) {
+  return items.slice(0, limit).map(({ key, firstSeen, ...rest }) => rest)
+}
+
 async function apiTrends(c) {
   const platforms = c.query.get('platforms') ?? 'weibo,douyin,zhihu'
+  const view = c.query.get('view') === 'cluster' ? 'cluster' : 'list'
+  const force = c.query.get('force') === '1'
   const limitRaw = Number(c.query.get('limit'))
   const limit = Math.max(1, Math.min(Number.isFinite(limitRaw) && limitRaw > 0 ? Math.floor(limitRaw) : 12, 30))
   const cfg = await readRadarConfig(c.settings)
   const proxyUrl = cfg.proxyEnabled ? cfg.proxyUrl : ''
   const now = Date.now() / 1000
+  const history = await readRadarHistory(c.settings.projectRoot, path => readJsonFile(path, null))
   const result = []
-  for (const platform of platforms.split(',').map(p => p.trim()).filter(p => p in TREND_SOURCES)) {
-    const cached = TREND_CACHE.get(platform)
-    let items
-    if (cached !== undefined && now - cached.at < 300) {
-      items = cached.items
-    } else {
-      items = await fetchPlatformTrend(platform, proxyUrl)
-      if (items.length > 0) TREND_CACHE.set(platform, { at: now, items })
-      else if (cached !== undefined) items = cached.items
+  const decoratedGroups = []
+  let historyDirty = false
+  const sources = [
+    ...platforms.split(',').map(p => p.trim()).filter(p => p in TREND_SOURCES)
+      .map(platform => ({ key: platform, label: TREND_LABELS[platform] ?? platform, fetcher: () => fetchPlatformTrend(platform, proxyUrl) })),
+    // 自定义源与内置源同缓存同出口；失败降级 ok:false，绝不因一条源炸掉整页。
+    ...cfg.sources.filter(src => src.enabled).map(src => ({
+      key: `custom:${src.name}`, label: src.name, category: src.category,
+      fetcher: () => fetchCustomSource(src, proxyUrl),
+    })),
+  ]
+  for (const source of sources) {
+    const cached = TREND_CACHE.get(source.key)
+    const prev = history.sources[source.key] ?? null
+    const loaded = await loadTrendSource({ now, force, cached, prev, fetcher: source.fetcher })
+    if (loaded.entries !== undefined) {
+      history.sources[source.key] = pruneSnapshot({ at: loaded.at, items: loaded.entries }, now)
+      historyDirty = true
+      TREND_CACHE.set(source.key, { at: loaded.at, items: loaded.items })
     }
-    result.push({ platform, label: TREND_LABELS[platform] ?? platform, items: items.slice(0, limit), ok: items.length > 0 })
+    // 关注匹配作用于完整榜单（不是截断后的可见切片），关注组自己再截 10 条。
+    applyWatch(loaded.items, cfg.keywords)
+    decoratedGroups.push({ platform: source.key, label: source.label, items: loaded.items })
+    result.push({
+      platform: source.key,
+      label: source.label,
+      ...(source.category !== undefined ? { category: source.category } : {}),
+      ...(loaded.at !== undefined ? { at: loaded.at } : {}),
+      ...(loaded.stale ? { stale: true } : {}),
+      ok: loaded.ok,
+      items: trendPayload(loaded.items, limit),
+    })
   }
-  // 自定义源与内置源同缓存同出口；失败降级 ok:false，绝不因一条源炸掉整页。
-  for (const src of cfg.sources) {
-    if (!src.enabled) continue
-    const key = `custom:${src.name}`
-    const cached = TREND_CACHE.get(key)
-    let items
-    if (cached !== undefined && now - cached.at < 300) {
-      items = cached.items
-    } else {
-      try {
-        items = await fetchCustomSource(src, proxyUrl)
-        if (items.length > 0) TREND_CACHE.set(key, { at: now, items })
-        else if (cached !== undefined) items = cached.items
-        else items = []
-      } catch {
-        items = cached?.items ?? []
-      }
-    }
-    result.push({ platform: key, label: src.name, category: src.category, items: items.slice(0, limit), ok: items.length > 0 })
+  if (historyDirty) {
+    try {
+      await writeJsonFile(join(c.settings.projectRoot, 'outputs', RADAR_HISTORY_FILE), history)
+    } catch { /* 轨迹是缓存，写失败只丢徽标，不影响本次响应 */ }
   }
-  return { json: { trends: result, updated: Math.floor(now) } }
+  const ats = result.map(group => group.at).filter(at => typeof at === 'number')
+  return {
+    json: {
+      trends: result,
+      updated: ats.length > 0 ? Math.max(...ats) : Math.floor(now),
+      watch: buildWatchGroups(decoratedGroups),
+      ...(view === 'cluster' ? { clusters: clusterTrends(decoratedGroups) } : {}),
+    },
+  }
+}
+
+// ---- 右键抓取正文（spec easel-hotspot-radar §D6）：正文进内容库，选题进 _ideas.json ----
+
+const ARTICLE_FETCH_TIMEOUT_MS = 15_000
+const ARTICLE_MAX_BYTES = 5 * 1024 * 1024
+
+async function fetchArticlePage(url, { proxyUrl }) {
+  const { status, headers, body } = await rawRequest(url, {
+    timeout: ARTICLE_FETCH_TIMEOUT_MS,
+    proxyUrl,
+    headers: {
+      accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'accept-language': 'zh-CN,zh;q=0.9',
+    },
+  })
+  if (body.length > ARTICLE_MAX_BYTES) throw new Error('页面过大')
+  return { status, headers, body }
+}
+
+const captureArticle = createCaptureHandler({
+  fetchPage: fetchArticlePage,
+  lookupHost: dnsLookup,
+  io: {
+    writeText: async (path, content) => {
+      await mkdir(dirname(path), { recursive: true })
+      const tmp = `${path}.tmp`
+      await writeFile(tmp, content, 'utf8')
+      await rename(tmp, path)
+    },
+    mutateIdeas,
+    readIdeas: async (settings) => readStoreList(settings, IDEAS_FILE),
+    proxyUrl: async (settings) => {
+      const cfg = await readRadarConfig(settings)
+      return cfg.proxyEnabled ? cfg.proxyUrl : ''
+    },
+  },
+})
+
+async function apiRadarArticle(c) {
+  try {
+    return await captureArticle(c)
+  } catch (error) {
+    if (error instanceof RadarArticleError) throw new ApiError(error.status, error.detail)
+    throw error
+  }
 }
 
 // ---- 账号/登录/发布状态（文件协议；登录与发布的「启动」在 B2 前仍走代理）----
@@ -1502,13 +1624,14 @@ async function apiProjectize(c) {
     persona: String(body?.persona ?? '').trim(),
   })
   if (typeof body?.ideaId === 'string' && body.ideaId) {
-    const items = await readStoreList(c.settings, IDEAS_FILE)
-    const item = items.find(entry => entry.id === body.ideaId)
-    if (item !== undefined) {
-      item.status = 'project'
-      item.projectDir = `projects/${result.safe}`
-      await writeJsonFile(join(c.settings.projectRoot, 'outputs', IDEAS_FILE), items)
-    }
+    await mutateIdeas(c.settings, (items) => {
+      const item = items.find(entry => entry.id === body.ideaId)
+      if (item !== undefined) {
+        item.status = 'project'
+        item.projectDir = `projects/${result.safe}`
+      }
+      return { items }
+    })
   }
   return { json: { safe: result.safe } }
 }
@@ -1531,6 +1654,7 @@ export const CORE_ROUTES = [
   ['GET', ['radar', 'config'], apiRadarConfigGet],
   ['POST', ['radar', 'config'], apiRadarConfigSet],
   ['GET', ['trends'], apiTrends],
+  ['POST', ['radar', 'article'], apiRadarArticle],
   ['GET', ['outputs'], c => getOutputTree(c.settings).then(json => ({ json }))],
   ['GET', ['output', ':path...'], apiOutputContent],
   ['DELETE', ['output', ':path...'], apiOutputDelete],

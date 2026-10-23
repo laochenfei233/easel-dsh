@@ -137,6 +137,7 @@ test('schedule CRUD: kind/status validation, source frozen at create', async () 
 test('radar config: round trip, defaults on corrupt file', async () => {
   const saved = await call('POST', 'radar/config', {
     proxyUrl: 'http://127.0.0.1:7890', proxyEnabled: true, cdpEndpoint: '',
+    keywords: ['AI', 'ai ', '', '大模型'],
     sources: [{ name: 'HN', url: 'https://hnrss.org/frontpage', kind: 'rss', category: '科技', enabled: true }],
   })
   assert.equal(saved.json.ok, true)
@@ -144,10 +145,41 @@ test('radar config: round trip, defaults on corrupt file', async () => {
   assert.equal(got.json.proxyEnabled, true)
   assert.equal(got.json.cdpEndpoint, 'http://127.0.0.1:9222', 'empty cdp falls back to default')
   assert.equal(got.json.sources[0].name, 'HN')
+  assert.deepEqual(got.json.keywords, ['AI', '大模型'], 'keywords normalized case-insensitively')
   writeFileSync(join(root, 'outputs', '_radar_config.json'), '{oops', 'utf8')
   const fresh = await call('GET', 'radar/config')
   assert.equal(fresh.json.proxyUrl, '')
   assert.equal(fresh.json.sources.length, 0)
+  assert.deepEqual(fresh.json.keywords, [])
+})
+
+test('radar article: unsafe urls are refused locally without any network', async () => {
+  await assert.rejects(
+    call('POST', 'radar/article', { title: 'T', url: 'http://127.0.0.1:9222/admin' }),
+    error => error.status === 400 && /内网/.test(error.detail),
+  )
+  await assert.rejects(
+    call('POST', 'radar/article', { title: 'T', url: 'file:///C:/Windows/win.ini' }),
+    error => error.status === 400,
+  )
+  await assert.rejects(call('POST', 'radar/article', { url: 'https://x.com/a' }), error => error.status === 400, 'missing title')
+})
+
+test('radar trends: answers locally with an empty selection and no keywords', async () => {
+  const res = await call('GET', 'trends', null, 'platforms=&limit=5')
+  assert.deepEqual(res.json.trends, [])
+  assert.deepEqual(res.json.watch, [])
+  assert.equal(typeof res.json.updated, 'number')
+})
+
+test('ideas writes serialize: concurrent creates all land', async () => {
+  const rounds = await Promise.all(
+    Array.from({ length: 8 }, (_, i) => call('POST', 'ideas', { title: `并发${i}` })),
+  )
+  const listed = await call('GET', 'ideas')
+  assert.equal(listed.json.length, 8, 'no lost updates between concurrent writers')
+  assert.equal(new Set(rounds.map(r => r.json.id)).size, 8)
+  for (const round of rounds) await call('DELETE', `ideas/${round.json.id}`)
 })
 
 test('parseHotJson normalizes weibo/zhihu shapes', () => {

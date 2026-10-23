@@ -873,7 +873,31 @@ textarea.field { resize: vertical; min-height: 90px; }
 .trend-title { font-size: 13px; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .trend-title:hover { color: var(--accent-start); }
 .trend-hot { font-size: 11px; color: var(--text-tertiary); }
-.trend-use { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--accent-end); cursor: pointer; white-space: nowrap; }
+.trend-meta { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+.trend-badge { font-size: 10.5px; line-height: 1; padding: 2.5px 6px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }
+.trend-badge-new { color: var(--accent-end); background: var(--accent-soft); font-weight: 650; }
+.trend-badge-up { color: var(--trend-up); background: color-mix(in srgb, var(--trend-up) 13%, transparent); }
+.trend-badge-down { color: var(--trend-down); background: color-mix(in srgb, var(--trend-down) 13%, transparent); }
+.trend-badge-watch { color: var(--amber, #b45309); background: color-mix(in srgb, var(--amber, #b45309) 13%, transparent); }
+.trend-age { font-size: 10.5px; color: var(--text-tertiary); white-space: nowrap; }
+.trend-plat { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64px; }
+.trend-stale { font-size: 11px; color: var(--amber, #b45309); font-weight: 500; }
+.trend-more { font-size: 11.5px; color: var(--text-tertiary); padding: 2px 12px 6px; }
+.trend-viewsep { width: 1px; align-self: stretch; background: var(--border); margin: 2px 4px; }
+.trend-watch-card { padding: 12px 6px 6px; max-width: 1100px; margin: 14px auto 0; }
+.trend-watch-group { display: flex; align-items: center; gap: 8px; padding: 0 8px; }
+.trend-watch-group + .trend-watch-group { border-top: 1px dashed var(--border); }
+.trend-watch-items { flex: 1; min-width: 0; }
+.trend-watch-group .trend-item { padding-top: 5px; padding-bottom: 5px; }
+.trend-watch-group .trend-item .trend-use, .trend-watch-group .trend-item .trend-save { opacity: 1; }
+.trend-watch-key { font-size: 12px; font-weight: 650; color: var(--accent-end); background: var(--accent-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; flex-shrink: 0; }
+.trend-cluster { padding: 12px 6px 8px; }
+.trend-cluster-head { display: flex; align-items: center; gap: 8px; padding: 0 12px 6px; }
+.trend-cluster-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.trend-cluster-actions .trend-save, .trend-cluster-actions .trend-use { opacity: 1; }
+.trend-cluster-platforms { display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; flex-wrap: wrap; }
+.trend-chip { font-size: 10.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface-hover); color: var(--text-secondary); }
+.trend-use { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); cursor: pointer; white-space: nowrap; color: var(--accent-end); }
 .trend-item:hover .trend-use { opacity: 1; }
 .trend-use:hover { background: var(--accent-soft); border-color: transparent; }
 .trend-empty { color: var(--text-tertiary); font-size: 13px; padding: 10px 12px; }
@@ -1026,6 +1050,10 @@ textarea.field { resize: vertical; min-height: 90px; }
 .idea-note { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 7px;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .idea-foot { display: flex; align-items: center; gap: 4px; margin-top: 11px; flex-wrap: wrap; }
+.idea-links { display: flex; align-items: center; gap: 4px; margin-top: 7px; }
+.idea-link { font-size: 11.5px; color: var(--accent-end); background: none; border: none; padding: 2px 4px; cursor: pointer; text-decoration: none; }
+.idea-link:hover { text-decoration: underline; }
+.idea-body-preview { max-height: 64vh; overflow: auto; padding: 6px 2px; font-size: 13px; line-height: 1.7; }
 .idea-act { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 8px; border-radius: 7px;
   border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); }
 .idea-act:hover { color: var(--text); border-color: var(--border-strong); }

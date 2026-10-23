@@ -350,6 +350,34 @@ select.field optgroup[label] {
 .trend-use:hover { background: rgba(0, 113, 227, 0.18); }
 .trend-use:active { transform: scale(0.94); }
 
+/* Trend radar v2: badges, offline hint, watch card, cluster cards */
+.trend-badge { border-radius: 980px; font-weight: 600; letter-spacing: 0.1px; }
+.trend-badge-new { color: var(--accent-start); background: var(--accent-soft); }
+.trend-badge-up { color: var(--trend-up); background: color-mix(in srgb, var(--trend-up) 14%, transparent); }
+.trend-badge-down { color: var(--trend-down); background: color-mix(in srgb, var(--trend-down) 14%, transparent); }
+.trend-badge-watch,
+.trend-stale { color: var(--amber, #b45309); }
+.trend-age,
+.trend-more { font-size: 10.5px; color: var(--text-tertiary); }
+.trend-viewsep { background: var(--border-soft, var(--border)); }
+.trend-watch-card,
+.trend-cluster {
+  padding: 14px 8px 10px;
+  border-radius: var(--radius-lg, 18px);
+}
+.trend-watch-key {
+  border-radius: 980px;
+  color: var(--accent-start);
+  background: var(--accent-soft);
+  font-weight: 650;
+}
+.trend-watch-group + .trend-watch-group { border-top: 1px solid var(--border-soft, var(--border)); }
+.trend-chip { border-radius: 980px; background: var(--surface-2, var(--surface-hover)); color: var(--text-secondary); }
+.trend-cluster-head .trend-title { font-size: 13.5px; }
+.trend-plat { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); }
+.idea-link { color: var(--accent-start); border-radius: 6px; }
+.idea-body-preview { line-height: 1.65; }
+
 /* ---------- Notices ---------- */
 .notice-error {
   border: none;

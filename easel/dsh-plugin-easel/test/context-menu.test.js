@@ -2,8 +2,9 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   CHAT_FLOW_SELECTOR, CHAT_NODE_SELECTOR, EDITABLE_SELECTOR, FILE_LINK_SELECTOR, FILE_ROOT_SELECTOR,
-  FILE_ROW_SELECTOR, PRESENTED_FILE_SELECTOR,
+  FILE_ROW_SELECTOR, PRESENTED_FILE_SELECTOR, TREND_ROW_SELECTOR,
   absolutePathFor, draftBlock, fileNameOf, isAbsolutePath, messageText, quoteBlock, relativePath, resolveSurface,
+  trendPayloadOf,
 } from '../src/lib/context-menu-model.js'
 
 /** Minimal stand-in for the DOM chain `resolveSurface` walks. */
@@ -165,4 +166,32 @@ test('fileNameOf: both separator styles', () => {
   assert.equal(fileNameOf('C:\\work\\a\\notes.md'), 'notes.md')
   assert.equal(fileNameOf('a/b/c.tar.gz'), 'c.tar.gz')
   assert.equal(fileNameOf('top'), 'top')
+})
+
+test('resolveSurface: trend rows resolve their JSON payload and win over the chat chain', () => {
+  const payload = JSON.stringify({
+    title: '苹果发布会', url: 'https://a.com/1', source: '微博热搜', platform: 'weibo', rank: 3,
+  })
+  const row = fakeNode({ selectors: [TREND_ROW_SELECTOR], dataset: { easelTrend: payload } })
+  assert.deepEqual(resolveSurface(row, null), {
+    kind: 'trend', element: row,
+    trend: { title: '苹果发布会', url: 'https://a.com/1', source: '微博热搜', platform: 'weibo', rank: 3 },
+  })
+  const nested = fakeNode({ selectors: [], dataset: {}, parent: fakeNode({ selectors: [TREND_ROW_SELECTOR], dataset: { easelTrend: payload } }) })
+  assert.equal(resolveSurface(nested, null)?.kind, 'trend', 'closest walks up from a child control')
+})
+
+test('resolveSurface: malformed or title-less trend payload is no menu surface', () => {
+  assert.equal(resolveSurface(fakeNode({ selectors: [TREND_ROW_SELECTOR], dataset: { easelTrend: '{oops' } }), null), null)
+  assert.equal(resolveSurface(fakeNode({ selectors: [TREND_ROW_SELECTOR], dataset: { easelTrend: JSON.stringify({ url: 'x' }) } }), null), null)
+  assert.equal(resolveSurface(fakeNode({ selectors: [TREND_ROW_SELECTOR], dataset: {} }), null), null)
+})
+
+test('trendPayloadOf: rank/hot optional, url defaults to empty string', () => {
+  assert.deepEqual(trendPayloadOf({ dataset: { easelTrend: JSON.stringify({ title: 'T', platform: 'douyin' }) } }),
+    { title: 'T', url: '', source: '', platform: 'douyin' })
+  assert.deepEqual(trendPayloadOf({ dataset: { easelTrend: JSON.stringify({ title: 'T', hot: '99', rank: 2 }) } }),
+    { title: 'T', url: '', source: '', platform: '', rank: 2, hot: '99' })
+  assert.equal(trendPayloadOf(null), null)
+  assert.equal(trendPayloadOf({ dataset: { easelTrend: JSON.stringify({ title: '  ' }) } }), null)
 })

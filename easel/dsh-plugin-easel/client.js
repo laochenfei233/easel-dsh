@@ -505,7 +505,7 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   display: flex; align-items: center; gap: 6px; padding: 10px 12px 5px;
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--text-tertiary); font-weight: 700; cursor: pointer; user-select: none;
-}.easel-scope .archived-header:hover { color: var(--text-secondary); }.easel-scope .archived-chevron { display: inline-flex; align-items: center; transition: transform var(--t-fast); color: var(--text-tertiary); }.easel-scope .archived-chevron.open { transform: rotate(90deg); }/* ============ \u901A\u7528\u9875\u5BB9\u5668 ============ */.easel-scope .page-scroll { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; max-width: 1100px; margin: 0 auto 4px; }.easel-scope .notice-error { max-width: 1100px; margin: 14px auto 0; color: var(--red); background: var(--red-soft); border: 1px solid transparent; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; }/* ============ \u70ED\u70B9\u96F7\u8FBE ============ */.easel-scope .trend-platforms { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-grid { max-width: 1100px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }.easel-scope .trend-col { padding: 14px 6px 10px; }.easel-scope .trend-col-head { font-weight: 650; font-size: 14px; padding: 0 12px 8px; display: flex; align-items: center; gap: 8px; }.easel-scope .trend-count { color: var(--text-tertiary); font-size: 12px; font-weight: 500; }.easel-scope .trend-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 8px; transition: background var(--t-fast); }.easel-scope .trend-item:hover { background: var(--surface-hover); }.easel-scope .trend-rank { width: 20px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-tertiary); flex-shrink: 0; }.easel-scope .trend-rank.top { color: var(--accent-end); }.easel-scope .trend-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }.easel-scope .trend-title { font-size: 13px; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .trend-title:hover { color: var(--accent-start); }.easel-scope .trend-hot { font-size: 11px; color: var(--text-tertiary); }.easel-scope .trend-use { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--accent-end); cursor: pointer; white-space: nowrap; }.easel-scope .trend-item:hover .trend-use { opacity: 1; }.easel-scope .trend-use:hover { background: var(--accent-soft); border-color: transparent; }.easel-scope .trend-empty { color: var(--text-tertiary); font-size: 13px; padding: 10px 12px; }/* ============ \u5185\u5BB9\u65E5\u5386 ============ */.easel-scope .cal-nav { display: flex; align-items: center; gap: 8px; }.easel-scope .cal-month { font-weight: 650; font-size: 14px; min-width: 120px; text-align: center; }.easel-scope .cal-grid-head { max-width: 1100px; margin: 18px auto 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-wd { text-align: center; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }.easel-scope .cal-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-cell { height: 132px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 7px; cursor: pointer; transition: all var(--t-fast); display: flex; flex-direction: column; gap: 4px; overflow: hidden; }.easel-scope .cal-cell:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }.easel-scope .cal-cell.dim { opacity: 0.4; }.easel-scope .cal-cell.today { border-color: var(--accent-start); box-shadow: 0 0 0 2px var(--accent-soft); }.easel-scope .cal-daynum { font-size: 12px; color: var(--text-secondary); font-weight: 600; }.easel-scope .cal-cell.today .cal-daynum { color: var(--accent-end); }.easel-scope .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }.easel-scope .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }.easel-scope .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }/* ============ \u5DE5\u4F5C\u53F0 ============ */.easel-scope .dash-hero { max-width: 1100px; margin: 0 auto 8px; }.easel-scope .dash-quick { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }.easel-scope .dash-quick-btn {
+}.easel-scope .archived-header:hover { color: var(--text-secondary); }.easel-scope .archived-chevron { display: inline-flex; align-items: center; transition: transform var(--t-fast); color: var(--text-tertiary); }.easel-scope .archived-chevron.open { transform: rotate(90deg); }/* ============ \u901A\u7528\u9875\u5BB9\u5668 ============ */.easel-scope .page-scroll { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; max-width: 1100px; margin: 0 auto 4px; }.easel-scope .notice-error { max-width: 1100px; margin: 14px auto 0; color: var(--red); background: var(--red-soft); border: 1px solid transparent; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; }/* ============ \u70ED\u70B9\u96F7\u8FBE ============ */.easel-scope .trend-platforms { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-grid { max-width: 1100px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }.easel-scope .trend-col { padding: 14px 6px 10px; }.easel-scope .trend-col-head { font-weight: 650; font-size: 14px; padding: 0 12px 8px; display: flex; align-items: center; gap: 8px; }.easel-scope .trend-count { color: var(--text-tertiary); font-size: 12px; font-weight: 500; }.easel-scope .trend-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 8px; transition: background var(--t-fast); }.easel-scope .trend-item:hover { background: var(--surface-hover); }.easel-scope .trend-rank { width: 20px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-tertiary); flex-shrink: 0; }.easel-scope .trend-rank.top { color: var(--accent-end); }.easel-scope .trend-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }.easel-scope .trend-title { font-size: 13px; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .trend-title:hover { color: var(--accent-start); }.easel-scope .trend-hot { font-size: 11px; color: var(--text-tertiary); }.easel-scope .trend-meta { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }.easel-scope .trend-badge { font-size: 10.5px; line-height: 1; padding: 2.5px 6px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }.easel-scope .trend-badge-new { color: var(--accent-end); background: var(--accent-soft); font-weight: 650; }.easel-scope .trend-badge-up { color: var(--trend-up); background: color-mix(in srgb, var(--trend-up) 13%, transparent); }.easel-scope .trend-badge-down { color: var(--trend-down); background: color-mix(in srgb, var(--trend-down) 13%, transparent); }.easel-scope .trend-badge-watch { color: var(--amber, #b45309); background: color-mix(in srgb, var(--amber, #b45309) 13%, transparent); }.easel-scope .trend-age { font-size: 10.5px; color: var(--text-tertiary); white-space: nowrap; }.easel-scope .trend-plat { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64px; }.easel-scope .trend-stale { font-size: 11px; color: var(--amber, #b45309); font-weight: 500; }.easel-scope .trend-more { font-size: 11.5px; color: var(--text-tertiary); padding: 2px 12px 6px; }.easel-scope .trend-viewsep { width: 1px; align-self: stretch; background: var(--border); margin: 2px 4px; }.easel-scope .trend-watch-card { padding: 12px 6px 6px; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-watch-group { display: flex; align-items: center; gap: 8px; padding: 0 8px; }.easel-scope .trend-watch-group + .trend-watch-group { border-top: 1px dashed var(--border); }.easel-scope .trend-watch-items { flex: 1; min-width: 0; }.easel-scope .trend-watch-group .trend-item { padding-top: 5px; padding-bottom: 5px; }.easel-scope .trend-watch-group .trend-item .trend-use, .easel-scope .trend-watch-group .trend-item .trend-save { opacity: 1; }.easel-scope .trend-watch-key { font-size: 12px; font-weight: 650; color: var(--accent-end); background: var(--accent-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; flex-shrink: 0; }.easel-scope .trend-cluster { padding: 12px 6px 8px; }.easel-scope .trend-cluster-head { display: flex; align-items: center; gap: 8px; padding: 0 12px 6px; }.easel-scope .trend-cluster-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }.easel-scope .trend-cluster-actions .trend-save, .easel-scope .trend-cluster-actions .trend-use { opacity: 1; }.easel-scope .trend-cluster-platforms { display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; flex-wrap: wrap; }.easel-scope .trend-chip { font-size: 10.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface-hover); color: var(--text-secondary); }.easel-scope .trend-use { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); cursor: pointer; white-space: nowrap; color: var(--accent-end); }.easel-scope .trend-item:hover .trend-use { opacity: 1; }.easel-scope .trend-use:hover { background: var(--accent-soft); border-color: transparent; }.easel-scope .trend-empty { color: var(--text-tertiary); font-size: 13px; padding: 10px 12px; }/* ============ \u5185\u5BB9\u65E5\u5386 ============ */.easel-scope .cal-nav { display: flex; align-items: center; gap: 8px; }.easel-scope .cal-month { font-weight: 650; font-size: 14px; min-width: 120px; text-align: center; }.easel-scope .cal-grid-head { max-width: 1100px; margin: 18px auto 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-wd { text-align: center; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }.easel-scope .cal-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-cell { height: 132px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 7px; cursor: pointer; transition: all var(--t-fast); display: flex; flex-direction: column; gap: 4px; overflow: hidden; }.easel-scope .cal-cell:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }.easel-scope .cal-cell.dim { opacity: 0.4; }.easel-scope .cal-cell.today { border-color: var(--accent-start); box-shadow: 0 0 0 2px var(--accent-soft); }.easel-scope .cal-daynum { font-size: 12px; color: var(--text-secondary); font-weight: 600; }.easel-scope .cal-cell.today .cal-daynum { color: var(--accent-end); }.easel-scope .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }.easel-scope .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }.easel-scope .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }/* ============ \u5DE5\u4F5C\u53F0 ============ */.easel-scope .dash-hero { max-width: 1100px; margin: 0 auto 8px; }.easel-scope .dash-quick { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }.easel-scope .dash-quick-btn {
   display: flex; align-items: center; gap: 7px; padding: 9px 15px;
   font-size: 13.5px; font-weight: 550; cursor: pointer; color: var(--text);
   background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
@@ -522,7 +522,7 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-overview { display: flex; gap: 8px; }.easel-scope .ana-stat { flex: 1; text-align: center; padding: 10px 4px; background: var(--surface-2); border-radius: 12px; }.easel-scope .ana-stat-val { font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }.easel-scope .ana-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }.easel-scope .ana-stat-delta { font-size: 11px; font-weight: 600; margin-top: 5px; font-variant-numeric: tabular-nums; }.easel-scope .ana-muted { color: var(--text-tertiary) !important; font-weight: 400; }.easel-scope .ana-wins { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 14px; }.easel-scope .ana-win { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border);
   background: var(--surface); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); }.easel-scope .ana-win:hover { border-color: var(--border-strong); color: var(--text); }.easel-scope .ana-win.on { background: var(--accent-soft); border-color: transparent; color: var(--accent-end); font-weight: 600; }.easel-scope .ana-wins-note { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; line-height: 1.5; }.easel-scope .ana-sub { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }.easel-scope .ana-metrics { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }.easel-scope .ana-metric { text-align: center; padding: 8px 4px; background: var(--surface-2); border-radius: 10px; }.easel-scope .ana-metric-val { font-size: 16px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }.easel-scope .ana-metric-label { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }.easel-scope .ana-metric-vs { font-size: 10px; font-weight: 600; margin-top: 3px; }.easel-scope .ana-notes { display: flex; flex-direction: column; gap: 6px; }.easel-scope .ana-note { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: 9px;
   background: var(--surface-2); font-size: 12.5px; color: var(--text); text-decoration: none; transition: all var(--t-fast); }.easel-scope .ana-note:hover { background: var(--accent-soft); color: var(--accent-end); }.easel-scope .ana-note-cover { width: 34px; height: 34px; border-radius: 7px; object-fit: cover; flex-shrink: 0; background: var(--surface); }.easel-scope .ana-note-cover-ph { display: flex; align-items: center; justify-content: center; font-size: 15px; }.easel-scope .ana-note-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }.easel-scope .ana-note-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note-stat { font-size: 11px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note:hover .ana-note-stat { color: var(--accent-end); }.easel-scope .ana-note-go { flex-shrink: 0; color: var(--text-tertiary); }.easel-scope .ana-note:hover .ana-note-go { color: var(--accent-end); }/* ============ \u5185\u5BB9\u5E93\u753B\u5ECA ============ */.easel-scope .gallery-page { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .gallery-head { max-width: 1160px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }.easel-scope .gallery-filters { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1160px; margin: 14px auto 0; }.easel-scope .gallery-grid { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }.easel-scope .gcard { padding: 0; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }.easel-scope .gcard-thumb { aspect-ratio: 4/3; background: var(--surface-2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }.easel-scope .gcard-thumb img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-thumb video { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-ph { color: var(--text-tertiary); display: flex; flex-direction: column; align-items: center; gap: 6px; }.easel-scope .gcard-kind { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: rgba(24,24,48,0.55); color: #fff; }.easel-scope .gcard-meta { padding: 10px 12px; }.easel-scope .gcard-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .gcard-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }/* \u5185\u5BB9\u5E93\u9762\u5305\u5C51 */.easel-scope .crumb { cursor: pointer; color: var(--text-secondary); }.easel-scope .crumb:hover { color: var(--accent-start); }.easel-scope .crumb-sep { color: var(--text-tertiary); margin: 0 2px; font-weight: 400; }/* ============ \u9009\u9898\u5E93\u770B\u677F ============ */.easel-scope .kanban { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }.easel-scope .kanban-col { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; min-height: 200px; }.easel-scope .kanban-col-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text-secondary); padding: 2px 4px 10px; }.easel-scope .kanban-dot { width: 9px; height: 9px; border-radius: 3px; }.easel-scope .kanban-count { color: var(--text-tertiary); font-weight: 500; }.easel-scope .kanban-list { display: flex; flex-direction: column; gap: 10px; }.easel-scope .kanban-empty { color: var(--text-tertiary); font-size: 12.5px; padding: 12px 4px; }.easel-scope .idea-card { position: relative; padding: 13px 14px; }.easel-scope .idea-card-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 2px; }.easel-scope .idea-card:hover .idea-card-actions { display: flex; }.easel-scope .idea-title { font-size: 14px; font-weight: 600; line-height: 1.45; padding-right: 40px; }.easel-scope .idea-note { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 7px;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }.easel-scope .idea-foot { display: flex; align-items: center; gap: 4px; margin-top: 11px; flex-wrap: wrap; }.easel-scope .idea-act { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 8px; border-radius: 7px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }.easel-scope .idea-foot { display: flex; align-items: center; gap: 4px; margin-top: 11px; flex-wrap: wrap; }.easel-scope .idea-links { display: flex; align-items: center; gap: 4px; margin-top: 7px; }.easel-scope .idea-link { font-size: 11.5px; color: var(--accent-end); background: none; border: none; padding: 2px 4px; cursor: pointer; text-decoration: none; }.easel-scope .idea-link:hover { text-decoration: underline; }.easel-scope .idea-body-preview { max-height: 64vh; overflow: auto; padding: 6px 2px; font-size: 13px; line-height: 1.7; }.easel-scope .idea-act { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 8px; border-radius: 7px;
   border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); }.easel-scope .idea-act:hover { color: var(--text); border-color: var(--border-strong); }.easel-scope .idea-act.next { margin-left: auto; color: var(--accent-end); }.easel-scope .idea-act.next:hover { background: var(--accent-soft); border-color: transparent; }/* \u70ED\u70B9\u6536\u85CF\u6309\u94AE */.easel-scope .trend-save { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; display: inline-flex; align-items: center;
   padding: 5px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-tertiary); cursor: pointer; }.easel-scope .trend-item:hover .trend-save { opacity: 1; }.easel-scope .trend-save:hover { color: var(--accent-end); background: var(--accent-soft); border-color: transparent; }/* ============ \u53D1\u5E03\u4E2D\u5FC3 ============ */.easel-scope .publish-page { display: flex; height: 100%; overflow: hidden; }.easel-scope .publish-editor { width: 46%; min-width: 400px; max-width: 620px; overflow-y: auto; padding: 28px 28px 60px; border-right: 1px solid var(--border); }.easel-scope .publish-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }.easel-scope .publish-previews { flex: 1; overflow-y: auto; padding: 28px 28px 60px; display: flex; flex-direction: column; gap: 14px; background: var(--surface-2); }.easel-scope .pv-card { padding: 0; overflow: hidden; }.easel-scope .pv-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); }.easel-scope .pv-plat { font-size: 13px; font-weight: 700; }.easel-scope .pv-count { font-size: 12px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }.easel-scope .pv-count.over { color: var(--red); font-weight: 700; }.easel-scope .pv-body { padding: 14px; }.easel-scope .pv-title { font-size: 15px; font-weight: 650; margin-bottom: 8px; }.easel-scope .pv-title.over { color: var(--red); }.easel-scope .pv-text { font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; color: var(--text); word-break: break-word; }.easel-scope .pv-ph { color: var(--text-tertiary); }.easel-scope .pv-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; border-top: 1px solid var(--border); background: var(--bg-elev); }.easel-scope .pv-hint { font-size: 11.5px; color: var(--text-tertiary); }.easel-scope .pv-copy { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); flex-shrink: 0; }.easel-scope .pv-copy:hover { color: var(--text); border-color: var(--border-strong); }/* \u5E73\u53F0\u98CE\u683C\u5FAE\u8C03 */.easel-scope .pv-xiaohongshu .pv-title { color: #ff2e4d; }.easel-scope .pv-douyin { }.easel-scope .pv-weibo .pv-text { }@media (max-width: 900px) {.easel-scope .publish-page { flex-direction: column; }.easel-scope .publish-editor { width: 100%; max-width: none; border-right: none; border-bottom: 1px solid var(--border); }}/* \u53D1\u5E03\u4E2D\u5FC3 AI\u7248\u5FBD\u6807 + \u7206\u6B3E\u62C6\u89E3 */.easel-scope .pv-badge { margin-left: 8px; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-end); }.easel-scope .pv-badge-ok { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }.easel-scope .pv-pubstate { margin: 8px 0 2px; font-size: 12px; padding: 6px 10px; border-radius: 8px; display: flex; align-items: center; gap: 6px; white-space: pre-wrap; word-break: break-word; }.easel-scope .pv-pubstate.publishing { background: var(--accent-soft); color: var(--accent-end); }.easel-scope .pv-pubstate.ok { background: color-mix(in srgb, var(--green) 15%, transparent); color: var(--green); }.easel-scope .pv-pubstate.fail { background: color-mix(in srgb, var(--red) 12%, transparent); color: var(--red); max-height: 120px; overflow: auto; }/* \u5A92\u4F53\u9644\u4EF6\u9009\u62E9 */.easel-scope .media-chip { position: relative; width: 46px; height: 46px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid var(--accent-end); flex-shrink: 0; }.easel-scope .media-chip img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .media-chip .media-vid { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 20px; background: var(--bg-subtle, #eee); }.easel-scope .media-chip .media-x { position: absolute; top: 0; right: 2px; color: #fff; font-weight: 800; text-shadow: 0 0 3px #000; }.easel-scope .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; margin-top: 10px; max-height: 260px; overflow: auto; padding: 4px; border: 1px solid var(--border); border-radius: 10px; }.easel-scope .media-cell { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; background: var(--bg-subtle, #f0f0f0); }.easel-scope .media-cell.sel { border-color: var(--accent-end); }.easel-scope .media-cell img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .media-cell .media-vid { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 22px; text-align: center; font-size: 11px; }.easel-scope .media-cell .media-check { position: absolute; top: 3px; right: 4px; background: var(--accent-end); color: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; }.easel-scope .breakdown-body { max-width: 900px; margin: 16px auto 0; }/* \u53D1\u5E03\u4E2D\u5FC3\uFF1A\u9002\u914D\u8FDB\u5EA6\u63D0\u793A + \u9884\u89C8\u5B8C\u6574\u663E\u793A */.easel-scope .adapt-hint { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12.5px; color: var(--text-secondary); }.easel-scope .pv-card { overflow: visible; }.easel-scope .pv-text { max-height: none; }.easel-scope .publish-saved-note { margin-top: 10px; font-size: 11.5px; color: var(--text-tertiary); }/* ============ \u5B50\u5DE5\u5177\u9876\u90E8\u5C0F\u5BFC\u822A ============ */.easel-scope .page-host { flex: 1; min-height: 0; display: flex; flex-direction: column; }.easel-scope .page-host > * { flex: 1; min-height: 0; }.easel-scope .subnav {
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
@@ -817,7 +817,15 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   color: var(--accent-start);
   font-size: 12px;
   font-weight: 500;
-}.easel-scope .trend-use:hover { background: rgba(0, 113, 227, 0.18); }.easel-scope .trend-use:active { transform: scale(0.94); }/* ---------- Notices ---------- */.easel-scope .notice-error {
+}.easel-scope .trend-use:hover { background: rgba(0, 113, 227, 0.18); }.easel-scope .trend-use:active { transform: scale(0.94); }/* Trend radar v2: badges, offline hint, watch card, cluster cards */.easel-scope .trend-badge { border-radius: 980px; font-weight: 600; letter-spacing: 0.1px; }.easel-scope .trend-badge-new { color: var(--accent-start); background: var(--accent-soft); }.easel-scope .trend-badge-up { color: var(--trend-up); background: color-mix(in srgb, var(--trend-up) 14%, transparent); }.easel-scope .trend-badge-down { color: var(--trend-down); background: color-mix(in srgb, var(--trend-down) 14%, transparent); }.easel-scope .trend-badge-watch, .easel-scope .trend-stale { color: var(--amber, #b45309); }.easel-scope .trend-age, .easel-scope .trend-more { font-size: 10.5px; color: var(--text-tertiary); }.easel-scope .trend-viewsep { background: var(--border-soft, var(--border)); }.easel-scope .trend-watch-card, .easel-scope .trend-cluster {
+  padding: 14px 8px 10px;
+  border-radius: var(--radius-lg, 18px);
+}.easel-scope .trend-watch-key {
+  border-radius: 980px;
+  color: var(--accent-start);
+  background: var(--accent-soft);
+  font-weight: 650;
+}.easel-scope .trend-watch-group + .trend-watch-group { border-top: 1px solid var(--border-soft, var(--border)); }.easel-scope .trend-chip { border-radius: 980px; background: var(--surface-2, var(--surface-hover)); color: var(--text-secondary); }.easel-scope .trend-cluster-head .trend-title { font-size: 13.5px; }.easel-scope .trend-plat { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); }.easel-scope .idea-link { color: var(--accent-start); border-radius: 6px; }.easel-scope .idea-body-preview { line-height: 1.65; }/* ---------- Notices ---------- */.easel-scope .notice-error {
   border: none;
   border-radius: var(--radius);
   background: var(--red-soft);
@@ -1004,14 +1012,18 @@ async function resolveHomeWorkspaceId(projectDir) {
 function pageKey(view11) {
   return `easel.${view11}`;
 }
-function topicPrompt(title, projectDir, inProject = false) {
+function topicPrompt(title, projectDir, inProject = false, bodyPath) {
   const base = `\u56F4\u7ED5\u5F53\u524D\u70ED\u70B9\u300C${title}\u300D\uFF1A\u5148\u5224\u65AD\u5B83\u9002\u4E0D\u9002\u5408\u6211\u7684\u8D26\u53F7\u8D5B\u9053\uFF1B\u82E5\u5408\u9002\uFF0C\u7ED9 2-3 \u4E2A\u5DEE\u5F02\u5316\u7684\u4E8C\u521B\u89D2\u5EA6\uFF0C\u5E76\u628A\u4F60\u6700\u63A8\u8350\u7684\u90A3\u6761\u5199\u6210\u53EF\u76F4\u63A5\u53D1\u5E03\u7684\u6587\u6848\u521D\u7A3F\u3002`;
-  if (!projectDir) return base;
-  return inProject ? `${base}
+  const body = bodyPath ? `
 
-\u672C\u9879\u76EE\u5DF2\u7ACB\u9879\uFF1A\u5148\u8BFB \u9879\u76EE\u8D44\u6599.md\uFF08\u5C31\u5728\u5F53\u524D\u76EE\u5F55\uFF0C\u9009\u9898\u5361\u3001\u62C6\u89E3\u7D20\u6750\u3001\u753B\u50CF\u5FEB\u7167\u90FD\u5728\u91CC\u9762\uFF0C\u6309\u9700\u53C2\u8003\uFF09\uFF0C\u672C\u6B21\u521B\u4F5C\u7684\u811A\u672C/\u6587\u6848/\u6210\u7247\u7B49\u4EA7\u7269\u4E00\u5F8B\u5199\u5165\u5F53\u524D\u76EE\u5F55\uFF08\u9879\u76EE\u5DE5\u4F5C\u533A\uFF09\u3002` : `${base}
+\u8FD9\u6761\u70ED\u70B9\u7684\u6B63\u6587\u5DF2\u6293\u53D6\u5230\u5185\u5BB9\u5E93\uFF1A${bodyPath}\u3002\u5148\u8BFB\u5B83\u518D\u52A8\u7B14\uFF0C\u4E0D\u8981\u51ED\u6807\u9898\u81C6\u6D4B\u5185\u5BB9\u3002` : "";
+  if (!projectDir) return `${base}${body}`;
+  const project = inProject ? `
+
+\u672C\u9879\u76EE\u5DF2\u7ACB\u9879\uFF1A\u5148\u8BFB \u9879\u76EE\u8D44\u6599.md\uFF08\u5C31\u5728\u5F53\u524D\u76EE\u5F55\uFF0C\u9009\u9898\u5361\u3001\u62C6\u89E3\u7D20\u6750\u3001\u753B\u50CF\u5FEB\u7167\u90FD\u5728\u91CC\u9762\uFF0C\u6309\u9700\u53C2\u8003\uFF09\uFF0C\u672C\u6B21\u521B\u4F5C\u7684\u811A\u672C/\u6587\u6848/\u6210\u7247\u7B49\u4EA7\u7269\u4E00\u5F8B\u5199\u5165\u5F53\u524D\u76EE\u5F55\uFF08\u9879\u76EE\u5DE5\u4F5C\u533A\uFF09\u3002` : `
 
 \u672C\u9879\u76EE\u5DF2\u7ACB\u9879\uFF1A\u5148\u8BFB ${projectDir}/\u9879\u76EE\u8D44\u6599.md\uFF08\u9009\u9898\u5361\u3001\u62C6\u89E3\u7D20\u6750\u3001\u753B\u50CF\u5FEB\u7167\u90FD\u5728\u91CC\u9762\uFF0C\u6309\u9700\u53C2\u8003\uFF09\uFF0C\u672C\u6B21\u521B\u4F5C\u7684\u811A\u672C/\u6587\u6848/\u6210\u7247\u7B49\u4EA7\u7269\u4E00\u5F8B\u5199\u5165 ${projectDir}/ \u76EE\u5F55\u3002`;
+  return `${base}${body}${project}`;
 }
 function createShell() {
   let state = { persona: "", personas: [], gatewayStatus: "connecting", apiDirect: false };
@@ -1056,7 +1068,7 @@ function createShellBridge(ctx, t) {
     if (layout === void 0) throw new Error("dsh-plugin-easel: the layout service is absent; cannot navigate");
     layout.selectPanel(page === "chat" ? "conversation" : pageKey(page));
   };
-  const useTopic = (title, projectDir) => {
+  const useTopic = (title, projectDir, bodyPath) => {
     const fallbackPrompt = topicPrompt(title, projectDir);
     const clipboardFallback = () => {
       void navigator.clipboard?.writeText(fallbackPrompt).catch(() => {
@@ -1070,7 +1082,8 @@ function createShellBridge(ctx, t) {
       void (async () => {
         const project = projectDir ? findWorkspaceByPath(projectDir) : null;
         const homeId = project?.workspaceId ?? await resolveHomeWorkspaceId();
-        const prompt = topicPrompt(title, projectDir, project !== null);
+        const bodyPrompt = await bodyPromptLine(bodyPath);
+        const prompt = topicPrompt(title, projectDir, project !== null, bodyPrompt);
         const id = homeId ? await sessions.create({ workspaceId: homeId }) : await sessions.create();
         uiWorkspace.openSession(id);
         await sessions.using(id, { source: "easelTopic" }, async () => {
@@ -1083,6 +1096,12 @@ function createShellBridge(ctx, t) {
     } catch {
       clipboardFallback();
     }
+  };
+  const bodyPromptLine = async (bodyPath) => {
+    if (!bodyPath) return void 0;
+    const root = await projectRoot();
+    if (!root) return void 0;
+    return `${root.replace(/[\\/]+$/, "")}/${bodyPath}`;
   };
   const storedMode = localStorage.getItem("easel.workspace.mode");
   globalThis.__easelWorkspaceUIMode = storedMode === "full" ? "full" : "single";
@@ -1299,8 +1318,18 @@ function savePersonaFile(name, filename, content) {
 function deletePersona(name) {
   return request(`/api/persona/${encodeURIComponent(name)}`, { method: "DELETE" });
 }
-function fetchTrends(platforms, limit = 12) {
-  return request(`/api/trends?platforms=${encodeURIComponent(platforms)}&limit=${limit}`);
+function fetchTrends(platforms, limit = 12, options = {}) {
+  const params = new URLSearchParams({ platforms, limit: String(limit) });
+  if (options.view) params.set("view", options.view);
+  if (options.force) params.set("force", "1");
+  return request(`/api/trends?${params}`);
+}
+function captureTrendArticle(input) {
+  return request("/api/radar/article", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input)
+  });
 }
 function fetchSchedule() {
   return request("/api/schedule");
@@ -1839,11 +1868,226 @@ var ALL_PLATFORMS = [
   { key: "baidu", label: "\u767E\u5EA6" },
   { key: "toutiao", label: "\u5934\u6761" }
 ];
+function sourceOf(label) {
+  return `${label}\u70ED\u641C`;
+}
+var fmtClock = (seconds) => seconds === void 0 ? "" : new Date(seconds * 1e3).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+function sortItems(items, rising) {
+  if (!rising) return items;
+  return [...items].sort((a, b2) => Number(b2.isNew === true) - Number(a.isNew === true) || (b2.delta ?? 0) - (a.delta ?? 0) || (a.rank ?? 0) - (b2.rank ?? 0));
+}
+var fmtAge = (ageMin) => ageMin >= 1440 ? `${Math.floor(ageMin / 1440)}\u5929` : `${Math.floor(ageMin / 60)}h`;
+function TrendBadges({ item }) {
+  const delta = typeof item.delta === "number" && item.delta !== 0 ? item.delta : null;
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_jsx_runtime4.Fragment, { children: [
+    item.isNew && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-badge trend-badge-new", children: "\u65B0" }),
+    delta === null ? null : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-badge trend-badge-${delta > 0 ? "up" : "down"}`, children: delta > 0 ? `\u2191${delta}` : `\u2193${-delta}` }),
+    (item.watch ?? []).slice(0, 2).map((w2) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-badge trend-badge-watch", children: w2 }, w2)),
+    typeof item.ageMin === "number" && item.ageMin >= 60 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-age", children: [
+      "\u9996\u73B0 ",
+      fmtAge(item.ageMin)
+    ] })
+  ] });
+}
+function TrendRow({ row, showPlatform, saved, onSave, onUse }) {
+  const payload = JSON.stringify({
+    title: row.title,
+    url: row.url,
+    source: row.source,
+    platform: row.platform,
+    rank: row.rank,
+    hot: row.hot
+  });
+  const rank = row.rank ?? 0;
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-item", "data-easel-trend": payload, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${rank > 0 && rank <= 3 ? "top" : ""}`, children: rank || "\xB7" }),
+    showPlatform && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-plat", children: row.label }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        "a",
+        {
+          className: "trend-title",
+          href: row.url || void 0,
+          target: "_blank",
+          rel: "noreferrer",
+          title: row.title,
+          children: row.title
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-meta", children: [
+        row.hot && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-hot", children: row.hot }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(TrendBadges, { item: row })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      "button",
+      {
+        className: "trend-save",
+        title: saved ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
+        onClick: onSave,
+        children: saved ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "trend-use", title: "\u505A\u6210\u5185\u5BB9", onClick: onUse, children: "\u505A\u5185\u5BB9" })
+  ] });
+}
+function TrendColumn({ group, rising, loading, isSaved, onSave, onUse }) {
+  const items = (0, import_react3.useMemo)(() => sortItems(group.items, rising), [group.items, rising]);
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-col", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
+      group.label,
+      group.stale && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-stale", title: "\u5185\u5BB9\u6765\u81EA\u6700\u8FD1\u4E00\u6B21\u6210\u529F\u5FEB\u7167", children: [
+        "\u79BB\u7EBF",
+        group.at ? ` \xB7 \u4E0A\u6B21 ${fmtClock(group.at)}` : ""
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-count", children: group.items.length })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-list", children: [
+      items.length === 0 && !loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: group.ok === false ? "\u8BE5\u5E73\u53F0\u6682\u65F6\u53D6\u4E0D\u5230\uFF08\u6570\u636E\u6E90\u4E0D\u53EF\u7528\uFF09" : "\u6682\u65E0\u6570\u636E" }),
+      items.map((it, i) => {
+        const row = { ...it, platform: group.platform, label: group.label, source: group.source };
+        return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          TrendRow,
+          {
+            row,
+            saved: isSaved(it.title),
+            onSave: () => onSave(row),
+            onUse: () => onUse(it.title)
+          },
+          it.url || `${it.title}-${i}`
+        );
+      })
+    ] })
+  ] });
+}
+function WatchCard({ watch, isSaved, onSave, onUse }) {
+  const total = watch.reduce((sum, g) => sum + g.items.length, 0);
+  const newCount = watch.reduce((sum, g) => sum + g.items.filter((it) => it.isNew).length, 0);
+  const shown = watch.slice(0, 5);
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-watch-card", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
+      "\u6211\u7684\u5173\u6CE8",
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-count", children: [
+        "\u547D\u4E2D ",
+        total,
+        " \u6761",
+        newCount > 0 ? ` \xB7 \u65B0 ${newCount}` : ""
+      ] })
+    ] }),
+    shown.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-watch-group", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-watch-key", children: g.keyword }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-watch-items", children: g.items.slice(0, 3).map((it, i) => {
+        const row = { ...it, source: sourceOf(it.label) };
+        return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          TrendRow,
+          {
+            row,
+            showPlatform: true,
+            saved: isSaved(it.title),
+            onSave: () => onSave(row),
+            onUse: () => onUse(it.title)
+          },
+          it.platform + (it.url || it.title) + i
+        );
+      }) }),
+      g.items.length > 3 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-more", children: [
+        "\u8FD8\u6709 ",
+        g.items.length - 3,
+        " \u6761 \xB7 "
+      ] })
+    ] }, g.keyword)),
+    watch.length > 5 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-more", children: [
+      "\u8FD8\u6709 ",
+      watch.length - 5,
+      " \u4E2A\u8BCD\u547D\u4E2D"
+    ] })
+  ] });
+}
+function ClusterCard({ cluster, isSaved, onSave, onUse }) {
+  const rep = cluster.items[0];
+  const shownLabels = cluster.labels.slice(0, 4);
+  const extra = cluster.labels.length - shownLabels.length;
+  const source = `\u8DE8\u5E73\u53F0\u70ED\u641C\uFF08${cluster.labels.join("/")}\uFF09`;
+  const payload = JSON.stringify({
+    title: cluster.title,
+    url: rep?.url ?? "",
+    source,
+    platform: cluster.platforms.join(","),
+    rank: cluster.bestRank
+  });
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-cluster", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-cluster-head", "data-easel-trend": payload, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          "a",
+          {
+            className: "trend-title",
+            href: rep?.url || void 0,
+            target: "_blank",
+            rel: "noreferrer",
+            title: cluster.title,
+            children: cluster.title
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-meta", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-hot", children: [
+            cluster.platforms.length,
+            " \u5E73\u53F0\u5728\u699C \xB7 \u6700\u9AD8\u7B2C ",
+            cluster.bestRank
+          ] }),
+          cluster.isNew && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-badge trend-badge-new", children: "\u65B0" })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-cluster-actions", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          "button",
+          {
+            className: "trend-save",
+            title: isSaved(cluster.title) ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
+            onClick: () => onSave({
+              title: cluster.title,
+              url: rep?.url ?? "",
+              hot: "",
+              platform: cluster.platforms.join(","),
+              label: "\u805A\u5408",
+              source
+            }),
+            children: isSaved(cluster.title) ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "trend-use", title: "\u505A\u6210\u5185\u5BB9", onClick: () => onUse(cluster.title), children: "\u505A\u5185\u5BB9" })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-cluster-platforms", children: [
+      shownLabels.map((label) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-chip", children: label }, label)),
+      extra > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-more", children: [
+        "+",
+        extra
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-list", children: cluster.items.map((it, i) => {
+      const row = { ...it, source: sourceOf(it.label) };
+      return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        TrendRow,
+        {
+          row,
+          showPlatform: true,
+          saved: isSaved(it.title),
+          onSave: () => onSave(row),
+          onUse: () => onUse(it.title)
+        },
+        it.platform + (it.url || it.title) + i
+      );
+    }) })
+  ] });
+}
 function RadarSettings({ cfg, onSaved, onClose }) {
   const [draft, setDraft] = (0, import_react3.useState)(() => ({
     ...cfg,
-    sources: cfg.sources.map((s) => ({ ...s }))
+    sources: cfg.sources.map((s) => ({ ...s })),
+    keywords: [...cfg.keywords ?? []]
   }));
+  const [keywordText, setKeywordText] = (0, import_react3.useState)((cfg.keywords ?? []).join(" "));
   const [busy, setBusy] = (0, import_react3.useState)(false);
   const [msg, setMsg] = (0, import_react3.useState)("");
   const [err, setErr] = (0, import_react3.useState)("");
@@ -1865,6 +2109,7 @@ function RadarSettings({ cfg, onSaved, onClose }) {
         ...draft,
         proxyUrl: draft.proxyUrl.trim(),
         cdpEndpoint: draft.cdpEndpoint.trim(),
+        keywords: keywordText.split(/[\s,，、;；]+/).map((s) => s.trim()).filter(Boolean),
         sources: draft.sources.filter((s) => s.name.trim() && s.url.trim()).map((s) => ({ ...s, name: s.name.trim(), url: s.url.trim(), category: s.category.trim() || "\u81EA\u5B9A\u4E49" }))
       };
       await saveRadarConfig(cleaned);
@@ -1890,6 +2135,19 @@ function RadarSettings({ cfg, onSaved, onClose }) {
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "overlay", onClick: onClose, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "modal", style: { width: 620, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
     /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("h3", { style: { margin: "0 0 12px" }, children: "\u70ED\u70B9\u96F7\u8FBE \xB7 \u6E90\u4E0E\u4EE3\u7406" }),
     /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card", style: { padding: 14, marginBottom: 12 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { style: { fontWeight: 600, fontSize: 13, marginBottom: 8 }, children: "\u5173\u6CE8\u8BCD" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        "input",
+        {
+          style: field,
+          placeholder: "\u7528\u9017\u53F7\u6216\u7A7A\u683C\u5206\u9694\uFF0C\u4F8B\u5982\uFF1AAI \u8003\u7814 \u65B0\u80FD\u6E90\u6C7D\u8F66",
+          value: keywordText,
+          onChange: (e) => setKeywordText(e.target.value)
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { style: { fontSize: 11.5, color: "var(--text-tertiary)", marginTop: 6 }, children: "\u547D\u4E2D\u7684\u70ED\u70B9\u4F1A\u5728\u9875\u9762\u9876\u90E8\u300C\u6211\u7684\u5173\u6CE8\u300D\u7F6E\u9876\uFF08\u6700\u591A 20 \u4E2A\uFF0C\u6BCF\u4E2A 1\u201324 \u5B57\uFF09\u3002" })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card", style: { padding: 14, marginBottom: 12 }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { style: { fontWeight: 600, fontSize: 13, marginBottom: 8 }, children: "\u4EE3\u7406" }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", gap: 8, alignItems: "center" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
@@ -1914,7 +2172,7 @@ function RadarSettings({ cfg, onSaved, onClose }) {
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { fontSize: 11.5, color: "var(--text-tertiary)", marginTop: 6 }, children: [
-        "\u5E94\u7528\u4E8E\u70ED\u70B9\u6293\u53D6\u4E0E\u8D26\u53F7\u767B\u5F55\u3002\u73AF\u5883\u53D8\u91CF EASEL_PROXY=",
+        "\u5E94\u7528\u4E8E\u70ED\u70B9\u6293\u53D6\u3001\u6B63\u6587\u6293\u53D6\u4E0E\u8D26\u53F7\u767B\u5F55\u3002\u73AF\u5883\u53D8\u91CF EASEL_PROXY=",
         /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("code", { children: cfg.proxyEnv || "\uFF08\u672A\u8BBE\uFF09" }),
         " \u4F1A\u88AB\u8FD9\u91CC\u7684\u914D\u7F6E\u8986\u76D6\u3002"
       ] })
@@ -1993,12 +2251,16 @@ function RadarSettings({ cfg, onSaved, onClose }) {
 function TrendsPage({ onUseTopic }) {
   const [selected, setSelected] = (0, import_react3.useState)(["weibo", "douyin", "zhihu"]);
   const [groups, setGroups] = (0, import_react3.useState)([]);
+  const [clusters, setClusters] = (0, import_react3.useState)(null);
+  const [watch, setWatch] = (0, import_react3.useState)([]);
   const [loading, setLoading] = (0, import_react3.useState)(false);
   const [error, setError] = (0, import_react3.useState)("");
   const [updated, setUpdated] = (0, import_react3.useState)(0);
   const [saved, setSaved] = (0, import_react3.useState)(/* @__PURE__ */ new Set());
   const [settingsOpen, setSettingsOpen] = (0, import_react3.useState)(false);
   const [radarCfg, setRadarCfg] = (0, import_react3.useState)(null);
+  const [viewMode, setViewMode] = (0, import_react3.useState)("list");
+  const [rising, setRising] = (0, import_react3.useState)(false);
   const [categoryFilter, setCategoryFilter] = (0, import_react3.useState)("");
   const loadRadar = (0, import_react3.useCallback)(() => {
     fetchRadarConfig().then(setRadarCfg).catch(() => {
@@ -2007,35 +2269,63 @@ function TrendsPage({ onUseTopic }) {
   const save = async (title, source) => {
     if (saved.has(title)) return;
     try {
-      await createIdea({ title, source: `${source}\u70ED\u641C`, status: "pending" });
+      await createIdea({ title, source, status: "pending" });
       setSaved((prev) => new Set(prev).add(title));
     } catch {
     }
   };
-  const load = (0, import_react3.useCallback)((pfs) => {
+  const load = (0, import_react3.useCallback)((pfs, options = {}) => {
     setLoading(true);
     setError("");
-    fetchTrends(pfs.join(","), 15).then((d2) => {
+    fetchTrends(pfs.join(","), 15, options).then((d2) => {
       setGroups(d2.trends);
+      setWatch(d2.watch ?? []);
       setUpdated(d2.updated);
+      if (d2.clusters !== void 0) setClusters(d2.clusters);
     }).catch(() => setError("\u70ED\u70B9\u62C9\u53D6\u5931\u8D25\u2014\u2014\u8BF7\u786E\u8BA4\u5DF2\u914D\u7F6E\u5916\u7F51\u4EE3\u7406\uFF08EASEL_PROXY \u6216\u70ED\u70B9\u9875\u8BBE\u7F6E\uFF09\u3002")).finally(() => setLoading(false));
   }, []);
-  const loadAll = (0, import_react3.useCallback)(() => {
+  (0, import_react3.useEffect)(() => {
     load(selected);
     loadRadar();
-  }, [load, selected, loadRadar]);
-  (0, import_react3.useEffect)(() => {
-    loadAll();
   }, []);
+  (0, import_react3.useEffect)(() => {
+    const onSaved = (event) => {
+      const title = event.detail?.title;
+      if (title) setSaved((prev) => new Set(prev).add(title));
+    };
+    window.addEventListener("easel:trend-saved", onSaved);
+    return () => window.removeEventListener("easel:trend-saved", onSaved);
+  }, []);
+  const refreshAll = (0, import_react3.useCallback)(() => {
+    load(selected, viewMode === "cluster" ? { view: "cluster", force: true } : { force: true });
+    loadRadar();
+  }, [load, selected, viewMode, loadRadar]);
   const toggle = (k2) => {
     const next = selected.includes(k2) ? selected.filter((x2) => x2 !== k2) : [...selected, k2];
     setSelected(next);
-    load(next);
+    load(next, viewMode === "cluster" ? { view: "cluster" } : {});
   };
+  const toggleView = () => {
+    const next = viewMode === "list" ? "cluster" : "list";
+    setViewMode(next);
+    if (next === "cluster" && clusters === null) load(selected, { view: "cluster" });
+  };
+  const handlers = (0, import_react3.useMemo)(() => ({
+    isSaved: (title) => saved.has(title),
+    onSave: (row) => {
+      void save(row.title, row.source);
+    },
+    onUse: (title) => {
+      onUseTopic(title);
+    }
+  }), [saved, onUseTopic]);
   const customGroups = groups.filter((g) => g.platform.startsWith("custom:"));
   const categories = Array.from(new Set(customGroups.map((g) => g.category || "\u81EA\u5B9A\u4E49")));
   const visibleCustom = categoryFilter === "" ? customGroups : customGroups.filter((g) => g.category === categoryFilter);
-  const builtinGroups = groups.filter((g) => !g.platform.startsWith("custom:"));
+  const columns = [
+    ...builtinColumns(groups),
+    ...visibleCustom.map((g) => ({ ...g, source: sourceOf(g.label) }))
+  ];
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "page-scroll trends-page", children: [
     /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "page-head", children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { children: [
@@ -2044,34 +2334,49 @@ function TrendsPage({ onUseTopic }) {
           " \u70ED\u70B9\u96F7\u8FBE"
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("p", { className: "page-subtitle", children: [
-          "\u591A\u5E73\u53F0\u5B9E\u65F6\u70ED\u641C\uFF0C\u6311\u503C\u5F97\u8E6D\u7684\u9009\u9898\uFF0C\u4E00\u952E\u4EA4\u7ED9 AI \u505A\u6210\u4F60\u7684\u5185\u5BB9\u3002",
+          "\u591A\u5E73\u53F0\u5B9E\u65F6\u70ED\u641C\uFF1A\u770B\u5347\u8DCC\u3001\u8DE8\u5E73\u53F0\u540C\u9898\u3001\u76EF\u7740\u4F60\u7684\u5173\u6CE8\u8BCD\uFF0C\u53F3\u952E\u628A\u6B63\u6587\u6293\u8FDB\u5185\u5BB9\u5E93\u4E0E\u9009\u9898\u5E93\u3002",
           updated > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { style: { color: "var(--text-tertiary)" }, children: [
             " \xB7 ",
             new Date(updated * 1e3).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
-            " \u66F4\u65B0"
+            " \u6570\u636E"
           ] })
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "btn btn-sm", onClick: () => setSettingsOpen(true), title: "\u81EA\u5B9A\u4E49\u6E90 / \u4EE3\u7406 / CDP \u7AEF\u70B9", children: "\u2699 \u6E90\u4E0E\u4EE3\u7406" }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("button", { className: "btn btn-sm", onClick: loadAll, disabled: loading, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "btn btn-sm", onClick: () => setSettingsOpen(true), title: "\u5173\u6CE8\u8BCD / \u81EA\u5B9A\u4E49\u6E90 / \u4EE3\u7406 / CDP \u7AEF\u70B9", children: "\u2699 \u6E90\u4E0E\u4EE3\u7406" }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("button", { className: "btn btn-sm", onClick: refreshAll, disabled: loading, children: [
           /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconRefresh, { size: 14 }),
           " ",
           loading ? "\u5237\u65B0\u4E2D\u2026" : "\u5237\u65B0"
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-platforms", children: ALL_PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-      "button",
-      {
-        className: `chip ${selected.includes(p.key) ? "active" : ""}`,
-        onClick: () => toggle(p.key),
-        children: p.label
-      },
-      p.key
-    )) }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-platforms", children: [
+      ALL_PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        "button",
+        {
+          className: `chip ${selected.includes(p.key) ? "active" : ""}`,
+          onClick: () => toggle(p.key),
+          children: p.label
+        },
+        p.key
+      )),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-viewsep" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: `chip ${viewMode === "list" ? "active" : ""}`, onClick: toggleView, children: "\u5206\u5E73\u53F0" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: `chip ${viewMode === "cluster" ? "active" : ""}`, onClick: toggleView, children: "\u805A\u5408" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        "button",
+        {
+          className: `chip ${rising ? "active" : ""}`,
+          onClick: () => setRising(!rising),
+          title: rising ? "\u6062\u590D\u699C\u5355\u539F\u5E8F" : "\u6309\u5347\u5E45\u91CD\u6392\uFF08\u4E0D\u91CD\u65B0\u8BF7\u6C42\uFF09",
+          children: rising ? "\u5347\u6E29 \u2713" : "\u5347\u6E29"
+        }
+      )
+    ] }),
     error && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "notice-error", children: error }),
-    customGroups.length > 0 && categories.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-platforms", style: { marginTop: -4 }, children: [
+    watch.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(WatchCard, { watch, ...handlers }),
+    viewMode === "list" && categories.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-platforms", style: { marginTop: -4 }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
         "button",
         {
@@ -2090,95 +2395,10 @@ function TrendsPage({ onUseTopic }) {
         c
       ))
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-grid", children: [
-      visibleCustom.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-col", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
-          g.label,
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-count", children: g.items.length })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-list", children: [
-          g.items.length === 0 && !loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: g.ok === false ? "\u8BE5\u6E90\u6682\u65F6\u53D6\u4E0D\u5230\uFF08\u68C0\u67E5 URL/\u7F51\u7EDC/\u4EE3\u7406\uFF09" : "\u6682\u65E0\u6570\u636E" }),
-          g.items.map((it, i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${i < 3 ? "top" : ""}`, children: i + 1 }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-                "a",
-                {
-                  className: "trend-title",
-                  href: it.url || void 0,
-                  target: "_blank",
-                  rel: "noreferrer",
-                  title: it.title,
-                  children: it.title
-                }
-              ),
-              it.hot && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-hot", children: it.hot })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-              "button",
-              {
-                className: "trend-save",
-                title: saved.has(it.title) ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
-                onClick: () => save(it.title, g.label),
-                children: saved.has(it.title) ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-              "button",
-              {
-                className: "trend-use",
-                title: "\u505A\u6210\u5185\u5BB9",
-                onClick: () => onUseTopic(it.title),
-                children: "\u505A\u5185\u5BB9"
-              }
-            )
-          ] }, i))
-        ] })
-      ] }, g.platform)),
-      builtinGroups.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-col", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
-          g.label,
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-count", children: g.items.length })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-list", children: [
-          g.items.length === 0 && !loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: g.ok === false ? "\u8BE5\u5E73\u53F0\u6682\u65F6\u53D6\u4E0D\u5230\uFF08\u6570\u636E\u6E90\u4E0D\u53EF\u7528\uFF09" : "\u6682\u65E0\u6570\u636E" }),
-          g.items.map((it, i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${i < 3 ? "top" : ""}`, children: i + 1 }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-                "a",
-                {
-                  className: "trend-title",
-                  href: it.url || void 0,
-                  target: "_blank",
-                  rel: "noreferrer",
-                  title: it.title,
-                  children: it.title
-                }
-              ),
-              it.hot && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-hot", children: it.hot })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-              "button",
-              {
-                className: "trend-save",
-                title: saved.has(it.title) ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
-                onClick: () => save(it.title, g.label),
-                children: saved.has(it.title) ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-              "button",
-              {
-                className: "trend-use",
-                title: "\u505A\u6210\u5185\u5BB9",
-                onClick: () => onUseTopic(it.title),
-                children: "\u505A\u5185\u5BB9"
-              }
-            )
-          ] }, i))
-        ] })
-      ] }, g.platform))
+    viewMode === "list" && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-grid", children: columns.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(TrendColumn, { group: g, rising, loading, ...handlers }, g.platform)) }),
+    viewMode === "cluster" && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-grid", children: [
+      (clusters ?? []).map((c) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ClusterCard, { cluster: c, ...handlers }, c.id)),
+      !loading && clusters !== null && clusters.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: "\u5F53\u524D\u6E90\u4E4B\u95F4\u6CA1\u6709\u540C\u9898\u805A\u7C7B\u3002" })
     ] }),
     settingsOpen && radarCfg && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
       RadarSettings,
@@ -2186,7 +2406,7 @@ function TrendsPage({ onUseTopic }) {
         cfg: radarCfg,
         onSaved: () => {
           loadRadar();
-          load(selected);
+          load(selected, viewMode === "cluster" ? { view: "cluster" } : {});
         },
         onClose: () => setSettingsOpen(false)
       }
@@ -2196,6 +2416,9 @@ function TrendsPage({ onUseTopic }) {
       "\u52A0\u8F7D\u914D\u7F6E\u2026"
     ] }) }) })
   ] });
+}
+function builtinColumns(groups) {
+  return groups.filter((g) => !g.platform.startsWith("custom:")).map((g) => ({ ...g, source: sourceOf(g.label) }));
 }
 
 // src/features/trends.tsx
@@ -2243,726 +2466,6 @@ __export(ideas_exports, {
 
 // src/components/IdeasPage.tsx
 var import_react4 = require("react");
-var import_jsx_runtime6 = require("react/jsx-runtime");
-var COLUMNS = [
-  { key: "pending", label: "\u5F85\u505A", color: "var(--text-tertiary)" },
-  { key: "doing", label: "\u8FDB\u884C\u4E2D", color: "var(--layer-attribute)" },
-  { key: "project", label: "\u5DF2\u7ACB\u9879", color: "var(--accent, #7c5cff)" },
-  { key: "done", label: "\u5DF2\u5B8C\u6210", color: "var(--layer-publish)" }
-];
-var NEXT = { pending: "doing", doing: "done", done: "pending" };
-var EMPTY = { title: "", note: "", source: "", status: "pending" };
-function IdeasPage({ onUseTopic }) {
-  const [ideas, setIdeas] = (0, import_react4.useState)([]);
-  const [form, setForm] = (0, import_react4.useState)(null);
-  const [editId, setEditId] = (0, import_react4.useState)(null);
-  const [toast, setToast] = (0, import_react4.useState)("");
-  const [greenlight, setGreenlight] = (0, import_react4.useState)(null);
-  const [personas, setPersonas] = (0, import_react4.useState)([]);
-  const [personaPick, setPersonaPick] = (0, import_react4.useState)("");
-  const [busy, setBusy] = (0, import_react4.useState)(false);
-  const load = (0, import_react4.useCallback)(() => {
-    fetchIdeas().then(setIdeas).catch(() => {
-    });
-  }, []);
-  (0, import_react4.useEffect)(() => {
-    load();
-  }, [load]);
-  const showToast = (m2) => {
-    setToast(m2);
-    setTimeout(() => setToast(""), 2200);
-  };
-  const byStatus = (0, import_react4.useMemo)(() => {
-    const g = { pending: [], doing: [], project: [], done: [] };
-    for (const it of ideas) (g[it.status] || g.pending).push(it);
-    return g;
-  }, [ideas]);
-  const openNew = () => {
-    setEditId(null);
-    setForm({ ...EMPTY });
-  };
-  const openEdit = (it) => {
-    setEditId(it.id);
-    setForm({ title: it.title, note: it.note, source: it.source, status: it.status });
-  };
-  const save = async () => {
-    if (!form || !form.title.trim()) return;
-    if (editId) await updateIdea(editId, form);
-    else await createIdea(form);
-    setForm(null);
-    setEditId(null);
-    load();
-  };
-  const openGreenlight = async (it) => {
-    setGreenlight(it);
-    setPersonaPick("");
-    const status = await fetchStatus();
-    const list = status?.personas ?? [];
-    setPersonas(list);
-    if (list.length === 1) setPersonaPick(list[0].name);
-  };
-  const confirmGreenlight = async () => {
-    const it = greenlight;
-    if (!it || busy) return;
-    setBusy(true);
-    try {
-      const status = await fetchStatus();
-      const root = status?.projectRoot ?? "";
-      if (!root) throw new Error("\u62FF\u4E0D\u5230\u9879\u76EE\u6839");
-      const { safe } = await projectizeTopic({
-        ideaId: it.id,
-        title: it.title,
-        note: it.note,
-        source: it.source,
-        fallback: it.id,
-        deconstruct: it.deconstruct,
-        persona: personaPick
-      });
-      const ws = getWorkspaceService();
-      if (!ws) throw new Error("\u5DE5\u4F5C\u533A\u670D\u52A1\u4E0D\u53EF\u8FBE");
-      try {
-        await ws.create({ path: `${root.replace(/[\/]+$/, "")}/projects/${safe}/` });
-      } catch {
-      }
-      setGreenlight(null);
-      showToast("\u5DF2\u7ACB\u9879\uFF1A\u8D44\u6599\u5DF2\u88C5\u5165\u9879\u76EE\u5DE5\u4F5C\u533A");
-      load();
-    } catch (error) {
-      showToast(`\u7ACB\u9879\u5931\u8D25\uFF1A${error.message ?? error}`);
-    } finally {
-      setBusy(false);
-    }
-  };
-  const advance = async (it) => {
-    await updateIdea(it.id, { ...it, status: NEXT[it.status] });
-    load();
-  };
-  const remove = async (it) => {
-    await deleteIdea(it.id);
-    load();
-  };
-  const schedule = async (it) => {
-    const d2 = /* @__PURE__ */ new Date();
-    await createSchedule({ title: it.title, date: d2.toISOString().slice(0, 10), platform: "", time: "", status: "idea", note: it.note });
-    showToast("\u5DF2\u52A0\u5165\u65E5\u5386\uFF08\u4ECA\u5929\uFF09");
-  };
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-scroll ideas-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-head", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h1", { className: "page-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconIdea, { size: 21 }),
-          " \u9009\u9898\u5E93"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "page-subtitle", children: "\u6512\u4F4F\u6BCF\u4E00\u4E2A\u7075\u611F\u2014\u2014\u4ECE\u70ED\u70B9\u6536\u85CF\u6216\u624B\u52A8\u65B0\u589E\uFF0C\u63A8\u8FDB\u5230\u300C\u505A\u5185\u5BB9\u300D\u518D\u8FDB\u65E5\u5386\u3002" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: openNew, children: "+ \u65B0\u5EFA\u9009\u9898" })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban", children: COLUMNS.map((col) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-dot", style: { background: col.color } }),
-        col.label,
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-count", children: byStatus[col.key].length })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-list", children: [
-        byStatus[col.key].length === 0 && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban-empty", children: "\u62D6\u70B9\u9009\u9898\u8FDB\u6765\u5427" }),
-        byStatus[col.key].map((it) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "card idea-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-card-actions", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act", title: "\u7F16\u8F91", onClick: () => openEdit(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconEdit, { size: 13 }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act danger", title: "\u5220\u9664", onClick: () => remove(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconTrash, { size: 13 }) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-title", children: it.title }),
-          it.source && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "badge", style: { marginTop: 6 }, children: it.source }),
-          it.note && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-note", children: it.note }),
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-foot", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => onUseTopic(it.title, it.projectDir), children: [
-              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChat, { size: 13 }),
-              " \u505A\u5185\u5BB9"
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => schedule(it), children: [
-              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconCalendar, { size: 13 }),
-              " \u6392\u671F"
-            ] }),
-            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "idea-act", title: "\u786E\u8BA4\u7ACB\u9879\uFF1A\u5EFA\u540C\u540D\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599", onClick: () => openGreenlight(it), children: "\u{1F6A9} \u7ACB\u9879" }),
-            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act next", onClick: () => advance(it), title: "\u63A8\u8FDB\u72B6\u6001", children: [
-              COLUMNS.find((c) => c.key === NEXT[it.status])?.label,
-              " ",
-              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChevron, { size: 12 })
-            ] })
-          ] })
-        ] }, it.id))
-      ] })
-    ] }, col.key)) }),
-    form && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setForm(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { style: { margin: 0 }, children: editId ? "\u7F16\u8F91\u9009\u9898" : "\u65B0\u5EFA\u9009\u9898" }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setForm(null), children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u9009\u9898 *" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "input",
-        {
-          className: "field",
-          value: form.title,
-          autoFocus: true,
-          placeholder: "\u60F3\u505A\u7684\u5185\u5BB9 / \u89D2\u5EA6",
-          onChange: (e) => setForm({ ...form, title: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u5907\u6CE8 / \u89D2\u5EA6" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "textarea",
-        {
-          className: "field",
-          style: { minHeight: 70 },
-          value: form.note,
-          onChange: (e) => setForm({ ...form, note: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u6765\u6E90" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "input",
-        {
-          className: "field",
-          value: form.source,
-          placeholder: "\u5982\uFF1A\u5FAE\u535A\u70ED\u641C / \u7075\u611F",
-          onChange: (e) => setForm({ ...form, source: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { style: { display: "flex", gap: 7 }, children: COLUMNS.map((c) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "button",
-        {
-          className: `chip ${form.status === c.key ? "active" : ""}`,
-          onClick: () => setForm({ ...form, status: c.key }),
-          children: c.label
-        },
-        c.key
-      )) }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setForm(null), children: "\u53D6\u6D88" }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: !form.title.trim(), children: "\u4FDD\u5B58" })
-      ] })
-    ] }) }),
-    greenlight && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setGreenlight(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h3", { style: { margin: 0 }, children: [
-          "\u7ACB\u9879\uFF1A",
-          greenlight.title.slice(0, 20),
-          greenlight.title.length > 20 ? "\u2026" : ""
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setGreenlight(null), children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("p", { style: { margin: "6px 0 12px", fontSize: 12.5, color: "var(--text-secondary)" }, children: [
-        "\u5C06\u5EFA\u540C\u540D\u9879\u76EE\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599",
-        greenlight.deconstruct ? "\uFF08\u62C6\u89E3\u62A5\u544A\u3001\u5B57\u5E55\u3001\u89C6\u9891\u4E0E\u5173\u952E\u5E27\uFF09" : "",
-        "\uFF0C \u8D26\u6237\u753B\u50CF\u6309\u4E0B\u9009\u62E9\u5E26\u5165\u5FEB\u7167\u3002\u4FA7\u680F\u51FA\u73B0\u540C\u540D\u5DE5\u4F5C\u533A\u5206\u7EC4\u3002"
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u8D26\u6237\u753B\u50CF" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("select", { className: "field", value: personaPick, onChange: (e) => setPersonaPick(e.target.value), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("option", { value: "", children: "\u4E0D\u5E26\u5165" }),
-        personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("option", { value: p.name, children: [
-          p.name,
-          p.description ? ` \u2014 ${p.description}` : ""
-        ] }, p.name))
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setGreenlight(null), children: "\u53D6\u6D88" }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: confirmGreenlight, disabled: busy, children: "\u{1F6A9} \u786E\u8BA4\u7ACB\u9879" })
-      ] })
-    ] }) }),
-    toast && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "toast ok", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "toast-icon", children: "\u2713" }),
-      toast
-    ] })
-  ] });
-}
-
-// src/features/ideas.tsx
-var import_jsx_runtime7 = require("react/jsx-runtime");
-var view3 = "ideas";
-var order3 = 32;
-var labels3 = { zh: "\u9009\u9898\u5E93", en: "Ideas" };
-var Icon3 = IconIdea;
-var Component3 = IdeasPage;
-var plugin3 = {
-  name: "easel-view-ideas",
-  inject: ["slots", "easelShell"],
-  apply(ctx) {
-    const { useShellProps, t } = ctx.easelShell;
-    ctx.slots.inject("main", () => ctx.slots.register({
-      name: "main",
-      key: pageKey(view3),
-      inject: () => ({})
-    }, function EaselPage() {
-      const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Component3, { ...props }) });
-    }));
-    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
-      name: "sidebar.panellist",
-      id: pageKey(view3),
-      order: order3,
-      locale: "easel.panel",
-      label: () => t(view3)
-    }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Icon3, { size });
-    }));
-  }
-};
-
-// src/features/calendar.tsx
-var calendar_exports = {};
-__export(calendar_exports, {
-  Component: () => Component4,
-  Icon: () => Icon4,
-  labels: () => labels4,
-  order: () => order4,
-  plugin: () => plugin4,
-  view: () => view4
-});
-
-// src/components/CalendarPage.tsx
-var import_react5 = require("react");
-var import_jsx_runtime8 = require("react/jsx-runtime");
-var STATUS_META = {
-  idea: { label: "\u9009\u9898", color: "var(--text-tertiary)" },
-  draft: { label: "\u8349\u7A3F", color: "var(--layer-plan)" },
-  scheduled: { label: "\u5F85\u53D1", color: "var(--layer-attribute)" },
-  published: { label: "\u5DF2\u53D1", color: "var(--layer-publish)" }
-};
-var EVENT_COLOR = "var(--layer-discover)";
-var EVENT_TYPES = ["\u8282\u65E5", "\u7535\u5546", "\u5E73\u53F0\u6D3B\u52A8", "\u884C\u4E1A"];
-var SOURCE_LABEL = {
-  chat: "\u5BF9\u8BDD\u9875",
-  "publish-page": "\u53D1\u5E03\u9875",
-  manual: "\u624B\u52A8",
-  scheduler: "\u6392\u671F"
-};
-var PLATFORMS = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u5FAE\u4FE1\u89C6\u9891\u53F7", "\u5FEB\u624B", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
-var WEEKDAYS = ["\u4E00", "\u4E8C", "\u4E09", "\u56DB", "\u4E94", "\u516D", "\u65E5"];
-function ymd(d2) {
-  return `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, "0")}-${String(d2.getDate()).padStart(2, "0")}`;
-}
-var kindOf = (it) => it.kind === "event" ? "event" : "content";
-var MAX_VISIBLE = 3;
-var EMPTY2 = {
-  title: "",
-  date: "",
-  platform: "",
-  time: "",
-  status: "idea",
-  note: "",
-  kind: "content",
-  url: "",
-  source: "manual",
-  event_type: "",
-  end_date: ""
-};
-function CalendarPage() {
-  const today = (0, import_react5.useMemo)(() => /* @__PURE__ */ new Date(), []);
-  const [cursor, setCursor] = (0, import_react5.useState)(() => new Date(today.getFullYear(), today.getMonth(), 1));
-  const [items, setItems] = (0, import_react5.useState)([]);
-  const [editing, setEditing] = (0, import_react5.useState)(null);
-  const [form, setForm] = (0, import_react5.useState)(null);
-  const [saving, setSaving] = (0, import_react5.useState)(false);
-  const [filter, setFilter] = (0, import_react5.useState)("all");
-  const [ctx, setCtx] = (0, import_react5.useState)(null);
-  const [showSuggest, setShowSuggest] = (0, import_react5.useState)(true);
-  const [dayView, setDayView] = (0, import_react5.useState)(null);
-  const load = (0, import_react5.useCallback)(() => {
-    fetchSchedule().then(setItems).catch(() => {
-    });
-    fetchScheduleContext(14).then(setCtx).catch(() => {
-    });
-  }, []);
-  (0, import_react5.useEffect)(() => {
-    load();
-  }, [load]);
-  const visible = (0, import_react5.useMemo)(
-    () => filter === "all" ? items : items.filter((it) => kindOf(it) === filter),
-    [items, filter]
-  );
-  const byDate = (0, import_react5.useMemo)(() => {
-    const m2 = {};
-    for (const it of visible) {
-      const bucket = m2[it.date] ||= { events: [], content: [] };
-      (kindOf(it) === "event" ? bucket.events : bucket.content).push(it);
-    }
-    return m2;
-  }, [visible]);
-  const cells = (0, import_react5.useMemo)(() => {
-    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-    const startOffset = (first.getDay() + 6) % 7;
-    const start = new Date(first);
-    start.setDate(1 - startOffset);
-    return Array.from({ length: 42 }, (_2, i) => {
-      const d2 = new Date(start);
-      d2.setDate(start.getDate() + i);
-      return d2;
-    });
-  }, [cursor]);
-  const openNew = (date) => {
-    setDayView(null);
-    setEditing(null);
-    setForm({ ...EMPTY2, date, kind: filter === "event" ? "event" : "content" });
-  };
-  const openEdit = (it) => {
-    setDayView(null);
-    setEditing(it);
-    setForm({ ...EMPTY2, ...it });
-  };
-  const close = () => {
-    setForm(null);
-    setEditing(null);
-  };
-  const renderChip = (it) => {
-    if (kindOf(it) === "event") {
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-        "div",
-        {
-          className: "cal-event is-event",
-          title: it.event_type ? `${it.event_type}\xB7${it.title}` : it.title,
-          style: { ["--ev"]: EVENT_COLOR },
-          onClick: (e) => {
-            e.stopPropagation();
-            openEdit(it);
-          },
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-title", children: it.title })
-          ]
-        },
-        it.id
-      );
-    }
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-      "div",
-      {
-        className: "cal-event",
-        title: it.title,
-        style: { ["--ev"]: STATUS_META[it.status]?.color || "var(--text-tertiary)" },
-        onClick: (e) => {
-          e.stopPropagation();
-          openEdit(it);
-        },
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-event-title", children: [
-            it.platform ? `[${it.platform}] ` : "",
-            it.title
-          ] }),
-          it.status === "published" && it.source && SOURCE_LABEL[it.source] && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: SOURCE_LABEL[it.source] })
-        ]
-      },
-      it.id
-    );
-  };
-  const save = async () => {
-    if (!form || !form.title.trim() || !form.date) return;
-    setSaving(true);
-    try {
-      if (editing) await updateSchedule(editing.id, form);
-      else await createSchedule(form);
-      close();
-      load();
-    } finally {
-      setSaving(false);
-    }
-  };
-  const remove = async () => {
-    if (!editing) return;
-    setSaving(true);
-    try {
-      await deleteSchedule(editing.id);
-      close();
-      load();
-    } finally {
-      setSaving(false);
-    }
-  };
-  const monthLabel = `${cursor.getFullYear()} \u5E74 ${cursor.getMonth() + 1} \u6708`;
-  const shift = (n) => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + n, 1));
-  const todayStr = ymd(today);
-  const isEvent = form?.kind === "event";
-  const suggestions = ctx?.suggestions || [];
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-scroll calendar-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-head", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h1", { className: "page-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconCalendar, { size: 21 }),
-          " \u5185\u5BB9\u65E5\u5386"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("p", { className: "page-subtitle", children: "\u6BCF\u5929\u5404\u5E73\u53F0\u53D1\u4EC0\u4E48\u4E00\u76EE\u4E86\u7136\u2014\u2014\u53D1\u5E03\u81EA\u52A8\u843D\u5E93\uFF0C\u53EF\u8BB0\u5F55\u6392\u671F\u4E0E\u5E73\u53F0\u6D3B\u52A8\u3002" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-nav", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(-1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { style: { transform: "rotate(180deg)", display: "inline-flex" }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => setCursor(new Date(today.getFullYear(), today.getMonth(), 1)), children: "\u672C\u6708" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-month", children: monthLabel }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) })
-      ] })
-    ] }),
-    showSuggest && suggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { children: [
-          "\u{1F4C5} \u65E5\u5386\u5EFA\u8BAE\uFF08\u8FD1 ",
-          ctx?.window_days ?? 14,
-          " \u5929\uFF09"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setShowSuggest(false), children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("ul", { children: suggestions.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("li", { children: s }, i)) })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-legend", children: [
-      Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch", style: { ["--sw"]: m2.color } }),
-        m2.label
-      ] }, k2)),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: EVENT_COLOR } }),
-        "\u5E73\u53F0\u6D3B\u52A8"
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-filter", children: ["all", "content", "event"].map((f) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: `chip ${filter === f ? "active" : ""}`, onClick: () => setFilter(f), children: f === "all" ? "\u5168\u90E8" : f === "content" ? "\u5185\u5BB9" : "\u6D3B\u52A8" }, f)) })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid-head", children: WEEKDAYS.map((w2) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-wd", children: [
-      "\u5468",
-      w2
-    ] }, w2)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid", children: cells.map((d2, i) => {
-      const ds = ymd(d2);
-      const inMonth = d2.getMonth() === cursor.getMonth();
-      const bucket = byDate[ds] || { events: [], content: [] };
-      const dayItems = [...bucket.events, ...bucket.content];
-      const shown = dayItems.slice(0, MAX_VISIBLE);
-      const hidden = dayItems.length - shown.length;
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-        "div",
-        {
-          className: `cal-cell ${inMonth ? "" : "dim"} ${ds === todayStr ? "today" : ""}`,
-          onClick: () => dayItems.length ? setDayView(ds) : openNew(ds),
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-daynum", children: d2.getDate() }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-events", children: [
-              shown.map(renderChip),
-              hidden > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "cal-more", onClick: (e) => {
-                e.stopPropagation();
-                setDayView(ds);
-              }, children: [
-                "+",
-                hidden,
-                " \u66F4\u591A"
-              ] })
-            ] })
-          ]
-        },
-        i
-      );
-    }) }),
-    dayView && (() => {
-      const b2 = byDate[dayView] || { events: [], content: [] };
-      const list = [...b2.events, ...b2.content];
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: () => setDayView(null), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
-            dayView,
-            "\uFF08",
-            list.length,
-            " \u9879\uFF09"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setDayView(null), children: "\xD7" })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-dayview-list", children: list.map(renderChip) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: () => openNew(dayView), children: "+ \u65B0\u589E" }) })
-      ] }) });
-    })(),
-    form && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: close, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
-          editing ? "\u7F16\u8F91" : "\u65B0\u589E",
-          isEvent ? "\u5E73\u53F0\u6D3B\u52A8" : "\u6392\u671F"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: close, children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7C7B\u578B" }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 7 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${!isEvent ? "active" : ""}`,
-            onClick: () => setForm({ ...form, kind: "content" }),
-            children: "\u5185\u5BB9 / \u53D1\u5E03"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${isEvent ? "active" : ""}`,
-            onClick: () => setForm({ ...form, kind: "event", status: "idea" }),
-            children: "\u5E73\u53F0\u6D3B\u52A8"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6807\u9898 *" }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-        "input",
-        {
-          className: "field",
-          value: form.title,
-          autoFocus: true,
-          placeholder: isEvent ? "\u6D3B\u52A8/\u8282\u70B9\u540D\u79F0" : "\u8981\u53D1\u4EC0\u4E48\u5185\u5BB9",
-          onChange: (e) => setForm({ ...form, title: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 10 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: isEvent ? "\u5F00\u59CB\u65E5\u671F *" : "\u65E5\u671F *" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              type: "date",
-              value: form.date,
-              onChange: (e) => setForm({ ...form, date: e.target.value })
-            }
-          )
-        ] }),
-        isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7ED3\u675F\u65E5\u671F" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              type: "date",
-              value: form.end_date || "",
-              onChange: (e) => setForm({ ...form, end_date: e.target.value })
-            }
-          )
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { width: 120 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u65F6\u95F4" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              type: "time",
-              value: form.time,
-              onChange: (e) => setForm({ ...form, time: e.target.value })
-            }
-          )
-        ] })
-      ] }),
-      isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6D3B\u52A8\u7C7B\u578B" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: EVENT_TYPES.map((t) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.event_type === t ? "active" : ""}`,
-            onClick: () => setForm({ ...form, event_type: form.event_type === t ? "" : t }),
-            children: t
-          },
-          t
-        )) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5173\u8054\u5E73\u53F0\uFF08\u53EF\u9009\uFF09" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.platform === p ? "active" : ""}`,
-            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
-            children: p
-          },
-          p
-        )) })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5E73\u53F0" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.platform === p ? "active" : ""}`,
-            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
-            children: p
-          },
-          p
-        )) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", gap: 7 }, children: Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.status === k2 ? "active" : ""}`,
-            onClick: () => setForm({ ...form, status: k2 }),
-            children: m2.label
-          },
-          k2
-        )) })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5907\u6CE8" }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-        "textarea",
-        {
-          className: "field",
-          style: { minHeight: 60 },
-          value: form.note,
-          onChange: (e) => setForm({ ...form, note: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 18 }, children: [
-        editing ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "btn btn-sm btn-danger", onClick: remove, disabled: saving, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconTrash, { size: 13 }),
-          " \u5220\u9664"
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", {}),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: close, children: "\u53D6\u6D88" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: saving || !form.title.trim() || !form.date, children: saving ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58" })
-        ] })
-      ] })
-    ] }) })
-  ] });
-}
-
-// src/features/calendar.tsx
-var import_jsx_runtime9 = require("react/jsx-runtime");
-var view4 = "calendar";
-var order4 = 33;
-var labels4 = { zh: "\u5185\u5BB9\u65E5\u5386", en: "Calendar" };
-var Icon4 = IconCalendar;
-var Component4 = CalendarPage;
-var plugin4 = {
-  name: "easel-view-calendar",
-  inject: ["slots", "easelShell"],
-  apply(ctx) {
-    const { useShellProps, t } = ctx.easelShell;
-    ctx.slots.inject("main", () => ctx.slots.register({
-      name: "main",
-      key: pageKey(view4),
-      inject: () => ({})
-    }, function EaselPage() {
-      const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Component4, { ...props }) });
-    }));
-    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
-      name: "sidebar.panellist",
-      id: pageKey(view4),
-      order: order4,
-      locale: "easel.panel",
-      label: () => t(view4)
-    }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Icon4, { size });
-    }));
-  }
-};
-
-// src/features/skills.tsx
-var skills_exports = {};
-__export(skills_exports, {
-  Component: () => Component5,
-  Icon: () => Icon5,
-  labels: () => labels5,
-  order: () => order5,
-  plugin: () => plugin5,
-  view: () => view5
-});
-
-// src/components/SkillPage.tsx
-var import_react7 = require("react");
-
-// src/components/SkillDrawer.tsx
-var import_react6 = require("react");
 
 // ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
@@ -6103,6 +5606,756 @@ function renderMarkdown(md) {
   const raw = k.parse(md);
   return purify_default.sanitize(raw);
 }
+
+// src/components/IdeasPage.tsx
+var import_jsx_runtime6 = require("react/jsx-runtime");
+var COLUMNS = [
+  { key: "pending", label: "\u5F85\u505A", color: "var(--text-tertiary)" },
+  { key: "doing", label: "\u8FDB\u884C\u4E2D", color: "var(--layer-attribute)" },
+  { key: "project", label: "\u5DF2\u7ACB\u9879", color: "var(--accent, #7c5cff)" },
+  { key: "done", label: "\u5DF2\u5B8C\u6210", color: "var(--layer-publish)" }
+];
+var NEXT = { pending: "doing", doing: "done", done: "pending" };
+var EMPTY = { title: "", note: "", source: "", status: "pending" };
+function IdeasPage({ onUseTopic }) {
+  const [ideas, setIdeas] = (0, import_react4.useState)([]);
+  const [form, setForm] = (0, import_react4.useState)(null);
+  const [editId, setEditId] = (0, import_react4.useState)(null);
+  const [toast, setToast] = (0, import_react4.useState)("");
+  const [greenlight, setGreenlight] = (0, import_react4.useState)(null);
+  const [personas, setPersonas] = (0, import_react4.useState)([]);
+  const [personaPick, setPersonaPick] = (0, import_react4.useState)("");
+  const [busy, setBusy] = (0, import_react4.useState)(false);
+  const load = (0, import_react4.useCallback)(() => {
+    fetchIdeas().then(setIdeas).catch(() => {
+    });
+  }, []);
+  (0, import_react4.useEffect)(() => {
+    load();
+  }, [load]);
+  const showToast = (m2) => {
+    setToast(m2);
+    setTimeout(() => setToast(""), 2200);
+  };
+  const [bodyPreview, setBodyPreview] = (0, import_react4.useState)(null);
+  const openBody = async (it) => {
+    setBodyPreview({ idea: it, content: "", error: "" });
+    try {
+      const file = await fetchOutputContent(it.bodyPath);
+      const error = file.isBinary ? "\u8BE5\u6587\u4EF6\u4E0D\u662F\u6587\u672C" : "";
+      setBodyPreview({ idea: it, content: error === "" ? file.content : "", error });
+    } catch (e) {
+      setBodyPreview({ idea: it, content: "", error: e instanceof Error ? e.message : "\u6B63\u6587\u8BFB\u53D6\u5931\u8D25\uFF08\u6587\u4EF6\u53EF\u80FD\u5DF2\u5220\u9664\uFF09" });
+    }
+  };
+  const byStatus = (0, import_react4.useMemo)(() => {
+    const g = { pending: [], doing: [], project: [], done: [] };
+    for (const it of ideas) (g[it.status] || g.pending).push(it);
+    return g;
+  }, [ideas]);
+  const openNew = () => {
+    setEditId(null);
+    setForm({ ...EMPTY });
+  };
+  const openEdit = (it) => {
+    setEditId(it.id);
+    setForm({ title: it.title, note: it.note, source: it.source, status: it.status });
+  };
+  const save = async () => {
+    if (!form || !form.title.trim()) return;
+    if (editId) await updateIdea(editId, form);
+    else await createIdea(form);
+    setForm(null);
+    setEditId(null);
+    load();
+  };
+  const openGreenlight = async (it) => {
+    setGreenlight(it);
+    setPersonaPick("");
+    const status = await fetchStatus();
+    const list = status?.personas ?? [];
+    setPersonas(list);
+    if (list.length === 1) setPersonaPick(list[0].name);
+  };
+  const confirmGreenlight = async () => {
+    const it = greenlight;
+    if (!it || busy) return;
+    setBusy(true);
+    try {
+      const status = await fetchStatus();
+      const root = status?.projectRoot ?? "";
+      if (!root) throw new Error("\u62FF\u4E0D\u5230\u9879\u76EE\u6839");
+      const { safe } = await projectizeTopic({
+        ideaId: it.id,
+        title: it.title,
+        note: it.note,
+        source: it.source,
+        fallback: it.id,
+        deconstruct: it.deconstruct,
+        persona: personaPick
+      });
+      const ws = getWorkspaceService();
+      if (!ws) throw new Error("\u5DE5\u4F5C\u533A\u670D\u52A1\u4E0D\u53EF\u8FBE");
+      try {
+        await ws.create({ path: `${root.replace(/[\/]+$/, "")}/projects/${safe}/` });
+      } catch {
+      }
+      setGreenlight(null);
+      showToast("\u5DF2\u7ACB\u9879\uFF1A\u8D44\u6599\u5DF2\u88C5\u5165\u9879\u76EE\u5DE5\u4F5C\u533A");
+      load();
+    } catch (error) {
+      showToast(`\u7ACB\u9879\u5931\u8D25\uFF1A${error.message ?? error}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const advance = async (it) => {
+    await updateIdea(it.id, { ...it, status: NEXT[it.status] });
+    load();
+  };
+  const remove = async (it) => {
+    await deleteIdea(it.id);
+    load();
+  };
+  const schedule = async (it) => {
+    const d2 = /* @__PURE__ */ new Date();
+    await createSchedule({ title: it.title, date: d2.toISOString().slice(0, 10), platform: "", time: "", status: "idea", note: it.note });
+    showToast("\u5DF2\u52A0\u5165\u65E5\u5386\uFF08\u4ECA\u5929\uFF09");
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-scroll ideas-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-head", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h1", { className: "page-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconIdea, { size: 21 }),
+          " \u9009\u9898\u5E93"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "page-subtitle", children: "\u6512\u4F4F\u6BCF\u4E00\u4E2A\u7075\u611F\u2014\u2014\u4ECE\u70ED\u70B9\u6536\u85CF\u6216\u624B\u52A8\u65B0\u589E\uFF0C\u63A8\u8FDB\u5230\u300C\u505A\u5185\u5BB9\u300D\u518D\u8FDB\u65E5\u5386\u3002" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: openNew, children: "+ \u65B0\u5EFA\u9009\u9898" })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban", children: COLUMNS.map((col) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-dot", style: { background: col.color } }),
+        col.label,
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-count", children: byStatus[col.key].length })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-list", children: [
+        byStatus[col.key].length === 0 && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban-empty", children: "\u62D6\u70B9\u9009\u9898\u8FDB\u6765\u5427" }),
+        byStatus[col.key].map((it) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "card idea-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-card-actions", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act", title: "\u7F16\u8F91", onClick: () => openEdit(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconEdit, { size: 13 }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act danger", title: "\u5220\u9664", onClick: () => remove(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconTrash, { size: 13 }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-title", children: it.title }),
+          it.source && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "badge", style: { marginTop: 6 }, children: it.source }),
+          it.note && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-note", children: it.note }),
+          (it.bodyPath || it.url) && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-links", children: [
+            it.bodyPath && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "idea-link", onClick: () => openBody(it), children: "\u6B63\u6587" }),
+            it.url && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("a", { className: "idea-link", href: it.url, target: "_blank", rel: "noreferrer", children: "\u539F\u6587" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-foot", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => onUseTopic(it.title, it.projectDir, it.bodyPath), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChat, { size: 13 }),
+              " \u505A\u5185\u5BB9"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => schedule(it), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconCalendar, { size: 13 }),
+              " \u6392\u671F"
+            ] }),
+            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "idea-act", title: "\u786E\u8BA4\u7ACB\u9879\uFF1A\u5EFA\u540C\u540D\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599", onClick: () => openGreenlight(it), children: "\u{1F6A9} \u7ACB\u9879" }),
+            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act next", onClick: () => advance(it), title: "\u63A8\u8FDB\u72B6\u6001", children: [
+              COLUMNS.find((c) => c.key === NEXT[it.status])?.label,
+              " ",
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChevron, { size: 12 })
+            ] })
+          ] })
+        ] }, it.id))
+      ] })
+    ] }, col.key)) }),
+    form && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setForm(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { style: { margin: 0 }, children: editId ? "\u7F16\u8F91\u9009\u9898" : "\u65B0\u5EFA\u9009\u9898" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setForm(null), children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u9009\u9898 *" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "input",
+        {
+          className: "field",
+          value: form.title,
+          autoFocus: true,
+          placeholder: "\u60F3\u505A\u7684\u5185\u5BB9 / \u89D2\u5EA6",
+          onChange: (e) => setForm({ ...form, title: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u5907\u6CE8 / \u89D2\u5EA6" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "textarea",
+        {
+          className: "field",
+          style: { minHeight: 70 },
+          value: form.note,
+          onChange: (e) => setForm({ ...form, note: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u6765\u6E90" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "input",
+        {
+          className: "field",
+          value: form.source,
+          placeholder: "\u5982\uFF1A\u5FAE\u535A\u70ED\u641C / \u7075\u611F",
+          onChange: (e) => setForm({ ...form, source: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { style: { display: "flex", gap: 7 }, children: COLUMNS.map((c) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "button",
+        {
+          className: `chip ${form.status === c.key ? "active" : ""}`,
+          onClick: () => setForm({ ...form, status: c.key }),
+          children: c.label
+        },
+        c.key
+      )) }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setForm(null), children: "\u53D6\u6D88" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: !form.title.trim(), children: "\u4FDD\u5B58" })
+      ] })
+    ] }) }),
+    bodyPreview && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setBodyPreview(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 760, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { style: { margin: 0, fontSize: 15 }, children: bodyPreview.idea.title }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setBodyPreview(null), children: "\xD7" })
+      ] }),
+      bodyPreview.error !== "" ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { style: { color: "var(--red)", fontSize: 12.5, padding: "12px 0" }, children: bodyPreview.error }) : /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "div",
+        {
+          className: "idea-body-preview outputs-viewer-content",
+          dangerouslySetInnerHTML: { __html: renderMarkdown(bodyPreview.content) }
+        }
+      )
+    ] }) }),
+    greenlight && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setGreenlight(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h3", { style: { margin: 0 }, children: [
+          "\u7ACB\u9879\uFF1A",
+          greenlight.title.slice(0, 20),
+          greenlight.title.length > 20 ? "\u2026" : ""
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setGreenlight(null), children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("p", { style: { margin: "6px 0 12px", fontSize: 12.5, color: "var(--text-secondary)" }, children: [
+        "\u5C06\u5EFA\u540C\u540D\u9879\u76EE\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599",
+        greenlight.deconstruct ? "\uFF08\u62C6\u89E3\u62A5\u544A\u3001\u5B57\u5E55\u3001\u89C6\u9891\u4E0E\u5173\u952E\u5E27\uFF09" : "",
+        "\uFF0C \u8D26\u6237\u753B\u50CF\u6309\u4E0B\u9009\u62E9\u5E26\u5165\u5FEB\u7167\u3002\u4FA7\u680F\u51FA\u73B0\u540C\u540D\u5DE5\u4F5C\u533A\u5206\u7EC4\u3002"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u8D26\u6237\u753B\u50CF" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("select", { className: "field", value: personaPick, onChange: (e) => setPersonaPick(e.target.value), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("option", { value: "", children: "\u4E0D\u5E26\u5165" }),
+        personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("option", { value: p.name, children: [
+          p.name,
+          p.description ? ` \u2014 ${p.description}` : ""
+        ] }, p.name))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setGreenlight(null), children: "\u53D6\u6D88" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: confirmGreenlight, disabled: busy, children: "\u{1F6A9} \u786E\u8BA4\u7ACB\u9879" })
+      ] })
+    ] }) }),
+    toast && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "toast ok", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "toast-icon", children: "\u2713" }),
+      toast
+    ] })
+  ] });
+}
+
+// src/features/ideas.tsx
+var import_jsx_runtime7 = require("react/jsx-runtime");
+var view3 = "ideas";
+var order3 = 32;
+var labels3 = { zh: "\u9009\u9898\u5E93", en: "Ideas" };
+var Icon3 = IconIdea;
+var Component3 = IdeasPage;
+var plugin3 = {
+  name: "easel-view-ideas",
+  inject: ["slots", "easelShell"],
+  apply(ctx) {
+    const { useShellProps, t } = ctx.easelShell;
+    ctx.slots.inject("main", () => ctx.slots.register({
+      name: "main",
+      key: pageKey(view3),
+      inject: () => ({})
+    }, function EaselPage() {
+      const props = useShellProps();
+      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Component3, { ...props }) });
+    }));
+    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
+      name: "sidebar.panellist",
+      id: pageKey(view3),
+      order: order3,
+      locale: "easel.panel",
+      label: () => t(view3)
+    }, function EaselRailIcon({ size }) {
+      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Icon3, { size });
+    }));
+  }
+};
+
+// src/features/calendar.tsx
+var calendar_exports = {};
+__export(calendar_exports, {
+  Component: () => Component4,
+  Icon: () => Icon4,
+  labels: () => labels4,
+  order: () => order4,
+  plugin: () => plugin4,
+  view: () => view4
+});
+
+// src/components/CalendarPage.tsx
+var import_react5 = require("react");
+var import_jsx_runtime8 = require("react/jsx-runtime");
+var STATUS_META = {
+  idea: { label: "\u9009\u9898", color: "var(--text-tertiary)" },
+  draft: { label: "\u8349\u7A3F", color: "var(--layer-plan)" },
+  scheduled: { label: "\u5F85\u53D1", color: "var(--layer-attribute)" },
+  published: { label: "\u5DF2\u53D1", color: "var(--layer-publish)" }
+};
+var EVENT_COLOR = "var(--layer-discover)";
+var EVENT_TYPES = ["\u8282\u65E5", "\u7535\u5546", "\u5E73\u53F0\u6D3B\u52A8", "\u884C\u4E1A"];
+var SOURCE_LABEL = {
+  chat: "\u5BF9\u8BDD\u9875",
+  "publish-page": "\u53D1\u5E03\u9875",
+  manual: "\u624B\u52A8",
+  scheduler: "\u6392\u671F"
+};
+var PLATFORMS = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u5FAE\u4FE1\u89C6\u9891\u53F7", "\u5FEB\u624B", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
+var WEEKDAYS = ["\u4E00", "\u4E8C", "\u4E09", "\u56DB", "\u4E94", "\u516D", "\u65E5"];
+function ymd(d2) {
+  return `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, "0")}-${String(d2.getDate()).padStart(2, "0")}`;
+}
+var kindOf = (it) => it.kind === "event" ? "event" : "content";
+var MAX_VISIBLE = 3;
+var EMPTY2 = {
+  title: "",
+  date: "",
+  platform: "",
+  time: "",
+  status: "idea",
+  note: "",
+  kind: "content",
+  url: "",
+  source: "manual",
+  event_type: "",
+  end_date: ""
+};
+function CalendarPage() {
+  const today = (0, import_react5.useMemo)(() => /* @__PURE__ */ new Date(), []);
+  const [cursor, setCursor] = (0, import_react5.useState)(() => new Date(today.getFullYear(), today.getMonth(), 1));
+  const [items, setItems] = (0, import_react5.useState)([]);
+  const [editing, setEditing] = (0, import_react5.useState)(null);
+  const [form, setForm] = (0, import_react5.useState)(null);
+  const [saving, setSaving] = (0, import_react5.useState)(false);
+  const [filter, setFilter] = (0, import_react5.useState)("all");
+  const [ctx, setCtx] = (0, import_react5.useState)(null);
+  const [showSuggest, setShowSuggest] = (0, import_react5.useState)(true);
+  const [dayView, setDayView] = (0, import_react5.useState)(null);
+  const load = (0, import_react5.useCallback)(() => {
+    fetchSchedule().then(setItems).catch(() => {
+    });
+    fetchScheduleContext(14).then(setCtx).catch(() => {
+    });
+  }, []);
+  (0, import_react5.useEffect)(() => {
+    load();
+  }, [load]);
+  const visible = (0, import_react5.useMemo)(
+    () => filter === "all" ? items : items.filter((it) => kindOf(it) === filter),
+    [items, filter]
+  );
+  const byDate = (0, import_react5.useMemo)(() => {
+    const m2 = {};
+    for (const it of visible) {
+      const bucket = m2[it.date] ||= { events: [], content: [] };
+      (kindOf(it) === "event" ? bucket.events : bucket.content).push(it);
+    }
+    return m2;
+  }, [visible]);
+  const cells = (0, import_react5.useMemo)(() => {
+    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+    const startOffset = (first.getDay() + 6) % 7;
+    const start = new Date(first);
+    start.setDate(1 - startOffset);
+    return Array.from({ length: 42 }, (_2, i) => {
+      const d2 = new Date(start);
+      d2.setDate(start.getDate() + i);
+      return d2;
+    });
+  }, [cursor]);
+  const openNew = (date) => {
+    setDayView(null);
+    setEditing(null);
+    setForm({ ...EMPTY2, date, kind: filter === "event" ? "event" : "content" });
+  };
+  const openEdit = (it) => {
+    setDayView(null);
+    setEditing(it);
+    setForm({ ...EMPTY2, ...it });
+  };
+  const close = () => {
+    setForm(null);
+    setEditing(null);
+  };
+  const renderChip = (it) => {
+    if (kindOf(it) === "event") {
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+        "div",
+        {
+          className: "cal-event is-event",
+          title: it.event_type ? `${it.event_type}\xB7${it.title}` : it.title,
+          style: { ["--ev"]: EVENT_COLOR },
+          onClick: (e) => {
+            e.stopPropagation();
+            openEdit(it);
+          },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-title", children: it.title })
+          ]
+        },
+        it.id
+      );
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+      "div",
+      {
+        className: "cal-event",
+        title: it.title,
+        style: { ["--ev"]: STATUS_META[it.status]?.color || "var(--text-tertiary)" },
+        onClick: (e) => {
+          e.stopPropagation();
+          openEdit(it);
+        },
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-event-title", children: [
+            it.platform ? `[${it.platform}] ` : "",
+            it.title
+          ] }),
+          it.status === "published" && it.source && SOURCE_LABEL[it.source] && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: SOURCE_LABEL[it.source] })
+        ]
+      },
+      it.id
+    );
+  };
+  const save = async () => {
+    if (!form || !form.title.trim() || !form.date) return;
+    setSaving(true);
+    try {
+      if (editing) await updateSchedule(editing.id, form);
+      else await createSchedule(form);
+      close();
+      load();
+    } finally {
+      setSaving(false);
+    }
+  };
+  const remove = async () => {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      await deleteSchedule(editing.id);
+      close();
+      load();
+    } finally {
+      setSaving(false);
+    }
+  };
+  const monthLabel = `${cursor.getFullYear()} \u5E74 ${cursor.getMonth() + 1} \u6708`;
+  const shift = (n) => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + n, 1));
+  const todayStr = ymd(today);
+  const isEvent = form?.kind === "event";
+  const suggestions = ctx?.suggestions || [];
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-scroll calendar-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-head", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h1", { className: "page-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconCalendar, { size: 21 }),
+          " \u5185\u5BB9\u65E5\u5386"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("p", { className: "page-subtitle", children: "\u6BCF\u5929\u5404\u5E73\u53F0\u53D1\u4EC0\u4E48\u4E00\u76EE\u4E86\u7136\u2014\u2014\u53D1\u5E03\u81EA\u52A8\u843D\u5E93\uFF0C\u53EF\u8BB0\u5F55\u6392\u671F\u4E0E\u5E73\u53F0\u6D3B\u52A8\u3002" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-nav", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(-1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { style: { transform: "rotate(180deg)", display: "inline-flex" }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => setCursor(new Date(today.getFullYear(), today.getMonth(), 1)), children: "\u672C\u6708" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-month", children: monthLabel }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) })
+      ] })
+    ] }),
+    showSuggest && suggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { children: [
+          "\u{1F4C5} \u65E5\u5386\u5EFA\u8BAE\uFF08\u8FD1 ",
+          ctx?.window_days ?? 14,
+          " \u5929\uFF09"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setShowSuggest(false), children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("ul", { children: suggestions.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("li", { children: s }, i)) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-legend", children: [
+      Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch", style: { ["--sw"]: m2.color } }),
+        m2.label
+      ] }, k2)),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: EVENT_COLOR } }),
+        "\u5E73\u53F0\u6D3B\u52A8"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-filter", children: ["all", "content", "event"].map((f) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: `chip ${filter === f ? "active" : ""}`, onClick: () => setFilter(f), children: f === "all" ? "\u5168\u90E8" : f === "content" ? "\u5185\u5BB9" : "\u6D3B\u52A8" }, f)) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid-head", children: WEEKDAYS.map((w2) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-wd", children: [
+      "\u5468",
+      w2
+    ] }, w2)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid", children: cells.map((d2, i) => {
+      const ds = ymd(d2);
+      const inMonth = d2.getMonth() === cursor.getMonth();
+      const bucket = byDate[ds] || { events: [], content: [] };
+      const dayItems = [...bucket.events, ...bucket.content];
+      const shown = dayItems.slice(0, MAX_VISIBLE);
+      const hidden = dayItems.length - shown.length;
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+        "div",
+        {
+          className: `cal-cell ${inMonth ? "" : "dim"} ${ds === todayStr ? "today" : ""}`,
+          onClick: () => dayItems.length ? setDayView(ds) : openNew(ds),
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-daynum", children: d2.getDate() }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-events", children: [
+              shown.map(renderChip),
+              hidden > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "cal-more", onClick: (e) => {
+                e.stopPropagation();
+                setDayView(ds);
+              }, children: [
+                "+",
+                hidden,
+                " \u66F4\u591A"
+              ] })
+            ] })
+          ]
+        },
+        i
+      );
+    }) }),
+    dayView && (() => {
+      const b2 = byDate[dayView] || { events: [], content: [] };
+      const list = [...b2.events, ...b2.content];
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: () => setDayView(null), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
+            dayView,
+            "\uFF08",
+            list.length,
+            " \u9879\uFF09"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setDayView(null), children: "\xD7" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-dayview-list", children: list.map(renderChip) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: () => openNew(dayView), children: "+ \u65B0\u589E" }) })
+      ] }) });
+    })(),
+    form && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: close, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
+          editing ? "\u7F16\u8F91" : "\u65B0\u589E",
+          isEvent ? "\u5E73\u53F0\u6D3B\u52A8" : "\u6392\u671F"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: close, children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7C7B\u578B" }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 7 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${!isEvent ? "active" : ""}`,
+            onClick: () => setForm({ ...form, kind: "content" }),
+            children: "\u5185\u5BB9 / \u53D1\u5E03"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${isEvent ? "active" : ""}`,
+            onClick: () => setForm({ ...form, kind: "event", status: "idea" }),
+            children: "\u5E73\u53F0\u6D3B\u52A8"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6807\u9898 *" }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        "input",
+        {
+          className: "field",
+          value: form.title,
+          autoFocus: true,
+          placeholder: isEvent ? "\u6D3B\u52A8/\u8282\u70B9\u540D\u79F0" : "\u8981\u53D1\u4EC0\u4E48\u5185\u5BB9",
+          onChange: (e) => setForm({ ...form, title: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 10 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: isEvent ? "\u5F00\u59CB\u65E5\u671F *" : "\u65E5\u671F *" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              type: "date",
+              value: form.date,
+              onChange: (e) => setForm({ ...form, date: e.target.value })
+            }
+          )
+        ] }),
+        isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7ED3\u675F\u65E5\u671F" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              type: "date",
+              value: form.end_date || "",
+              onChange: (e) => setForm({ ...form, end_date: e.target.value })
+            }
+          )
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { width: 120 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u65F6\u95F4" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              type: "time",
+              value: form.time,
+              onChange: (e) => setForm({ ...form, time: e.target.value })
+            }
+          )
+        ] })
+      ] }),
+      isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6D3B\u52A8\u7C7B\u578B" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: EVENT_TYPES.map((t) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.event_type === t ? "active" : ""}`,
+            onClick: () => setForm({ ...form, event_type: form.event_type === t ? "" : t }),
+            children: t
+          },
+          t
+        )) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5173\u8054\u5E73\u53F0\uFF08\u53EF\u9009\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.platform === p ? "active" : ""}`,
+            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
+            children: p
+          },
+          p
+        )) })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5E73\u53F0" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.platform === p ? "active" : ""}`,
+            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
+            children: p
+          },
+          p
+        )) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", gap: 7 }, children: Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.status === k2 ? "active" : ""}`,
+            onClick: () => setForm({ ...form, status: k2 }),
+            children: m2.label
+          },
+          k2
+        )) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5907\u6CE8" }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        "textarea",
+        {
+          className: "field",
+          style: { minHeight: 60 },
+          value: form.note,
+          onChange: (e) => setForm({ ...form, note: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 18 }, children: [
+        editing ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "btn btn-sm btn-danger", onClick: remove, disabled: saving, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconTrash, { size: 13 }),
+          " \u5220\u9664"
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", {}),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: close, children: "\u53D6\u6D88" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: saving || !form.title.trim() || !form.date, children: saving ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58" })
+        ] })
+      ] })
+    ] }) })
+  ] });
+}
+
+// src/features/calendar.tsx
+var import_jsx_runtime9 = require("react/jsx-runtime");
+var view4 = "calendar";
+var order4 = 33;
+var labels4 = { zh: "\u5185\u5BB9\u65E5\u5386", en: "Calendar" };
+var Icon4 = IconCalendar;
+var Component4 = CalendarPage;
+var plugin4 = {
+  name: "easel-view-calendar",
+  inject: ["slots", "easelShell"],
+  apply(ctx) {
+    const { useShellProps, t } = ctx.easelShell;
+    ctx.slots.inject("main", () => ctx.slots.register({
+      name: "main",
+      key: pageKey(view4),
+      inject: () => ({})
+    }, function EaselPage() {
+      const props = useShellProps();
+      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Component4, { ...props }) });
+    }));
+    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
+      name: "sidebar.panellist",
+      id: pageKey(view4),
+      order: order4,
+      locale: "easel.panel",
+      label: () => t(view4)
+    }, function EaselRailIcon({ size }) {
+      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Icon4, { size });
+    }));
+  }
+};
+
+// src/features/skills.tsx
+var skills_exports = {};
+__export(skills_exports, {
+  Component: () => Component5,
+  Icon: () => Icon5,
+  labels: () => labels5,
+  order: () => order5,
+  plugin: () => plugin5,
+  view: () => view5
+});
+
+// src/components/SkillPage.tsx
+var import_react7 = require("react");
+
+// src/components/SkillDrawer.tsx
+var import_react6 = require("react");
 
 // src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
@@ -9458,6 +9711,7 @@ var EDITABLE_SELECTOR = [
 var CHAT_FLOW_SELECTOR = "[data-chat-flow]";
 var CHAT_NODE_SELECTOR = "[data-chat-node-key]";
 var PRESENTED_FILE_SELECTOR = "[data-presented-file]";
+var TREND_ROW_SELECTOR = "[data-easel-trend]";
 var FILE_LINK_SELECTOR = "button[title]";
 var MESSAGE_KINDS = /* @__PURE__ */ new Set(["user", "assistant-step"]);
 function dataOf(element, name) {
@@ -9488,6 +9742,26 @@ function fileLinkSurface(target) {
   }
   return null;
 }
+function trendPayloadOf(element) {
+  const raw = element?.dataset?.easelTrend;
+  if (typeof raw !== "string" || raw === "") return null;
+  try {
+    const data = JSON.parse(raw);
+    if (data === null || typeof data !== "object") return null;
+    const title = typeof data.title === "string" ? data.title.trim() : "";
+    if (title === "") return null;
+    return {
+      title,
+      url: typeof data.url === "string" ? data.url : "",
+      source: typeof data.source === "string" ? data.source : "",
+      platform: typeof data.platform === "string" ? data.platform : "",
+      ...typeof data.rank === "number" ? { rank: data.rank } : {},
+      ...typeof data.hot === "string" && data.hot !== "" ? { hot: data.hot } : {}
+    };
+  } catch {
+    return null;
+  }
+}
 function resolveSurface(target, selection) {
   if (target == null || typeof target.closest !== "function") return null;
   const row = target.closest(FILE_ROW_SELECTOR);
@@ -9508,6 +9782,11 @@ function resolveSurface(target, selection) {
   }
   const link = fileLinkSurface(target);
   if (link !== null) return link;
+  const trendRow = target.closest(TREND_ROW_SELECTOR);
+  if (trendRow != null) {
+    const trend = trendPayloadOf(trendRow);
+    if (trend !== null) return { kind: "trend", element: trendRow, trend };
+  }
   const editable = target.closest(EDITABLE_SELECTOR);
   if (editable != null) return { kind: "editable", element: editable };
   const chat = target.closest(CHAT_FLOW_SELECTOR);
@@ -9570,6 +9849,7 @@ var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
 var SEPARATOR_CLASS = "easel-ctx-menu__separator";
 var HINT_CLASS = "easel-ctx-menu__hint";
+var TOAST_CLASS = "easel-ctx-toast";
 var CSS = `
 .${MENU_CLASS} {
   position: fixed;
@@ -9628,6 +9908,25 @@ var CSS = `
   margin: 4px 6px;
   background: var(--dsw-alias-border-l1, rgba(15, 23, 42, 0.08));
 }
+.${TOAST_CLASS} {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 2147483000;
+  max-width: min(70vw, 460px);
+  padding: 9px 16px;
+  border-radius: var(--dsw-radius-md, 8px);
+  background: var(--dsw-menu-surface-fill, var(--dsw-alias-bg-elevated, #ffffff));
+  box-shadow: var(--dsw-elevation-prominent, 0 12px 32px rgba(15, 23, 42, 0.2));
+  color: var(--dsw-alias-label-primary, #1f2329);
+  font: var(--dsw-text-body-font, 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif);
+  text-align: center;
+  pointer-events: none;
+}
+.${TOAST_CLASS}--ok { color: var(--dsh-success-text, #0f9d58); }
+.${TOAST_CLASS}--warn { color: var(--dsh-warning-text, #b45309); }
+.${TOAST_CLASS}--error { color: var(--dsh-error-text, #dc2626); }
 `;
 var SEPARATOR = Object.freeze({ separator: true });
 var plugin12 = {
@@ -9704,6 +10003,7 @@ function installListener(ctx) {
 }
 function itemsFor(ctx, surface) {
   if (surface.kind === "file") return fileItems(ctx, surface);
+  if (surface.kind === "trend") return trendItems(surface.trend);
   if (surface.kind === "editable") return editableItems(surface.element);
   return [
     menuRow("\u590D\u5236", () => copyOrThrow(surface.text)),
@@ -9712,6 +10012,76 @@ function itemsFor(ctx, surface) {
     menuRow("\u6DFB\u52A0\u5230\u5F53\u524D\u4EFB\u52A1", () => addToTask(ctx, surface.text), { disabled: currentInput(ctx) === void 0 }),
     menuRow("\u5728\u8F85\u52A9\u5BF9\u8BDD\u4E2D\u63D0\u95EE", () => askInAuxiliaryConversation(ctx, surface.text), { disabled: currentSessionId(ctx) === void 0 })
   ];
+}
+function trendItems(trend) {
+  const { title, url, source } = trend;
+  return [
+    menuRow("\u6293\u53D6\u6B63\u6587\u5E76\u5165\u5E93", () => captureTrend(trend), {
+      disabled: url === "",
+      hint: url === "" ? "\u65E0\u539F\u6587\u94FE\u63A5" : void 0
+    }),
+    menuRow("\u4EC5\u6536\u85CF\u6807\u9898\u5230\u9009\u9898\u5E93", () => saveTrendTitle(title, source)),
+    SEPARATOR,
+    menuRow("\u590D\u5236\u6807\u9898", () => copyOrThrow(title)),
+    menuRow("\u590D\u5236\u539F\u6587\u94FE\u63A5", () => copyOrThrow(url), { disabled: url === "" }),
+    menuRow("\u6253\u5F00\u539F\u6587", () => openTrendUrl(url), { disabled: url === "" })
+  ];
+}
+async function captureTrend(trend) {
+  trendToast("\u6B63\u5728\u6293\u53D6\u6B63\u6587\u2026", "info");
+  try {
+    const result = await captureTrendArticle({
+      title: trend.title,
+      url: trend.url,
+      source: trend.source,
+      platform: trend.platform,
+      rank: trend.rank,
+      hot: trend.hot
+    });
+    if (typeof result.warning === "string" && result.warning !== "") {
+      trendToast(`\u5DF2\u5165\u5E93 \xB7 ${result.warning}`, "warn");
+    } else {
+      trendToast(result.reused === true ? "\u6B63\u6587\u5DF2\u66F4\u65B0" : "\u5DF2\u5B58\u5165\u5185\u5BB9\u5E93\u4E0E\u9009\u9898\u5E93", "ok");
+    }
+    notifyTrendSaved(trend.title);
+  } catch (error) {
+    trendToast(`\u6293\u53D6\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
+  }
+}
+function saveTrendTitle(title, source) {
+  createIdea({ title, source }).then(() => {
+    trendToast("\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93", "ok");
+    notifyTrendSaved(title);
+  }).catch((error) => {
+    trendToast(`\u6536\u85CF\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
+  });
+}
+function notifyTrendSaved(title) {
+  window.dispatchEvent(new CustomEvent("easel:trend-saved", { detail: { title } }));
+}
+function openTrendUrl(url) {
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.target = "_blank";
+  anchor.rel = "noreferrer";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+}
+var trendToastTimer = null;
+function trendToast(message, kind) {
+  const previous = document.querySelector(`.${TOAST_CLASS}`);
+  if (previous !== null) previous.remove();
+  if (trendToastTimer !== null) clearTimeout(trendToastTimer);
+  const toast = document.createElement("div");
+  toast.className = `${TOAST_CLASS} ${TOAST_CLASS}--${kind}`;
+  toast.setAttribute("role", "status");
+  toast.textContent = message;
+  document.body.append(toast);
+  trendToastTimer = setTimeout(() => toast.remove(), 2600);
+}
+function messageOf(error) {
+  return error instanceof Error ? error.message : String(error);
 }
 function fileItems(ctx, surface) {
   const { path, root, entry, preview } = surface;
