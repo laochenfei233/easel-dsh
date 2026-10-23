@@ -2,14 +2,16 @@
  * EASEL-DIVERGENCE(easel-context-menu): the app's right-click surfaces.
  *
  * One document-level capture listener replaces the WebView's native menu on
- * three surfaces the workbench uses constantly — selected conversation text,
- * file-tree rows, and editable fields — and leaves every other surface alone.
- * The menu is plain DOM (no React tree, no portal component): it must open from
- * a capture-phase gesture and act on DOM that may re-render underneath it.
+ * four surfaces the workbench uses constantly — selected conversation text,
+ * file-tree rows, editable fields, and hotspot-trend rows — and leaves every
+ * other surface alone. The menu is plain DOM (no React tree, no portal
+ * component): it must open from a capture-phase gesture and act on DOM that
+ * may re-render underneath it.
  *
  * The auxiliary conversation is dsh's own new-Session path with the selected
  * text as its draft, so the Conversation UI, input, and history stay dsh's.
  */
+import { captureTrendArticle, createIdea } from '../lib/api'
 import {
   absolutePathFor, draftBlock, fileNameOf, isAbsolutePath, quoteBlock, relativePath, resolveSurface,
 } from '../lib/context-menu-model.js'
@@ -19,6 +21,7 @@ const MENU_CLASS = 'easel-ctx-menu'
 const ITEM_CLASS = 'easel-ctx-menu__item'
 const SEPARATOR_CLASS = 'easel-ctx-menu__separator'
 const HINT_CLASS = 'easel-ctx-menu__hint'
+const TOAST_CLASS = 'easel-ctx-toast'
 
 const CSS = `
 .${MENU_CLASS} {
@@ -78,6 +81,25 @@ const CSS = `
   margin: 4px 6px;
   background: var(--dsw-alias-border-l1, rgba(15, 23, 42, 0.08));
 }
+.${TOAST_CLASS} {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 2147483000;
+  max-width: min(70vw, 460px);
+  padding: 9px 16px;
+  border-radius: var(--dsw-radius-md, 8px);
+  background: var(--dsw-menu-surface-fill, var(--dsw-alias-bg-elevated, #ffffff));
+  box-shadow: var(--dsw-elevation-prominent, 0 12px 32px rgba(15, 23, 42, 0.2));
+  color: var(--dsw-alias-label-primary, #1f2329);
+  font: var(--dsw-text-body-font, 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif);
+  text-align: center;
+  pointer-events: none;
+}
+.${TOAST_CLASS}--ok { color: var(--dsh-success-text, #0f9d58); }
+.${TOAST_CLASS}--warn { color: var(--dsh-warning-text, #b45309); }
+.${TOAST_CLASS}--error { color: var(--dsh-error-text, #dc2626); }
 `
 
 /** One menu row; separators carry no label. */
@@ -169,6 +191,7 @@ function installListener(ctx) {
  */
 function itemsFor(ctx, surface) {
   if (surface.kind === 'file') return fileItems(ctx, surface)
+  if (surface.kind === 'trend') return trendItems(surface.trend)
   if (surface.kind === 'editable') return editableItems(surface.element)
   return [
     menuRow('复制', () => copyOrThrow(surface.text)),
@@ -177,6 +200,88 @@ function itemsFor(ctx, surface) {
     menuRow('添加到当前任务', () => addToTask(ctx, surface.text), { disabled: currentInput(ctx) === undefined }),
     menuRow('在辅助对话中提问', () => askInAuxiliaryConversation(ctx, surface.text), { disabled: currentSessionId(ctx) === undefined }),
   ]
+}
+
+// ---- 热点行（spec easel-hotspot-radar D6）：抓正文入库是显式主操作，书签按钮保持轻量 ----
+
+/**
+ * Trend-row menu rows; every action is HTTP/plain-DOM so the menu does not
+ * need the React tree.
+ * @param {{title: string, url: string, source: string}} trend - the row payload.
+ * @returns the menu rows.
+ */
+function trendItems(trend) {
+  const { title, url, source } = trend
+  return [
+    menuRow('抓取正文并入库', () => captureTrend(title, url, source), {
+      disabled: url === '', hint: url === '' ? '无原文链接' : undefined,
+    }),
+    menuRow('仅收藏标题到选题库', () => saveTrendTitle(title, source)),
+    SEPARATOR,
+    menuRow('复制标题', () => copyOrThrow(title)),
+    menuRow('复制原文链接', () => copyOrThrow(url), { disabled: url === '' }),
+    menuRow('打开原文', () => openTrendUrl(url), { disabled: url === '' }),
+  ]
+}
+
+/** Fetch the article body into the content library and upsert the idea. */
+async function captureTrend(title, url, source) {
+  trendToast('正在抓取正文…', 'info')
+  try {
+    const result = await captureTrendArticle({ title, url, source })
+    if (typeof result.warning === 'string' && result.warning !== '') {
+      trendToast(`已入库 · ${result.warning}`, 'warn')
+    } else {
+      trendToast(result.reused === true ? '正文已更新' : '已存入内容库与选题库', 'ok')
+    }
+    notifyTrendSaved(title)
+  } catch (error) {
+    trendToast(`抓取失败：${messageOf(error)}`, 'error')
+  }
+}
+
+/** Save the title only (no network fetch), matching the left bookmark button. */
+function saveTrendTitle(title, source) {
+  createIdea({ title, source })
+    .then(() => {
+      trendToast('已收藏到选题库', 'ok')
+      notifyTrendSaved(title)
+    })
+    .catch((error) => { trendToast(`收藏失败：${messageOf(error)}`, 'error') })
+}
+
+/** The trend page marks its bookmark state from this event. */
+function notifyTrendSaved(title) {
+  window.dispatchEvent(new CustomEvent('easel:trend-saved', { detail: { title } }))
+}
+
+/** Open an external link the same way the trend page's title anchor does. */
+function openTrendUrl(url) {
+  const anchor = document.createElement('a')
+  anchor.href = url
+  anchor.target = '_blank'
+  anchor.rel = 'noreferrer'
+  document.body.append(anchor)
+  anchor.click()
+  anchor.remove()
+}
+
+/** One transient status line; a failed capture on a ported page has no composer to notify. */
+let trendToastTimer = null
+function trendToast(message, kind) {
+  const previous = document.querySelector(`.${TOAST_CLASS}`)
+  if (previous !== null) previous.remove()
+  if (trendToastTimer !== null) clearTimeout(trendToastTimer)
+  const toast = document.createElement('div')
+  toast.className = `${TOAST_CLASS} ${TOAST_CLASS}--${kind}`
+  toast.setAttribute('role', 'status')
+  toast.textContent = message
+  document.body.append(toast)
+  trendToastTimer = setTimeout(() => toast.remove(), 2600)
+}
+
+function messageOf(error) {
+  return error instanceof Error ? error.message : String(error)
 }
 
 /**

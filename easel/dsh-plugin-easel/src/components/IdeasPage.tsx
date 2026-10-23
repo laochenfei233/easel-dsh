@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { fetchIdeas, createIdea, updateIdea, deleteIdea, createSchedule, fetchStatus, projectizeTopic } from '../lib/api';
+import { fetchIdeas, createIdea, updateIdea, deleteIdea, createSchedule, fetchStatus, projectizeTopic, fetchOutputContent } from '../lib/api';
 import { getWorkspaceService } from '../lib/task';
 import type { Idea, IdeaInput } from '../lib/api';
+import { renderMarkdown } from '../lib/sanitize';
 import { IconIdea, IconEdit, IconTrash, IconChat, IconCalendar, IconChevron } from './icons';
 
 interface IdeasPageProps {
-  onUseTopic: (title: string, projectDir?: string) => void;
+  onUseTopic: (title: string, projectDir?: string, bodyPath?: string) => void;
 }
 
 const COLUMNS: { key: string; label: string; color: string }[] = [
@@ -33,6 +34,18 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
   useEffect(() => { load(); }, [load]);
 
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2200); };
+  // easel-hotspot-radar D6: 正文只存内容库一份，卡片「正文」按 bodyPath 现读现渲染。
+  const [bodyPreview, setBodyPreview] = useState<null | { idea: Idea; content: string; error: string }>(null);
+  const openBody = async (it: Idea) => {
+    setBodyPreview({ idea: it, content: '', error: '' });
+    try {
+      const file = await fetchOutputContent(it.bodyPath!);
+      const error = file.isBinary ? '该文件不是文本' : '';
+      setBodyPreview({ idea: it, content: error === '' ? file.content : '', error });
+    } catch (e) {
+      setBodyPreview({ idea: it, content: '', error: e instanceof Error ? e.message : '正文读取失败（文件可能已删除）' });
+    }
+  };
   const byStatus = useMemo(() => {
     const g: Record<string, Idea[]> = { pending: [], doing: [], project: [], done: [] };
     for (const it of ideas) (g[it.status] || g.pending).push(it);
@@ -122,8 +135,14 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
                   <div className="idea-title">{it.title}</div>
                   {it.source && <span className="badge" style={{ marginTop: 6 }}>{it.source}</span>}
                   {it.note && <div className="idea-note">{it.note}</div>}
+                  {(it.bodyPath || it.url) && (
+                    <div className="idea-links">
+                      {it.bodyPath && <button className="idea-link" onClick={() => openBody(it)}>正文</button>}
+                      {it.url && <a className="idea-link" href={it.url} target="_blank" rel="noreferrer">原文</a>}
+                    </div>
+                  )}
                   <div className="idea-foot">
-                    <button className="idea-act" onClick={() => onUseTopic(it.title, it.projectDir)}><IconChat size={13} /> 做内容</button>
+                    <button className="idea-act" onClick={() => onUseTopic(it.title, it.projectDir, it.bodyPath)}><IconChat size={13} /> 做内容</button>
                     <button className="idea-act" onClick={() => schedule(it)}><IconCalendar size={13} /> 排期</button>
                     {it.status !== 'project' && (
                       <button className="idea-act" title="确认立项：建同名工作区并装配资料" onClick={() => openGreenlight(it)}>🚩 立项</button>
@@ -168,6 +187,23 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
               <button className="btn btn-sm" onClick={() => setForm(null)}>取消</button>
               <button className="btn btn-sm btn-primary" onClick={save} disabled={!form.title.trim()}>保存</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {bodyPreview && (
+        <div className="overlay" onClick={() => setBodyPreview(null)}>
+          <div className="modal" style={{ width: 760, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <h3 style={{ margin: 0, fontSize: 15 }}>{bodyPreview.idea.title}</h3>
+              <button className="icon-btn" onClick={() => setBodyPreview(null)}>×</button>
+            </div>
+            {bodyPreview.error !== ''
+              ? <div style={{ color: 'var(--red)', fontSize: 12.5, padding: '12px 0' }}>{bodyPreview.error}</div>
+              : (
+                <div className="idea-body-preview outputs-viewer-content"
+                  dangerouslySetInnerHTML={{ __html: renderMarkdown(bodyPreview.content) }} />
+              )}
           </div>
         </div>
       )}

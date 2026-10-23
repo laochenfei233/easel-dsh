@@ -127,10 +127,66 @@ export function deletePersona(name: string): Promise<{ ok: boolean; deleted: str
 }
 
 // ---- 热点雷达 ----
-export interface TrendItem { title: string; hot: string; url: string; }
-export interface TrendGroup { platform: string; label: string; items: TrendItem[]; ok?: boolean; }
-export function fetchTrends(platforms: string, limit = 12): Promise<{ trends: TrendGroup[]; updated: number }> {
-  return request(`/api/trends?platforms=${encodeURIComponent(platforms)}&limit=${limit}`);
+export interface TrendItem {
+  title: string; hot: string; url: string;
+  /** 真实榜位（1 起），不随排序变化。 */
+  rank?: number;
+  /** 相对上一份快照的名次变化：正=上升，负=下降；新上榜时缺省。 */
+  delta?: number;
+  /** 上一份新近快照里没有（「新上榜」徽标）。 */
+  isNew?: boolean;
+  /** 首次出现至今分钟数。 */
+  ageMin?: number;
+  /** 命中的关注词。 */
+  watch?: string[];
+}
+export interface TrendGroup {
+  platform: string; label: string; items: TrendItem[]; ok?: boolean;
+  /** 自定义源的类型标签。 */
+  category?: string;
+  /** 该源数据时间（秒）。 */
+  at?: number;
+  /** 内容来自内存/落盘快照，不是本轮抓的。 */
+  stale?: boolean;
+}
+/** 我关注/聚合卡里的条目：源内条目信息 + 来源平台。 */
+export interface TrendRef extends TrendItem { platform: string; label: string; }
+export interface WatchGroup { keyword: string; items: TrendRef[]; }
+export interface TrendCluster {
+  id: string; title: string;
+  /** 参与聚类的平台键与展示名（去重，与 items 对应）。 */
+  platforms: string[]; labels: string[];
+  bestRank: number; firstSeen: number; isNew: boolean;
+  items: TrendRef[];
+}
+export interface TrendsResponse { trends: TrendGroup[]; updated: number; watch: WatchGroup[]; clusters?: TrendCluster[]; }
+export function fetchTrends(platforms: string, limit = 12, options: { view?: 'list' | 'cluster'; force?: boolean } = {}): Promise<TrendsResponse> {
+  const params = new URLSearchParams({ platforms, limit: String(limit) });
+  if (options.view) params.set('view', options.view);
+  if (options.force) params.set('force', '1');
+  return request(`/api/trends?${params}`);
+}
+
+/** 右键抓取正文（spec easel-hotspot-radar D6）：正文进内容库，选题进选题库。 */
+export interface TrendCaptureInput {
+  title: string; source: string;
+  url?: string; platform?: string; rank?: number; hot?: string;
+}
+export interface TrendCaptureResult {
+  ok: boolean;
+  idea: Idea;
+  /** outputs 相对路径；正文不可得时缺省。 */
+  bodyPath?: string;
+  chars?: number;
+  reused?: boolean;
+  warning?: string;
+}
+export function captureTrendArticle(input: TrendCaptureInput): Promise<TrendCaptureResult> {
+  return request('/api/radar/article', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
 }
 
 // ---- 内容排期 ----
@@ -178,6 +234,10 @@ export interface Idea {
   deconstruct?: string;
   /** 立项后的项目目录（项目根相对）；「做内容」凭它注入产物落点。 */
   projectDir?: string;
+  /** 原文链接（右键抓取正文时由宿主写入）。 */
+  url?: string;
+  /** 正文在内容库的相对路径（不含 outputs/，宿主写入）；「正文」预览凭它读文件。 */
+  bodyPath?: string;
 }
 export type IdeaInput = { title: string; note?: string; source?: string; status?: string };
 export function fetchIdeas(): Promise<Idea[]> { return request('/api/ideas'); }
@@ -382,6 +442,8 @@ export interface RadarConfig {
   cdpEndpoint: string;
   proxyEnv: string;
   sources: RadarSource[];
+  /** 关注词（分隔输入规范化后的列表，≤20 个）。 */
+  keywords: string[];
 }
 
 export function fetchRadarConfig(): Promise<RadarConfig> {
