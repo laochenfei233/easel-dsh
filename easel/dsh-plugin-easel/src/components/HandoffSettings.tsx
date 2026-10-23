@@ -18,6 +18,7 @@ import {
 /** Bilingual copy for the settings item. */
 export const COPY = {
   en: {
+    nav: 'LAN handoff',
     title: 'LAN project handoff',
     description: 'Send a project and its agent sessions to another device on this network, or receive one.',
     unavailable: 'LAN handoff is not enabled in this profile.',
@@ -41,6 +42,7 @@ export const COPY = {
     refresh: 'Refresh',
   },
   zh: {
+    nav: '局域网交接',
     title: '局域网项目交接',
     description: '把项目连同 agent 会话发到本网络的另一台设备，或从另一台设备接收。',
     unavailable: '当前 profile 未启用局域网交接。',
@@ -72,9 +74,6 @@ interface HandoffSettingsProps {
 }
 
 const card = {
-  border: '1px solid var(--dsh-border, rgba(0,0,0,0.12))',
-  borderRadius: 12,
-  padding: '14px 16px',
   display: 'flex',
   flexDirection: 'column' as const,
   gap: 10,

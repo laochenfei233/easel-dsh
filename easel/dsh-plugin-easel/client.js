@@ -10175,6 +10175,7 @@ function sendHandoff(peerId, workspacePath) {
 var import_jsx_runtime26 = require("react/jsx-runtime");
 var COPY = {
   en: {
+    nav: "LAN handoff",
     title: "LAN project handoff",
     description: "Send a project and its agent sessions to another device on this network, or receive one.",
     unavailable: "LAN handoff is not enabled in this profile.",
@@ -10198,6 +10199,7 @@ var COPY = {
     refresh: "Refresh"
   },
   zh: {
+    nav: "\u5C40\u57DF\u7F51\u4EA4\u63A5",
     title: "\u5C40\u57DF\u7F51\u9879\u76EE\u4EA4\u63A5",
     description: "\u628A\u9879\u76EE\u8FDE\u540C agent \u4F1A\u8BDD\u53D1\u5230\u672C\u7F51\u7EDC\u7684\u53E6\u4E00\u53F0\u8BBE\u5907\uFF0C\u6216\u4ECE\u53E6\u4E00\u53F0\u8BBE\u5907\u63A5\u6536\u3002",
     unavailable: "\u5F53\u524D profile \u672A\u542F\u7528\u5C40\u57DF\u7F51\u4EA4\u63A5\u3002",
@@ -10222,9 +10224,6 @@ var COPY = {
   }
 };
 var card = {
-  border: "1px solid var(--dsh-border, rgba(0,0,0,0.12))",
-  borderRadius: 12,
-  padding: "14px 16px",
   display: "flex",
   flexDirection: "column",
   gap: 10,
@@ -10432,10 +10431,12 @@ var plugin13 = {
   apply(ctx) {
     ctx.effect(() => ctx.locale.register(NS, COPY), "easel: handoff dictionaries");
     const t = ctx.locale.bind(NS);
-    ctx.slots.inject("settings.general.item", () => ctx.slots.register({
-      name: "settings.general.item",
+    ctx.slots.inject("settings.section", () => ctx.slots.register({
+      name: "settings.section",
       id: "easel-handoff",
-      order: 95,
+      order: 60,
+      locale: NS,
+      label: () => t("nav"),
       inject: () => ({ t })
     }, HandoffSettings));
   }
