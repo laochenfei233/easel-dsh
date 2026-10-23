@@ -99,7 +99,7 @@ jobs:
         run: echo "VERSION=$(node -p "require('./apps/desktop-tauri/src-tauri/tauri.conf.json').version")" >> "$GITHUB_ENV"
       - name: Retain the installer
         if: success()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v6
         with:
           name: easel-dsh-mac-arm64-${{ env.VERSION }}-${{ github.run_id }}
           include-hidden-files: true
@@ -108,7 +108,7 @@ jobs:
           retention-days: 14
       - name: Retain build logs
         if: always()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v6
         with:
           name: easel-dsh-mac-arm64-logs-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
@@ -190,7 +190,7 @@ jobs:
         run: echo "VERSION=$(node -p "require('./apps/desktop-tauri/src-tauri/tauri.conf.json').version")" >> "$GITHUB_ENV"
       - name: Retain the installer
         if: success()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v6
         with:
           name: easel-dsh-mac-x64-${{ env.VERSION }}-${{ github.run_id }}
           include-hidden-files: true
@@ -199,7 +199,7 @@ jobs:
           retention-days: 14
       - name: Retain build logs
         if: always()
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v6
         with:
           name: easel-dsh-mac-x64-logs-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
