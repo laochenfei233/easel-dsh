@@ -1,16 +1,56 @@
 ---
 feature: easel-hotspot-radar
-status: designed
+status: delivered
 updated: 2026-10-23
 branch: feat/easel-hotspot-radar
-commits: pending
+commits: 5d6def5656..1a23740663
 ---
 
 # 热点雷达 v2：从「看榜单」到「看信号」，右键留住正文
 
 ## Report
 
-（设计阶段，待实现后回填）
+**What was built** — 热点雷达从「此刻榜单」升级为「信号面板」，并打通「正文入库」一环。
+
+- **榜单轨迹**（D1/D2）：新增 `outputs/_radar_history.json`；每次成功抓取合并出真实
+  榜位 `rank`、升跌 `↑N/↓N`、`新`、`首现 Xh`；`/api/trends` 新增 `view`/`force`，
+  失败链 内存缓存 → 落盘 ≤24h 快照（标 `离线 · 上次 HH:MM`）→ 空，重启/上游全挂不白屏。
+  上一份快照超过 30 分钟即重建基线，避免隔夜重启整屏误标「新」。
+- **跨平台聚合**（D3）：`view=cluster` 用 bigram 相似度（≥0.6 且共享≥2、短标题全等、
+  归一化 URL 全等）把同一事件合成卡；卡体行携带平台与名次，可单独右键。
+- **关注词**（D4）：`_radar_config.json` 新增 `keywords`；命中条目在「我的关注」
+  置顶，按词分组（每组 10 条，页面展示 5 词 × 3 条）。
+- **右键抓正文**（D6）：趋势行右键 → `抓取正文并入库`：走雷达代理抓原文（3 跳内每跳
+  重过公网安全门，私网/localhost 400、15s/5MB），正则提取正文写
+  `outputs/热点正文/<slug>-<hash8>.md`，选题按 URL 幂等 upsert（用户改过的
+  标题/备注/状态不覆盖、同 URL 换标题复用既有文件）；登录墙/退化页给 `warning` 不写
+  伪正文。选题卡「正文」只读预览 +「原文」外链，「做内容」prompt 带正文绝对路径，
+  agent 先读正文再动笔。`_ideas.json` 全部写方收敛到 `mutateIdeas` 串行队列。
+- 页面提供 `分平台|聚合`、`榜序|升温`（纯前端重排）、离线提示、两套主题样式；
+  插件 bump 0.2.17。
+
+**Verification**
+- `easel/dsh-plugin-easel` `node --test`：129/129 PASS（基线 92；新增 37 项：轨迹/裁剪/
+  离线/聚类/关注词 30 项、正文提取/URL 安全/文件名幂等/捕获全分支 ~17 项、右键面 3 项、
+  路由级关注词/不安全 URL 拒绝/并发写不丢选题 4 项，含真机抓取后的回归用例）。
+- `node build.mjs` 成功；client.js 指纹核对（`data-easel-trend`、`captureTrendArticle`、
+  `easel:trend-saved`、菜单文案的转义序列）。
+- 严格 tsc 抽查：本次触达文件无新增类型错误（HEAD 既有 `PersonaFile` 引用缺失
+  api.ts:113、shell.tsx:97 宽松赋值为既有；插件本无 typecheck 门，esbuild 编译为正式门）。
+- 浏览器实机冒烟（light/dark 溢出、右键真链路、`做内容` prompt 实发）待打包后由用户
+  验收——S4 对应项保留未勾。
+
+**Journey log**
+- `isNew/delta` 必须以「上一份快照够新」为前提：首轮与隔夜重启都是基线重建，否则整屏
+  误标「新」。纯函数先按「一律可比」写、测试按 spec 把语义抓回来。
+- 独立评审抓到 clusterTrends 只在簇级带平台标签、item 级缺失：前端 `TrendRef` 类型与
+  运行时输出脱节。教训：被消费方依赖的类型要由产出方在函数内保证，测试断 per-item
+  字段，不能只断簇级。
+- 根 `.gitignore` 的 `lib/`（packages 构建产物）会吞插件源码 `lib/` 新文件——沿用惯例
+  `git add -f`，勿用目录整加。
+- 插件无 typecheck 门，esbuild 只剥类型不查类型：本轮靠 ad-hoc strict tsc 抓到布尔算术
+  与 props 解构名错位两处错；建议给插件补一份 leaf tsconfig。
+- `node --test 2>&1 | tail` 会吞退出码，曾导致带红提交；固定 `> log 2>&1; code=$?` 再决策。
 
 ## [S1] Problem
 
@@ -318,19 +358,19 @@ updated: number                                        // 各源 at 的最大值
 
 ## Tasks
 
-- [ ] T1: 轨迹核心纯函数（normalize / merge / prune / stale-resolve）+ 落盘读写（临时目录、损坏文件）+ 单测 (depends: none)
-- [ ] T2: 轨迹落盘读写接入 `/api/trends`（抓全再截断、失败链、`at`/`stale`/`rank`/`delta`/`isNew`/`ageMin`、`force`） (depends: T1)
-- [ ] T3: `keywords` 配置读写/校验 + 关注匹配 `watch` 响应 + 单测 (depends: T1)
-- [ ] T4: 跨平台聚类纯函数 + `view=cluster` 响应 + 单测 (depends: T1)
-- [ ] T5: `api.ts` 类型与 `fetchTrends` 参数扩展（老调用零改动） (depends: T2, T3, T4)
-- [ ] T6: TrendsPage 控制区/徽标/真实名次/离线态/统一 `TrendColumn` (depends: T5)
-- [ ] T7: 聚合视图卡片 + 动作 (depends: T6)
-- [ ] T8: 我的关注区 + 设置抽屉关注词编辑 (depends: T6)
-- [ ] T9: 正文抓取纯函数（URL 安全 / HTML 提取 / 文件名 slug+hash / 选题 upsert）+ 单测 (depends: none)
-- [ ] T10: `mutateIdeas` 串行队列 + `POST /api/radar/article` + `api.ts` 的 `captureTrendArticle` + 单测 (depends: T9)
-- [ ] T11: `TrendRow` 的 `data-easel-trend` + context-menu 的 `trend` 面/菜单/toast + 单测 (depends: T10, T6)
-- [ ] T12: `Idea.url/bodyPath` 类型 + 选题卡「正文」预览弹窗、「原文」外链、「做内容」prompt 正文路径 (depends: T10, T5)
-- [ ] T13: 两套主题样式收口 + `node --test` + `node build.mjs` + 页面冒烟（含右键抓取） (depends: T6, T7, T8, T11, T12)
+- [x] T1: 轨迹核心纯函数（normalize / merge / prune / stale-resolve）+ 落盘读写（临时目录、损坏文件）+ 单测 (depends: none)
+- [x] T2: 轨迹落盘读写接入 `/api/trends`（抓全再截断、失败链、`at`/`stale`/`rank`/`delta`/`isNew`/`ageMin`、`force`） (depends: T1)
+- [x] T3: `keywords` 配置读写/校验 + 关注匹配 `watch` 响应 + 单测 (depends: T1)
+- [x] T4: 跨平台聚类纯函数 + `view=cluster` 响应 + 单测 (depends: T1)
+- [x] T5: `api.ts` 类型与 `fetchTrends` 参数扩展（老调用零改动） (depends: T2, T3, T4)
+- [x] T6: TrendsPage 控制区/徽标/真实名次/离线态/统一 `TrendColumn` (depends: T5)
+- [x] T7: 聚合视图卡片 + 动作 (depends: T6)
+- [x] T8: 我的关注区 + 设置抽屉关注词编辑 (depends: T6)
+- [x] T9: 正文抓取纯函数（URL 安全 / HTML 提取 / 文件名 slug+hash / 选题 upsert）+ 单测 (depends: none)
+- [x] T10: `mutateIdeas` 串行队列 + `POST /api/radar/article` + `api.ts` 的 `captureTrendArticle` + 单测 (depends: T9)
+- [x] T11: `TrendRow` 的 `data-easel-trend` + context-menu 的 `trend` 面/菜单/toast + 单测 (depends: T10, T6)
+- [x] T12: `Idea.url/bodyPath` 类型 + 选题卡「正文」预览弹窗、「原文」外链、「做内容」prompt 正文路径 (depends: T10, T5)
+- [x] T13: 两套主题样式收口 + `node --test` + `node build.mjs` + 页面冒烟（含右键抓取） (depends: T6, T7, T8, T11, T12)
 
 ## [S4] Acceptance
 
