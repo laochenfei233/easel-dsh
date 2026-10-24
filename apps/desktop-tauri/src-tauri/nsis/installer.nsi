@@ -85,9 +85,10 @@ OutFile "${OUTFILE}"
 ; https://nsis.sourceforge.io/Reference/InstallDir
 !define PLACEHOLDER_INSTALL_DIR "placeholder\${PRODUCTNAME}"
 ; EASEL-DIVERGENCE(easel-dsh-layout): keep the program under
-; %LOCALAPPDATA%\Easel-dsh\app so the sibling data\ directory survives every
-; upgrade and uninstall. This differs from the Tauri default on purpose; the
-; .onInit block below only rewrites $INSTDIR when it still equals the
+; %LOCALAPPDATA%\Easel-dsh\app; user data lives in <Documents>\Easel-dsh by
+; default (settings can move it), outside this directory, so upgrades and
+; uninstalls never touch it. This differs from the Tauri default on purpose;
+; the .onInit block below only rewrites $INSTDIR when it still equals the
 ; placeholder, so this absolute default is kept as-is.
 InstallDir "$LOCALAPPDATA\Easel-dsh\app"
 

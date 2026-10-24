@@ -22,11 +22,11 @@
  * nothing here is a constant a deployment cannot change.
  */
 import { createReadStream, existsSync, closeSync, mkdirSync, openSync, realpathSync } from 'node:fs'
-import { appendFile, mkdir, readFile, readdir, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
+import { appendFile, lstat, mkdir, readFile, readdir, realpath, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
 import { request as httpRequest } from 'node:http'
 import { request as httpsRequest } from 'node:https'
-import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path'
+import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { homedir } from 'node:os'
 import { lookup as dnsLookup } from 'node:dns/promises'
 import { randomBytes } from 'node:crypto'
@@ -1777,6 +1777,227 @@ async function apiCaldavEventsGet(c) {
 
 // ---- 路由表与调度：命中即本地应答，未命中返回 null → 回落代理 ----
 
+// ---- 数据根设置：桌面壳写 pending，重启后由 Rust supervisor 执行迁移 ----
+
+const DATA_ROOT_PENDING_FILE = 'data-root.pending.json'
+const DATA_ROOT_RESULT_FILE = 'data-root.result.json'
+
+/** Test seam: the settings route requests a server restart after replying. */
+let requestDataRootRestart = () => {
+  setTimeout(() => process.exit(0), 500)
+}
+
+/**
+ * Replace the restart action after a data-root request (tests use a no-op).
+ * @param hook - called after the 202 response is written.
+ */
+export function setDataRootRestart(hook) {
+  requestDataRootRestart = hook
+}
+
+function normalizePath(path) {
+  let out
+  try {
+    out = realpathSync(path)
+  } catch {
+    out = resolve(path)
+  }
+  if (process.platform === 'win32') out = out.toLowerCase()
+  return out.replace(/[\\/]+$/, '')
+}
+
+function samePath(a, b) {
+  return Boolean(a) && Boolean(b) && normalizePath(a) === normalizePath(b)
+}
+
+function isWithinPath(child, parent) {
+  if (!child || !parent) return false
+  let childPath
+  let parentPath
+  try {
+    childPath = realpathSync(child)
+    parentPath = realpathSync(parent)
+  } catch {
+    childPath = resolve(child)
+    parentPath = resolve(parent)
+  }
+  if (process.platform === 'win32') {
+    childPath = childPath.toLowerCase()
+    parentPath = parentPath.toLowerCase()
+  }
+  childPath = childPath.replace(/[\\/]+$/, '')
+  parentPath = parentPath.replace(/[\\/]+$/, '')
+  const prefix = parentPath.endsWith(sep) ? parentPath : parentPath + sep
+  return childPath.length > parentPath.length && childPath.startsWith(prefix)
+}
+
+function cloudSynced(...paths) {
+  return paths
+    .filter(value => typeof value === 'string' && value.length > 0)
+    .some(value => /onedrive|icloud|library[\\/]mobile documents|dropbox|google drive/i.test(value))
+}
+
+function dataRootConfigFile() {
+  return process.env.EASEL_DATA_ROOT_CONFIG || null
+}
+
+/** GET /easel/api/data-root — current/default root, pending request, last error. */
+async function apiDataRoot() {
+  const current = process.env.EASEL_DATA_ROOT || null
+  if (!current) return { json: { supported: false } }
+  const config = dataRootConfigFile()
+  const dir = config ? dirname(config) : null
+  const pending = dir ? await readJsonFile(join(dir, DATA_ROOT_PENDING_FILE), null) : null
+  const result = dir ? await readJsonFile(join(dir, DATA_ROOT_RESULT_FILE), null) : null
+  const fallback = process.env.EASEL_DATA_ROOT_DEFAULT || null
+  return {
+    json: {
+      supported: true,
+      current,
+      default: fallback,
+      isDefault: samePath(current, fallback),
+      configPath: config,
+      cloudSynced: cloudSynced(current),
+      pending: pending !== null && typeof pending === 'object' ? pending.target ?? null : null,
+      lastError: result !== null && typeof result === 'object' && result.ok === false ? result.error ?? null : null,
+    },
+  }
+}
+
+/** POST /easel/api/data-root/pick — OS directory picker in the desktop session. */
+async function apiDataRootPick() {
+  const picked = await pickDataDirectory()
+  return { json: { path: picked } }
+}
+
+/** POST /easel/api/data-root — validate, write the pending request, restart. */
+async function apiDataRootSet(c) {
+  const body = await c.body()
+  const target = body !== null && typeof body === 'object' && typeof body.path === 'string'
+    ? body.path.trim()
+    : ''
+  if (target.length === 0) throw new ApiError(400, '缺少目标路径')
+  if (!isAbsolute(target)) throw new ApiError(400, '数据目录必须是绝对路径')
+
+  const current = process.env.EASEL_DATA_ROOT || null
+  const fallback = process.env.EASEL_DATA_ROOT_DEFAULT || null
+  if (!current) throw new ApiError(501, '仅桌面版支持选择数据目录')
+
+  const targetLink = await lstat(target).catch(() => null)
+  const targetReal = targetLink?.isSymbolicLink() ? await realpath(target).catch(() => null) : null
+  const currentReal = await realpath(current).catch(() => null)
+  const movingBack = targetReal !== null && currentReal !== null && samePath(targetReal, currentReal)
+
+  if (!movingBack && samePath(target, current)) {
+    throw new ApiError(400, '目标就是当前数据目录')
+  }
+  if (!movingBack && (isWithinPath(target, current) || isWithinPath(current, target))) {
+    throw new ApiError(400, '目标不能与当前数据目录重叠')
+  }
+  if (!movingBack && fallback && samePath(target, fallback) && samePath(current, fallback)) {
+    throw new ApiError(400, '目标已经是默认数据目录')
+  }
+
+  const config = dataRootConfigFile()
+  if (!config) throw new ApiError(501, '桌面壳没有提供数据根配置路径')
+  const dir = dirname(config)
+  const pendingFile = join(dir, DATA_ROOT_PENDING_FILE)
+  const resultFile = join(dir, DATA_ROOT_RESULT_FILE)
+
+  const install = process.env.EASEL_INSTALL_DIR || null
+  if (install && (samePath(target, install) || isWithinPath(target, install))) {
+    throw new ApiError(400, '目标不能放在应用安装目录里')
+  }
+
+  const info = await stat(target).catch(() => null)
+  if (info !== null) {
+    if (!info.isDirectory()) throw new ApiError(400, '目标不是目录')
+    const entries = await readdir(target).catch(() => [])
+    const migrating = entries.includes('.easel-migrating')
+    const looksLikeData = entries.includes('.easel-data.json')
+      || entries.includes('.layout-v2.json')
+      || entries.includes('workspace')
+      || entries.includes('home')
+    if (!movingBack && !migrating && looksLikeData) throw new ApiError(400, '目标已经包含 Easel 数据目录')
+    if (!movingBack && !migrating && entries.length > 0) throw new ApiError(400, '目标目录非空')
+  }
+  const parent = dirname(target)
+  try {
+    await mkdir(parent, { recursive: true })
+    await mkdir(target, { recursive: true })
+    const probe = join(target, `.easel-write-probe-${process.pid}`)
+    await writeFile(probe, '')
+    await unlink(probe)
+  } catch {
+    throw new ApiError(400, '目标目录不可写')
+  }
+
+  await mkdir(dir, { recursive: true })
+  await writeJsonFile(pendingFile, { version: 1, target, requestedAt: Date.now() })
+  await rm(resultFile, { force: true }).catch(() => {})
+  requestDataRootRestart()
+  return { json: { ok: true, target }, status: 202 }
+}
+
+/**
+ * Run one native picker. Returns the path, null when the user cancelled, and
+ * `'missing'` when the command is not installed.
+ */
+function runPicker(command, args) {
+  return new Promise((resolvePromise, reject) => {
+    let settled = false
+    let out = ''
+    const child = spawn(command, args, { windowsHide: true })
+    const timer = setTimeout(() => {
+      if (settled) return
+      settled = true
+      child.kill()
+      resolvePromise(null)
+    }, 120_000)
+    const finish = value => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      resolvePromise(value)
+    }
+    child.stdout.on('data', chunk => { out += chunk })
+    child.stderr.on('data', () => {})
+    child.on('error', error => {
+      if (error.code === 'ENOENT') return finish('missing')
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      reject(error)
+    })
+    child.on('close', code => finish(code === 0 ? out.trim() || null : null))
+  })
+}
+
+async function pickDataDirectory() {
+  if (process.platform === 'win32') {
+    const script = [
+      'Add-Type -AssemblyName System.Windows.Forms',
+      '$dialog = New-Object System.Windows.Forms.FolderBrowserDialog',
+      "$dialog.Description = '选择 Easel 数据目录'",
+      '$dialog.ShowNewFolderButton = $true',
+      'if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($dialog.SelectedPath) }',
+    ].join('; ')
+    const picked = await runPicker('powershell', ['-NoProfile', '-STA', '-ExecutionPolicy', 'Bypass', '-Command', script])
+    if (picked === 'missing') throw new ApiError(501, 'picker-unavailable')
+    return picked
+  }
+  if (process.platform === 'darwin') {
+    const picked = await runPicker('osascript', ['-e', 'POSIX path of (choose folder with prompt "选择 Easel 数据目录")'])
+    if (picked === 'missing') throw new ApiError(501, 'picker-unavailable')
+    return picked
+  }
+  const zenity = await runPicker('zenity', ['--file-selection', '--directory', '--title=选择 Easel 数据目录'])
+  if (zenity !== 'missing') return zenity
+  const kdialog = await runPicker('kdialog', ['--getexistingdirectory', homedir()])
+  if (kdialog === 'missing') throw new ApiError(501, 'picker-unavailable')
+  return kdialog
+}
+
 /**
  * Routes owned by the workbench core (file/data plane). Platform automation and
  * the breakdown pipeline contribute their own tables through the `easelApi`
@@ -1784,6 +2005,9 @@ async function apiCaldavEventsGet(c) {
  */
 export const CORE_ROUTES = [
   ['GET', ['status'], apiStatus],
+  ['GET', ['data-root'], apiDataRoot],
+  ['POST', ['data-root'], apiDataRootSet],
+  ['POST', ['data-root', 'pick'], apiDataRootPick],
   ['GET', ['skills'], c => getSkills(c.settings).then(json => ({ json }))],
   ['GET', ['skill', ':name'], apiSkillDetail],
   ['GET', ['persona', ':name', 'files'], apiPersonaFiles],

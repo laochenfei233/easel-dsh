@@ -50,18 +50,19 @@ commits: 50d0920420..b96b76b055（含 6bdfe0f9b4、7a0c9e0477）；Easel f9bebc6
 | 类别 | 位置（当前 → 目标） | 升级时 |
 | --- | --- | --- |
 | 程序 | `%LOCALAPPDATA%\Easel-dsh\app`（exe + `runtime\` + uninstall.exe） | 整体覆盖 |
-| 内容/数据 | `%LOCALAPPDATA%\Easel` → `%LOCALAPPDATA%\Easel-dsh\data\workspace` | 不触碰（stamp 门只同步包内内容） |
-| 配置/会话 | `~/.easel` → `%LOCALAPPDATA%\Easel-dsh\data\home` | 不触碰 |
+| 内容/数据 | `%LOCALAPPDATA%\Easel` → `%USERPROFILE%\Documents\Easel-dsh\workspace` | 不触碰（stamp 门只同步包内内容） |
+| 配置/会话 | `~/.easel` → `%USERPROFILE%\Documents\Easel-dsh\home` | 不触碰 |
 
-**目录布局（2026-10-20 用户决定）**
+**目录布局（2026-10-21 用户决定：数据放文档目录，且可在设置页迁移）**
 
-- 目标：程序 `%LOCALAPPDATA%\Easel-dsh\app`，数据
-  `%LOCALAPPDATA%\Easel-dsh\data`（`workspace\` + `home\`）。这取代了本节
-  早先「不加 `\data` 层」的建议。
-- 这不是简单加一层目录：`projectRoot` 被 dsh workspace/session 的 cwd 和项目
-  绝对路径引用，直接搬会打断会话归组。迁移方案（旧路径 junction、迁移机器
-  保留旧逻辑 `projectRoot`、`DSH_HOME` 迁到 `data\home`）见
-  `docs/compose/specs/easel-dsh-layout.md`。
+- 目标：程序 `%LOCALAPPDATA%\Easel-dsh\app`；数据在操作系统「文档」目录下的
+  `Easel-dsh`（Windows 已知文件夹，macOS/Linux `~/Documents`），
+  `workspace\` + `home\` 在同一个根下。设置页可以选择其它可写目录并迁移，
+  指针存在独立的 bootstrap 文件里（见 layout spec）。
+- 这不是简单搬目录：`projectRoot` 被 dsh workspace/session 的 cwd 和项目
+  绝对路径引用，直接搬会打断会话归组。迁移方案（旧路径 junction/symlink、
+  保留旧逻辑 `projectRoot`、`DSH_HOME` 迁到数据根的 `home`、不改写项目文件）
+  见 `docs/compose/specs/easel-dsh-layout.md`。
 - 本 spec 先做安装器生命周期修复（T1–T6）；布局迁移作为独立步骤按 layout
   spec 执行。在 layout 落地前，数据仍在 `%LOCALAPPDATA%\Easel` 和 `~/.easel`。
 - `app` 安装路径以 layout spec T1 的自定义 NSIS 模板为准（Tauri 没有
@@ -122,7 +123,7 @@ POSTUNINSTALL 的 MessageBox 包在 `${If} $UpdateMode <> 1` 里。真正的卸�
 - Out of scope:
   - Tauri updater、`latest.json`、签名密钥；
   - 内容增量更新通道；
-  - 把内容树或 `~/.easel` 迁到 `%LOCALAPPDATA%\Easel-dsh\data`（有损迁移风险，由 `easel-dsh-layout.md` 单独处理）；
+  - 把内容树或 `~/.easel` 迁到数据根（有损迁移风险，由 `easel-dsh-layout.md` 单独处理）；
   - 自定义 NSIS 模板/默认单选调整；
   - 应用内更新 UI。
 

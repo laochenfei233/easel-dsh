@@ -833,6 +833,8 @@ dependencies = [
 name = "dsh-desktop"
 version = "0.2.1-alpha.2"
 dependencies = [
+ "dirs",
+ "libc",
  "serde",
  "serde_json",
  "serde_yaml",
@@ -842,6 +844,7 @@ dependencies = [
  "tauri-plugin-opener",
  "tauri-plugin-single-instance",
  "tokio",
+ "windows-sys 0.45.0",
 ]
 
 [[package]]

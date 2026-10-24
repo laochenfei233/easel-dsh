@@ -13,6 +13,8 @@
 import { EASEL_CSS } from './generated/easel-css'
 import { createShellBridge } from './lib/shell'
 import { CLIENT_PLUGINS, FEATURES } from './features'
+import { DataRootSection } from './components/DataRootSection'
+import { DATA_ROOT_COPY } from './locales/dataRoot'
 
 const NS = 'easel.panel'
 const STYLE_ID = 'dsh-plugin-easel-style'
@@ -46,6 +48,22 @@ export default {
     // `plugins` is handled by disabling that row in cordis.patch.yml;
     // `schedules` is hidden here so its reminder surfaces stay active.
     ctx.effect(() => ctx.uiSidebarPanels.hidden('schedules'), 'easel: hide schedules rail icon')
+
+    // The data root is a desktop concern: the host half exposes the current
+    // root and a pending migration request, and the section hides itself when
+    // the shell did not provide one (web/CLI).
+    ctx.effect(
+      () => ctx.locale.register('settings.dataRoot', DATA_ROOT_COPY),
+      'easel: data root dictionaries',
+    )
+    ctx.slots.inject('settings.section', () => ctx.slots.register({
+      name: 'settings.section',
+      id: 'data-root',
+      order: 40,
+      label: () => ctx.locale.bind('settings.dataRoot')('nav'),
+      locale: 'settings.dataRoot',
+      inject: () => ({}),
+    }, DataRootSection))
 
     const t = ctx.locale.bind(NS)
     // The bridge is the one service feature plugins depend on. It owns the
