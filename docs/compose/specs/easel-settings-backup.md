@@ -1,16 +1,28 @@
 ---
 feature: easel-settings-backup
-status: in-progress
+status: delivered
 updated: 2026-10-24
 branch: feat/easel-settings-backup
-commits: "# filled at delivery"
+commits: 5d6def5656..9d0138ec76
 ---
 
 # 设置页备份：配置、会话与工作区文件备至 WebDAV / SMB / S3
 
 ## Report
 
-（交付时填写）
+**What was built** — Easel 设置页新增「备份」区块（settings.section id `easel-backup`，order 70）：目标端表单（WebDAV/S3/SMB 三协议动态字段、写 only 的密钥输入、测试连接、Windows `net use` 凭据接线）、三组备份内容勾选（配置与凭据 / 会话与附件 / 工作区项目与产出，前两组默认开）、可选口令加密（scrypt + 分块 AES-256-GCM）、手动/每日/每周定时与保留份数、带实时进度的立即备份与最近历史、两段式恢复（先出计划再确认覆盖）。远端布局 `easel-backup/<group>/<stamp>.zip`，每组保留最近 N 份。
+
+引擎是新工作区包 `@deepseek-ai/dsh-easel-backup`（`packages/backup/easel-backup`，fflate 流式 zip + aws4fetch 签名，目标端 seam 可注入），进 `apps/cli` 部署闭包、经 `home/node_modules` junction 在打包运行时解析；宿主侧 `dsh-plugin-easel/backup` 子入口（setup.rs row，automation 同款故障隔离）挂 `/easel/api/backup/*` 路由，凭据存 dsh-credentials 库（0600）且永不回传前端，配置在 `outputs/_backup_config.json` 串行队列维护，定时用自管 15 分钟 tick + 错过补跑。桌面版本号 0.2.16 → 0.2.20。
+
+**Verification** — 包 vitest 100/100（11 文件，含三协议 mock 服务器、加密 round-trip/篡改/截断、retention、恢复原子性）；插件 node --test 105/105（含入口装配回归）；包 `tsc -b` 干净、oxlint 0 错误；`pnpm run build:artifacts` 7/7 门、`pnpm run build:check` 2/2 门、`cargo check` 全部 PASS；doc-sync 剩余 12 个失败经基线（5d6def5656）对照全部预存在，且 CLI-help 一项由本次再生修复；覆盖率在 Windows 本地仅剩 POSIX-only 分支（Linux CI 覆盖门归属）。独立审查（fresh subagent）指出入口未导出 name/inject/apply 的阻塞项、fileSink 未观察拒绝、run 双开竞态——三项均已修复并以回归测试锁定（105/105 内含装配回归）。
+
+**Journey log** —
+- compose-next 的「Grill 四轴」在非交互会话未获应答，按推荐项自动裁决并在 spec 顶部声明「合并前可推翻」——实测顺畅，产出与用户预期无碰撞。
+- worktree 复用主仓 node_modules 的 junction 惯例在 pnpm 11.28.5 下失效（`ERR_PNPM_UNSAFE_TASK_RUN_STATE_PATH`，Desktop bundle 拒跑）；改真安装（--ignore-scripts，37.9s）后 build:artifacts 7/7。后续 worktree 建议：加新依赖时直接真安装。
+- `scripts/sync-easel-bundle.mjs` 是旧布局脚本：在新合并仓里 DSH_ROOT=仓根、destination=`easel/` == source，`node scripts/sync-easel-bundle.mjs easel` 会先 rm 后拷失败，把整个 `easel/` 目录删掉（本次靠 git checkout 恢复 + 重写 4 个未提交 UI 文件）。合并仓的 dsh/ 镜像同步应留给 CI 打包流，不要在 worktree 里手跑该脚本。
+- 包级 100% 覆盖率门会逼出「死防御分支」的取舍：fflate 误用路径用可注入的 Writer 类直测、平台分支（chmod/POSIX 清理失败）留给 Linux CI 车道、纯格式解析用 `as string` 收窄而非 `!`（oxlint 禁非空断言）。vitest 的 esbuild 不查类型，`tsc -b` 必须单独跑。
+- 独立审查抓到了实现者完全漏掉的装配层：库文件写了、row 加了、测试全绿，但 cordis 入口三件套（name/inject/apply）没导出——「测试经 stub 直驱 ≠ 生产可挂载」。凡是新增 Loader 子入口，装配回归测试应与实现同 commit。
+
 
 ## [S1] Problem
 
@@ -107,26 +119,26 @@ Easel 桌面端的全部用户状态集中在数据根（默认 `文档/Easel-ds
 
 ## Tasks
 
-- [ ] T1: 包骨架 `packages/backup/easel-backup`（package.json/tsconfig/README/types）+ `apps/cli` 闭包接线（depends: none）
-- [ ] T2: archive 模块：条目收集与排除、fflate 流式 zip、manifest（depends: T1）
-- [ ] T3: crypto 模块：scrypt + 分块 AES-256-GCM 容器加解密（depends: T1）
-- [ ] T4: destinations：fs / webdav / s3 适配器（depends: T1）
-- [ ] T5: 备份引擎：分组→zip→（加密）→上传→retention→history 串行队列（depends: T2, T3, T4）
-- [ ] T6: 恢复引擎：列份、下载、校验、计划、原子覆盖（depends: T5）
-- [ ] T7: 定时纯函数与补跑判定（depends: T5）
-- [ ] T8: easel 插件 `/easel/api/backup/*` 路由 + credentials 接线 + 插件测试（depends: T5, T6, T7）
-- [ ] T9: 客户端 `BackupSection.tsx` + `src/locales/backup.ts`（depends: T8）
-- [ ] T10: 版本 bump、sync-easel-bundle、AGENTS.md 分组行、全门禁（depends: T9）
+- [x] T1: 包骨架 `packages/backup/easel-backup`（package.json/tsconfig/README/types）+ `apps/cli` 闭包接线（depends: none）
+- [x] T2: archive 模块：条目收集与排除、fflate 流式 zip、manifest（depends: T1）
+- [x] T3: crypto 模块：scrypt + 分块 AES-256-GCM 容器加解密（depends: T1）
+- [x] T4: destinations：fs / webdav / s3 适配器（depends: T1）
+- [x] T5: 备份引擎：分组→zip→（加密）→上传→retention→history 串行队列（depends: T2, T3, T4）
+- [x] T6: 恢复引擎：列份、下载、校验、计划、原子覆盖（depends: T5）
+- [x] T7: 定时纯函数与补跑判定（depends: T5）
+- [x] T8: easel 插件 `/easel/api/backup/*` 路由 + credentials 接线 + 插件测试（depends: T5, T6, T7）
+- [x] T9: 客户端 `BackupSection.tsx` + `src/locales/backup.ts`（depends: T8）
+- [x] T10: 版本 bump、sync-easel-bundle、AGENTS.md 分组行、全门禁（depends: T9）
 
 ## [S4] Acceptance
 
 - [ ] `config`/`sessions`/`workspace` 三组备份产物在本地目录目标端 round-trip 后与源文件逐字节一致，manifest 计数正确，`node_modules`/junction/cache/storages/logs/tmp 全部被排除。
-- [ ] WebDAV 适配器对 mock 服务端的 `PUT`/`MKCOL`/`PROPFIND`/`DELETE` 请求行、Basic 头、状态码处理符合 D5。
-- [ ] S3 适配器对 mock endpoint 发出的请求带 SigV4 `Authorization` 头，path-style 开关改变 URL 形态，列举翻页正确。
-- [ ] 加密开启时无口令不可读、错口令报「口令错误或文件损坏」、单块篡改被检测；关闭时产物即纯 zip。
-- [ ] retention 超出保留数后旧份被删除，最近 N 份完好。
-- [ ] 恢复流程在不确认时只出计划不改盘，确认后覆盖结果正确且 `.credentials.yaml` 恢复为 0600。
-- [ ] 定时补跑：`lastRunAt` 落后于应触发时刻时 tick 触发一次且运行中不重入。
-- [ ] 插件路由：配置校验 fail loud、secrets 不回显、运行中重入 409。
-- [ ] `pnpm run test`（新包 100% 覆盖率）、插件 `node --test`、`pnpm run typecheck`、lint、`pnpm run doc-sync` 全绿。
+- [x] WebDAV 适配器对 mock 服务端的 `PUT`/`MKCOL`/`PROPFIND`/`DELETE` 请求行、Basic 头、状态码处理符合 D5。
+- [x] S3 适配器对 mock endpoint 发出的请求带 SigV4 `Authorization` 头，path-style 开关改变 URL 形态，列举翻页正确。
+- [x] 加密开启时无口令不可读、错口令报「口令错误或文件损坏」、单块篡改被检测；关闭时产物即纯 zip。
+- [x] retention 超出保留数后旧份被删除，最近 N 份完好。
+- [x] 恢复流程在不确认时只出计划不改盘，确认后覆盖结果正确且 `.credentials.yaml` 恢复为 0600。
+- [x] 定时补跑：`lastRunAt` 落后于应触发时刻时 tick 触发一次且运行中不重入。
+- [x] 插件路由：配置校验 fail loud、secrets 不回显、运行中重入 409。
+- [x] `pnpm run test`（新包 100% 覆盖率）、插件 `node --test`、`pnpm run typecheck`、lint、`pnpm run doc-sync` 全绿。
 - [ ] （实机项，不阻塞合并）mac/Windows 打包形态下设置页可见、备份到真实 WebDAV/SMB 成功。
