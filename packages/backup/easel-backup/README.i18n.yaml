@@ -2,18 +2,42 @@
 # section, a hash of its English and Chinese blocks outside code blocks and generated regions.
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/backup/easel-backup/README.md
+/:
+  en: f15aab1e1dc1838f
+  zh: c0241a7c6001e639
 /deepseek-ai-dsh-easel-backup:
-  en: 28f4134aa153920f
-  zh: 28f4134aa153920f
+  en: b716c6f96bca561c
+  zh: ff958af91b4eeadf
 /deepseek-ai-dsh-easel-backup/summary:
-  en: f768abff3eea705d
-  zh: 8720c7a0d5a01131
+  en: 07b46119e8d66a44
+  zh: 91e8bb6e9ac7cc7d
+/deepseek-ai-dsh-easel-backup/table-of-contents:
+  en: 4d5ec89f7a524c33
+  zh: 61ed6eb98678c4ca
 /deepseek-ai-dsh-easel-backup/use-this-package:
-  en: e83c02ad0ce5667f
-  zh: 8f162ca30a0a3c75
+  en: 788582c7c9e2a46b
+  zh: acaebb0d09fe6ef6
 /deepseek-ai-dsh-easel-backup/understand-the-implementation:
-  en: 8d86074e881ab96b
-  zh: 3dc44d806e54e197
+  en: f7843e8e79eace2f
+  zh: 6653a3621480517d
+/deepseek-ai-dsh-easel-backup/understand-the-implementation/design-philosophy:
+  en: b28d6ff17e29bc20
+  zh: 4ae6f91c8af67b1a
+/deepseek-ai-dsh-easel-backup/understand-the-implementation/source-map:
+  en: 9ae1b73fd8f08af0
+  zh: 381949902a610805
+/deepseek-ai-dsh-easel-backup/further-exploration:
+  en: 63d35e2351f0b900
+  zh: 8fd0a89abcca87f0
+/deepseek-ai-dsh-easel-backup/model-experience:
+  en: 86f12970a7d2164b
+  zh: 3e9dbb3460fa92df
+/deepseek-ai-dsh-easel-backup/model-experience/kv-cache-effect:
+  en: 7f12ca92e7722f98
+  zh: 7d52392cc4952e71
 /deepseek-ai-dsh-easel-backup/known-limitations-and-deferred-work:
-  en: d858017278f118f3
-  zh: a42747f71f717697
+  en: 51672a9e7fceabae
+  zh: 1a00294007e066f3
+/deepseek-ai-dsh-easel-backup/known-limitations-and-deferred-work/dev-note:
+  en: 6294feaa4a46461a
+  zh: 41f2cd0cbc45c367
