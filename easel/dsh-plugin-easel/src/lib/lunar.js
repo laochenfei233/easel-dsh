@@ -66,11 +66,13 @@ export function solarToLunar(year, month, day) {
     temp = lunarYearDays(i)
     offset -= temp
   }
-  if (i > 2100) return null // 表终点之后
   if (offset < 0) {
     offset += temp
     i--
   }
+  // 回补后 i 仍是 2101 = 表终点之后（offset 未耗尽，或恰落在农历 2100 年最后一天的次日）；
+  // 回补后 offset>0 是年中的正常状态，不是越界。
+  if (i > 2100) return null
   const lunarYear = i
   const leap = lunarLeapMonth(lunarYear)
   let isLeap = false

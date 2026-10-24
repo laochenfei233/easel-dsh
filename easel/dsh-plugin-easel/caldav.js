@@ -424,20 +424,25 @@ function generateBatch(rule, start, i) {
       .filter((d) => d.getTime() >= start.getTime())
   }
   if (rule.freq === 'MONTHLY') {
-    const monthStart = addMonths(start, i * rule.interval)
-    if (monthStart === null) return []
     if (rule.byMonthDay.length > 0) {
+      // BYMONTHDAY 自带日定义：锚月不依赖 DTSTART 的日（31 号锚也能落到 2 月的 -1=28）；
+      // 先落到真实日期再按时间排序（-1 的实际日落后于正数日），窗口右缘提前终止才安全
+      const anchor = new Date(start.getFullYear(), start.getMonth() + i * rule.interval, 1,
+        start.getHours(), start.getMinutes(), start.getSeconds())
       return rule.byMonthDay
         .map((dom) => {
-          const d = new Date(monthStart)
+          const d = new Date(anchor)
           const dim = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()
           if (dom > dim || dom < -dim) return null
           d.setDate(dom > 0 ? dom : dim + dom + 1)
           return d
         })
-        .filter((d) => d !== null && d.getTime() >= start.getTime())
+        .filter((d) => d !== null)
+        .sort((a, b) => a.getTime() - b.getTime())
+        .filter((d) => d.getTime() >= start.getTime())
     }
-    return [monthStart]
+    const monthStart = addMonths(start, i * rule.interval)
+    return monthStart === null ? [] : [monthStart]
   }
   const yearly = addYears(start, i * rule.interval)
   return yearly === null ? [] : [yearly]

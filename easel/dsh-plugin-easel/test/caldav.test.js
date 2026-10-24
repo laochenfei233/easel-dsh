@@ -253,6 +253,32 @@ test('caldavRequest：401 与 4xx 抛错、认证头正确', async () => {
   assert.equal(seen.headers.Authorization, `Basic ${b64}`)
 })
 
+test('MONTHLY BYMONTHDAY 批次按真实日期升序（含负数 = 月末日）', () => {
+  const events = parseIcsEvents([
+    'BEGIN:VEVENT',
+    'UID:md@x',
+    'SUMMARY:盘点',
+    'DTSTART:20260110T100000',
+    'RRULE:FREQ=MONTHLY;BYMONTHDAY=10,5',
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'UID:me@x',
+    'SUMMARY:月末结算',
+    'DTSTART:20260131T120000',
+    'RRULE:FREQ=MONTHLY;BYMONTHDAY=-1',
+    'END:VEVENT',
+  ].join('\r\n'))
+  const occurrences = expandEvents(events, new Date(2026, 0, 1).getTime(), new Date(2026, 2, 1).getTime())
+  const inventories = occurrences.filter((o) => o.title === '盘点')
+  assert.deepEqual(
+    inventories.map((o) => `${o.start.getMonth() + 1}-${o.start.getDate()}`),
+    ['1-10', '2-5', '2-10'],
+    '2-5 在窗内不能因 2-10 排序在前被丢',
+  )
+  const monthEnds = occurrences.filter((o) => o.title === '月末结算')
+  assert.deepEqual(monthEnds.map((o) => o.start.getDate()), [31, 28], '-1 在 2 月落 28')
+})
+
 test('多事件展开互不丢弃：循环主事件之后的单次事件仍在窗内', () => {
   const events = parseIcsEvents([
     'BEGIN:VEVENT',

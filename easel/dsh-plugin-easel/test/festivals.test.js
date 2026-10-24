@@ -34,6 +34,9 @@ test('农历换算锚点日期', () => {
   assert.equal(solarToLunar(1899, 12, 31), null)
   assert.equal(solarToLunar(1900, 1, 1), null, '表纪元 1900-01-31 之前')
   assert.equal(solarToLunar(2101, 1, 1), null)
+  // 表终点年 2100 全年可用（guard 不能早退一个农历年）
+  const edge = solarToLunar(2100, 12, 31)
+  assert.ok(edge !== null && edge.year === 2100 && edge.month === 12, '2100 年末仍在表内')
 })
 
 test('清明节气公式', () => {
