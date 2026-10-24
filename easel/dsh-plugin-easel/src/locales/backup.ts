@@ -78,9 +78,9 @@ export const BACKUP_COPY = {
     restorePickStamp: 'Copy',
     restorePreview: 'Preview restore',
     restoreConfirm: 'Overwrite now',
-    restorePlan: (count: number) => `${count} files will be overwritten with the archived copies. Confirm to proceed.`,
-    restoreApplied: (count: number) => `Restored ${count} files. Restart the app if sessions were restored.`,
-    restoreSkipped: (count: number) => `${count} entries skipped (unknown scope).`,
+    restorePlan: '{count} files will be overwritten with the archived copies. Confirm to proceed.',
+    restoreApplied: '{count} files restored. Restart the app if sessions were restored.',
+    restoreSkipped: '{count} entries skipped (unknown scope).',
   },
   zh: {
     nav: '备份',
@@ -160,10 +160,11 @@ export const BACKUP_COPY = {
     restorePickStamp: '备份份',
     restorePreview: '预览恢复',
     restoreConfirm: '确认覆盖',
-    restorePlan: (count: number) => `将用归档副本覆盖 ${count} 个文件，确认后执行。`,
-    restoreApplied: (count: number) => `已恢复 ${count} 个文件。若恢复了会话记录，建议重启应用。`,
-    restoreSkipped: (count: number) => `跳过 ${count} 个未知范围条目。`,
+    restorePlan: '将用归档副本覆盖 {count} 个文件，确认后执行。',
+    restoreApplied: '已恢复 {count} 个文件。若恢复了会话记录，建议重启应用。',
+    restoreSkipped: '跳过 {count} 个未知范围条目。',
   },
 } as const
 
-export type BackupCopy = { [K in keyof typeof BACKUP_COPY.en]: string }
+/** Dictionary keys the bound translate function accepts. */
+export type BackupCopyKey = keyof typeof BACKUP_COPY.en

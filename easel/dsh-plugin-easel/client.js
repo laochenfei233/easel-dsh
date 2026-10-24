@@ -10810,7 +10810,7 @@ function BackupSettings({ t }) {
       setConfig(saved.config);
       setSecrets(saved.secrets);
       setSecretInputs({});
-      setNotice({ kind: "ok", text: t.saved });
+      setNotice({ kind: "ok", text: t("saved") });
     } catch (error) {
       setNotice({ kind: "error", text: error.message });
     } finally {
@@ -10822,7 +10822,7 @@ function BackupSettings({ t }) {
     setNotice(null);
     try {
       await testBackupDestination();
-      setNotice({ kind: "ok", text: t.testOk });
+      setNotice({ kind: "ok", text: t("testOk") });
     } catch (error) {
       setNotice({ kind: "error", text: error.message });
     } finally {
@@ -10832,7 +10832,7 @@ function BackupSettings({ t }) {
   const run = async () => {
     const groups = GROUPS.filter((group) => config.groups[group.id]).map((group) => group.id);
     if (groups.length === 0) {
-      setNotice({ kind: "error", text: t.noGroups });
+      setNotice({ kind: "error", text: t("noGroups") });
       return;
     }
     setNotice(null);
@@ -10876,7 +10876,7 @@ function BackupSettings({ t }) {
     try {
       const response = await restoreBackup(restoreGroup, restoreStamp, true);
       setPlan(null);
-      setNotice({ kind: "ok", text: `${t.restoreApplied(response.applied ?? 0)}${(response.skipped?.length ?? 0) > 0 ? ` ${t.restoreSkipped(response.skipped?.length ?? 0)}` : ""}` });
+      setNotice({ kind: "ok", text: `${t("restoreApplied").replace("{count}", String(response.applied ?? 0))}${(response.skipped?.length ?? 0) > 0 ? ` ${t("restoreSkipped").replace("{count}", String(response.skipped?.length ?? 0))}` : ""}` });
       await refreshStatus();
     } catch (error) {
       setNotice({ kind: "error", text: error.message });
@@ -10888,29 +10888,29 @@ function BackupSettings({ t }) {
     setNotice(null);
     try {
       await connectSmb(config.root, secretValue("smbUser"), secretValue("smbPassword"));
-      setNotice({ kind: "ok", text: t.testOk });
+      setNotice({ kind: "ok", text: t("testOk") });
     } catch (error) {
       setNotice({ kind: "error", text: error.message });
     }
   };
   const progress = status?.progress ?? null;
-  const phaseLabel = progress === null ? "" : t[`phase${progress.phase[0].toUpperCase()}${progress.phase.slice(1)}`];
+  const phaseLabel = progress === null ? "" : t(`phase${progress.phase[0].toUpperCase()}${progress.phase.slice(1)}`);
   const history = status?.history ?? [];
   return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-root", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-intro", children: t.intro }),
-    !engineReady ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-error", children: t.engineMissing }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-intro", children: t("intro") }),
+    !engineReady ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-error", children: t("engineMissing") }) : null,
     notice !== null && notice.text !== "" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: notice.kind === "ok" ? "ebk-ok" : "ebk-error", children: notice.text }) : null,
     /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-card-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.destinationTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("destinationTitle") }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-actions", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: testing, onClick: () => void test(), children: testing ? t.testing : t.test }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: saving, onClick: () => void save(), children: saving ? t.saving : t.save })
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: testing, onClick: () => void test(), children: testing ? t("testing") : t("test") }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: saving, onClick: () => void save(), children: saving ? t("saving") : t("save") })
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-row", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.protocol }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("protocol") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
             "select",
             {
@@ -10918,20 +10918,20 @@ function BackupSettings({ t }) {
               value: config.protocol,
               onChange: (event) => patch({ protocol: event.target.value }),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "webdav", children: t.protocolWebdav }),
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "s3", children: t.protocolS3 }),
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "smb", children: t.protocolSmb })
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "webdav", children: t("protocolWebdav") }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "s3", children: t("protocolS3") }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "smb", children: t("protocolSmb") })
               ]
             }
           )
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.remoteDir }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("remoteDir") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             "input",
             {
               className: "ebk-input",
-              placeholder: t.remoteDirPlaceholder,
+              placeholder: t("remoteDirPlaceholder"),
               value: config.remoteDir,
               onChange: (event) => patch({ remoteDir: event.target.value })
             }
@@ -10940,12 +10940,12 @@ function BackupSettings({ t }) {
       ] }),
       config.protocol === "webdav" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.endpoint }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("endpoint") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             "input",
             {
               className: "ebk-input",
-              placeholder: t.endpointPlaceholder,
+              placeholder: t("endpointPlaceholder"),
               value: config.endpoint,
               onChange: (event) => patch({ endpoint: event.target.value })
             }
@@ -10953,13 +10953,13 @@ function BackupSettings({ t }) {
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-grid", children: [
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.username }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("username") }),
             /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.username, onChange: (event) => patch({ username: event.target.value }) })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
             /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { children: [
-              t.password,
-              secrets.webdavPassword ? ` \xB7 ${t.passwordSaved}` : ""
+              t("password"),
+              secrets.webdavPassword ? ` \xB7 ${t("passwordSaved")}` : ""
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
               "input",
@@ -10975,28 +10975,28 @@ function BackupSettings({ t }) {
       ] }) : null,
       config.protocol === "s3" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-grid", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3Endpoint }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("s3Endpoint") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.endpoint, onChange: (event) => patch({ endpoint: event.target.value }) })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3Region }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("s3Region") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.region, onChange: (event) => patch({ region: event.target.value }) })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3Bucket }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("s3Bucket") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.bucket, onChange: (event) => patch({ bucket: event.target.value }) })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: "\xA0" }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ebk-check", children: [
             /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { type: "checkbox", checked: config.pathStyle, onChange: (event) => patch({ pathStyle: event.target.checked }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-hint", children: t.s3PathStyle })
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-hint", children: t("s3PathStyle") })
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { children: [
-            t.s3AccessKeyId,
-            secrets.s3Keys ? ` \xB7 ${t.passwordSaved}` : ""
+            t("s3AccessKeyId"),
+            secrets.s3Keys ? ` \xB7 ${t("passwordSaved")}` : ""
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             "input",
@@ -11009,7 +11009,7 @@ function BackupSettings({ t }) {
           )
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3SecretAccessKey }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("s3SecretAccessKey") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             "input",
             {
@@ -11023,12 +11023,12 @@ function BackupSettings({ t }) {
       ] }) : null,
       config.protocol === "smb" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.smbRoot }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("smbRoot") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             "input",
             {
               className: "ebk-input",
-              placeholder: t.smbRootPlaceholder,
+              placeholder: t("smbRootPlaceholder"),
               value: config.root,
               onChange: (event) => patch({ root: event.target.value })
             }
@@ -11036,7 +11036,7 @@ function BackupSettings({ t }) {
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-grid", children: [
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.smbUser }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("smbUser") }),
             /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
               "input",
               {
@@ -11047,7 +11047,7 @@ function BackupSettings({ t }) {
             )
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.smbPassword }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("smbPassword") }),
             /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
               "input",
               {
@@ -11059,11 +11059,11 @@ function BackupSettings({ t }) {
             )
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", onClick: () => void connectSmbShare(), children: t.smbConnect }) })
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", onClick: () => void connectSmbShare(), children: t("smbConnect") }) })
       ] }) : null
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.scopeTitle }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("scopeTitle") }) }),
       GROUPS.map((group) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ebk-check", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           "input",
@@ -11074,14 +11074,14 @@ function BackupSettings({ t }) {
           }
         ),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-check-main", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t[group.title] }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-hint", children: t[group.hint] })
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t(group.title) }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-hint", children: t(group.hint) })
         ] })
       ] }, group.id))
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.encryptionTitle }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-muted", style: { margin: 0 }, children: t.encryptionHint }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("encryptionTitle") }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-muted", style: { margin: 0 }, children: t("encryptionHint") }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ebk-check", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           "input",
@@ -11091,12 +11091,12 @@ function BackupSettings({ t }) {
             onChange: (event) => patch({ encryption: { enabled: event.target.checked } })
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-main", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.encryptionOn }) })
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-main", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("encryptionOn") }) })
       ] }),
       config.encryption.enabled ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { children: [
-          t.passphrase,
-          secrets.passphrase ? ` \xB7 ${t.passwordSaved}` : ""
+          t("passphrase"),
+          secrets.passphrase ? ` \xB7 ${t("passwordSaved")}` : ""
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
           "input",
@@ -11110,7 +11110,7 @@ function BackupSettings({ t }) {
       ] }) : null
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.scheduleTitle }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("scheduleTitle") }) }),
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-row", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: "\xA0" }),
@@ -11121,16 +11121,16 @@ function BackupSettings({ t }) {
               value: config.schedule.mode,
               onChange: (event) => patch({ schedule: { ...config.schedule, mode: event.target.value } }),
               children: [
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "off", children: t.scheduleOff }),
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "daily", children: t.scheduleDaily }),
-                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "weekly", children: t.scheduleWeekly })
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "off", children: t("scheduleOff") }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "daily", children: t("scheduleDaily") }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "weekly", children: t("scheduleWeekly") })
               ]
             }
           )
         ] }),
         config.schedule.mode !== "off" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.scheduleAt }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("scheduleAt") }),
             /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
               "input",
               {
@@ -11143,20 +11143,20 @@ function BackupSettings({ t }) {
             )
           ] }),
           config.schedule.mode === "weekly" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.scheduleWeekday }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("scheduleWeekday") }),
             /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
               "select",
               {
                 className: "ebk-select",
                 value: config.schedule.weekday,
                 onChange: (event) => patch({ schedule: { ...config.schedule, weekday: Number(event.target.value) } }),
-                children: WEEKDAYS2.map((day) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: day, children: t[`weekday${day}`] }, day))
+                children: WEEKDAYS2.map((day) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: day, children: t(`weekday${day}`) }, day))
               }
             )
           ] }) : null
         ] }) : null,
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.retention }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("retention") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-row", style: { gap: 6 }, children: [
             /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
               "input",
@@ -11170,40 +11170,40 @@ function BackupSettings({ t }) {
                 onChange: (event) => patch({ retention: Number(event.target.value) })
               }
             ),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.retentionUnit })
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t("retentionUnit") })
           ] })
         ] })
       ] })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-card-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.runTitle }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: busy, onClick: () => void run(), children: t.run })
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("runTitle") }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: busy, onClick: () => void run(), children: t("run") })
       ] }),
-      progress !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-progress", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: `${t.running} \xB7 ${progress.group} \xB7 ${phaseLabel} \xB7 ${progress.fileCount} \xB7 ${formatBytes(progress.totalBytes)}` }) }) : null,
+      progress !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-progress", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: `${t("running")} \xB7 ${progress.group} \xB7 ${phaseLabel} \xB7 ${progress.fileCount} \xB7 ${formatBytes(progress.totalBytes)}` }) }) : null,
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-history", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.historyTitle }),
-        history.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.historyEmpty }) : history.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-history-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t("historyTitle") }),
+        history.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t("historyEmpty") }) : history.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-history-row", children: [
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-muted", children: [
             formatTime(entry.startedAt),
             " \xB7 ",
-            entry.trigger === "manual" ? t.historyManual : t.historySchedule,
+            entry.trigger === "manual" ? t("historyManual") : t("historySchedule"),
             " \xB7 ",
             entry.groups.map((item) => item.group).join(", ") || "\u2014"
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: `ebk-badge ${entry.status === "completed" ? "ebk-badge-ok" : "ebk-badge-failed"}`, children: [
-            entry.status === "completed" ? t.historyCompleted : t.historyFailed,
+            entry.status === "completed" ? t("historyCompleted") : t("historyFailed"),
             entry.status === "failed" && entry.error !== void 0 ? ` \u2014 ${entry.error}` : ""
           ] })
         ] }, entry.startedAt))
       ] })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.restoreTitle }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || busy, onClick: () => void openRestore(), children: t.restorePreview }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("restoreTitle") }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || busy, onClick: () => void openRestore(), children: t("restorePreview") }) }),
       remote !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-row", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.restorePickGroup }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("restorePickGroup") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
             "select",
             {
@@ -11216,7 +11216,7 @@ function BackupSettings({ t }) {
                 setPlan(null);
               },
               children: GROUPS.map((group) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("option", { value: group.id, children: [
-                t[group.title],
+                t(group.title),
                 "\uFF08",
                 remote.groups[group.id].length,
                 "\uFF09"
@@ -11225,7 +11225,7 @@ function BackupSettings({ t }) {
           )
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.restorePickStamp }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t("restorePickStamp") }),
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("select", { className: "ebk-select", value: restoreStamp, onChange: (event) => {
             setRestoreStamp(event.target.value);
             setPlan(null);
@@ -11235,11 +11235,11 @@ function BackupSettings({ t }) {
             formatBytes(item.size)
           ] }, item.stamp)) })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || restoreStamp === "", onClick: () => void previewRestore(), children: t.restorePreview }) })
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || restoreStamp === "", onClick: () => void previewRestore(), children: t("restorePreview") }) })
       ] }) : null,
       plan !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-progress", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-muted", children: [
-          t.restorePlan(plan.fileCount),
+          t("restorePlan").replace("{count}", String(plan.fileCount)),
           " \xB7 ",
           formatBytes(plan.bytes)
         ] }),
@@ -11248,7 +11248,7 @@ function BackupSettings({ t }) {
           " \xB7 ",
           formatBytes(file.size)
         ] }, file.path)),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: restoring, onClick: () => void confirmRestore(), children: t.restoreConfirm }) })
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: restoring, onClick: () => void confirmRestore(), children: t("restoreConfirm") }) })
       ] }) : null
     ] })
   ] });
@@ -11334,9 +11334,9 @@ var BACKUP_COPY = {
     restorePickStamp: "Copy",
     restorePreview: "Preview restore",
     restoreConfirm: "Overwrite now",
-    restorePlan: (count) => `${count} files will be overwritten with the archived copies. Confirm to proceed.`,
-    restoreApplied: (count) => `Restored ${count} files. Restart the app if sessions were restored.`,
-    restoreSkipped: (count) => `${count} entries skipped (unknown scope).`
+    restorePlan: "{count} files will be overwritten with the archived copies. Confirm to proceed.",
+    restoreApplied: "{count} files restored. Restart the app if sessions were restored.",
+    restoreSkipped: "{count} entries skipped (unknown scope)."
   },
   zh: {
     nav: "\u5907\u4EFD",
@@ -11416,9 +11416,9 @@ var BACKUP_COPY = {
     restorePickStamp: "\u5907\u4EFD\u4EFD",
     restorePreview: "\u9884\u89C8\u6062\u590D",
     restoreConfirm: "\u786E\u8BA4\u8986\u76D6",
-    restorePlan: (count) => `\u5C06\u7528\u5F52\u6863\u526F\u672C\u8986\u76D6 ${count} \u4E2A\u6587\u4EF6\uFF0C\u786E\u8BA4\u540E\u6267\u884C\u3002`,
-    restoreApplied: (count) => `\u5DF2\u6062\u590D ${count} \u4E2A\u6587\u4EF6\u3002\u82E5\u6062\u590D\u4E86\u4F1A\u8BDD\u8BB0\u5F55\uFF0C\u5EFA\u8BAE\u91CD\u542F\u5E94\u7528\u3002`,
-    restoreSkipped: (count) => `\u8DF3\u8FC7 ${count} \u4E2A\u672A\u77E5\u8303\u56F4\u6761\u76EE\u3002`
+    restorePlan: "\u5C06\u7528\u5F52\u6863\u526F\u672C\u8986\u76D6 {count} \u4E2A\u6587\u4EF6\uFF0C\u786E\u8BA4\u540E\u6267\u884C\u3002",
+    restoreApplied: "\u5DF2\u6062\u590D {count} \u4E2A\u6587\u4EF6\u3002\u82E5\u6062\u590D\u4E86\u4F1A\u8BDD\u8BB0\u5F55\uFF0C\u5EFA\u8BAE\u91CD\u542F\u5E94\u7528\u3002",
+    restoreSkipped: "\u8DF3\u8FC7 {count} \u4E2A\u672A\u77E5\u8303\u56F4\u6761\u76EE\u3002"
   }
 };
 

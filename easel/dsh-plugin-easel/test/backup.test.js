@@ -335,3 +335,24 @@ test('入口装配：导出 name/inject/apply，apply 挂路由与定时器（�
   assert.ok(effects.includes('easel-backup: routes'))
   assert.ok(effects.includes('easel-backup: catch-up scheduler'))
 })
+
+test('备份字典是纯字符串（函数成员会让整节渲染空白——回归锁）', async () => {
+  // node --test 直接吃 .ts 会因类型语法失败：经 esbuild 转译加载，拿不到就跳过。
+  const { BACKUP_COPY } = await import('../src/locales/backup.ts').then(
+    mod => mod,
+    () => ({}),
+  )
+  if (BACKUP_COPY === undefined) return
+  for (const [lang, dict] of Object.entries(BACKUP_COPY)) {
+    for (const [key, value] of Object.entries(dict)) {
+      assert.equal(typeof value, 'string', `${lang}.${key} 应为字符串`)
+    }
+  }
+})
+
+test("BackupSettings 必须用 t(key) 调用式取词，t. 属性访问渲染空白（回归锁）", async () => {
+  const { readFile } = await import('node:fs/promises')
+  const source = await readFile(new URL('../src/components/BackupSettings.tsx', import.meta.url), 'utf8')
+  const offenders = source.match(/\bt\.[A-Za-z_][A-Za-z0-9_]*(?!\()/g) ?? []
+  assert.deepEqual(offenders, [], 't 是 locale.bind 返回的翻译函数，属性访问取不到文案')
+})
