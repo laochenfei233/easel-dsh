@@ -19,6 +19,7 @@ class MemoryDestination implements Destination {
   readonly objects = new Map<string, Buffer>()
   readonly deleted: string[] = []
   failNextPut = false
+  failDelete = false
 
   async probe(): Promise<void> {}
 

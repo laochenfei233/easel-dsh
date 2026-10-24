@@ -84,8 +84,6 @@ Every byte crosses one seam: a destination answers `probe`/`put`/`get`/`list`/`d
 
 ## Model Experience
 
-<a id="model-experience"></a>
-
 None, as infrastructure only: backups are user-initiated through the Easel settings page and register no tool, prompt, or model-visible text.
 
 #### KV Cache effect

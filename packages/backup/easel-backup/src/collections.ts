@@ -155,7 +155,11 @@ export async function collectGroup(roots: BackupRoots, group: BackupGroupId): Pr
   return entries
 }
 
-/** POSIX separators for an on-disk relative path (no-op on POSIX). */
+/**
+ * Convert an on-disk relative path to POSIX separators (no-op on POSIX).
+ * @param value - Path in platform separators.
+ * @returns The same path with `/` separators.
+ */
 export function toPosixPath(value: string): string {
   return value.split('\\').join('/')
 }
