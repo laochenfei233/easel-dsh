@@ -84,13 +84,16 @@ OutFile "${OUTFILE}"
 ; it's just for nsis to append the product name folder in the directory selector
 ; https://nsis.sourceforge.io/Reference/InstallDir
 !define PLACEHOLDER_INSTALL_DIR "placeholder\${PRODUCTNAME}"
-; EASEL-DIVERGENCE(easel-dsh-layout): keep the program under
-; %LOCALAPPDATA%\Easel-dsh\app; user data lives in <Documents>\Easel-dsh by
+; EASEL-DIVERGENCE(easel-dsh-layout): the program lives directly in
+; %LOCALAPPDATA%\Easel-dsh; user data lives in <Documents>\Easel-dsh by
 ; default (settings can move it), outside this directory, so upgrades and
-; uninstalls never touch it. This differs from the Tauri default on purpose;
-; the .onInit block below only rewrites $INSTDIR when it still equals the
-; placeholder, so this absolute default is kept as-is.
-InstallDir "$LOCALAPPDATA\Easel-dsh\app"
+; uninstalls never touch it. The uninstaller deletes only the files it
+; installed and then tries a non-recursive RMDir, so anything a user drops
+; beside the program survives. This differs from the Tauri default on
+; purpose; the .onInit block below only rewrites $INSTDIR when it still
+; equals the placeholder, so this absolute default is kept as-is — including
+; across upgrades, where an old registry InstallLocation must not win.
+InstallDir "$LOCALAPPDATA\Easel-dsh"
 
 VIProductVersion "${VERSIONWITHBUILD}"
 VIAddVersionKey "ProductName" "${PRODUCTNAME}"

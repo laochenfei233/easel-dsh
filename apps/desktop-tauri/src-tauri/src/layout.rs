@@ -29,9 +29,10 @@ const DATA_ROOT_CONFIG: &str = "data-root.json";
 const DATA_ROOT_PENDING: &str = "data-root.pending.json";
 const DATA_ROOT_RESULT: &str = "data-root.result.json";
 
-/// `%LOCALAPPDATA%\Easel-dsh`, or `None` in a dev launch (the exe is not under
-/// `app\`). Every path helper falls back to the pre-layout defaults when this
-/// returns `None`, so `tauri dev` keeps using the developer's scratch data.
+/// `%LOCALAPPDATA%\Easel-dsh`, or `None` in a dev launch (the exe has no
+/// bundled runtime beside it). Every path helper falls back to the pre-layout
+/// defaults when this returns `None`, so `tauri dev` keeps using the
+/// developer's scratch data.
 #[cfg_attr(not(windows), allow(dead_code))]
 pub(crate) fn install_root() -> Option<PathBuf> {
     install_root_from_exe(&std::env::current_exe().ok()?)
@@ -40,11 +41,16 @@ pub(crate) fn install_root() -> Option<PathBuf> {
 #[cfg_attr(not(windows), allow(dead_code))]
 fn install_root_from_exe(exe: &Path) -> Option<PathBuf> {
     let dir = exe.parent()?;
+    // Pre-alpha.32 split layout kept the program tree in `<root>\app`.
     if dir.file_name().and_then(|name| name.to_str()) == Some("app") {
-        dir.parent().map(Path::to_path_buf)
-    } else {
-        None
+        return dir.parent().map(Path::to_path_buf)
     }
+    // Flat layout: the exe sits directly in the install root beside the
+    // bundled runtime payload; `runtime\manifest.json` is the install marker.
+    if dir.join("runtime").join("manifest.json").is_file() {
+        return Some(dir.to_path_buf())
+    }
+    None
 }
 
 #[cfg(windows)]
@@ -72,12 +78,9 @@ fn is_installed() -> bool {
         .unwrap_or(false)
 }
 
-/// The application directory a data root must never live inside.
-#[cfg_attr(windows, allow(dead_code))]
-#[cfg(windows)]
-fn install_dir() -> Option<PathBuf> {
-    install_root().map(|root| root.join("app"))
-}
+// On Windows the flat install layout makes the install root itself the
+// application directory a data root must never live inside; non-Windows
+// platforms derive it from the bundle location below.
 
 #[cfg(target_os = "macos")]
 fn install_dir() -> Option<PathBuf> {
@@ -403,7 +406,9 @@ pub(crate) fn migrate() {
                     return;
                 }
             }
-            cleanup_legacy_app(&root);
+            // The pre-alpha.32 program tree (`<root>\app`) is removed by the
+            // installer's POSTINSTALL hook, which owns the install directory;
+            // startup never deletes program files.
         }
     }
 
@@ -905,7 +910,6 @@ fn migrate_at(root: &Path, legacy_workspace: &Path, legacy_home: &Path) -> Resul
     )
     .map_err(|e| format!("write layout marker: {e}"))?;
 
-    cleanup_legacy_app(root);
     log(&data, "layout migration complete");
     Ok(())
 }
@@ -980,22 +984,6 @@ fn free_space_bytes(path: &Path) -> Option<u64> {
     let mut stat: libc::statvfs = unsafe { std::mem::zeroed() };
     let rc = unsafe { libc::statvfs(path.as_ptr(), &mut stat) };
     (rc == 0).then(|| stat.f_bavail as u64 * stat.f_frsize as u64)
-}
-
-/// The pre-layout install put the exe, runtime and uninstaller directly in
-/// root. `app` and the v2 `data` intermediate are the only entries allowed to
-/// stay. Removing the old uninstaller matters: its POSTUNINSTALL hook
-/// recursively deletes the legacy `%LOCALAPPDATA%\Easel`, which is now a
-/// junction into the data root.
-fn cleanup_legacy_app(root: &Path) {
-    for entry in ["runtime", "dsh-desktop.exe", "uninstall.exe"] {
-        let path = root.join(entry);
-        if path.is_dir() {
-            let _ = fs::remove_dir_all(&path);
-        } else if path.exists() {
-            let _ = fs::remove_file(&path);
-        }
-    }
 }
 
 fn log(data: &Path, message: &str) {
@@ -1104,11 +1092,13 @@ mod tests {
     }
 
     #[test]
-    fn install_root_requires_an_app_subdirectory() {
+    fn install_root_accepts_the_legacy_app_layout_and_the_flat_marker() {
+        // Pre-alpha.32 split layout: the exe sits one level under the root.
         assert_eq!(
             install_root_from_exe(Path::new("C:/x/Easel-dsh/app/dsh-desktop.exe")),
             Some(PathBuf::from("C:/x/Easel-dsh"))
         );
+        // Flat layout without the bundled runtime marker: not an install.
         assert_eq!(
             install_root_from_exe(Path::new("C:/x/Easel-dsh/dsh-desktop.exe")),
             None
@@ -1117,6 +1107,15 @@ mod tests {
             install_root_from_exe(Path::new("C:/x/target/debug/dsh-desktop.exe")),
             None
         );
+        // Flat layout with the bundled runtime marker: the exe's own
+        // directory is the install root.
+        let root = temp_dir("install-root-marker");
+        let exe = root.join("dsh-desktop.exe");
+        let manifest = root.join("runtime").join("manifest.json");
+        fs::create_dir_all(manifest.parent().unwrap()).unwrap();
+        fs::write(&manifest, "{}").unwrap();
+        assert_eq!(install_root_from_exe(&exe), Some(root.clone()));
+        remove_test_dir(&root);
     }
 
     #[test]
@@ -1437,13 +1436,15 @@ mod tests {
         let closure = root.join("old-runtime").join("dsh").join("node_modules");
         fs::create_dir_all(&closure).unwrap();
         create_link(&legacy_home.join("node_modules"), &closure).unwrap();
-        // The pre-layout program files that cleanup must remove.
+        // Program files are not the data migration's business anymore: the
+        // installer owns the install tree, so `app\` and root-level program
+        // entries must survive `migrate_at` untouched.
         write(
             &root.join("runtime").join("dsh").join("lib").join("bin.js"),
-            "old",
+            "program",
         );
-        write(&root.join("dsh-desktop.exe"), "old exe");
-        write(&root.join("uninstall.exe"), "old uninstaller");
+        write(&root.join("dsh-desktop.exe"), "program exe");
+        write(&root.join("uninstall.exe"), "program uninstaller");
         fs::create_dir_all(root.join("app")).unwrap();
 
         migrate_at(&root, &legacy_workspace, &legacy_home).unwrap();
@@ -1481,9 +1482,14 @@ mod tests {
         assert!(is_reparse_point(&legacy_workspace));
         assert!(is_reparse_point(&legacy_home));
         assert!(!data.join("home").join("node_modules").exists());
-        assert!(!root.join("runtime").exists());
-        assert!(!root.join("dsh-desktop.exe").exists());
-        assert!(!root.join("uninstall.exe").exists());
+        assert_eq!(
+            fs::read_to_string(root.join("runtime").join("dsh").join("lib").join("bin.js"))
+                .unwrap(),
+            "program"
+        );
+        assert!(root.join("dsh-desktop.exe").exists());
+        assert!(root.join("uninstall.exe").exists());
+        assert!(root.join("app").exists());
         let marker = fs::read_to_string(data.join(LAYOUT_MARKER)).unwrap();
         assert!(marker.contains("legacyProjectRoot"));
         assert_eq!(

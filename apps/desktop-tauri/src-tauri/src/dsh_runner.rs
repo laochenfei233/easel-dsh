@@ -683,9 +683,10 @@ fn port_open(port: u16) -> bool {
 
 /// Matches a process whose command line boots one of OUR `dsh web` servers:
 /// the installed runtime (`...\Easel-dsh\runtime\...`, the mac app bundle
-/// `/Applications/Easel-dsh.app/Contents/Resources/runtime/...`) or this
-/// repo's worktree (`...\Easel\dsh\...`). Prism or stock-dsh installs boot
-/// from different paths and must never match — the sweep must not kill
+/// `/Applications/Easel-dsh.app/Contents/Resources/runtime/...`), a
+/// pre-alpha.32 install still running from `...\Easel-dsh\app\runtime\...`,
+/// or this repo's worktree (`...\Easel\dsh\...`). Prism or stock-dsh installs
+/// boot from different paths and must never match — the sweep must not kill
 /// another product.
 fn is_our_dsh_web_server(command_line: &str) -> bool {
     // 路径被引号包着（`..."bin.js" web --port...`），不能要求连续子串。
@@ -694,6 +695,7 @@ fn is_our_dsh_web_server(command_line: &str) -> bool {
     line.contains("bin.js")
         && line.contains(" web --port")
         && (line.contains("easel-dsh/runtime")
+            || line.contains("easel-dsh/app/runtime")
             || line.contains("easel/dsh")
             || line.contains("easel-dsh.app/contents"))
 }
@@ -1624,6 +1626,8 @@ mod tests {
     fn rival_sweep_kills_orphans_and_rivals_but_spares_the_kept_hub() {
         let hub = r#"C:\Users\chenfei\AppData\Local\EASEL-DSH\runtime\dsh\lib\bin.js" web --port 3082 --no-open"#.to_string();
         let orphan = r#"C:\Users\chenfei\AppData\Local\easel-dsh\runtime\dsh\lib\bin.js" web --port 3081 --no-open"#.to_string();
+        // pre-alpha.32 嵌套布局的旧实例还在 app\runtime 下跑：新壳要能清掉它。
+        let nested = r#"C:\Users\chenfei\AppData\Local\Easel-dsh\app\runtime\dsh\lib\bin.js" web --port 3084 --no-open"#.to_string();
         let dev = r#"C:\Users\chenfei\Documents\GitHub\Easel\dsh\cli\lib\bin.js" web --port 3083 --no-open"#.to_string();
         // 另一个产品（prism）的 dsh web：路径不同，绝不能被误杀。
         let prism = r#"C:\Users\chenfei\Documents\GitHub\prism-agent\dsh\cli\lib\bin.js" web --port 3099 --no-open"#.to_string();
@@ -1631,17 +1635,18 @@ mod tests {
         let samples = vec![
             (34096, hub),
             (40456, orphan),
+            (33007, nested),
             (21944, dev),
             (111, prism),
             (222, unrelated),
         ];
-        // 收养 3082 时：装机的孤儿（大小写不敏感命中）与源码树的开发实例都清，
-        // prism 与无关进程不动。
-        assert_eq!(rival_pids(&samples, Some(34096)), vec![40456, 21944]);
+        // 收养 3082 时：装机的孤儿（大小写不敏感命中）、嵌套布局旧实例与
+        // 源码树的开发实例都清，prism 与无关进程不动。
+        assert_eq!(rival_pids(&samples, Some(34096)), vec![40456, 33007, 21944]);
         // 冷启（无正主）：我们家的 dsh web 全清，仍不碰别家。
-        assert_eq!(rival_pids(&samples, None), vec![34096, 40456, 21944]);
+        assert_eq!(rival_pids(&samples, None), vec![34096, 40456, 33007, 21944]);
         // keep 指向不存在的 pid（记录被复用污染）：只是少豁免一项，其余照清。
-        assert_eq!(rival_pids(&samples, Some(999)), vec![34096, 40456, 21944]);
+        assert_eq!(rival_pids(&samples, Some(999)), vec![34096, 40456, 33007, 21944]);
     }
 
     #[test]

@@ -1,12 +1,12 @@
 ; Bundled Easel installer/uninstaller hooks.
 ;
-; Layout contract (easel-dsh-layout): the program lives in
-; %LOCALAPPDATA%\Easel-dsh\app; user data lives in <Documents>\Easel-dsh by
+; Layout contract (easel-dsh-layout): the program lives directly in
+; %LOCALAPPDATA%\Easel-dsh; user data lives in <Documents>\Easel-dsh by
 ; default (the settings page can move it), outside the install directory. The
 ; shell records the chosen root in %LOCALAPPDATA%\ai.easel.desktop\data-root.json.
-; v2 installs kept data in the sibling data\ directory; the shell relocates it
-; on first launch. Pre-layout installs kept the program at
-; %LOCALAPPDATA%\Easel-dsh and data in %LOCALAPPDATA%\Easel + %USERPROFILE%\.easel;
+; v2/v3 installs kept data in the sibling data\ directory and pre-alpha.32
+; installs kept the program in app\; both are relocated/cleaned here.
+; Pre-layout installs kept data in %LOCALAPPDATA%\Easel + %USERPROFILE%\.easel;
 ; the legacy roots and junctions are cleaned here.
 ;
 ; The shell is tray-resident and spawns the dsh web server from its runtime
@@ -14,24 +14,30 @@
 ; forced kill never runs RunEvent::Exit, so the node child keeps serving from
 ; the install directory and locks runtime\ against the next upgrade. Stop the
 ; shell first (its supervisor would otherwise respawn the child), then every
-; process whose executable lives under runtime\. Matches are by executable
-; path, never by image name, so other node applications are untouched.
+; process whose executable lives under runtime\ — the flat root and the
+; pre-alpha.32 app\ subtree alike. Matches are by executable path, never by
+; image name, so other node applications are untouched.
 
 !macro EASEL_STOP_RUNTIME
   InitPluginsDir
   FileOpen $0 "$PLUGINSDIR\stop-easel.ps1" w
-  FileWrite $0 '$$roots = @($\"$INSTDIR$\")$\r$\n'
-  FileWrite $0 '$$legacy = $\"$LOCALAPPDATA\Easel-dsh$\"$\r$\n'
-  FileWrite $0 'if ($$legacy -ne $$INSTDIR) { $$roots += $$legacy }$\r$\n'
-  FileWrite $0 'foreach ($$root in $$roots) {$\r$\n'
-  FileWrite $0 '  $$shell = Join-Path $$root $\"dsh-desktop.exe$\"$\r$\n'
-  FileWrite $0 '  $$runtime = (Join-Path $$root $\"runtime$\") + [IO.Path]::DirectorySeparatorChar$\r$\n'
-  FileWrite $0 '  Get-CimInstance Win32_Process | Where-Object { $$_.ExecutablePath -eq $$shell } | ForEach-Object { Stop-Process -Id $$_.ProcessId -Force -ErrorAction SilentlyContinue }$\r$\n'
-  FileWrite $0 '  Start-Sleep -Milliseconds 400$\r$\n'
-  FileWrite $0 '  for ($$i = 0; $$i -lt 2; $$i++) {$\r$\n'
-  FileWrite $0 '    Get-CimInstance Win32_Process | Where-Object { $$_.ExecutablePath -and $$_.ExecutablePath.StartsWith($$runtime, [StringComparison]::OrdinalIgnoreCase) } | ForEach-Object { Stop-Process -Id $$_.ProcessId -Force -ErrorAction SilentlyContinue }$\r$\n'
-  FileWrite $0 '    Start-Sleep -Milliseconds 200$\r$\n'
+  FileWrite $0 '$$dirs = @((Join-Path $$env:LOCALAPPDATA $\"Easel-dsh$\"), $\"$INSTDIR$\") | Select-Object -Unique$\r$\n'
+  FileWrite $0 '$$shells = @()$\r$\n'
+  FileWrite $0 '$$runtimes = @()$\r$\n'
+  FileWrite $0 'foreach ($$d in $$dirs) {$\r$\n'
+  FileWrite $0 '  $$shells += (Join-Path $$d $\"dsh-desktop.exe$\"), (Join-Path $$d $\"app\dsh-desktop.exe$\")$\r$\n'
+  FileWrite $0 '  $$runtimes += (Join-Path $$d $\"runtime$\"), (Join-Path $$d $\"app\runtime$\")$\r$\n'
+  FileWrite $0 '}$\r$\n'
+  FileWrite $0 'foreach ($$s in $$shells) {$\r$\n'
+  FileWrite $0 '  Get-CimInstance Win32_Process | Where-Object { $$_.ExecutablePath -and $$_.ExecutablePath -ieq $$s } | ForEach-Object { Stop-Process -Id $$_.ProcessId -Force -ErrorAction SilentlyContinue }$\r$\n'
+  FileWrite $0 '}$\r$\n'
+  FileWrite $0 'Start-Sleep -Milliseconds 400$\r$\n'
+  FileWrite $0 'for ($$i = 0; $$i -lt 2; $$i++) {$\r$\n'
+  FileWrite $0 '  foreach ($$r in $$runtimes) {$\r$\n'
+  FileWrite $0 '    $$prefix = $$r + [IO.Path]::DirectorySeparatorChar$\r$\n'
+  FileWrite $0 '    Get-CimInstance Win32_Process | Where-Object { $$_.ExecutablePath -and $$_.ExecutablePath.StartsWith($$prefix, [StringComparison]::OrdinalIgnoreCase) } | ForEach-Object { Stop-Process -Id $$_.ProcessId -Force -ErrorAction SilentlyContinue }$\r$\n'
   FileWrite $0 '  }$\r$\n'
+  FileWrite $0 '  Start-Sleep -Milliseconds 200$\r$\n'
   FileWrite $0 '}$\r$\n'
   FileClose $0
   nsExec::ExecToLog 'powershell -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\stop-easel.ps1"'
@@ -48,18 +54,23 @@
 !macroend
 
 !macro NSIS_HOOK_POSTINSTALL
-  ; Remove the pre-layout program files from the parent directory. The new
-  ; install root is ...\app; the stale root uninstaller must not survive,
-  ; because its POSTUNINSTALL hook deletes the legacy %LOCALAPPDATA%\Easel
-  ; path recursively, which after migration is a junction into the data root.
-  ${If} $INSTDIR != "$LOCALAPPDATA\Easel-dsh"
-    Delete "$LOCALAPPDATA\Easel-dsh\dsh-desktop.exe"
-    Delete "$LOCALAPPDATA\Easel-dsh\uninstall.exe"
-    RMDir /r "$LOCALAPPDATA\Easel-dsh\runtime"
+  ; Pre-alpha.32 installs kept the whole program tree in `<root>\app`; the
+  ; flat layout installs beside it. Stop everything again before removing the
+  ; nested tree: between PREINSTALL and now the user (or a tray shortcut) can
+  ; have relaunched the old shell, and a locked exe would leave app\ behind.
+  !insertmacro EASEL_STOP_RUNTIME
+  ${If} ${FileExists} "$INSTDIR\app\*"
+    RMDir /r "$INSTDIR\app"
+    DetailPrint "removed the pre-alpha.32 nested program tree (app\)"
   ${EndIf}
 !macroend
 
 !macro NSIS_HOOK_POSTUNINSTALL
+  ; A nested pre-alpha.32 program tree that an upgrade never cleaned up is
+  ; program residue, not data: remove it unconditionally.
+  ${If} ${FileExists} "$INSTDIR\app\*"
+    RMDir /r "$INSTDIR\app"
+  ${EndIf}
   ; A /UPDATE uninstall is the old uninstaller running as part of an upgrade:
   ; the data prompt must not appear, and user data must never be deleted.
   ${If} $UpdateMode <> 1
