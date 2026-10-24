@@ -12,6 +12,7 @@ import * as accounts from './accounts'
 import * as profile from './profile'
 import * as breakdown from './breakdown'
 import { plugin as media } from './media'
+import { plugin as backup } from './backup'
 import { plugin as contextMenu } from './context-menu.js'
 
 const views = [dashboard, trends, ideas, calendar, skills, outputs, publish, accounts, profile, breakdown]
@@ -25,4 +26,4 @@ export const FEATURES = views.map(module => ({
 }))
 
 /** Every client plugin the core mounts: the views, the media previewer, and the context menu. */
-export const CLIENT_PLUGINS = [...FEATURES.map(feature => feature.plugin), media, contextMenu]
+export const CLIENT_PLUGINS = [...FEATURES.map(feature => feature.plugin), media, backup, contextMenu]
