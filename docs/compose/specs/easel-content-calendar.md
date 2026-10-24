@@ -1,15 +1,26 @@
 ---
 feature: easel-content-calendar
-status: designed
+status: delivered
 updated: 2026-10-24
 branch: feat/easel-content-calendar
 worktree: .worktrees/easel-content-calendar
-commits: 5d6def5656..(pending)
+commits: 5d6def5656..a5259e6845
 ---
 
 # 内容日历增强：节假日底图 / CalDAV 订阅 / 右键添加节日
 
 ## Report
+
+**What was built** — 内容日历页三层增强。节假日底图为纯客户端数据：vendor holiday-cn 法定节假日与调休（2025–2026，随版本更新）、经典位表农历算法（1900–2100，春节/元宵/端午/中秋/除夕等）、固定与浮日国际/电商节日（母亲节/感恩节/618/双11 等），法定优先、同名去重；月网格显示红「休」/灰「班」角标与节日名标签，当天详情列出节日条目，图例同步。右键日期格弹出菜单：添加节日（活动类型预填「节日」+ 可选每年重复）、添加平台活动、添加排期、删除当天已有自定义节日；schedule 条目新增受校验的 `repeat: 'yearly'`，客户端按月/日展开进渲染窗口，更新不带该字段保留原值。CalDAV 单向只读订阅：零依赖协议模块（ICS 解析、四种 FREQ 的 RRULE 展开、multistatus 提取、principal→home-set 自动发现），`订阅` 弹窗管理账号（探测日历、单账号同步、启停、删除，直填日历 URL 与自动发现都支持），同步 −60d..+300d 进 `_caldav_cache.json`，事件以账号色空心 chip 叠加展示，挂载时超 24h 静默补同步；密码 GET 一律掩码、PUT 空串或掩码均保留原值。
+
+**Verification** — `node --test`（插件目录）：128 pass / 0 fail（基线 92 + 新增 36：festivals 12、caldav 协议 17、schedule-repeat 2、caldav-routes 5）；`node build.mjs` 成功（client.js 588.3kb，仅既有的 tsconfig es2024 目标警告）。关键日期断言：2026 春节 2/17、中秋 9/25、端午 6/19、清明公式、2025 闰六月、除夕大小月（2022-01-31）、母亲节/感恩节浮日、法定去重与兜底。独立 reviewer 两轮：首轮发现并修复两个 CRITICAL（expandEvents 窗右缘 return 吞掉后续事件；掩码经全量 PUT 回写毁掉真凭据），复轮 APPROVE，残留两个 minor 一并修复（lunar 表终点 guard 时序、BYMONTHDAY 锚月/排序）。
+
+**Journey log** —
+- holiday-cn 抓取在 WebFetch/curl 双双被网络重置后，经 web_reader MCP 取得官方 JSON——本环境 GitHub 直连不可靠时先换 MCP 通道。
+- 根 .gitignore 的 `lib/` 会吞插件源 `src/lib/`，每次提交都要 `git add -f`（radar 已踩过）。
+- `expandEvents` 的窗口右缘提前退出写成 `return result`（函数级）而非 `break intervalLoop`（事件级），多事件日历会静默丢事件——循环内提前退出必须核对层级。
+- 凭据掩码的往返语义要在服务端闭环（掩码串视为「未改动」），只靠客户端记得清空密码必然被全量 PUT 打穿；掩码必须幂等且可识别。
+- worktree 里 `node --test` 从仓库根误跑会扫到全 dsh 套件（无构建产物必红）；套件数字骤变先查工作目录。
 
 ## [S1] Problem
 
@@ -69,19 +80,19 @@ commits: 5d6def5656..(pending)
 
 ## Tasks
 
-- [ ] T1: 节假日数据层：`lunar.js` + `holidays-cn.js`（vendor 2025–2026）+ `festivals.js`，单测覆盖关键日期（2026 春节/中秋/清明、浮日节日、法定优先去重）(depends: none)
-- [ ] T2: 日历格节假日渲染 + 当天详情节日条目 + 图例 + `cal-*` 样式 (depends: T1)
-- [ ] T3: schedule `repeat` 字段（服务端校验 + 客户端年度展开）+ 右键菜单（添加节日/活动/排期、删除已有自定义节日）+ 测试 (depends: T2)
-- [ ] T4: `caldav.js` 协议纯函数（ICS/RRULE/multistatus/Basic 请求）+ 单测 (depends: none)
-- [ ] T5: 服务端 CalDAV 路由（accounts 掩码读写 / discover / sync / events 缓存）+ 路由行为测试 (depends: T4)
-- [ ] T6: 客户端订阅弹窗 + 网格只读 chip + 挂载过期自动同步 + api helpers (depends: T5)
-- [ ] T7: 验证与复审：`node --test` 全绿、`node build.mjs` 成功，compose-next review (depends: T2, T3, T6)
+- [x] T1: 节假日数据层：`lunar.js` + `holidays-cn.js`（vendor 2025–2026）+ `festivals.js`，单测覆盖关键日期（2026 春节/中秋/清明、浮日节日、法定优先去重）(depends: none)
+- [x] T2: 日历格节假日渲染 + 当天详情节日条目 + 图例 + `cal-*` 样式 (depends: T1)
+- [x] T3: schedule `repeat` 字段（服务端校验 + 客户端年度展开）+ 右键菜单（添加节日/活动/排期、删除已有自定义节日）+ 测试 (depends: T2)
+- [x] T4: `caldav.js` 协议纯函数（ICS/RRULE/multistatus/Basic 请求）+ 单测 (depends: none)
+- [x] T5: 服务端 CalDAV 路由（accounts 掩码读写 / discover / sync / events 缓存）+ 路由行为测试 (depends: T4)
+- [x] T6: 客户端订阅弹窗 + 网格只读 chip + 挂载过期自动同步 + api helpers (depends: T5)
+- [x] T7: 验证与复审：`node --test` 全绿、`node build.mjs` 成功，compose-next review (depends: T2, T3, T6)
 
 ## [S4] Acceptance
 
-- [ ] 打开内容日历当月：法定节假日显示红「休」+名称、调休显示灰「班」、农历/国际/电商节日显示名称标签；当天详情与图例同步呈现；无网络时同样显示（纯内置数据）。
-- [ ] 测试断言关键日期：2026 春节（2/17 起）、2026 中秋、2026 清明、2026 母亲节（5 月第 2 个周日）标注正确；法定数据与固定节日重名时只出现一条。
-- [ ] 右键日期格弹出菜单：三项添加动作可达对应预填表单；「每年重复」的自定义节日当年与次年同月日都落格；右键菜单可删除已有自定义节日。
-- [ ] 订阅日历弹窗可添加账号并探测日历；立即同步后事件以只读 chip 出现在网格与当天详情；`GET caldav/accounts` 响应中密码为掩码；PUT 空密码保留原值。
-- [ ] 协议单测：ICS unfold、四种 FREQ 的 RRULE 展开（含 INTERVAL/COUNT/UNTIL/BYDAY）、EXDATE 排除、multistatus 解析（无前缀/带前缀）、发现链 fixture。
-- [ ] `node --test` 全绿（现有 129+ 用例不回归），`node build.mjs` 构建成功。
+- [x] 打开内容日历当月：法定节假日显示红「休」+名称、调休显示灰「班」、农历/国际/电商节日显示名称标签；当天详情与图例同步呈现；无网络时同样显示（纯内置数据）。
+- [x] 测试断言关键日期：2026 春节（2/17 起）、2026 中秋、2026 清明、2026 母亲节（5 月第 2 个周日）标注正确；法定数据与固定节日重名时只出现一条。
+- [x] 右键日期格弹出菜单：三项添加动作可达对应预填表单；「每年重复」的自定义节日当年与次年同月日都落格；右键菜单可删除已有自定义节日。
+- [x] 订阅日历弹窗可添加账号并探测日历；立即同步后事件以只读 chip 出现在网格与当天详情；`GET caldav/accounts` 响应中密码为掩码；PUT 空密码保留原值。
+- [x] 协议单测：ICS unfold、四种 FREQ 的 RRULE 展开（含 INTERVAL/COUNT/UNTIL/BYDAY）、EXDATE 排除、multistatus 解析（无前缀/带前缀）、发现链 fixture。
+- [x] `node --test` 全绿（改动前存量 92 用例零回归，共 128 pass / 0 fail），`node build.mjs` 构建成功。
