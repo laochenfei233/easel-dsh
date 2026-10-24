@@ -3,7 +3,7 @@ feature: easel-handoff-payload
 status: delivered
 updated: 2026-10-24
 branch: feat/easel-handoff-payload
-commits: a4a7cfefdc..7a03c82d01
+commits: a4a7cfefdc..2256548908
 ---
 
 # LAN 交接载荷选择：配置项/素材库可推送 + 右键快速推送
@@ -12,7 +12,7 @@ commits: a4a7cfefdc..7a03c82d01
 
 **What was built** — LAN 交接的发送从固定载荷改为可勾选：会话（默认开）、项目 `素材/`（默认开，可排除大媒体）、内容库 `outputs/`（默认关）与配置项 `.env`+画像+技能（默认关，含密钥）。新增 wire 类别 `data`（按接收端数据根寻址），接收端在项目落位后把数据条目写入 `dataDirectory`：`.env` 逐行合并（保留本机未提及行与 key），画像/技能/内容库按路径覆盖写入；未配置 `dataDirectory` 时整包拒绝并把理由回传发送端。`.env` 永不随项目树行走。右键菜单的文件面（文件树行/交付卡片/文件提及）新增「推送到设备…」：菜单原位列出已配对设备，选中后走新路由 `/handoff/push` 装配**无会话**的快推 bundle（`mergeIntoExisting`），接收端并入同名的既有目录（同名覆盖）或新建目录，不注册工作区；轻提示回执成功/失败。项目整包交接行为不变（目标已存在仍拒绝）。壳激活行补 `dataDirectory`（含老安装的补写）。
 
-**Verification** — 全仓 `pnpm run typecheck` 5/5；`packages/transfer/lan-handoff` vitest 126/126 + `packages/session-query/session-log-import` 全绿，两包 v8 覆盖率 100%（lines/branches/functions/statements）；`easel/dsh-plugin-easel` node --test 146/146；`pnpm run build:artifacts` + `build:check` 绿；`cargo check -p easel-desktop` 绿；oxlint staged 配置 0 告警（全仓 lint 与 doc-sync 的失败集合与 master 基线完全一致，为 PRE-EXISTING：包内 41 条 type-aware 违规与 doc 门 11+2 项在改动前后同集合）；jscpd 0 clone；verify-client-ui-i18n 绿；config/plugin-packages/tsconfig-paths 三个目录生成器已再生成并提交。
+**Verification** — 全仓 `pnpm run typecheck` 5/5；`packages/transfer/lan-handoff` vitest 126/126 + `packages/session-query/session-log-import` 全绿，两包 v8 覆盖率 100%（lines/branches/functions/statements）；`easel/dsh-plugin-easel` node --test 145/145（评审修复后复跑）；`pnpm run build:artifacts` + `build:check` 绿；`cargo check -p easel-desktop` 绿；oxlint staged 配置 0 告警（全仓 lint 与 doc-sync 的失败集合与 master 基线完全一致，为 PRE-EXISTING：包内 41 条 type-aware 违规与 doc 门 11+2 项在改动前后同集合）；jscpd 0 clone；verify-client-ui-i18n 绿；config/plugin-packages/tsconfig-paths 三个目录生成器已再生成并提交。独立评审两轮：首轮 FIX-FIRST（1 major + 6 minor）全部修复后复核 SHIP。
 
 **Journey log** —
 - 接收端 `serveSync` 无条件要求 `sessionLogImporter`：快推（无会话）也必须挂该服务才能收包，测试端双设备回环初版因缺 importer 被「拒配对」表象误导（实际是 serveSync 抛错毁连）。坑在错误信息与现象的距离。
