@@ -49,9 +49,12 @@ import {
 } from './pairing.ts'
 import { loadPairedPeers, savePairedPeers, type PairedPeer } from './peers.ts'
 import {
-  prepareBundle,
+  bundleFromFiles,
   receiveHandoff,
   sendPreparedBundle,
+  walkProjectTree,
+  type DataFileSource,
+  type PreparedBundle,
   type ReceivedHandoff,
   type SessionArchiveSource,
 } from './handoff.ts'
@@ -138,11 +141,15 @@ export {
 export {
   HandoffPreparationError,
   HandoffReceiveError,
+  bundleFromFiles,
+  mergeEnvText,
   prepareBundle,
   projectDirectoryName,
   receiveHandoff,
   sendPreparedBundle,
   walkProjectTree,
+  type BundleFileInput,
+  type DataFileSource,
   type HandoffImportHost,
   type PreparedBundle,
   type ProjectTreeFile,
@@ -178,6 +185,13 @@ export interface Config {
    * this at the project root's `projects` directory.
    */
   handoffDirectory?: string
+  /**
+   * Absolute data root that receives `data` bundle entries (`.env`,
+   * `profiles/`, `skills/`, `outputs/`). An empty string is the schema default
+   * and resolves to unset; a bundle carrying data entries is refused while
+   * unset.
+   */
+  dataDirectory?: string
 }
 
 /** One resolved workspace record as the handoff reads it. */
@@ -258,6 +272,8 @@ export interface LanHandoffState {
   readonly host: string
   /** Absolute directory received projects land in. */
   readonly handoffDirectory: string
+  /** Absolute data root for `data` entries, or an empty string when unconfigured. */
+  readonly dataDirectory: string
 }
 
 /** One pairing waiting for a user decision. */
@@ -298,6 +314,7 @@ export class LanHandoffService extends Service {
     name: z.string().default(''),
     port: z.number().min(0).max(65535).default(0),
     handoffDirectory: z.string().default(''),
+    dataDirectory: z.string().default(''),
   })
 
   /** Runtime state, resolved once on start; device id and bound port never change afterwards. */
@@ -331,6 +348,9 @@ export class LanHandoffService extends Service {
           const handoffDirectory = config.handoffDirectory !== undefined && config.handoffDirectory.trim().length > 0
             ? resolve(config.handoffDirectory)
             : join(root, 'inbox')
+          const dataDirectory = config.dataDirectory !== undefined && config.dataDirectory.trim().length > 0
+            ? resolve(config.dataDirectory)
+            : ''
           /* v8 ignore next -- live mDNS stays out of loopback suites */
           const discovery = options?.discovery ?? createBonjourDiscovery()
           const listener = await startLanListener(identity, config.port ?? 0, (socket) => { this.serveConnection(socket) })
@@ -355,6 +375,7 @@ export class LanHandoffService extends Service {
             port: listener.port,
             host: listener.host,
             handoffDirectory,
+            dataDirectory,
           })
           /* v8 ignore start -- attribution drifts across this fiber effect; every service test asserts the start contract */
           return () => this.teardown(published, listener, discovery)
@@ -513,43 +534,63 @@ export class LanHandoffService extends Service {
    * Hand one project workspace to a paired peer and stream its bundle.
    *
    * Sessions belonging to the workspace are exported through the mounted
-   * session services; the project tree is walked and hashed before any bytes
-   * move, and a tree that cannot be read completely aborts the transfer.
+   * session services unless `sessions: false`; the project tree is walked and
+   * hashed before any bytes move, and a tree that cannot be read completely
+   * aborts the transfer. `exclude` drops project-tree files whose relative
+   * path equals or sits under one of the prefixes, and `dataFiles` adds
+   * device-data entries addressed relative to the peer's data root.
    * @param peerId - the paired device's id.
    * @param workspacePath - the workspace directory to hand off.
-   * @param options - optional cancellation.
+   * @param options - payload selection and optional cancellation.
    * @returns which entries were streamed and which the peer already held.
    * @throws {Error} when required session or workspace services are absent, or the workspace is unknown.
-   * @throws {HandoffPreparationError} when the project tree is unreadable.
+   * @throws {HandoffPreparationError} when the project tree or a data source is unreadable.
    */
   async sendProjectToPeer(
     peerId: string,
     workspacePath: string,
-    options?: { readonly signal?: AbortSignal },
+    options?: {
+      readonly signal?: AbortSignal
+      /** Include the workspace's session archives; default true. */
+      readonly sessions?: boolean
+      /** Project-tree relative prefixes to drop (`'.env'`, `'素材'`). */
+      readonly exclude?: readonly string[]
+      /** Device-data entries addressed relative to the peer's data root. */
+      readonly dataFiles?: readonly DataFileSource[]
+    },
   ): Promise<SentBundle> {
     const seams = this.sessionServices()
     const workspace = await seams.workspaces.resolveByPath(workspacePath)
     if (workspace === undefined) throw new Error(`no registered workspace at "${workspacePath}"`)
+    const exclude = options?.exclude ?? []
+    const excluded = (relativePath: string): boolean =>
+      exclude.some(prefix => relativePath === prefix || relativePath.startsWith(`${prefix}/`))
     const exportSeam = seams.sessionExport ?? seams
     const archives: SessionArchiveSource[] = []
-    for (const sessionId of workspace.sessionIds) {
-      options?.signal?.throwIfAborted()
-      await exportSeam.flush(sessionId, options?.signal)
-      const content = await exportSeam.readLog(sessionId, options?.signal)
-      if (content === undefined) throw new Error(`session "${sessionId}" has no stored log`)
-      archives.push({
-        sessionId: String(sessionId),
-        archiveName: sessionArchiveName(String(sessionId)),
-        open: () => exportSeam.zip(content, sessionId, options?.signal),
-      })
+    if (options?.sessions !== false) {
+      for (const sessionId of workspace.sessionIds) {
+        options?.signal?.throwIfAborted()
+        await exportSeam.flush(sessionId, options?.signal)
+        const content = await exportSeam.readLog(sessionId, options?.signal)
+        if (content === undefined) throw new Error(`session "${sessionId}" has no stored log`)
+        archives.push({
+          sessionId: String(sessionId),
+          archiveName: sessionArchiveName(String(sessionId)),
+          open: () => exportSeam.zip(content, sessionId, options?.signal),
+        })
+      }
     }
     let prepared
     try {
-      prepared = await prepareBundle({
-        projectPath: workspace.path,
+      const files = (await walkProjectTree(workspace.path, options?.signal))
+        .filter(file => !excluded(file.relativePath))
+        .map(file => ({ absolutePath: file.absolutePath, relativePath: file.relativePath }))
+      prepared = await bundleFromFiles({
         projectTitle: workspace.title.length > 0 ? workspace.title : 'project',
+        files,
         sessionArchives: archives,
-        ...options?.signal === undefined ? {} : { signal: options.signal },
+        sourceCwd: workspace.path,
+        ...options?.dataFiles === undefined ? {} : { dataFiles: options.dataFiles },
       })
     } catch (error) {
       /* v8 ignore start -- prepare failures are asserted with both Error and non-Error throws elsewhere */
@@ -557,9 +598,47 @@ export class LanHandoffService extends Service {
       throw error
       /* v8 ignore stop */
     }
+    return this.streamToPeer(peerId, prepared, options?.signal)
+  }
+
+  /**
+   * Push an explicit file selection to a paired peer as a quick-push bundle:
+   * no sessions, no device data, and the receiving side merges the entries
+   * into an existing directory of the same title instead of refusing.
+   * @param peerId - the paired device's id.
+   * @param payload - the project title the entries file under and the files with their bundle-relative paths.
+   * @param options - optional cancellation.
+   * @returns which entries were streamed and which the peer already held.
+   * @throws {HandoffPreparationError} when a file is unreadable.
+   */
+  async sendFilesToPeer(
+    peerId: string,
+    payload: {
+      readonly projectTitle: string
+      readonly files: readonly { readonly absolutePath: string; readonly relativePath: string }[]
+    },
+    options?: { readonly signal?: AbortSignal },
+  ): Promise<SentBundle> {
+    const prepared = await bundleFromFiles({
+      projectTitle: payload.projectTitle,
+      files: payload.files,
+      sessionArchives: [],
+      mergeIntoExisting: true,
+    })
+    return this.streamToPeer(peerId, prepared, options?.signal)
+  }
+
+  /**
+   * Stream one prepared bundle to a paired peer over a fresh sync channel.
+   * @param peerId - the paired device's id.
+   * @param prepared - the prepared bundle.
+   * @param signal - optional cancellation.
+   * @returns which entries were streamed and which the peer already held.
+   */
+  private async streamToPeer(peerId: string, prepared: PreparedBundle, signal?: AbortSignal): Promise<SentBundle> {
     const { socket, channel } = await this.openSyncChannel(peerId)
     try {
-      const sent = await sendPreparedBundle(channel, prepared, options?.signal)
+      const sent = await sendPreparedBundle(channel, prepared, signal)
       this.lastHandoff = { at: Date.now(), ok: true, detail: `sent ${String(sent.sent.length)} entries to ${peerId}` }
       return sent
     } catch (error) {
@@ -740,6 +819,9 @@ export class LanHandoffService extends Service {
         return ids
       },
       attachProject: async (projectPath: string, title: string, sessionIds: readonly string[]): Promise<void> => {
+        // A session-less receipt (sessions unchecked, or a quick push) lands
+        // files only; it registers no workspace the sidebar would show.
+        if (sessionIds.length === 0) return
         const workspace = await seams.workspaces.create(projectPath, title)
         for (const id of sessionIds) await workspace.attachSession(SessionId(id))
       },
@@ -749,6 +831,7 @@ export class LanHandoffService extends Service {
       const outcome: ReceivedHandoff = await receiveHandoff(channel, {
         targetParentDirectory: state.handoffDirectory,
         host,
+        ...state.dataDirectory === '' ? {} : { dataDirectory: state.dataDirectory },
       })
       this.lastHandoff = { at: Date.now(), ok: true, detail: `received "${outcome.projectPath}"` }
     } catch (error) {

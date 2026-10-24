@@ -22,13 +22,13 @@ export const TRANSFER_PROTOCOL_VERSION = 1
 export const TRANSFER_CHUNK_BYTES = 256 * 1024
 
 /** Which part of a bundle one entry belongs to. */
-export type BundleEntryKind = 'file' | 'session'
+export type BundleEntryKind = 'file' | 'session' | 'data'
 
 /** One file carried by a bundle: a project file (relative path) or a session archive. */
 export interface BundleEntryRef {
-  /** Entry kind: project file or session archive. */
+  /** Entry kind: project file, session archive, or device data file. */
   readonly kind: BundleEntryKind
-  /** Project-relative path for files; archive file name for sessions. */
+  /** Project-relative path for files; archive file name for sessions; data-root-relative path for data. */
   readonly path: string
   /** Exact byte length. */
   readonly size: number
@@ -60,6 +60,11 @@ export interface BundleManifest {
   readonly entries: readonly BundleEntryRef[]
   /** Aggregate identity computed from {@link BundleManifest.entries}. */
   readonly treeSummary: BundleTreeSummary
+  /**
+   * Quick-push marker: merge entries into an existing destination directory
+   * instead of refusing when it exists. Only valid for session-less bundles.
+   */
+  readonly mergeIntoExisting?: boolean
 }
 
 /** Failure: the manifest or a streamed entry violates the protocol. */
@@ -178,7 +183,7 @@ export function validateBundleManifest(candidate: unknown): BundleManifest {
     const path = entry['path']
     const size = entry['size']
     const sha256 = entry['sha256']
-    if (kind !== 'file' && kind !== 'session') throw new TransferProtocolError(`manifest entry kind ${String(kind)} is unknown`)
+    if (kind !== 'file' && kind !== 'session' && kind !== 'data') throw new TransferProtocolError(`manifest entry kind ${String(kind)} is unknown`)
     if (typeof path !== 'string') throw new TransferProtocolError('manifest entry has no path')
     if (typeof size !== 'number' || !Number.isSafeInteger(size) || size < 0) throw new TransferProtocolError(`manifest entry "${path}" has an invalid size`)
     if (typeof sha256 !== 'string' || !DIGEST_PATTERN.test(sha256)) throw new TransferProtocolError(`manifest entry "${path}" has an invalid sha256`)
@@ -200,6 +205,13 @@ export function validateBundleManifest(candidate: unknown): BundleManifest {
   if (computed.entryCount !== entryCount || computed.totalBytes !== totalBytes || computed.sha256 !== treeSha) {
     throw new TransferProtocolError('manifest treeSummary does not match its entries')
   }
+  const merge = record['mergeIntoExisting']
+  if (merge !== undefined && typeof merge !== 'boolean') {
+    throw new TransferProtocolError('manifest mergeIntoExisting must be a boolean when present')
+  }
+  if (merge === true && entries.some(entry => entry.kind === 'session')) {
+    throw new TransferProtocolError('mergeIntoExisting bundles carry no session archives')
+  }
   return {
     protocolVersion: TRANSFER_PROTOCOL_VERSION,
     bundleId,
@@ -207,6 +219,7 @@ export function validateBundleManifest(candidate: unknown): BundleManifest {
     sourceCwd,
     entries,
     treeSummary: computed,
+    ...(merge === undefined ? {} : { mergeIntoExisting: merge }),
   }
 }
 
@@ -282,7 +295,7 @@ function parseResumeList(raw: unknown, manifest: BundleManifest): Set<string> {
     const path = entry['path']
     const sha256 = entry['sha256']
     /* v8 ignore start -- short-circuit attribution: the refusal path is asserted through the incomplete-resume test */
-    if ((kind !== 'file' && kind !== 'session') || typeof path !== 'string' || typeof sha256 !== 'string') {
+    if ((kind !== 'file' && kind !== 'session' && kind !== 'data') || typeof path !== 'string' || typeof sha256 !== 'string') {
       throw new TransferProtocolError('resume entry is incomplete')
     }
     /* v8 ignore stop */
@@ -445,7 +458,7 @@ function entryOf(message: WireMessage): BundleEntryRef {
   const path = message['path']
   const size = message['size']
   const sha256 = message['sha256']
-  if ((kind !== 'file' && kind !== 'session') || typeof path !== 'string' || typeof size !== 'number' || typeof sha256 !== 'string') {
+  if ((kind !== 'file' && kind !== 'session' && kind !== 'data') || typeof path !== 'string' || typeof size !== 'number' || typeof sha256 !== 'string') {
     throw new TransferProtocolError('entry announcement is incomplete')
   }
   return { kind, path, size, sha256 }
