@@ -81,11 +81,23 @@ export function rejectPairing(id: string): Promise<{ ok: boolean }> {
   return request(`/api/handoff/pair/${encodeURIComponent(id)}/reject`, { method: 'POST' });
 }
 
-/** Hand one workspace to one paired peer. */
-export function sendHandoff(peerId: string, workspacePath: string): Promise<{ ok: boolean; sent: unknown[]; skipped: unknown[] }> {
+/** Payload selection for one project handoff (spec easel-handoff-payload §S2). */
+export interface HandoffPayload {
+  /** Include the workspace's attached session archives. */
+  sessions: boolean;
+  /** Include the project's 素材/ subtree. */
+  materials: boolean;
+  /** Include the content library (outputs/). */
+  library: boolean;
+  /** Include config (.env allowlisted keys, profiles, skills); contains secrets. */
+  config: boolean;
+}
+
+/** Hand one workspace to one paired peer with the selected payload. */
+export function sendHandoff(peerId: string, workspacePath: string, payload: HandoffPayload): Promise<{ ok: boolean; sent: unknown[]; skipped: unknown[] }> {
   return request('/api/handoff/send', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ peerId, workspacePath }),
+    body: JSON.stringify({ peerId, workspacePath, payload }),
   });
 }

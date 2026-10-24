@@ -482,6 +482,12 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 |---|---|---|
 | `@deepseek-ai/dsh-tool-todo` | yes | Model-facing todo_write tool over the DeepSeek Harness event-sourced session log |
 
+## transfer
+
+| Package | Config | Description |
+|---|---|---|
+| `@deepseek-ai/dsh-lan-handoff` | yes | LAN project-handoff peer service: device identity, TLS listener, and mDNS discovery |
+
 ## typert
 
 | Package | Config | Description |

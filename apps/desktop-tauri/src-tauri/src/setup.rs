@@ -515,16 +515,32 @@ pub(crate) fn ensure_easel_bundle_at(
         "insert:\n  - id: easel-deconstruct\n    name: dsh-plugin-easel/deconstruct\n",
     )?;
     // LAN project handoff: the package ships inside the CLI deploy closure;
-    // this row mounts its service, and received projects land under the
-    // project root's `projects` directory beside the 立项 workspaces.
+    // this row mounts its service, received projects land under the project
+    // root's `projects` directory beside the 立项 workspaces, and pushed data
+    // files (.env / profiles / skills / outputs) land on the data root itself.
     let handoff_dir = yaml_scalar(&Path::new(&root_dir).join("projects").to_string_lossy())?;
+    let data_dir = yaml_scalar(&root_dir.to_string_lossy())?;
     ensure_easel_row(
         &mut rows,
         "easel-lan-handoff",
         &format!(
-            "insert:\n  - id: easel-lan-handoff\n    name: '@deepseek-ai/dsh-lan-handoff'\n    config:\n      handoffDirectory: {handoff_dir}\n"
+            "insert:\n  - id: easel-lan-handoff\n    name: '@deepseek-ai/dsh-lan-handoff'\n    config:\n      handoffDirectory: {handoff_dir}\n      dataDirectory: {data_dir}\n"
         ),
     )?;
+    // Installs that mounted handoff before `dataDirectory` existed keep their
+    // old config verbatim; stamp the current data root so pushed data files
+    // (.env / profiles / skills / outputs) have a home after the upgrade.
+    if let Some(entry) = rows
+        .iter_mut()
+        .find(|row| row_has_id(row, "easel-lan-handoff"))
+        .and_then(|row| row.get_mut("insert"))
+        .and_then(|insert| insert.as_sequence_mut())
+        .and_then(|sequence| sequence.first_mut())
+    {
+        if entry.get("config").and_then(|config| config.get("dataDirectory")).is_none() {
+            entry["config"]["dataDirectory"] = Yaml::String(root_dir.clone());
+        }
+    }
     if !rows
         .iter()
         .any(|row| row_has_id(row, "ui-plugin-manager"))

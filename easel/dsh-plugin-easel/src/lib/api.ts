@@ -189,6 +189,24 @@ export function captureTrendArticle(input: TrendCaptureInput): Promise<TrendCapt
   });
 }
 
+// ---- 隔空传送（右键快推，spec easel-handoff-payload §S2） ----
+/** 快推需要的已配对设备投影。 */
+export interface PushDevice { id: string; name: string }
+/** /api/handoff/status 里快推用得到的字段。 */
+export interface HandoffStatusLite { available: boolean; paired: PushDevice[] }
+/** 读取已配对设备列表（右键推送的设备子菜单）。 */
+export function fetchHandoffPaired(): Promise<HandoffStatusLite> {
+  return request<HandoffStatusLite>('/api/handoff/status');
+}
+/** 把一个文件/目录快推到已配对设备（无会话、无配置，接收端并入同名项目目录）。 */
+export function pushFileToPeer(peerId: string, path: string): Promise<{ ok: boolean }> {
+  return request('/api/handoff/push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ peerId, path }),
+  });
+}
+
 // ---- 内容排期 ----
 export interface ScheduleItem {
   id: string; title: string; date: string; platform: string;

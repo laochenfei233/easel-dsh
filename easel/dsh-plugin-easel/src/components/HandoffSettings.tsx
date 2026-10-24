@@ -11,6 +11,7 @@ import {
   pairWithPeer,
   rejectPairing,
   sendHandoff,
+  type HandoffPayload,
   type HandoffPending,
   type HandoffStatus,
   type HandoffWorkspace,
@@ -19,9 +20,9 @@ import {
 /** Bilingual copy for the settings section. */
 export const COPY = {
   en: {
-    nav: 'LAN handoff',
+    nav: 'Air Transfer',
     intro: 'Send a project and its agent sessions to another device on this network, or receive one. Both devices stay on the same network with the app open.',
-    unavailable: 'LAN handoff is not enabled in this profile.',
+    unavailable: 'Air Transfer is not enabled in this profile.',
     device: 'This device',
     port: 'port',
     refresh: 'Refresh',
@@ -38,15 +39,21 @@ export const COPY = {
     sendTitle: 'Send a project',
     pickWorkspace: 'Choose a project',
     pickPeer: 'Choose a device',
+    payloadTitle: 'Include',
+    withSessions: 'Sessions (agent continuation)',
+    withMaterials: 'Project materials (素材/)',
+    withLibrary: 'Content library (outputs/)',
+    withConfig: 'Config (.env / profiles / skills)',
+    configHint: 'Contains API keys — only sent when selected, merged into the receiving device’s own config on arrival.',
     send: 'Send',
     sending: 'Sending…',
     sent: 'Handoff complete.',
     failed: 'Handoff failed',
   },
   zh: {
-    nav: '局域网交接',
+    nav: '隔空传送',
     intro: '把项目连同 agent 会话发到本网络的另一台设备，或从另一台设备接收。两台设备需在同一网络并都保持应用开启。',
-    unavailable: '当前 profile 未启用局域网交接。',
+    unavailable: '当前 profile 未启用隔空传送。',
     device: '本机',
     port: '端口',
     refresh: '刷新',
@@ -63,6 +70,12 @@ export const COPY = {
     sendTitle: '发送项目',
     pickWorkspace: '选择项目',
     pickPeer: '选择设备',
+    payloadTitle: '随包内容',
+    withSessions: '会话（agent 续作上下文）',
+    withMaterials: '项目素材（素材/）',
+    withLibrary: '内容库（outputs/）',
+    withConfig: '配置项（.env / 画像 / 技能）',
+    configHint: '配置项含 API 密钥，只在勾选后随包发送；到达后合并进对方本机配置。',
     send: '发送',
     sending: '发送中…',
     sent: '交接完成。',
@@ -168,6 +181,12 @@ export const HANDOFF_STYLES = `
 .ehs-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
 .ehs-field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 1; }
 .ehs-field > span { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-payload { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.ehs-payload-row { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.ehs-check { display: inline-flex; align-items: center; gap: 7px; color: var(--dsw-alias-label-primary); font-size: 13px; line-height: 20px; cursor: pointer; }
+.ehs-check input { width: 14px; height: 14px; margin: 0; accent-color: var(--dsw-alias-state-business-primary); cursor: pointer; }
+.ehs-check input:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.ehs-hint { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
 .ehs-select {
   box-sizing: border-box;
   height: 32px;
@@ -209,6 +228,7 @@ export default function HandoffSettings({ t }: HandoffSettingsProps) {
   const [busy, setBusy] = useState<BusyAction | undefined>(undefined)
   const [workspacePath, setWorkspacePath] = useState('')
   const [peerId, setPeerId] = useState('')
+  const [payload, setPayload] = useState<HandoffPayload>({ sessions: true, materials: true, library: false, config: false })
   const mounted = useRef(true)
 
   useEffect(() => {
@@ -395,8 +415,46 @@ export default function HandoffSettings({ t }: HandoffSettingsProps) {
               type="button"
               className="ehs-btn ehs-btn-md ehs-btn-primary"
               disabled={busy !== undefined || !canSend}
-              onClick={() => { void run('send', () => sendHandoff(peerId, workspacePath)) }}
+              onClick={() => { void run('send', () => sendHandoff(peerId, workspacePath, payload)) }}
             >{busy === 'send' ? t('sending') : t('send')}</button>
+            <div className="ehs-payload">
+              <span className="ehs-hint">{t('payloadTitle')}</span>
+              <div className="ehs-payload-row">
+                <label className="ehs-check">
+                  <input
+                    type="checkbox"
+                    checked={payload.sessions}
+                    onChange={event => { setPayload(current => ({ ...current, sessions: event.target.checked })) }}
+                  />
+                  {t('withSessions')}
+                </label>
+                <label className="ehs-check">
+                  <input
+                    type="checkbox"
+                    checked={payload.materials}
+                    onChange={event => { setPayload(current => ({ ...current, materials: event.target.checked })) }}
+                  />
+                  {t('withMaterials')}
+                </label>
+                <label className="ehs-check">
+                  <input
+                    type="checkbox"
+                    checked={payload.library}
+                    onChange={event => { setPayload(current => ({ ...current, library: event.target.checked })) }}
+                  />
+                  {t('withLibrary')}
+                </label>
+                <label className="ehs-check">
+                  <input
+                    type="checkbox"
+                    checked={payload.config}
+                    onChange={event => { setPayload(current => ({ ...current, config: event.target.checked })) }}
+                  />
+                  {t('withConfig')}
+                </label>
+              </div>
+              {payload.config && <span className="ehs-hint">{t('configHint')}</span>}
+            </div>
           </div>
           {last !== undefined && (
             <div className="ehs-outcome" data-tone={last.ok ? 'ok' : 'fail'} aria-live="polite">

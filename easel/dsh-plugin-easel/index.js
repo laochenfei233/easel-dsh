@@ -1829,7 +1829,7 @@ export function createHandoffRoutes(ctx) {
   const lan = () => ctx.get?.('lanHandoff')
   const requireLan = () => {
     const service = lan()
-    if (service === undefined) throw new ApiError(409, '局域网交接未启用：profile 未挂载 @deepseek-ai/dsh-lan-handoff')
+    if (service === undefined) throw new ApiError(409, '隔空传送未启用：profile 未挂载 @deepseek-ai/dsh-lan-handoff')
     return service
   }
   return [
@@ -1913,10 +1913,154 @@ export function createHandoffRoutes(ctx) {
       if (peerId.length === 0 || workspacePath.length === 0) {
         throw new ApiError(400, 'peerId 与 workspacePath 必填')
       }
-      const result = await service.sendProjectToPeer(peerId, workspacePath)
+      // 载荷勾选（spec easel-handoff-payload §S2）：会话默认带；项目素材默认带；
+      // 内容库与配置项（.env/画像/技能，含密钥）按勾选装配成 data 条目。
+      const payload = body?.payload !== null && typeof body?.payload === 'object' ? body.payload : {}
+      const dataFiles = [
+        ...(payload.library === true ? await collectLibraryDataFiles(c.settings) : []),
+        ...(payload.config === true ? await collectConfigDataFiles(c.settings) : []),
+      ]
+      const result = await service.sendProjectToPeer(peerId, workspacePath, {
+        sessions: payload.sessions !== false,
+        exclude: ['.env', ...(payload.materials === false ? ['素材'] : [])],
+        ...(dataFiles.length > 0 ? { dataFiles } : {}),
+      })
+      return { json: { ok: true, sent: result.sent, skipped: result.skipped } }
+    }],
+    ['POST', ['handoff', 'push'], async (c) => {
+      const service = requireLan()
+      const body = await c.body()
+      const peerId = String(body?.peerId ?? '')
+      const rawPath = String(body?.path ?? '')
+      if (peerId.length === 0 || rawPath.length === 0) {
+        throw new ApiError(400, 'peerId 与 path 必填')
+      }
+      const target = resolve(rawPath)
+      const found = await pathStat(target)
+      if (found === null) throw new ApiError(404, '文件不存在')
+      const canonical = realpathSync.native(target)
+      // 最长前缀的已注册工作区决定标题与相对路径；不在任何工作区时以自身名入包。
+      const registry = ctx.get?.('workspaceRegistry')
+      const workspaces = registry === undefined ? [] : registry.list()
+      let chosen = null
+      for (const workspace of workspaces) {
+        const ws = resolve(String(workspace.path))
+        if (canonical !== ws && !canonical.startsWith(ws + sep)) continue
+        if (chosen === null || ws.length > chosen.ws.length) chosen = { workspace, ws }
+      }
+      const relativeBase = chosen === null
+        ? ''
+        : relative(chosen.ws, found.isDirectory() ? canonical : dirname(canonical)).split(sep).join('/')
+      const projectTitle = chosen === null
+        ? basename(canonical)
+        : (String(chosen.workspace.title).length > 0 ? String(chosen.workspace.title) : basename(chosen.ws))
+      const files = []
+      if (found.isDirectory()) {
+        await collectPushFiles(target, '', files)
+      } else {
+        files.push({ absolutePath: target, relativePath: basename(canonical) })
+      }
+      const result = await service.sendFilesToPeer(peerId, {
+        projectTitle,
+        files: files.map(file => ({
+          absolutePath: file.absolutePath,
+          relativePath: relativeBase === '' ? file.relativePath : `${relativeBase}/${file.relativePath}`,
+        })),
+      })
       return { json: { ok: true, sent: result.sent, skipped: result.skipped } }
     }],
   ]
+}
+
+/**
+ * Walk one directory into quick-push file entries, refusing anything a bundle
+ * cannot carry faithfully (no silently dropped symlinks or special files).
+ * @param dir - directory to walk.
+ * @param rel - bundle-relative path of this directory ('' at the root).
+ * @param files - accumulator for `{ absolutePath, relativePath }` entries.
+ */
+async function collectPushFiles(dir, rel, files) {
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => {
+    throw new ApiError(400, `无法读取目录「${rel || basename(dir)}」`)
+  })
+  for (const item of entries) {
+    const next = rel === '' ? item.name : `${rel}/${item.name}`
+    const absolute = join(dir, item.name)
+    if (item.isDirectory()) await collectPushFiles(absolute, next, files)
+    else if (item.isFile()) files.push({ absolutePath: absolute, relativePath: next })
+    else throw new ApiError(400, `「${next}」不是常规文件，无法推送`)
+  }
+}
+
+/**
+ * 内容库（outputs/）随「素材库」勾选上包的 data 条目。可见性与内容库页同规则：
+ * 跳过 `.`/`_` 前缀条目与顶层 analytics/（登录态与分析数据不出设备）。
+ * @param settings - resolved plugin settings carrying the project root.
+ * @returns data-file sources with data-root-relative paths.
+ */
+async function collectLibraryDataFiles(settings) {
+  const files = []
+  const walk = async (dir, rel) => {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(() => [])
+    for (const item of entries) {
+      if (item.name.startsWith('.') || item.name.startsWith('_')) continue
+      const next = rel === '' ? item.name : `${rel}/${item.name}`
+      const absolute = join(dir, item.name)
+      if (item.isDirectory()) {
+        if (rel === '' && item.name.toLowerCase() === 'analytics') continue
+        await walk(absolute, next)
+      } else if (item.isFile()) {
+        files.push({ path: `outputs/${next}`, absolutePath: absolute })
+      }
+    }
+  }
+  await walk(join(settings.projectRoot, 'outputs'), '')
+  return files
+}
+
+/**
+ * 配置项（.env / 画像 / 技能）随「配置项」勾选上包的 data 条目。`.env` 只带
+ * 白名单内且已设置的 key（密钥按需上包）；画像走有效画像目录；技能走配置的
+ * skillsDir（相对数据根的路径前缀从 skillsDir 推导）。
+ * @param settings - resolved plugin settings carrying the project root and skills dir.
+ * @returns data-file sources with data-root-relative paths.
+ */
+async function collectConfigDataFiles(settings) {
+  const files = []
+  const env = await readEnvFile(join(settings.projectRoot, '.env'))
+  const lines = Object.entries(env)
+    .filter(([key, value]) => ENV_ALLOWLIST.has(key) && isSet(value))
+    .map(([key, value]) => `${key}=${value}`)
+  if (lines.length > 0) {
+    files.push({ path: '.env', bytes: new TextEncoder().encode(`${lines.join('\n')}\n`) })
+  }
+  const profiles = join(settings.projectRoot, 'profiles')
+  const personaEntries = await readdir(profiles, { withFileTypes: true }).catch(() => [])
+  for (const persona of personaEntries) {
+    if (!persona.isDirectory() || !validPersonaName(persona.name)) continue
+    const dir = join(profiles, persona.name)
+    const inner = await readdir(dir, { withFileTypes: true }).catch(() => [])
+    for (const item of inner) {
+      if (!item.isFile()) continue
+      files.push({ path: `profiles/${persona.name}/${item.name}`, absolutePath: join(dir, item.name) })
+    }
+  }
+  const skillPrefix = relative(settings.projectRoot, settings.skillsDir).split(sep).join('/')
+  if (skillPrefix.startsWith('..')) {
+    throw new ApiError(400, `技能目录 ${settings.skillsDir} 不在数据根内，无法随配置项推送`)
+  }
+  const walkSkills = async (dir, rel) => {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(() => [])
+    for (const item of entries) {
+      if (item.name.startsWith('.')) continue
+      const next = rel === '' ? item.name : `${rel}/${item.name}`
+      const absolute = join(dir, item.name)
+      if (item.isDirectory()) await walkSkills(absolute, next)
+      else if (item.isFile()) files.push({ path: `${skillPrefix}/${next}`, absolutePath: absolute })
+    }
+  }
+  await walkSkills(settings.skillsDir, '')
+  return files
 }
 
 /**
