@@ -70,11 +70,30 @@ patch 文件」——所以本包不带自己的启动器，只作为一个 bund
 |---|---|
 | `GET /easel/status` | 项目根、后端可达性、技能数。后端挂掉也照样回答，面板因此能说出「为什么是空的」 |
 | `GET /easel/skills` | 只读浏览目录，直接读盘。**不是**技能 provider |
-| `ANY /easel/api/*` | 透传到 Easel 后端，`/easel/api/skills` → `/api/skills`。流式响应（SSE）不缓冲 |
+| `/easel/api/*` | 本地数据面（排期/选题/热点雷达/CalDAV 等），全部由 `index.js` 的 `CORE_ROUTES` 本地应答；Easel 的 Python 后端与反向代理已退役，无路由认领的请求 404 |
 
 `/easel/skills` 与 `easel-skills` 行刻意分开：前者是给 UI 看的投影（多带一个 `layer` 字段，
 dsh 的技能加载器不用它），后者才是真正的加载路径，复用随附 provider 做 frontmatter 解析、
 kebab-case 校验与调用策略。**同一个后端不该有两套解析逻辑**，所以本包不自己写 provider。
+
+### 内容日历：节假日底图与 CalDAV 订阅
+
+节假日底图为纯客户端数据，不发网络请求：`src/data/holidays-cn.js`（法定节假日+调休，vendor
+自 holiday-cn，现覆盖 2025–2026）+ `src/lib/lunar.js`（农历传统节日，经典位表 1900–2100）+
+`src/lib/festivals.js`（合并固定/浮日国际与电商节日，法定优先、同名去重）。国务院每年 11 月
+公布次年安排后，随版本更新数据文件即可。
+
+CalDAV 为单向只读订阅（协议实现见 `caldav.js`，零依赖）：
+
+| 路由 | 作用 |
+|---|---|
+| `GET/PUT /easel/api/caldav/accounts` | 订阅账号（`outputs/_caldav_config.json`）。GET 密码一律掩码；PUT 空密码保留原值。凭据明文存本机工作区 |
+| `POST /easel/api/caldav/accounts/:aid/discover` | 自动发现可订阅日历（current-user-principal → calendar-home-set；直填日历 URL 时直接返回） |
+| `POST /easel/api/caldav/accounts/:aid/sync` | REPORT calendar-query 拉取 −60d..+300d 事件，RRULE 展开后写 `outputs/_caldav_cache.json` |
+| `GET /easel/api/caldav/events` | 读事件缓存，客户端按可见月份过滤展示 |
+
+排期条目新增可选 `repeat: 'yearly'`（仅此值合法），客户端按月/日展开进渲染窗口；更新时
+不带该字段保留原值，显式空串清除。
 
 ## 未验证 / 已知缺口
 
