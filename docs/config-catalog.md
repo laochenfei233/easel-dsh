@@ -1724,45 +1724,6 @@ export interface Config {
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-jobs-local -->
 
-<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-lan-handoff -->
-<a id="deepseek-aidsh-lan-handoff"></a>
-
-## `@deepseek-ai/dsh-lan-handoff`
-
-- `source`: [`packages/transfer/lan-handoff/src/index.ts:169`](../packages/transfer/lan-handoff/src/index.ts)
-
-```ts config-catalog
-/** Configuration for the LAN project-handoff peer service. */
-export interface Config {
-  /**
-   * Display name LAN peers see for this device; an empty string is the
-   * schema default and resolves to unset. Unset uses the operating-system
-   * host name.
-   */
-  name?: string
-  /**
-   * TCP port the handoff listener binds. Omission binds 0 — the OS assigns
-   * a free port, and mDNS advertises the assigned value.
-   */
-  port?: number
-  /**
-   * Absolute directory that receives handed-off projects, each as its own
-   * subdirectory named from the sender's title. An empty string is the schema
-   * default and resolves to `<handoff root>/inbox`; the Easel shell points
-   * this at the project root's `projects` directory.
-   */
-  handoffDirectory?: string
-  /**
-   * Absolute data root that receives `data` bundle entries (`.env`,
-   * `profiles/`, `skills/`, `outputs/`). An empty string is the schema default
-   * and resolves to unset; a bundle carrying data entries is refused while
-   * unset.
-   */
-  dataDirectory?: string
-}
-```
-<!-- END GENERATED config-catalog:@deepseek-ai/dsh-lan-handoff -->
-
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-llm-deepseek-account -->
 <a id="deepseek-aidsh-llm-deepseek-account"></a>
 
@@ -4621,6 +4582,45 @@ export interface Config {
 }
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-workspace-changes -->
+
+<!-- BEGIN GENERATED config-catalog:@easel-dsh/easel-air-transfer -->
+<a id="easel-dsheasel-air-transfer"></a>
+
+## `@easel-dsh/easel-air-transfer`
+
+- `source`: [`packages/transfer/lan-handoff/src/index.ts:169`](../packages/transfer/lan-handoff/src/index.ts)
+
+```ts config-catalog
+/** Configuration for the LAN project-handoff peer service. */
+export interface Config {
+  /**
+   * Display name LAN peers see for this device; an empty string is the
+   * schema default and resolves to unset. Unset uses the operating-system
+   * host name.
+   */
+  name?: string
+  /**
+   * TCP port the handoff listener binds. Omission binds 0 — the OS assigns
+   * a free port, and mDNS advertises the assigned value.
+   */
+  port?: number
+  /**
+   * Absolute directory that receives handed-off projects, each as its own
+   * subdirectory named from the sender's title. An empty string is the schema
+   * default and resolves to `<handoff root>/inbox`; the Easel shell points
+   * this at the project root's `projects` directory.
+   */
+  handoffDirectory?: string
+  /**
+   * Absolute data root that receives `data` bundle entries (`.env`,
+   * `profiles/`, `skills/`, `outputs/`). An empty string is the schema default
+   * and resolves to unset; a bundle carrying data entries is refused while
+   * unset.
+   */
+  dataDirectory?: string
+}
+```
+<!-- END GENERATED config-catalog:@easel-dsh/easel-air-transfer -->
 
 ## Loadable plugins with no config
 

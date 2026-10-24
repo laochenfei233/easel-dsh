@@ -6,7 +6,7 @@
  * Session export, import, and workspace registration resolve through the host
  * context at use time; a profile that has not mounted them still mounts this
  * service and is refused loudly only when a handoff is attempted.
- * @module @deepseek-ai/dsh-lan-handoff
+ * @module @easel-dsh/easel-air-transfer
  */
 
 import { randomBytes } from 'node:crypto'

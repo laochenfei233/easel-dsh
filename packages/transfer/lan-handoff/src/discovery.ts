@@ -4,7 +4,7 @@
  * Advertisements carry identity and versioning only — never keys or content.
  * TXT values are the entire discovery payload, so mDNS never exposes
  * anything beyond what a directory listing already shows.
- * @module @deepseek-ai/dsh-lan-handoff/discovery
+ * @module @easel-dsh/easel-air-transfer/discovery
  */
 
 import { Bonjour, type Service } from 'bonjour-service'

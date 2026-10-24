@@ -3,7 +3,7 @@ description: "LAN 项目交接对等服务：持久设备身份、TLS 监听与 
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-lan-handoff
+# @easel-dsh/easel-air-transfer
 
 [English](README.md) | 中文
 

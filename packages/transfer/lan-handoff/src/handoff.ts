@@ -6,7 +6,7 @@
  * export/import and workspace registration arrive as callbacks, so the
  * transport package stays free of the session stack and the product layer
  * owns those seams.
- * @module @deepseek-ai/dsh-lan-handoff/handoff
+ * @module @easel-dsh/easel-air-transfer/handoff
  */
 
 import { createHash } from 'node:crypto'

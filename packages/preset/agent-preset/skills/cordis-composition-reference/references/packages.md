@@ -486,7 +486,7 @@ Every package below exports a Cordis plugin that a bundle patch can name in a Lo
 
 | Package | Config | Description |
 |---|---|---|
-| `@deepseek-ai/dsh-lan-handoff` | yes | LAN project-handoff peer service: device identity, TLS listener, and mDNS discovery |
+| `@easel-dsh/easel-air-transfer` | yes | LAN project-handoff peer service: device identity, TLS listener, and mDNS discovery |
 
 ## typert
 

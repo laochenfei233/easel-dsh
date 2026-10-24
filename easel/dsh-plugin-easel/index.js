@@ -1819,7 +1819,7 @@ async function serveApi(api, req, res) {
 /**
  * Routes for LAN project handoff.
  *
- * The handoff backend lives in the `@deepseek-ai/dsh-lan-handoff` plugin row;
+ * The handoff backend lives in the `@easel-dsh/easel-air-transfer` plugin row;
  * this table only relays through the runtime service, so the Easel plugin
  * keeps its staged payload free of harness imports.
  * @param ctx - host context that may carry the `lanHandoff` service.
@@ -1829,7 +1829,7 @@ export function createHandoffRoutes(ctx) {
   const lan = () => ctx.get?.('lanHandoff')
   const requireLan = () => {
     const service = lan()
-    if (service === undefined) throw new ApiError(409, '隔空传送未启用：profile 未挂载 @deepseek-ai/dsh-lan-handoff')
+    if (service === undefined) throw new ApiError(409, '隔空传送未启用：profile 未挂载 @easel-dsh/easel-air-transfer')
     return service
   }
   return [

@@ -514,7 +514,7 @@ pub(crate) fn ensure_easel_bundle_at(
         "easel-deconstruct",
         "insert:\n  - id: easel-deconstruct\n    name: dsh-plugin-easel/deconstruct\n",
     )?;
-    // LAN project handoff: the package ships inside the CLI deploy closure;
+    // 隔空传送 (air transfer): the package ships inside the CLI deploy closure;
     // this row mounts its service, received projects land under the project
     // root's `projects` directory beside the 立项 workspaces, and pushed data
     // files (.env / profiles / skills / outputs) land on the data root itself.
@@ -524,12 +524,15 @@ pub(crate) fn ensure_easel_bundle_at(
         &mut rows,
         "easel-lan-handoff",
         &format!(
-            "insert:\n  - id: easel-lan-handoff\n    name: '@deepseek-ai/dsh-lan-handoff'\n    config:\n      handoffDirectory: {handoff_dir}\n      dataDirectory: {data_dir}\n"
+            "insert:\n  - id: easel-lan-handoff\n    name: '@easel-dsh/easel-air-transfer'\n    config:\n      handoffDirectory: {handoff_dir}\n      dataDirectory: {data_dir}\n"
         ),
     )?;
     // Installs that mounted handoff before `dataDirectory` existed keep their
     // old config verbatim; stamp the current data root so pushed data files
-    // (.env / profiles / skills / outputs) have a home after the upgrade.
+    // (.env / profiles / skills / outputs) have a home after the upgrade. The
+    // row keeps its id across the package rename, but an insert row written by
+    // an older shell still names the pre-rename package — rewrite it, or the
+    // upgraded runtime resolves a package the closure no longer carries.
     if let Some(entry) = rows
         .iter_mut()
         .find(|row| row_has_id(row, "easel-lan-handoff"))
@@ -539,6 +542,9 @@ pub(crate) fn ensure_easel_bundle_at(
     {
         if entry.get("config").and_then(|config| config.get("dataDirectory")).is_none() {
             entry["config"]["dataDirectory"] = Yaml::String(root_dir.clone());
+        }
+        if entry.get("name").and_then(Yaml::as_str) == Some("@deepseek-ai/dsh-lan-handoff") {
+            entry["name"] = Yaml::String("@easel-dsh/easel-air-transfer".into());
         }
     }
     if !rows

@@ -6,7 +6,7 @@
  * remints the identity and therefore the device id, which unpaired every
  * peer that recorded the previous key — the same lifetime contract as the
  * anonymous user id file.
- * @module @deepseek-ai/dsh-lan-handoff/identity
+ * @module @easel-dsh/easel-air-transfer/identity
  */
 
 import { createHash, X509Certificate } from 'node:crypto'

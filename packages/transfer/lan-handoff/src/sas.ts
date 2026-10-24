@@ -7,7 +7,7 @@
  * different string. Role order is fixed — the dialing device's key and nonce
  * first, then the listening device's — so both sides hash identical input in
  * identical order.
- * @module @deepseek-ai/dsh-lan-handoff/sas
+ * @module @easel-dsh/easel-air-transfer/sas
  */
 
 import { createHash, X509Certificate } from 'node:crypto'

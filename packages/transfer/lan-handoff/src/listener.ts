@@ -6,7 +6,7 @@
  * TLS layer's job: self-signed chains are not validated here, and the pairing
  * protocol over each connection confirms the remote device id before any
  * payload is exchanged.
- * @module @deepseek-ai/dsh-lan-handoff/listener
+ * @module @easel-dsh/easel-air-transfer/listener
  */
 
 import { EventEmitter } from 'node:events'
