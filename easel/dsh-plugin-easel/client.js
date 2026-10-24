@@ -23,14 +23,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// easel/dsh-plugin-easel/src/client.tsx
+// src/client.tsx
 var client_exports = {};
 __export(client_exports, {
   default: () => client_default
 });
 module.exports = __toCommonJS(client_exports);
 
-// easel/dsh-plugin-easel/src/generated/easel-css.js
+// src/generated/easel-css.js
 var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .easel-scope {
   color-scheme: dark;
   --bg: #14171e;
@@ -893,10 +893,10 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
     box-shadow: inset 0 0 0 1px var(--border-strong);
   }}`;
 
-// easel/dsh-plugin-easel/src/lib/shell.tsx
+// src/lib/shell.tsx
 var import_react = require("react");
 
-// easel/dsh-plugin-easel/src/lib/task.ts
+// src/lib/task.ts
 var getServices = null;
 var cwdResolver = null;
 function configureTasks(cfg) {
@@ -1000,7 +1000,7 @@ async function resolveHomeWorkspaceId(projectDir) {
   return root ? findWorkspaceByPath(root)?.workspaceId ?? null : null;
 }
 
-// easel/dsh-plugin-easel/src/lib/shell.tsx
+// src/lib/shell.tsx
 function pageKey(view11) {
   return `easel.${view11}`;
 }
@@ -1130,7 +1130,7 @@ function createShellBridge(ctx, t) {
   return { useShellProps, navigate, useTopic, t, refresh: shell.refresh, setPersona: shell.setPersona };
 }
 
-// easel/dsh-plugin-easel/src/features/dashboard.tsx
+// src/features/dashboard.tsx
 var dashboard_exports = {};
 __export(dashboard_exports, {
   Component: () => Component,
@@ -1141,7 +1141,7 @@ __export(dashboard_exports, {
   view: () => view
 });
 
-// easel/dsh-plugin-easel/src/components/icons.tsx
+// src/components/icons.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 var svg = (size = 18, sw = 1.8) => ({
   width: size,
@@ -1268,10 +1268,10 @@ var IconPublish = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, impo
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6" })
 ] });
 
-// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
+// src/components/DashboardPage.tsx
 var import_react2 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/api.ts
+// src/lib/api.ts
 var BASE = "/easel";
 async function request(url, options) {
   const res = await fetch(`${BASE}${url}`, { cache: "no-store", ...options });
@@ -1451,7 +1451,7 @@ function projectizeTopic(body) {
   return request("/api/projectize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 }
 
-// easel/dsh-plugin-easel/src/lib/whoami.ts
+// src/lib/whoami.ts
 var KEY = "easel_whoami";
 var WHOAMI_TTL_MS = 6e5;
 function getWhoamiCache() {
@@ -1497,7 +1497,7 @@ function verifyStale(platforms, opts = {}) {
   );
 }
 
-// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
+// src/components/DashboardPage.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
 function fmtNum(n) {
   if (n == null) return "\u2014";
@@ -1785,7 +1785,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/dashboard.tsx
+// src/features/dashboard.tsx
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var view = "dashboard";
 var order = 30;
@@ -1817,7 +1817,7 @@ var plugin = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/trends.tsx
+// src/features/trends.tsx
 var trends_exports = {};
 __export(trends_exports, {
   Component: () => Component2,
@@ -1828,7 +1828,7 @@ __export(trends_exports, {
   view: () => view2
 });
 
-// easel/dsh-plugin-easel/src/components/TrendsPage.tsx
+// src/components/TrendsPage.tsx
 var import_react3 = require("react");
 var import_jsx_runtime4 = require("react/jsx-runtime");
 var ALL_PLATFORMS = [
@@ -2198,7 +2198,7 @@ function TrendsPage({ onUseTopic }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/trends.tsx
+// src/features/trends.tsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
 var view2 = "trends";
 var order2 = 31;
@@ -2230,7 +2230,7 @@ var plugin2 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/ideas.tsx
+// src/features/ideas.tsx
 var ideas_exports = {};
 __export(ideas_exports, {
   Component: () => Component3,
@@ -2241,7 +2241,7 @@ __export(ideas_exports, {
   view: () => view3
 });
 
-// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
+// src/components/IdeasPage.tsx
 var import_react4 = require("react");
 var import_jsx_runtime6 = require("react/jsx-runtime");
 var COLUMNS = [
@@ -2477,7 +2477,7 @@ function IdeasPage({ onUseTopic }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/ideas.tsx
+// src/features/ideas.tsx
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var view3 = "ideas";
 var order3 = 32;
@@ -2509,7 +2509,7 @@ var plugin3 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/calendar.tsx
+// src/features/calendar.tsx
 var calendar_exports = {};
 __export(calendar_exports, {
   Component: () => Component4,
@@ -2520,7 +2520,7 @@ __export(calendar_exports, {
   view: () => view4
 });
 
-// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
+// src/components/CalendarPage.tsx
 var import_react5 = require("react");
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var STATUS_META = {
@@ -2915,7 +2915,7 @@ function CalendarPage() {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/calendar.tsx
+// src/features/calendar.tsx
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var view4 = "calendar";
 var order4 = 33;
@@ -2947,7 +2947,7 @@ var plugin4 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/skills.tsx
+// src/features/skills.tsx
 var skills_exports = {};
 __export(skills_exports, {
   Component: () => Component5,
@@ -2958,13 +2958,13 @@ __export(skills_exports, {
   view: () => view5
 });
 
-// easel/dsh-plugin-easel/src/components/SkillPage.tsx
+// src/components/SkillPage.tsx
 var import_react7 = require("react");
 
-// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
+// src/components/SkillDrawer.tsx
 var import_react6 = require("react");
 
-// node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -4121,7 +4121,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -6096,7 +6096,7 @@ function createDOMPurify() {
 }
 var purify_default = createDOMPurify();
 
-// easel/dsh-plugin-easel/src/lib/sanitize.ts
+// src/lib/sanitize.ts
 k.setOptions({ breaks: true, gfm: true });
 function renderMarkdown(md) {
   if (!md) return "";
@@ -6104,7 +6104,7 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
-// easel/dsh-plugin-easel/src/lib/skillDisplayNames.ts
+// src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
   "ai-image-gen": "AI \u751F\u56FE",
   "ai-music": "BGM / \u97F3\u4E50\u751F\u6210",
@@ -6224,7 +6224,7 @@ function displayName(raw) {
   return SKILL_DISPLAY_NAMES[raw] || raw;
 }
 
-// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
+// src/components/SkillDrawer.tsx
 var import_jsx_runtime10 = require("react/jsx-runtime");
 function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) {
   const [detail, setDetail] = (0, import_react6.useState)(null);
@@ -6445,7 +6445,7 @@ ${input.trim()}
   ] }) });
 }
 
-// easel/dsh-plugin-easel/src/components/SkillPage.tsx
+// src/components/SkillPage.tsx
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var LAYERS = [
   { key: "discover", label: "\u53D1\u73B0", Icon: IconSearch, color: "var(--layer-discover)" },
@@ -6591,7 +6591,7 @@ function SkillPage({ persona, onNavigate }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/skills.tsx
+// src/features/skills.tsx
 var import_jsx_runtime12 = require("react/jsx-runtime");
 var view5 = "skills";
 var order5 = 34;
@@ -6623,7 +6623,7 @@ var plugin5 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/outputs.tsx
+// src/features/outputs.tsx
 var outputs_exports = {};
 __export(outputs_exports, {
   Component: () => Component6,
@@ -6634,7 +6634,7 @@ __export(outputs_exports, {
   view: () => view6
 });
 
-// easel/dsh-plugin-easel/src/components/OutputsPage.tsx
+// src/components/OutputsPage.tsx
 var import_react8 = require("react");
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var FILTERS = [
@@ -6940,7 +6940,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/outputs.tsx
+// src/features/outputs.tsx
 var import_jsx_runtime14 = require("react/jsx-runtime");
 var view6 = "outputs";
 var order6 = 35;
@@ -6972,7 +6972,7 @@ var plugin6 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/publish.tsx
+// src/features/publish.tsx
 var publish_exports = {};
 __export(publish_exports, {
   Component: () => Component7,
@@ -6983,10 +6983,10 @@ __export(publish_exports, {
   view: () => view7
 });
 
-// easel/dsh-plugin-easel/src/components/PublishPage.tsx
+// src/components/PublishPage.tsx
 var import_react9 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/store.ts
+// src/lib/store.ts
 var PUBLISH_KEY = "easel_publish_draft";
 var PREVIOUS_BRAND = ["post", "craft"].join("");
 function readMigratedLocalValue(key, suffix) {
@@ -7023,7 +7023,7 @@ function savePublishDraft(d2) {
   }
 }
 
-// easel/dsh-plugin-easel/src/components/PublishPage.tsx
+// src/components/PublishPage.tsx
 var import_jsx_runtime15 = require("react/jsx-runtime");
 var PLATFORMS2 = [
   { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", titleLimit: 20, bodyLimit: 1e3, hint: "\u6807\u9898\u226420\uFF0C\u6B63\u6587\u22641000\uFF0C\u91CD\u60C5\u7EEA+\u8BDD\u9898\u6807\u7B7E" },
@@ -7572,7 +7572,7 @@ function PublishPage({ persona }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/publish.tsx
+// src/features/publish.tsx
 var import_jsx_runtime16 = require("react/jsx-runtime");
 var view7 = "publish";
 var order7 = 36;
@@ -7604,7 +7604,7 @@ var plugin7 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/accounts.tsx
+// src/features/accounts.tsx
 var accounts_exports = {};
 __export(accounts_exports, {
   Component: () => Component8,
@@ -7615,7 +7615,7 @@ __export(accounts_exports, {
   view: () => view8
 });
 
-// easel/dsh-plugin-easel/src/components/AccountsPage.tsx
+// src/components/AccountsPage.tsx
 var import_react10 = require("react");
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var STATE_LABEL = {
@@ -8272,7 +8272,7 @@ function AccountsPage() {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/accounts.tsx
+// src/features/accounts.tsx
 var import_jsx_runtime18 = require("react/jsx-runtime");
 var view8 = "accounts";
 var order8 = 37;
@@ -8304,7 +8304,7 @@ var plugin8 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/profile.tsx
+// src/features/profile.tsx
 var profile_exports = {};
 __export(profile_exports, {
   Component: () => Component9,
@@ -8315,10 +8315,10 @@ __export(profile_exports, {
   view: () => view9
 });
 
-// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
+// src/components/PersonaBrowser.tsx
 var import_react13 = require("react");
 
-// easel/dsh-plugin-easel/src/components/ProfilePage.tsx
+// src/components/ProfilePage.tsx
 var import_react11 = require("react");
 var import_jsx_runtime19 = require("react/jsx-runtime");
 function fanTier(n) {
@@ -8546,7 +8546,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/components/OnboardingWizard.tsx
+// src/components/OnboardingWizard.tsx
 var import_react12 = require("react");
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var PLATFORMS3 = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u89C6\u9891\u53F7", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
@@ -8778,7 +8778,7 @@ ${formToInstruction(name, form)}`;
   ] }) });
 }
 
-// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
+// src/components/PersonaBrowser.tsx
 var import_jsx_runtime21 = require("react/jsx-runtime");
 function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }) {
   const [wizardOpen, setWizardOpen] = (0, import_react13.useState)(false);
@@ -8848,7 +8848,7 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/profile.tsx
+// src/features/profile.tsx
 var import_jsx_runtime22 = require("react/jsx-runtime");
 var view9 = "profile";
 var order9 = 38;
@@ -8880,7 +8880,7 @@ var plugin9 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/breakdown.tsx
+// src/features/breakdown.tsx
 var breakdown_exports = {};
 __export(breakdown_exports, {
   Component: () => Component10,
@@ -8891,7 +8891,7 @@ __export(breakdown_exports, {
   view: () => view10
 });
 
-// easel/dsh-plugin-easel/src/components/BreakdownPage.tsx
+// src/components/BreakdownPage.tsx
 var import_react14 = require("react");
 var import_jsx_runtime23 = require("react/jsx-runtime");
 var FETCH_STAGES = [
@@ -9219,7 +9219,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/breakdown.tsx
+// src/features/breakdown.tsx
 var import_jsx_runtime24 = require("react/jsx-runtime");
 var view10 = "breakdown";
 var order10 = 39;
@@ -9251,10 +9251,10 @@ var plugin10 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/media-preview.tsx
+// src/lib/media-preview.tsx
 var import_react15 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/media-url.js
+// src/lib/media-url.js
 var VIDEO_EXTENSIONS = ["mp4", "m4v", "mov", "webm", "mkv"];
 var AUDIO_EXTENSIONS = ["mp3", "wav", "m4a", "aac", "flac", "ogg", "opus"];
 var MEDIA_EXTENSIONS = [...VIDEO_EXTENSIONS, ...AUDIO_EXTENSIONS];
@@ -9285,7 +9285,7 @@ function workspaceMediaPath(absolutePath, projectRoot2) {
   return rel;
 }
 
-// easel/dsh-plugin-easel/src/lib/media-preview.tsx
+// src/lib/media-preview.tsx
 var import_jsx_runtime25 = require("react/jsx-runtime");
 var MEDIA_BODY_ID = "easel-media-player";
 var MEDIA_COPY = {
@@ -9433,7 +9433,7 @@ function registerMediaPreview(ctx) {
   else if (ctx.get?.("documentPreviews") !== void 0) attach(ctx);
 }
 
-// easel/dsh-plugin-easel/src/features/media.ts
+// src/features/media.ts
 var plugin11 = {
   name: "easel-media",
   inject: ["slots", "locale"],
@@ -9446,7 +9446,832 @@ var plugin11 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/context-menu-model.js
+// src/components/BackupSettings.tsx
+var import_react16 = require("react");
+
+// src/lib/backup-api.ts
+var BASE2 = "/easel/api/backup";
+async function request2(url, options) {
+  const res = await fetch(`${BASE2}${url}`, { cache: "no-store", ...options });
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      detail = body?.detail ?? body?.message ?? "";
+    } catch {
+    }
+    throw new Error(detail || `\u8BF7\u6C42\u5931\u8D25\uFF08${res.status} ${res.statusText}\uFF09`);
+  }
+  return res.json();
+}
+function getBackupConfig() {
+  return request2("/config");
+}
+function putBackupConfig(config, secrets) {
+  return request2("/config", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ config, secrets }) });
+}
+function testBackupDestination() {
+  return request2("/test", { method: "POST" });
+}
+function runBackup(groups) {
+  return request2("/run", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ groups }) });
+}
+function getBackupStatus() {
+  return request2("/status");
+}
+function listRemoteBackups() {
+  return request2("/remote");
+}
+function restoreBackup(group, stamp, confirm) {
+  return request2("/restore", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ group, stamp, confirm }) });
+}
+function connectSmb(root, username, password) {
+  return request2("/connect-smb", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ root, username, password }) });
+}
+
+// src/components/BackupSettings.tsx
+var import_jsx_runtime26 = require("react/jsx-runtime");
+var GROUPS = [
+  { id: "config", title: "scopeConfig", hint: "scopeConfigHint" },
+  { id: "sessions", title: "scopeSessions", hint: "scopeSessionsHint" },
+  { id: "workspace", title: "scopeWorkspace", hint: "scopeWorkspaceHint" }
+];
+var WEEKDAYS2 = [0, 1, 2, 3, 4, 5, 6];
+var BACKUP_STYLES = `
+.ebk-root { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
+.ebk-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
+.ebk-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 22px; font-weight: 500; }
+.ebk-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0; }
+.ebk-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ebk-field label { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-input, .ebk-select {
+  box-sizing: border-box; width: 100%; height: 36px; padding: 0 10px;
+  border: 0.5px solid var(--dsw-alias-border-l2); border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-fill-primary); color: var(--dsw-alias-label-primary);
+  font-family: inherit; font-size: 14px; line-height: 22px;
+}
+.ebk-select { width: auto; min-width: 140px; }
+.ebk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+.ebk-check { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; cursor: pointer; }
+.ebk-check input { margin-top: 3px; accent-color: var(--dsw-alias-state-business-primary); }
+.ebk-check-main { display: flex; flex-direction: column; gap: 2px; }
+.ebk-check-hint { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ebk-btn {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-family: inherit;
+  height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md);
+  font-size: 14px; line-height: 22px; color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-fill-secondary);
+  transition: transform 100ms ease-out, background-color 120ms ease-out;
+}
+.ebk-btn:disabled { opacity: 0.5; cursor: default; }
+.ebk-btn-primary { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-business-primary); }
+.ebk-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-ok { color: var(--dsw-alias-state-success-primary, #2e9e63); font-size: 12px; line-height: 18px; }
+.ebk-error { color: var(--dsw-alias-state-danger-primary, #d4453f); font-size: 12px; line-height: 18px; word-break: break-all; }
+.ebk-progress { display: flex; flex-direction: column; gap: 4px; }
+.ebk-bar { height: 4px; border-radius: 2px; background: var(--dsw-alias-border-l2); overflow: hidden; }
+.ebk-bar-fill { height: 100%; background: var(--dsw-alias-state-business-primary); transition: width 200ms ease-out; }
+.ebk-history { display: flex; flex-direction: column; }
+.ebk-history-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; }
+.ebk-history-row + .ebk-history-row { border-top: 0.5px solid var(--dsw-alias-border-l2); }
+.ebk-badge { flex: none; padding: 1px 8px; border-radius: 999px; font-size: 11px; line-height: 16px; background: var(--dsw-alias-fill-secondary); }
+.ebk-badge-failed { color: var(--dsw-alias-state-danger-primary, #d4453f); }
+.ebk-badge-ok { color: var(--dsw-alias-state-success-primary, #2e9e63); }
+`;
+var formatBytes = (bytes) => {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${bytes} B`;
+};
+var formatTime = (ms) => new Date(ms).toLocaleString();
+function BackupSettings({ t }) {
+  const [config, setConfig] = (0, import_react16.useState)(null);
+  const [secrets, setSecrets] = (0, import_react16.useState)(null);
+  const [engineReady, setEngineReady] = (0, import_react16.useState)(true);
+  const [secretInputs, setSecretInputs] = (0, import_react16.useState)({});
+  const [status, setStatus] = (0, import_react16.useState)(null);
+  const [remote, setRemote] = (0, import_react16.useState)(null);
+  const [restoreGroup, setRestoreGroup] = (0, import_react16.useState)("config");
+  const [restoreStamp, setRestoreStamp] = (0, import_react16.useState)("");
+  const [plan, setPlan] = (0, import_react16.useState)(null);
+  const [notice, setNotice] = (0, import_react16.useState)(null);
+  const [saving, setSaving] = (0, import_react16.useState)(false);
+  const [testing, setTesting] = (0, import_react16.useState)(false);
+  const [restoring, setRestoring] = (0, import_react16.useState)(false);
+  const pollRef = (0, import_react16.useRef)(void 0);
+  const refreshStatus = (0, import_react16.useCallback)(async () => {
+    try {
+      const next = await getBackupStatus();
+      setStatus(next);
+      return next;
+    } catch {
+      return null;
+    }
+  }, []);
+  (0, import_react16.useEffect)(() => {
+    let active = true;
+    getBackupConfig().then((data) => {
+      if (!active) return;
+      setConfig(data.config);
+      setSecrets(data.secrets);
+      setEngineReady(data.engineReady);
+    }).catch((error) => setNotice({ kind: "error", text: error.message }));
+    refreshStatus();
+    return () => {
+      active = false;
+      if (pollRef.current !== void 0) window.clearInterval(pollRef.current);
+    };
+  }, [refreshStatus]);
+  const busy = status?.busy === true;
+  (0, import_react16.useEffect)(() => {
+    if (!busy) {
+      if (pollRef.current !== void 0) {
+        window.clearInterval(pollRef.current);
+        pollRef.current = void 0;
+      }
+      return;
+    }
+    pollRef.current = window.setInterval(() => {
+      void refreshStatus().then((next) => {
+        if (next !== null && !next.busy) {
+          void listRemoteBackups().then(setRemote).catch(() => {
+          });
+        }
+      });
+    }, 1e3);
+    return () => {
+      if (pollRef.current !== void 0) window.clearInterval(pollRef.current);
+    };
+  }, [busy, refreshStatus]);
+  if (config === null || secrets === null) {
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-root", children: notice?.kind === "error" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-error", children: notice.text }) : null });
+  }
+  const patch = (changes) => setConfig({ ...config, ...changes });
+  const secretValue = (key) => secretInputs[key] ?? "";
+  const collectSecrets = () => {
+    const out = {};
+    for (const [key, value] of Object.entries(secretInputs)) {
+      if (value.length > 0) out[key] = value;
+    }
+    return out;
+  };
+  const save = async () => {
+    setSaving(true);
+    setNotice(null);
+    try {
+      const saved = await putBackupConfig(config, collectSecrets());
+      setConfig(saved.config);
+      setSecrets(saved.secrets);
+      setSecretInputs({});
+      setNotice({ kind: "ok", text: t.saved });
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+  const test = async () => {
+    setTesting(true);
+    setNotice(null);
+    try {
+      await testBackupDestination();
+      setNotice({ kind: "ok", text: t.testOk });
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setTesting(false);
+    }
+  };
+  const run = async () => {
+    const groups = GROUPS.filter((group) => config.groups[group.id]).map((group) => group.id);
+    if (groups.length === 0) {
+      setNotice({ kind: "error", text: t.noGroups });
+      return;
+    }
+    setNotice(null);
+    try {
+      await runBackup(groups);
+      await refreshStatus();
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    }
+  };
+  const openRestore = async () => {
+    setRestoring(true);
+    setNotice(null);
+    setPlan(null);
+    try {
+      const listing = await listRemoteBackups();
+      setRemote(listing);
+      const first = listing.groups[restoreGroup][0];
+      setRestoreStamp(first?.stamp ?? "");
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setRestoring(false);
+    }
+  };
+  const previewRestore = async () => {
+    setRestoring(true);
+    setNotice(null);
+    try {
+      const response = await restoreBackup(restoreGroup, restoreStamp, false);
+      setPlan(response.plan ?? null);
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setRestoring(false);
+    }
+  };
+  const confirmRestore = async () => {
+    setRestoring(true);
+    setNotice(null);
+    try {
+      const response = await restoreBackup(restoreGroup, restoreStamp, true);
+      setPlan(null);
+      setNotice({ kind: "ok", text: `${t.restoreApplied(response.applied ?? 0)}${(response.skipped?.length ?? 0) > 0 ? ` ${t.restoreSkipped(response.skipped?.length ?? 0)}` : ""}` });
+      await refreshStatus();
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setRestoring(false);
+    }
+  };
+  const connectSmbShare = async () => {
+    setNotice(null);
+    try {
+      await connectSmb(config.root, secretValue("smbUser"), secretValue("smbPassword"));
+      setNotice({ kind: "ok", text: t.testOk });
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    }
+  };
+  const progress = status?.progress ?? null;
+  const phaseLabel = progress === null ? "" : t[`phase${progress.phase[0].toUpperCase()}${progress.phase.slice(1)}`];
+  const history = status?.history ?? [];
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-intro", children: t.intro }),
+    !engineReady ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-error", children: t.engineMissing }) : null,
+    notice !== null && notice.text !== "" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: notice.kind === "ok" ? "ebk-ok" : "ebk-error", children: notice.text }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.destinationTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-actions", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: testing, onClick: () => void test(), children: testing ? t.testing : t.test }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: saving, onClick: () => void save(), children: saving ? t.saving : t.save })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.protocol }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+            "select",
+            {
+              className: "ebk-select",
+              value: config.protocol,
+              onChange: (event) => patch({ protocol: event.target.value }),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "webdav", children: t.protocolWebdav }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "s3", children: t.protocolS3 }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "smb", children: t.protocolSmb })
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.remoteDir }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              placeholder: t.remoteDirPlaceholder,
+              value: config.remoteDir,
+              onChange: (event) => patch({ remoteDir: event.target.value })
+            }
+          )
+        ] })
+      ] }),
+      config.protocol === "webdav" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.endpoint }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              placeholder: t.endpointPlaceholder,
+              value: config.endpoint,
+              onChange: (event) => patch({ endpoint: event.target.value })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-grid", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.username }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.username, onChange: (event) => patch({ username: event.target.value }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { children: [
+              t.password,
+              secrets.webdavPassword ? ` \xB7 ${t.passwordSaved}` : ""
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                type: "password",
+                value: secretValue("webdavPassword"),
+                onChange: (event) => setSecretInputs({ ...secretInputs, webdavPassword: event.target.value })
+              }
+            )
+          ] })
+        ] })
+      ] }) : null,
+      config.protocol === "s3" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-grid", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3Endpoint }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.endpoint, onChange: (event) => patch({ endpoint: event.target.value }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3Region }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.region, onChange: (event) => patch({ region: event.target.value }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3Bucket }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.bucket, onChange: (event) => patch({ bucket: event.target.value }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: "\xA0" }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ebk-check", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { type: "checkbox", checked: config.pathStyle, onChange: (event) => patch({ pathStyle: event.target.checked }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-hint", children: t.s3PathStyle })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { children: [
+            t.s3AccessKeyId,
+            secrets.s3Keys ? ` \xB7 ${t.passwordSaved}` : ""
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              type: "password",
+              value: secretValue("s3AccessKeyId"),
+              onChange: (event) => setSecretInputs({ ...secretInputs, s3AccessKeyId: event.target.value })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3SecretAccessKey }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              type: "password",
+              value: secretValue("s3SecretAccessKey"),
+              onChange: (event) => setSecretInputs({ ...secretInputs, s3SecretAccessKey: event.target.value })
+            }
+          )
+        ] })
+      ] }) : null,
+      config.protocol === "smb" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.smbRoot }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              placeholder: t.smbRootPlaceholder,
+              value: config.root,
+              onChange: (event) => patch({ root: event.target.value })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-grid", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.smbUser }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                value: secretValue("smbUser"),
+                onChange: (event) => setSecretInputs({ ...secretInputs, smbUser: event.target.value })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.smbPassword }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                type: "password",
+                value: secretValue("smbPassword"),
+                onChange: (event) => setSecretInputs({ ...secretInputs, smbPassword: event.target.value })
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", onClick: () => void connectSmbShare(), children: t.smbConnect }) })
+      ] }) : null
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.scopeTitle }) }),
+      GROUPS.map((group) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ebk-check", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "input",
+          {
+            type: "checkbox",
+            checked: config.groups[group.id],
+            onChange: (event) => patch({ groups: { ...config.groups, [group.id]: event.target.checked } })
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-check-main", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t[group.title] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-hint", children: t[group.hint] })
+        ] })
+      ] }, group.id))
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.encryptionTitle }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-muted", style: { margin: 0 }, children: t.encryptionHint }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ebk-check", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "input",
+          {
+            type: "checkbox",
+            checked: config.encryption.enabled,
+            onChange: (event) => patch({ encryption: { enabled: event.target.checked } })
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-main", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.encryptionOn }) })
+      ] }),
+      config.encryption.enabled ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { children: [
+          t.passphrase,
+          secrets.passphrase ? ` \xB7 ${t.passwordSaved}` : ""
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "input",
+          {
+            className: "ebk-input",
+            type: "password",
+            value: secretValue("passphrase"),
+            onChange: (event) => setSecretInputs({ ...secretInputs, passphrase: event.target.value })
+          }
+        )
+      ] }) : null
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.scheduleTitle }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: "\xA0" }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+            "select",
+            {
+              className: "ebk-select",
+              value: config.schedule.mode,
+              onChange: (event) => patch({ schedule: { ...config.schedule, mode: event.target.value } }),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "off", children: t.scheduleOff }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "daily", children: t.scheduleDaily }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "weekly", children: t.scheduleWeekly })
+              ]
+            }
+          )
+        ] }),
+        config.schedule.mode !== "off" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.scheduleAt }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                style: { width: 120 },
+                type: "time",
+                value: config.schedule.at,
+                onChange: (event) => patch({ schedule: { ...config.schedule, at: event.target.value } })
+              }
+            )
+          ] }),
+          config.schedule.mode === "weekly" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.scheduleWeekday }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "select",
+              {
+                className: "ebk-select",
+                value: config.schedule.weekday,
+                onChange: (event) => patch({ schedule: { ...config.schedule, weekday: Number(event.target.value) } }),
+                children: WEEKDAYS2.map((day) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: day, children: t[`weekday${day}`] }, day))
+              }
+            )
+          ] }) : null
+        ] }) : null,
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.retention }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-row", style: { gap: 6 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                style: { width: 90 },
+                type: "number",
+                min: 1,
+                max: 100,
+                value: config.retention,
+                onChange: (event) => patch({ retention: Number(event.target.value) })
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.retentionUnit })
+          ] })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.runTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: busy, onClick: () => void run(), children: t.run })
+      ] }),
+      progress !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: `${t.running} \xB7 ${progress.group} \xB7 ${phaseLabel} \xB7 ${progress.fileCount} \xB7 ${formatBytes(progress.totalBytes)}` }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-bar", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-bar-fill", style: { width: "40%" } }) })
+      ] }) : null,
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-history", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.historyTitle }),
+        history.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.historyEmpty }) : history.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-history-row", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-muted", children: [
+            formatTime(entry.startedAt),
+            " \xB7 ",
+            entry.trigger === "manual" ? t.historyManual : t.historySchedule,
+            " \xB7 ",
+            entry.groups.map((item) => item.group).join(", ") || "\u2014"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: `ebk-badge ${entry.status === "completed" ? "ebk-badge-ok" : "ebk-badge-failed"}`, children: [
+            entry.status === "completed" ? t.historyCompleted : t.historyFailed,
+            entry.status === "failed" && entry.error !== void 0 ? ` \u2014 ${entry.error}` : ""
+          ] })
+        ] }, entry.startedAt))
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.restoreTitle }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || busy, onClick: () => void openRestore(), children: remote === null ? t.restorePreview : t.restorePreview }) }),
+      remote !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.restorePickGroup }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "select",
+            {
+              className: "ebk-select",
+              value: restoreGroup,
+              onChange: (event) => {
+                const group = event.target.value;
+                setRestoreGroup(group);
+                setRestoreStamp(remote.groups[group][0]?.stamp ?? "");
+                setPlan(null);
+              },
+              children: GROUPS.map((group) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("option", { value: group.id, children: [
+                t[group.title],
+                "\uFF08",
+                remote.groups[group.id].length,
+                "\uFF09"
+              ] }, group.id))
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.restorePickStamp }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("select", { className: "ebk-select", value: restoreStamp, onChange: (event) => {
+            setRestoreStamp(event.target.value);
+            setPlan(null);
+          }, children: remote.groups[restoreGroup].length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: "\u2014" }) : remote.groups[restoreGroup].map((item) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("option", { value: item.stamp, children: [
+            item.stamp,
+            " \xB7 ",
+            formatBytes(item.size)
+          ] }, item.stamp)) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || restoreStamp === "", onClick: () => void previewRestore(), children: t.restorePreview }) })
+      ] }) : null,
+      plan !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-muted", children: [
+          t.restorePlan(plan.fileCount),
+          " \xB7 ",
+          formatBytes(plan.bytes)
+        ] }),
+        plan.preview.slice(0, 8).map((file) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-muted", style: { wordBreak: "break-all" }, children: [
+          file.path,
+          " \xB7 ",
+          formatBytes(file.size)
+        ] }, file.path)),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: restoring, onClick: () => void confirmRestore(), children: t.restoreConfirm }) })
+      ] }) : null
+    ] })
+  ] });
+}
+
+// src/locales/backup.ts
+var BACKUP_COPY = {
+  en: {
+    nav: "Backup",
+    intro: "Back up configuration, sessions, and workspace files to your own WebDAV, SMB, or S3 server, and restore them here. Backups are full archives grouped by scope.",
+    engineMissing: "The backup engine is missing from this install. Reinstall Easel to enable backups.",
+    destinationTitle: "Destination",
+    protocol: "Protocol",
+    protocolWebdav: "WebDAV",
+    protocolS3: "S3",
+    protocolSmb: "SMB (network share)",
+    endpoint: "WebDAV URL",
+    endpointPlaceholder: "https://dav.example.com/dav",
+    username: "Username",
+    password: "Password",
+    passwordSaved: "Saved \u2014 leave blank to keep",
+    remoteDir: "Remote subdirectory (optional)",
+    remoteDirPlaceholder: "easel-backup",
+    s3Endpoint: "Endpoint (optional, blank for AWS)",
+    s3Region: "Region",
+    s3Bucket: "Bucket",
+    s3AccessKeyId: "Access key id",
+    s3SecretAccessKey: "Secret access key",
+    s3PathStyle: "Path-style addressing (MinIO and most NAS gateways)",
+    smbRoot: "Share path",
+    smbRootPlaceholder: "\\\\server\\share or a mapped drive",
+    smbConnect: "Connect with credentials (Windows)",
+    smbUser: "Username (optional)",
+    smbPassword: "Password (optional)",
+    test: "Test connection",
+    testing: "Testing\u2026",
+    testOk: "Destination reachable.",
+    scopeTitle: "What to back up",
+    scopeConfig: "Configuration & credentials",
+    scopeConfigHint: "Profile patches, API keys, personas, skills, state stores",
+    scopeSessions: "Sessions & attachments",
+    scopeSessionsHint: "Conversation logs and durable attachments",
+    scopeWorkspace: "Projects & outputs (media)",
+    scopeWorkspaceHint: "Projects and the full outputs tree \u2014 can be large",
+    encryptionTitle: "Encryption",
+    encryptionHint: "Backups include API keys. Encrypt with a passphrase (AES-256-GCM) before uploading to a cloud drive.",
+    encryptionOn: "Encrypt backups",
+    passphrase: "Passphrase",
+    scheduleTitle: "Schedule",
+    scheduleOff: "Manual only",
+    scheduleDaily: "Daily",
+    scheduleWeekly: "Weekly",
+    scheduleAt: "Time",
+    scheduleWeekday: "Day",
+    weekday0: "Sunday",
+    weekday1: "Monday",
+    weekday2: "Tuesday",
+    weekday3: "Wednesday",
+    weekday4: "Thursday",
+    weekday5: "Friday",
+    weekday6: "Saturday",
+    retention: "Keep",
+    retentionUnit: "copies per group",
+    save: "Save",
+    saving: "Saving\u2026",
+    saved: "Saved.",
+    runTitle: "Back up now",
+    run: "Back up",
+    running: "Backing up",
+    phaseCollect: "collecting",
+    phaseArchive: "archiving",
+    phaseUpload: "uploading",
+    phasePrune: "pruning",
+    noGroups: "Pick at least one scope above.",
+    historyTitle: "Recent backups",
+    historyEmpty: "No backups yet.",
+    historyManual: "manual",
+    historySchedule: "scheduled",
+    historyCompleted: "completed",
+    historyFailed: "failed",
+    restoreTitle: "Restore",
+    restorePickGroup: "Group",
+    restorePickStamp: "Copy",
+    restorePreview: "Preview restore",
+    restoreConfirm: "Overwrite now",
+    restorePlan: (count) => `${count} files will be overwritten with the archived copies. Confirm to proceed.`,
+    restoreApplied: (count) => `Restored ${count} files. Restart the app if sessions were restored.`,
+    restoreSkipped: (count) => `${count} entries skipped (unknown scope).`
+  },
+  zh: {
+    nav: "\u5907\u4EFD",
+    intro: "\u628A\u914D\u7F6E\u3001\u4F1A\u8BDD\u4E0E\u5DE5\u4F5C\u533A\u6587\u4EF6\u5907\u4EFD\u5230\u4F60\u81EA\u5DF1\u7684 WebDAV\u3001SMB \u6216 S3 \u670D\u52A1\u5668\uFF0C\u5E76\u53EF\u5728\u6B64\u6062\u590D\u3002\u5907\u4EFD\u6309\u8303\u56F4\u5206\u7EC4\u6253\u5305\u6210\u5B8C\u6574\u538B\u7F29\u5305\u3002",
+    engineMissing: "\u672C\u5B89\u88C5\u7F3A\u5C11\u5907\u4EFD\u5F15\u64CE\uFF0C\u91CD\u65B0\u5B89\u88C5 Easel \u540E\u53EF\u7528\u3002",
+    destinationTitle: "\u76EE\u6807\u7AEF",
+    protocol: "\u534F\u8BAE",
+    protocolWebdav: "WebDAV",
+    protocolS3: "S3",
+    protocolSmb: "SMB\uFF08\u7F51\u7EDC\u5171\u4EAB\uFF09",
+    endpoint: "WebDAV \u5730\u5740",
+    endpointPlaceholder: "https://dav.example.com/dav",
+    username: "\u7528\u6237\u540D",
+    password: "\u5BC6\u7801",
+    passwordSaved: "\u5DF2\u4FDD\u5B58\u2014\u2014\u7559\u7A7A\u4FDD\u6301\u4E0D\u53D8",
+    remoteDir: "\u8FDC\u7AEF\u5B50\u76EE\u5F55\uFF08\u53EF\u9009\uFF09",
+    remoteDirPlaceholder: "easel-backup",
+    s3Endpoint: "Endpoint\uFF08\u7559\u7A7A\u4E3A AWS\uFF09",
+    s3Region: "\u533A\u57DF",
+    s3Bucket: "\u5B58\u50A8\u6876",
+    s3AccessKeyId: "Access Key Id",
+    s3SecretAccessKey: "Secret Access Key",
+    s3PathStyle: "Path-style \u5BFB\u5740\uFF08MinIO \u4E0E\u591A\u6570 NAS \u7F51\u5173\uFF09",
+    smbRoot: "\u5171\u4EAB\u8DEF\u5F84",
+    smbRootPlaceholder: "\\\\\u670D\u52A1\u5668\\\u5171\u4EAB \u6216\u6620\u5C04\u76D8",
+    smbConnect: "\u5E26\u51ED\u636E\u8FDE\u63A5\uFF08Windows\uFF09",
+    smbUser: "\u7528\u6237\u540D\uFF08\u53EF\u9009\uFF09",
+    smbPassword: "\u5BC6\u7801\uFF08\u53EF\u9009\uFF09",
+    test: "\u6D4B\u8BD5\u8FDE\u63A5",
+    testing: "\u6D4B\u8BD5\u4E2D\u2026",
+    testOk: "\u76EE\u6807\u7AEF\u53EF\u8FBE\u3002",
+    scopeTitle: "\u5907\u4EFD\u5185\u5BB9",
+    scopeConfig: "\u914D\u7F6E\u4E0E\u51ED\u636E",
+    scopeConfigHint: "profiles \u8865\u4E01\u3001API \u5BC6\u94A5\u3001\u4EBA\u8BBE\u3001skills\u3001\u72B6\u6001\u5E93",
+    scopeSessions: "\u4F1A\u8BDD\u4E0E\u9644\u4EF6",
+    scopeSessionsHint: "\u4F1A\u8BDD\u65E5\u5FD7\u4E0E\u6301\u4E45\u9644\u4EF6",
+    scopeWorkspace: "\u9879\u76EE\u4E0E\u4EA7\u51FA\uFF08\u5A92\u4F53\uFF09",
+    scopeWorkspaceHint: "\u9879\u76EE\u4E0E\u5B8C\u6574 outputs \u6811\u2014\u2014\u53EF\u80FD\u5F88\u5927",
+    encryptionTitle: "\u52A0\u5BC6",
+    encryptionHint: "\u5907\u4EFD\u5305\u542B API \u5BC6\u94A5\u3002\u4E0A\u4F20\u5230\u4E91\u7AEF\u524D\u5EFA\u8BAE\u7528\u53E3\u4EE4\u52A0\u5BC6\uFF08AES-256-GCM\uFF09\u3002",
+    encryptionOn: "\u52A0\u5BC6\u5907\u4EFD",
+    passphrase: "\u53E3\u4EE4",
+    scheduleTitle: "\u5B9A\u65F6",
+    scheduleOff: "\u4EC5\u624B\u52A8",
+    scheduleDaily: "\u6BCF\u5929",
+    scheduleWeekly: "\u6BCF\u5468",
+    scheduleAt: "\u65F6\u523B",
+    scheduleWeekday: "\u661F\u671F",
+    weekday0: "\u5468\u65E5",
+    weekday1: "\u5468\u4E00",
+    weekday2: "\u5468\u4E8C",
+    weekday3: "\u5468\u4E09",
+    weekday4: "\u5468\u56DB",
+    weekday5: "\u5468\u4E94",
+    weekday6: "\u5468\u516D",
+    retention: "\u4FDD\u7559",
+    retentionUnit: "\u4EFD\uFF08\u6BCF\u7EC4\uFF09",
+    save: "\u4FDD\u5B58",
+    saving: "\u4FDD\u5B58\u4E2D\u2026",
+    saved: "\u5DF2\u4FDD\u5B58\u3002",
+    runTitle: "\u7ACB\u5373\u5907\u4EFD",
+    run: "\u5907\u4EFD",
+    running: "\u5907\u4EFD\u4E2D",
+    phaseCollect: "\u6536\u96C6",
+    phaseArchive: "\u6253\u5305",
+    phaseUpload: "\u4E0A\u4F20",
+    phasePrune: "\u6E05\u7406",
+    noGroups: "\u8BF7\u5148\u5728\u4E0A\u9762\u52FE\u9009\u81F3\u5C11\u4E00\u9879\u5907\u4EFD\u5185\u5BB9\u3002",
+    historyTitle: "\u6700\u8FD1\u5907\u4EFD",
+    historyEmpty: "\u8FD8\u6CA1\u6709\u5907\u4EFD\u8BB0\u5F55\u3002",
+    historyManual: "\u624B\u52A8",
+    historySchedule: "\u5B9A\u65F6",
+    historyCompleted: "\u5B8C\u6210",
+    historyFailed: "\u5931\u8D25",
+    restoreTitle: "\u6062\u590D",
+    restorePickGroup: "\u5206\u7EC4",
+    restorePickStamp: "\u5907\u4EFD\u4EFD",
+    restorePreview: "\u9884\u89C8\u6062\u590D",
+    restoreConfirm: "\u786E\u8BA4\u8986\u76D6",
+    restorePlan: (count) => `\u5C06\u7528\u5F52\u6863\u526F\u672C\u8986\u76D6 ${count} \u4E2A\u6587\u4EF6\uFF0C\u786E\u8BA4\u540E\u6267\u884C\u3002`,
+    restoreApplied: (count) => `\u5DF2\u6062\u590D ${count} \u4E2A\u6587\u4EF6\u3002\u82E5\u6062\u590D\u4E86\u4F1A\u8BDD\u8BB0\u5F55\uFF0C\u5EFA\u8BAE\u91CD\u542F\u5E94\u7528\u3002`,
+    restoreSkipped: (count) => `\u8DF3\u8FC7 ${count} \u4E2A\u672A\u77E5\u8303\u56F4\u6761\u76EE\u3002`
+  }
+};
+
+// src/features/backup.tsx
+var NS = "easel.backup";
+var STYLE_ID = "easel-backup-settings-styles";
+var plugin12 = {
+  name: "easel-backup-settings",
+  inject: ["slots", "locale"],
+  apply(ctx) {
+    ctx.effect(() => ctx.locale.register(NS, BACKUP_COPY), "easel: backup dictionaries");
+    ctx.effect(() => {
+      const style = document.createElement("style");
+      style.id = STYLE_ID;
+      style.textContent = BACKUP_STYLES;
+      document.head.append(style);
+      return () => {
+        style.remove();
+      };
+    }, "easel: backup styles");
+    const t = ctx.locale.bind(NS);
+    ctx.slots.inject("settings.section", () => ctx.slots.register({
+      name: "settings.section",
+      id: "easel-backup",
+      order: 70,
+      locale: NS,
+      label: () => t("nav"),
+      inject: () => ({ t })
+    }, BackupSettings));
+  }
+};
+
+// src/lib/context-menu-model.js
 var FILE_ROW_SELECTOR = "[data-files-entry]";
 var FILE_ROOT_SELECTOR = "[data-files-root]";
 var EDITABLE_SELECTOR = [
@@ -9564,8 +10389,8 @@ function fileNameOf(path) {
   return parts[parts.length - 1] ?? "";
 }
 
-// easel/dsh-plugin-easel/src/features/context-menu.js
-var STYLE_ID = "easel-context-menu-style";
+// src/features/context-menu.js
+var STYLE_ID2 = "easel-context-menu-style";
 var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
 var SEPARATOR_CLASS = "easel-ctx-menu__separator";
@@ -9630,7 +10455,7 @@ var CSS = `
 }
 `;
 var SEPARATOR = Object.freeze({ separator: true });
-var plugin12 = {
+var plugin13 = {
   name: "easel-context-menu",
   inject: [
     "sessions",
@@ -9646,10 +10471,10 @@ var plugin12 = {
   }
 };
 function installStyles() {
-  if (document.getElementById(STYLE_ID) !== null) return () => {
+  if (document.getElementById(STYLE_ID2) !== null) return () => {
   };
   const style = document.createElement("style");
-  style.id = STYLE_ID;
+  style.id = STYLE_ID2;
   style.textContent = CSS;
   document.head.append(style);
   return () => {
@@ -10126,7 +10951,7 @@ function reportError(ctx, error) {
   }
 }
 
-// easel/dsh-plugin-easel/src/features/index.ts
+// src/features/index.ts
 var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
 var FEATURES = views.map((module2) => ({
   view: module2.view,
@@ -10134,11 +10959,11 @@ var FEATURES = views.map((module2) => ({
   labels: module2.labels,
   plugin: module2.plugin
 }));
-var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12];
+var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12, plugin13];
 
-// easel/dsh-plugin-easel/src/client.tsx
-var NS = "easel.panel";
-var STYLE_ID2 = "dsh-plugin-easel-style";
+// src/client.tsx
+var NS2 = "easel.panel";
+var STYLE_ID3 = "dsh-plugin-easel-style";
 var STYLES = EASEL_CSS;
 var COPY = {
   zh: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.zh])),
@@ -10147,18 +10972,18 @@ var COPY = {
 var client_default = {
   inject: ["slots", "locale", "uiSidebarPanels", "sessions", "uiWorkspace", "remote", "remote.session"],
   apply(ctx) {
-    ctx.effect(() => ctx.locale.register(NS, COPY), "easel: rail dictionaries");
+    ctx.effect(() => ctx.locale.register(NS2, COPY), "easel: rail dictionaries");
     ctx.effect(() => {
       const style = document.createElement("style");
-      style.id = STYLE_ID2;
+      style.id = STYLE_ID3;
       style.textContent = STYLES;
       document.head.append(style);
       return () => style.remove();
     }, "easel: workbench styles");
     ctx.effect(() => ctx.uiSidebarPanels.hidden("schedules"), "easel: hide schedules rail icon");
-    const t = ctx.locale.bind(NS);
+    const t = ctx.locale.bind(NS2);
     ctx.provide("easelShell", createShellBridge(ctx, t));
-    for (const plugin13 of CLIENT_PLUGINS) ctx.plugin(plugin13);
+    for (const plugin14 of CLIENT_PLUGINS) ctx.plugin(plugin14);
   }
 };
 
