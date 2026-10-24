@@ -189,7 +189,7 @@ export function captureTrendArticle(input: TrendCaptureInput): Promise<TrendCapt
   });
 }
 
-// ---- 局域网交接（右键快推，spec easel-handoff-payload §S2） ----
+// ---- 隔空传送（右键快推，spec easel-handoff-payload §S2） ----
 /** 快推需要的已配对设备投影。 */
 export interface PushDevice { id: string; name: string }
 /** /api/handoff/status 里快推用得到的字段。 */

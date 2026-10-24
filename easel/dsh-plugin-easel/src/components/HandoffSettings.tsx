@@ -20,9 +20,9 @@ import {
 /** Bilingual copy for the settings section. */
 export const COPY = {
   en: {
-    nav: 'LAN handoff',
+    nav: 'Air Transfer',
     intro: 'Send a project and its agent sessions to another device on this network, or receive one. Both devices stay on the same network with the app open.',
-    unavailable: 'LAN handoff is not enabled in this profile.',
+    unavailable: 'Air Transfer is not enabled in this profile.',
     device: 'This device',
     port: 'port',
     refresh: 'Refresh',
@@ -51,9 +51,9 @@ export const COPY = {
     failed: 'Handoff failed',
   },
   zh: {
-    nav: '局域网交接',
+    nav: '隔空传送',
     intro: '把项目连同 agent 会话发到本网络的另一台设备，或从另一台设备接收。两台设备需在同一网络并都保持应用开启。',
-    unavailable: '当前 profile 未启用局域网交接。',
+    unavailable: '当前 profile 未启用隔空传送。',
     device: '本机',
     port: '端口',
     refresh: '刷新',

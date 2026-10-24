@@ -1829,7 +1829,7 @@ export function createHandoffRoutes(ctx) {
   const lan = () => ctx.get?.('lanHandoff')
   const requireLan = () => {
     const service = lan()
-    if (service === undefined) throw new ApiError(409, '局域网交接未启用：profile 未挂载 @deepseek-ai/dsh-lan-handoff')
+    if (service === undefined) throw new ApiError(409, '隔空传送未启用：profile 未挂载 @deepseek-ai/dsh-lan-handoff')
     return service
   }
   return [

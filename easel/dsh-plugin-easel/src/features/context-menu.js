@@ -338,7 +338,7 @@ async function showPushTargets(ctx, surface, menu, previousItems) {
   }
   const items = []
   if (status.available !== true || status.paired.length === 0) {
-    items.push({ label: status.available ? '没有已配对的设备' : '局域网交接未启用', disabled: true })
+    items.push({ label: status.available ? '没有已配对的设备' : '隔空传送未启用', disabled: true })
   } else {
     for (const device of status.paired) {
       items.push(menuRow(`推送到「${device.name}」`, () => pushToDevice(device.id, device.name, path)))

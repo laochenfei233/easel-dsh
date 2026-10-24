@@ -10129,7 +10129,7 @@ async function showPushTargets(ctx, surface, menu, previousItems) {
   }
   const items = [];
   if (status.available !== true || status.paired.length === 0) {
-    items.push({ label: status.available ? "\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907" : "\u5C40\u57DF\u7F51\u4EA4\u63A5\u672A\u542F\u7528", disabled: true });
+    items.push({ label: status.available ? "\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907" : "\u9694\u7A7A\u4F20\u9001\u672A\u542F\u7528", disabled: true });
   } else {
     for (const device of status.paired) {
       items.push(menuRow(`\u63A8\u9001\u5230\u300C${device.name}\u300D`, () => pushToDevice(device.id, device.name, path)));
@@ -10587,9 +10587,9 @@ function sendHandoff(peerId, workspacePath, payload) {
 var import_jsx_runtime26 = require("react/jsx-runtime");
 var COPY = {
   en: {
-    nav: "LAN handoff",
+    nav: "Air Transfer",
     intro: "Send a project and its agent sessions to another device on this network, or receive one. Both devices stay on the same network with the app open.",
-    unavailable: "LAN handoff is not enabled in this profile.",
+    unavailable: "Air Transfer is not enabled in this profile.",
     device: "This device",
     port: "port",
     refresh: "Refresh",
@@ -10618,9 +10618,9 @@ var COPY = {
     failed: "Handoff failed"
   },
   zh: {
-    nav: "\u5C40\u57DF\u7F51\u4EA4\u63A5",
+    nav: "\u9694\u7A7A\u4F20\u9001",
     intro: "\u628A\u9879\u76EE\u8FDE\u540C agent \u4F1A\u8BDD\u53D1\u5230\u672C\u7F51\u7EDC\u7684\u53E6\u4E00\u53F0\u8BBE\u5907\uFF0C\u6216\u4ECE\u53E6\u4E00\u53F0\u8BBE\u5907\u63A5\u6536\u3002\u4E24\u53F0\u8BBE\u5907\u9700\u5728\u540C\u4E00\u7F51\u7EDC\u5E76\u90FD\u4FDD\u6301\u5E94\u7528\u5F00\u542F\u3002",
-    unavailable: "\u5F53\u524D profile \u672A\u542F\u7528\u5C40\u57DF\u7F51\u4EA4\u63A5\u3002",
+    unavailable: "\u5F53\u524D profile \u672A\u542F\u7528\u9694\u7A7A\u4F20\u9001\u3002",
     device: "\u672C\u673A",
     port: "\u7AEF\u53E3",
     refresh: "\u5237\u65B0",
