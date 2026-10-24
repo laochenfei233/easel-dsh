@@ -398,15 +398,43 @@ pub(crate) fn ensure_easel_bundle(app: &AppHandle) -> Result<(), String> {
     ensure_easel_bundle_at(&runtime_easel, &runtime_payload, &easel_home(), &home)
 }
 
+/// The mountable feature-plugin payloads the shell owns. They re-export the
+/// core package's exports map and resolve its bare specifier against the
+/// sibling payload, so they stage and refresh together with it.
+pub(crate) const EASEL_MOUNT_PAYLOADS: &[&str] = &[
+    "@easel-dsh/easel-automation",
+    "@easel-dsh/easel-deconstruct",
+];
+
+/// Re-copy the mountable feature-plugin payloads into
+/// `$DSH_HOME/profiles/node_modules` on every start — the same update channel
+/// as the core payload: no market self-update, the shell is the only one.
+fn refresh_mount_payloads(runtime_plugins: &Path, home: &Path) -> Result<(), String> {
+    for name in EASEL_MOUNT_PAYLOADS {
+        let source = runtime_plugins.join(name);
+        if !source.join("package.json").exists() {
+            continue;
+        }
+        let dest = home.join("profiles").join("node_modules").join(name);
+        if dest.exists() {
+            fs::remove_dir_all(&dest).map_err(|e| format!("clear mount payload {name}: {e}"))?;
+        }
+        fs::create_dir_all(dest.parent().unwrap()).map_err(|e| format!("prepare mount payload {name}: {e}"))?;
+        copy_dir(&source, &dest)?;
+    }
+    Ok(())
+}
+
 /// Deploy the bundled Easel tree, refresh the profile payload, and write the
 /// registration rows. Every step is idempotent and user data (outputs/, real
 /// profiles, .env, existing patch rows' config) is never overwritten:
 ///
 /// 1. stamp-gated sync of `skills/` + `dsh-plugin-easel/` into EASEL_HOME
 ///    (replaced) and `profiles/_template` + README + LICENSE (missing only);
-/// 2. the profile payload in `$DSH_HOME/profiles/node_modules` is re-copied
-///    on every start — the plugin has no market self-update, the shell is its
-///    only update channel;
+/// 2. the profile payloads in `$DSH_HOME/profiles/node_modules` (the core
+///    plugin and the `@easel-dsh/*` mounts) are re-copied on every start —
+///    the plugins have no market self-update, the shell is their only
+///    update channel;
 /// 3. patch rows are insert-if-absent by id across both row shapes: a plain
 ///    config-override row (pre-bundle installs) converts in place, keeping
 ///    its config, and the skills row's default root follows the converted
@@ -462,6 +490,7 @@ pub(crate) fn ensure_easel_bundle_at(
     }
     fs::create_dir_all(payload_dest.parent().unwrap()).map_err(|e| e.to_string())?;
     copy_dir(runtime_payload, &payload_dest)?;
+    refresh_mount_payloads(runtime_payload.parent().ok_or("runtime payload has no parent")?, home)?;
 
     let profile = profile_web_dir(home);
     fs::create_dir_all(&profile).map_err(|e| e.to_string())?;
@@ -500,26 +529,25 @@ pub(crate) fn ensure_easel_bundle_at(
             "insert:\n  - id: easel-skills\n    name: '@deepseek-ai/dsh-skill-filesystem'\n    config:\n      providerName: easel\n      includeDefaultRoots: false\n      customSkillDirs: [{skills_dir}]\n"
         ),
     )?;
-    // Feature plugins split out of the core easel plugin: each mounts its own
-    // routes into the core `easelApi` registry, so disabling one row turns one
-    // feature off without touching the workbench. Both resolve through the core
-    // package's exports map (dsh-plugin-easel/<name>).
+    // Feature plugins are thin mount packages (@easel-dsh/*) over the core
+    // package's exports map: the implementation stays in dsh-plugin-easel and
+    // shares its helpers, while the loader rows name Easel-owned packages.
     ensure_easel_row(
         &mut rows,
         "easel-automation",
-        "insert:\n  - id: easel-automation\n    name: dsh-plugin-easel/automation\n",
+        "insert:\n  - id: easel-automation\n    name: '@easel-dsh/easel-automation'\n",
     )?;
     ensure_easel_row(
         &mut rows,
         "easel-deconstruct",
-        "insert:\n  - id: easel-deconstruct\n    name: dsh-plugin-easel/deconstruct\n",
+        "insert:\n  - id: easel-deconstruct\n    name: '@easel-dsh/easel-deconstruct'\n",
     )?;
     // 隔空传送 (air transfer): the package ships inside the CLI deploy closure;
     // this row mounts its service, received projects land under the project
     // root's `projects` directory beside the 立项 workspaces, and pushed data
     // files (.env / profiles / skills / outputs) land on the data root itself.
     let handoff_dir = yaml_scalar(&Path::new(&root_dir).join("projects").to_string_lossy())?;
-    let data_dir = yaml_scalar(&root_dir.to_string_lossy())?;
+    let data_dir = yaml_scalar(&root_dir)?;
     ensure_easel_row(
         &mut rows,
         "easel-lan-handoff",
@@ -527,24 +555,35 @@ pub(crate) fn ensure_easel_bundle_at(
             "insert:\n  - id: easel-lan-handoff\n    name: '@easel-dsh/easel-air-transfer'\n    config:\n      handoffDirectory: {handoff_dir}\n      dataDirectory: {data_dir}\n"
         ),
     )?;
-    // Installs that mounted handoff before `dataDirectory` existed keep their
-    // old config verbatim; stamp the current data root so pushed data files
-    // (.env / profiles / skills / outputs) have a home after the upgrade. The
-    // row keeps its id across the package rename, but an insert row written by
-    // an older shell still names the pre-rename package — rewrite it, or the
-    // upgraded runtime resolves a package the closure no longer carries.
-    if let Some(entry) = rows
-        .iter_mut()
-        .find(|row| row_has_id(row, "easel-lan-handoff"))
-        .and_then(|row| row.get_mut("insert"))
-        .and_then(|insert| insert.as_sequence_mut())
-        .and_then(|sequence| sequence.first_mut())
-    {
-        if entry.get("config").and_then(|config| config.get("dataDirectory")).is_none() {
-            entry["config"]["dataDirectory"] = Yaml::String(root_dir.clone());
-        }
-        if entry.get("name").and_then(Yaml::as_str) == Some("@deepseek-ai/dsh-lan-handoff") {
-            entry["name"] = Yaml::String("@easel-dsh/easel-air-transfer".into());
+    // Installs that mounted these rows before a rename keep their insert-row
+    // package names verbatim; rewrite the known old names, or the upgraded
+    // runtime resolves packages the closure no longer carries. `dataDirectory`
+    // gets the same treatment for rows that predate it.
+    const ROW_NAME_MIGRATIONS: &[(&str, &str, &str)] = &[
+        (
+            "easel-lan-handoff",
+            "@deepseek-ai/dsh-lan-handoff",
+            "@easel-dsh/easel-air-transfer",
+        ),
+        ("easel-automation", "dsh-plugin-easel/automation", "@easel-dsh/easel-automation"),
+        ("easel-deconstruct", "dsh-plugin-easel/deconstruct", "@easel-dsh/easel-deconstruct"),
+    ];
+    for (id, old_name, new_name) in ROW_NAME_MIGRATIONS {
+        if let Some(entry) = rows
+            .iter_mut()
+            .find(|row| row_has_id(row, id))
+            .and_then(|row| row.get_mut("insert"))
+            .and_then(|insert| insert.as_sequence_mut())
+            .and_then(|sequence| sequence.first_mut())
+        {
+            if entry.get("config").and_then(|config| config.get("dataDirectory")).is_none()
+                && *id == "easel-lan-handoff"
+            {
+                entry["config"]["dataDirectory"] = Yaml::String(root_dir.clone());
+            }
+            if entry.get("name").and_then(Yaml::as_str) == Some(*old_name) {
+                entry["name"] = Yaml::String((*new_name).into());
+            }
         }
     }
     if !rows
@@ -680,7 +719,8 @@ mod easel_tests {
     }
 
     /// A minimal bundled runtime: the runtime/easel content tree plus the
-    /// plugin payload. Calling again with a different version restages it.
+    /// plugin payload and the mountable feature-plugin payloads. Calling
+    /// again with a different version restages it.
     fn stage_bundle(root: &Path, version: &str, skill: &str) -> (PathBuf, PathBuf) {
         let tree = root.join("runtime").join("easel");
         write(&tree.join("VERSION"), version);
@@ -692,6 +732,11 @@ mod easel_tests {
         let payload = root.join("runtime").join("plugins").join("dsh-plugin-easel");
         write(&payload.join("package.json"), "{\"name\":\"dsh-plugin-easel\"}");
         write(&payload.join("index.js"), "// plugin");
+        for mount in EASEL_MOUNT_PAYLOADS {
+            let dir = root.join("runtime").join("plugins").join(mount);
+            write(&dir.join("package.json"), &format!("{{\"name\":\"{mount}\"}}"));
+            write(&dir.join("index.js"), "// mount");
+        }
         (tree, payload)
     }
 
@@ -721,11 +766,28 @@ mod easel_tests {
                 .unwrap(),
             "// plugin"
         );
+        // The mountable feature-plugin payloads ride the same refresh.
+        for mount in EASEL_MOUNT_PAYLOADS {
+            assert_eq!(
+                fs::read_to_string(
+                    home.join("profiles")
+                        .join("node_modules")
+                        .join(mount)
+                        .join("index.js")
+                )
+                .unwrap(),
+                "// mount",
+                "mount payload {mount} missing"
+            );
+        }
         let patch = patch_text(&home);
         assert!(patch.contains("id: easel"));
         assert!(patch.contains("id: easel-skills"));
         assert!(patch.contains("id: ui-plugin-manager"));
         assert!(patch.contains("disabled: true"));
+        assert!(patch.contains("@easel-dsh/easel-automation"));
+        assert!(patch.contains("@easel-dsh/easel-deconstruct"));
+        assert!(patch.contains("@easel-dsh/easel-air-transfer"));
         // The skills row must point inside the deployed root, not at it.
         assert!(patch.contains(
             easel.join("skills").join("openclaw").to_string_lossy().as_ref()
@@ -892,6 +954,35 @@ mod easel_tests {
         let written = serde_yaml::to_string(&rows).unwrap();
         assert!(!written.contains("dsh-plugin"));
         assert!(written.contains("keep-me"));
+    }
+
+    #[test]
+    fn renames_legacy_insert_row_package_names() {
+        let root = temp_dir("rename");
+        let (tree, payload) = stage_bundle(&root, "0.1.0", "v1");
+        let home = root.join("home");
+        let easel = root.join("easel-home");
+        let profile = profile_web_dir(&home);
+        fs::create_dir_all(&profile).unwrap();
+        fs::write(
+            profile.join("cordis.patch.yml"),
+            "insert:\n  - id: easel-lan-handoff\n    name: '@deepseek-ai/dsh-lan-handoff'\n    config:\n      handoffDirectory: keep-me\n  - id: easel-automation\n    name: dsh-plugin-easel/automation\n  - id: easel-deconstruct\n    name: dsh-plugin-easel/deconstruct\n",
+        )
+        .unwrap();
+
+        ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
+
+        // The insert rows keep their config but carry the current package
+        // names — the upgraded runtime resolves nothing else.
+        let patch = patch_text(&home);
+        assert!(patch.contains("@easel-dsh/easel-air-transfer"));
+        assert!(patch.contains("@easel-dsh/easel-automation"));
+        assert!(patch.contains("@easel-dsh/easel-deconstruct"));
+        assert!(!patch.contains("@deepseek-ai/dsh-lan-handoff"));
+        assert!(!patch.contains("dsh-plugin-easel/automation"));
+        assert!(!patch.contains("dsh-plugin-easel/deconstruct"));
+        eprintln!("PATCH:
+{patch}");
     }
 }
 

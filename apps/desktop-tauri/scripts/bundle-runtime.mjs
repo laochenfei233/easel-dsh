@@ -818,6 +818,18 @@ async function stageEasel() {
     filter: (src) => !/(^|[\\/])(node_modules|\.git)([\\/]|$)/.test(src),
   });
 
+  // The mountable feature plugins are thin re-exports of the core package's
+  // exports map (their loader rows name @easel-dsh/*); they ride beside it so
+  // the bare 'dsh-plugin-easel/...' specifier resolves against the sibling
+  // payload under $DSH_HOME/profiles/node_modules.
+  rmSync(join(PLUGINS_DIR, '@easel-dsh'), { recursive: true, force: true });
+  for (const mount of ['easel-automation', 'easel-deconstruct']) {
+    cpSync(join(base, mount), join(PLUGINS_DIR, '@easel-dsh', mount), {
+      recursive: true,
+      filter: (src) => !/(^|[\\/])(node_modules|\.git)([\\/]|$)/.test(src),
+    });
+  }
+
   // Whitelist staging: user data (outputs/, real profiles, .env) and the
   // retired Python tree cannot enter the bundle by construction. .env.example
   // skill templates are content, not secrets.
