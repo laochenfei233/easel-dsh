@@ -4,7 +4,13 @@
 // root and accepts a pending relocation request; the Rust supervisor performs
 // the move on the next server start, so this component only validates the
 // choice and then tells the user the app is restarting.
-import { useEffect, useState, type CSSProperties } from 'react'
+//
+// Visual language follows the shared settings surfaces (backup/handoff):
+// 0.5px card strokes on --dsw-alias-settings-card-*, --dsw-radius-xl corners,
+// 13/22 body type, 36px sm/md control scale. The move action is armed on the
+// first click and confirmed on the second, because it restarts the app.
+import { useEffect, useState } from 'react'
+import type { DataRootCopyKey } from '../locales/dataRoot'
 
 interface DataRootStatus {
   supported: boolean
@@ -18,28 +24,44 @@ interface DataRootStatus {
 
 export interface DataRootSectionProps {
   /** Locale-bound copy for `settings.dataRoot`. */
-  t: (key: string) => string
+  t: (key: DataRootCopyKey) => string
 }
 
-const box: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }
-const row: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4 }
-const label: CSSProperties = { opacity: 0.7 }
-const code: CSSProperties = { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12, wordBreak: 'break-all' }
-const actions: CSSProperties = { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }
-const inputStyle: CSSProperties = {
-  flex: '1 1 320px', minWidth: 0, padding: '6px 8px', borderRadius: 6,
-  border: '1px solid rgba(127,127,127,.35)', background: 'transparent', color: 'inherit',
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 12,
+/** Stylesheet injected once per client by the core plugin. */
+export const DATA_ROOT_STYLES = `
+.dtr-root { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
+.dtr-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.dtr-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
+.dtr-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 22px; font-weight: 500; }
+.dtr-badge { flex: none; padding: 1px 8px; border-radius: 999px; font-size: 11px; line-height: 16px; font-weight: 400; background: var(--dsw-alias-fill-secondary); color: var(--dsw-alias-label-secondary); }
+.dtr-path { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 20px; word-break: break-all; }
+.dtr-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; word-break: break-all; }
+.dtr-note { margin: 0; padding: 8px 10px; border-radius: var(--dsw-radius-md, 8px); font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-primary); }
+.dtr-note-warn { background: rgba(214,158,46,.12); }
+.dtr-note-info { background: var(--dsw-alias-fill-secondary); }
+.dtr-error { margin: 0; color: var(--dsw-alias-state-danger-primary, #d4453f); font-size: 12px; line-height: 18px; word-break: break-all; }
+.dtr-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.dtr-field label { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.dtr-input {
+  box-sizing: border-box; width: 100%; height: 36px; padding: 0 10px;
+  border: 0.5px solid var(--dsw-alias-border-l2); border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-fill-primary); color: var(--dsw-alias-label-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 22px;
 }
-const buttonStyle: CSSProperties = {
-  padding: '5px 10px', borderRadius: 6, border: '1px solid rgba(127,127,127,.35)',
-  background: 'transparent', color: 'inherit', cursor: 'pointer',
+.dtr-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dtr-btn {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-family: inherit;
+  height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md);
+  font-size: 14px; line-height: 22px; color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-fill-secondary);
+  transition: transform 100ms ease-out, background-color 120ms ease-out;
 }
-const primaryStyle: CSSProperties = {
-  ...buttonStyle, border: 'none', background: 'var(--dsw-accent, #4f7cff)', color: '#fff',
-}
-const warningStyle: CSSProperties = { margin: 0, padding: '8px 10px', borderRadius: 6, background: 'rgba(214,158,46,.12)', color: 'inherit' }
-const errorStyle: CSSProperties = { margin: 0, color: 'var(--dsw-danger, #d14)', whiteSpace: 'pre-wrap' }
+.dtr-btn:disabled { opacity: 0.5; cursor: default; }
+.dtr-btn-primary { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-business-primary); }
+.dtr-btn-danger { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-danger-primary, #d4453f); }
+.dtr-link { border: none; background: none; padding: 0; cursor: pointer; font-family: inherit; font-size: 12px; line-height: 18px; color: var(--dsw-alias-state-business-primary); }
+`
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = {
@@ -66,6 +88,7 @@ export function DataRootSection({ t }: DataRootSectionProps) {
   const [status, setStatus] = useState<DataRootStatus | null>(null)
   const [value, setValue] = useState('')
   const [busy, setBusy] = useState(false)
+  const [armed, setArmed] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
@@ -82,14 +105,13 @@ export function DataRootSection({ t }: DataRootSectionProps) {
   }, [])
 
   if (status !== null && !status.supported) {
-    return <section style={box}><h2>{t('nav')}</h2><p>{t('onlyDesktop')}</p></section>
+    return <div className="dtr-root"><p className="dtr-muted">{t('onlyDesktop')}</p></div>
   }
   if (status === null) {
-    return <section style={box}>
-      <h2>{t('nav')}</h2>
-      <p>{t('loading')}</p>
-      {error === null ? null : <p style={errorStyle} role="alert">{error}</p>}
-    </section>
+    return <div className="dtr-root">
+      <p className="dtr-muted">{t('loading')}</p>
+      {error === null ? null : <p className="dtr-error" role="alert">{error}</p>}
+    </div>
   }
 
   const choose = async () => {
@@ -97,7 +119,10 @@ export function DataRootSection({ t }: DataRootSectionProps) {
     setError(null)
     try {
       const picked = await request<{ path: string | null }>('/data-root/pick', { method: 'POST' })
-      if (picked.path) setValue(picked.path)
+      if (picked.path) {
+        setValue(picked.path)
+        setArmed(false)
+      }
     } catch (err) {
       const message = (err as Error).message
       setNotice(message === 'picker-unavailable' ? t('pickUnavailable') : message)
@@ -109,6 +134,7 @@ export function DataRootSection({ t }: DataRootSectionProps) {
   const migrate = async () => {
     setBusy(true)
     setError(null)
+    setArmed(false)
     try {
       await request('/data-root', { method: 'POST', body: JSON.stringify({ path: value.trim() }) })
       setNotice(t('migrating'))
@@ -123,43 +149,53 @@ export function DataRootSection({ t }: DataRootSectionProps) {
   const current = (status.current ?? '').replace(/[\\/]+$/, '')
   const unchanged = trimmed.length === 0 || trimmed === current
 
-  return <section style={box}>
-    <h2>{t('nav')}</h2>
-    <p style={{ margin: 0 }}>{t('intro')}</p>
+  return <div className="dtr-root">
+    <p className="dtr-intro">{t('intro')}</p>
 
-    <div style={row}>
-      <span style={label}>{t('current')}</span>
-      <code style={code}>{status.current}</code>
-    </div>
-    <div style={row}>
-      <span style={label}>{t('default')}</span>
-      <code style={code}>{status.default}</code>
-    </div>
-    {status.isDefault ? null : (
-      <div style={actions}>
-        <button type="button" style={buttonStyle} disabled={busy}
-          onClick={() => { setValue(status.default ?? ''); setNotice(null) }}>
-          {t('useDefault')}
-        </button>
+    <section className="dtr-card">
+      <div className="dtr-card-head">
+        <span>{t('currentTitle')}</span>
+        <span className="dtr-badge">{status.isDefault ? t('badgeDefault') : t('badgeCustom')}</span>
       </div>
-    )}
+      <p className="dtr-path">{status.current}</p>
+      {status.isDefault || status.default === undefined ? null : (
+        <p className="dtr-muted">{t('defaultLine').replace('{path}', status.default)}</p>
+      )}
+      {status.cloudSynced ? <p className="dtr-note dtr-note-warn">{t('cloudWarning')}</p> : null}
+      {status.pending ? <p className="dtr-note dtr-note-info">{t('pending')}</p> : null}
+      {status.lastError ? <p className="dtr-error" role="alert">{status.lastError}</p> : null}
+    </section>
 
-    {status.cloudSynced ? <p style={warningStyle}>{t('cloudWarning')}</p> : null}
-    {status.pending ? <p style={{ margin: 0 }}>{t('pending')}</p> : null}
-    {status.lastError ? <p style={errorStyle} role="alert">{status.lastError}</p> : null}
-    {notice ? <p style={{ margin: 0 }}>{notice}</p> : null}
-    {error ? <p style={errorStyle} role="alert">{error}</p> : null}
-
-    <div style={actions}>
-      <input style={inputStyle} value={value} spellCheck={false}
-        onChange={event => { setValue(event.target.value); setNotice(null) }}
-        aria-label={t('current')} />
-      <button type="button" style={buttonStyle} disabled={busy} onClick={() => { void choose() }}>
-        {t('choose')}
-      </button>
-      <button type="button" style={primaryStyle} disabled={busy || unchanged} onClick={() => { void migrate() }}>
-        {t('migrate')}
-      </button>
-    </div>
-  </section>
+    <section className="dtr-card">
+      <div className="dtr-card-head">
+        <span>{t('moveToTitle')}</span>
+        <span className="dtr-actions">
+          {armed ? <button type="button" className="dtr-btn dtr-btn-danger" disabled={busy} onClick={() => { void migrate() }}>{t('confirmMigrate')}</button> : (
+            <button type="button" className="dtr-btn dtr-btn-primary" disabled={busy || unchanged}
+              onClick={() => { setArmed(true); setNotice(null) }}>
+              {t('migrate')}
+            </button>
+          )}
+          {armed ? <button type="button" className="dtr-btn" disabled={busy} onClick={() => setArmed(false)}>{t('cancel')}</button> : null}
+        </span>
+      </div>
+      <div className="dtr-field">
+        <label>{t('newLocation')}</label>
+        <input className="dtr-input" value={value} spellCheck={false} placeholder={t('newLocationPlaceholder')}
+          onChange={event => { setValue(event.target.value); setArmed(false); setNotice(null) }} />
+      </div>
+      <div className="dtr-actions">
+        <button type="button" className="dtr-btn" disabled={busy} onClick={() => { void choose() }}>{t('choose')}</button>
+        {status.isDefault || status.default === undefined ? null : (
+          <button type="button" className="dtr-link" disabled={busy}
+            onClick={() => { setValue(status.default ?? ''); setArmed(false) }}>
+            {t('useDefault')}
+          </button>
+        )}
+      </div>
+      <p className="dtr-muted">{t('moveToHint')}</p>
+      {notice ? <p className="dtr-note dtr-note-info">{notice}</p> : null}
+      {error ? <p className="dtr-error" role="alert">{error}</p> : null}
+    </section>
+  </div>
 }

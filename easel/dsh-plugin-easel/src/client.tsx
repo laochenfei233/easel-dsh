@@ -13,11 +13,12 @@
 import { EASEL_CSS } from './generated/easel-css'
 import { createShellBridge } from './lib/shell'
 import { CLIENT_PLUGINS, FEATURES } from './features'
-import { DataRootSection } from './components/DataRootSection'
+import { DataRootSection, DATA_ROOT_STYLES } from './components/DataRootSection'
 import { DATA_ROOT_COPY } from './locales/dataRoot'
 
 const NS = 'easel.panel'
 const STYLE_ID = 'dsh-plugin-easel-style'
+const DATA_ROOT_STYLE_ID = 'easel-data-root-settings-styles'
 
 // The ported pages style themselves with Easel's global classes. The build
 // scopes those sheets under .easel-scope and rewrites the dark palette to key
@@ -51,11 +52,19 @@ export default {
 
     // The data root is a desktop concern: the host half exposes the current
     // root and a pending migration request, and the section hides itself when
-    // the shell did not provide one (web/CLI).
+    // the shell did not provide one (web/CLI). The section styles itself with
+    // the shared settings tokens, injected here beside the section.
     ctx.effect(
       () => ctx.locale.register('settings.dataRoot', DATA_ROOT_COPY),
       'easel: data root dictionaries',
     )
+    ctx.effect(() => {
+      const style = document.createElement('style')
+      style.id = DATA_ROOT_STYLE_ID
+      style.textContent = DATA_ROOT_STYLES
+      document.head.append(style)
+      return () => style.remove()
+    }, 'easel: data root section styles')
     ctx.slots.inject('settings.section', () => ctx.slots.register({
       name: 'settings.section',
       id: 'data-root',
