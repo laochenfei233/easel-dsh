@@ -38,6 +38,7 @@ import {
   pruneSnapshot, readRadarHistory, staleItemsFromHistory,
 } from './lib/trends.js'
 import { RadarArticleError, createCaptureHandler } from './lib/trends-article.js'
+import { discoverCalendars, syncCalendarEvents } from './caldav.js'
 
 /** Cordis plugin name; also the `name` of this plugin's loader row. */
 export const name = 'easel'
@@ -236,7 +237,8 @@ export class ApiError extends Error {
 
 const PROFILE_FILE_ORDER = ['identity.md', 'style.md', 'audience.md', 'platforms.md', 'preferences.md', 'memory.md']
 const PROTECTED_OUTPUTS = new Set(['_login', '_analytics', '_schedule.json', '_ideas.json',
-  '_publish', '_publish.log', '_sessions', '_profile_build', '_debug', '_inbox'])
+  '_publish', '_publish.log', '_sessions', '_profile_build', '_debug', '_inbox',
+  '_caldav_config.json', '_caldav_cache.json'])
 
 const TEXT_EXTS = new Set(['.txt', '.md', '.json', '.csv', '.log', '.py', '.js', '.ts', '.html', '.htm', '.css', '.xml', '.yaml', '.yml', '.srt', '.vtt'])
 export const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'])
@@ -1154,6 +1156,7 @@ async function apiScheduleCreate(c) {
     source: SCHEDULE_SOURCES.has(body?.source) ? body.source : 'manual',
     event_type: String(body?.event_type ?? ''),
     end_date: String(body?.end_date ?? ''),
+    repeat: body?.repeat === 'yearly' ? 'yearly' : '',
   }
   items.push(item)
   await writeJsonFile(join(c.settings.projectRoot, 'outputs', SCHEDULE_FILE), items)
@@ -1177,6 +1180,9 @@ async function apiScheduleUpdate(c) {
     url: String(body?.url ?? ''),
     event_type: String(body?.event_type ?? ''),
     end_date: String(body?.end_date ?? ''),
+    // repeat 仅 yearly 合法；旧调用方不带该字段时保留原值，显式空串清除
+    repeat: body?.repeat === 'yearly' ? 'yearly'
+      : (body?.repeat === undefined && typeof item.repeat === 'string' ? item.repeat : ''),
   })
   await writeJsonFile(join(c.settings.projectRoot, 'outputs', SCHEDULE_FILE), items)
   return { json: item }
@@ -1636,6 +1642,139 @@ async function apiProjectize(c) {
   return { json: { safe: result.safe } }
 }
 
+// ---- CalDAV 只读订阅（账号配置存 _caldav_config.json，事件缓存存 _caldav_cache.json）----
+
+const CALDAV_CONFIG_FILE = '_caldav_config.json'
+const CALDAV_CACHE_FILE = '_caldav_cache.json'
+// 同步窗口：过去 60 天 ~ 未来 300 天，客户端按可见月份过滤
+const CALDAV_SYNC_BACK_DAYS = 60
+const CALDAV_SYNC_FORWARD_DAYS = 300
+const CALDAV_COLORS = ['#5b8def', '#e5484d', '#30a46c', '#b7791f', '#8e4ec6', '#0f766e']
+
+function isValidHttpUrl(value) {
+  return /^https?:\/\//i.test(value)
+}
+
+export async function readCaldavConfig(settings) {
+  const raw = await readJsonFile(join(settings.projectRoot, 'outputs', CALDAV_CONFIG_FILE), null)
+  const accounts = []
+  for (const item of Array.isArray(raw?.accounts) ? raw.accounts : []) {
+    if (item === null || typeof item !== 'object') continue
+    const url = String(item.url ?? '').trim()
+    if (!isValidHttpUrl(url)) continue
+    accounts.push({
+      id: String(item.id ?? '').trim() || randomBytes(6).toString('hex'),
+      name: String(item.name ?? '').trim().slice(0, 40) || '日历账号',
+      url,
+      username: String(item.username ?? '').trim(),
+      // ponytail: 凭据明文存工作区 outputs（本地桌面应用、本机数据目录）；API 响应一律掩码
+      password: String(item.password ?? ''),
+      enabled: item.enabled !== false,
+      calendars: Array.isArray(item.calendars) ? item.calendars.map(String).filter(isValidHttpUrl) : [],
+    })
+  }
+  return { accounts }
+}
+
+async function writeCaldavConfig(settings, accounts) {
+  await writeJsonFile(join(settings.projectRoot, 'outputs', CALDAV_CONFIG_FILE), { accounts })
+}
+
+async function readCaldavCache(settings) {
+  const raw = await readJsonFile(join(settings.projectRoot, 'outputs', CALDAV_CACHE_FILE), null)
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)
+    || raw.byAccount === null || typeof raw.byAccount !== 'object' || Array.isArray(raw.byAccount)) return {}
+  // 耐久文件：条目形状不合规的直接丢弃，不让坏缓存打穿客户端渲染
+  const byAccount = {}
+  for (const [aid, bucket] of Object.entries(raw.byAccount)) {
+    if (bucket === null || typeof bucket !== 'object' || !Array.isArray(bucket.events)) continue
+    byAccount[aid] = {
+      syncedAt: typeof bucket.syncedAt === 'number' ? bucket.syncedAt : null,
+      events: bucket.events.filter((ev) => ev !== null && typeof ev === 'object'),
+    }
+  }
+  return byAccount
+}
+
+async function apiCaldavAccountsGet(c) {
+  const cfg = await readCaldavConfig(c.settings)
+  const cache = await readCaldavCache(c.settings)
+  const accounts = cfg.accounts.map((account, index) => ({
+    ...account,
+    password: account.password ? maskValue(account.password) : '',
+    color: CALDAV_COLORS[index % CALDAV_COLORS.length],
+    syncedAt: cache[account.id]?.syncedAt ?? null,
+  }))
+  return { json: { accounts } }
+}
+
+async function apiCaldavAccountsPut(c) {
+  const body = await c.body()
+  const existing = await readCaldavConfig(c.settings)
+  const accounts = []
+  for (const item of Array.isArray(body?.accounts) ? body.accounts : []) {
+    if (item === null || typeof item !== 'object') continue
+    const url = String(item.url ?? '').trim()
+    if (!isValidHttpUrl(url)) throw new ApiError(400, `无效的 CalDAV URL：${url || '(空)'}`)
+    const id = String(item.id ?? '').trim() || randomBytes(6).toString('hex')
+    const old = existing.accounts.find((account) => account.id === id)
+    // 空密码或掩码 = 未改动（GET 只回掩码，客户端会原样带回来），保留原值
+    const incomingPassword = String(item.password ?? '').trim()
+    const password = (incomingPassword === '' || incomingPassword.startsWith('••••')) ? (old?.password ?? '') : incomingPassword
+    accounts.push({
+      id,
+      name: String(item.name ?? '').trim().slice(0, 40) || '日历账号',
+      url,
+      username: String(item.username ?? '').trim(),
+      password,
+      enabled: item.enabled !== false,
+      calendars: Array.isArray(item.calendars) ? item.calendars.map(String).filter(isValidHttpUrl) : [],
+    })
+  }
+  await writeCaldavConfig(c.settings, accounts)
+  return { json: { ok: true } }
+}
+
+async function apiCaldavDiscover(c) {
+  const cfg = await readCaldavConfig(c.settings)
+  const saved = cfg.accounts.find((account) => account.id === c.params.aid)
+  if (saved === undefined) throw new ApiError(404, '账号不存在')
+  const body = await c.body()
+  // 表单未保存时可用请求体里的 URL/凭据直接探测
+  const account = {
+    ...saved,
+    url: isValidHttpUrl(String(body?.url ?? '').trim()) ? String(body.url).trim() : saved.url,
+    username: typeof body?.username === 'string' && body.username.trim() ? body.username.trim() : saved.username,
+    password: typeof body?.password === 'string' && body.password.trim() ? body.password : saved.password,
+  }
+  try {
+    return { json: { calendars: await discoverCalendars(account) } }
+  } catch (error) {
+    throw new ApiError(502, error?.message ?? 'CalDAV 发现失败')
+  }
+}
+
+async function apiCaldavSync(c) {
+  const cfg = await readCaldavConfig(c.settings)
+  const account = cfg.accounts.find((entry) => entry.id === c.params.aid)
+  if (account === undefined) throw new ApiError(404, '账号不存在')
+  const now = Date.now()
+  let events
+  try {
+    events = await syncCalendarEvents(account, now - CALDAV_SYNC_BACK_DAYS * 86400000, now + CALDAV_SYNC_FORWARD_DAYS * 86400000)
+  } catch (error) {
+    throw new ApiError(502, error?.message ?? 'CalDAV 同步失败')
+  }
+  const cache = await readCaldavCache(c.settings)
+  cache[account.id] = { syncedAt: Math.floor(now / 1000), events }
+  await writeJsonFile(join(c.settings.projectRoot, 'outputs', CALDAV_CACHE_FILE), { byAccount: cache })
+  return { json: { ok: true, count: events.length } }
+}
+
+async function apiCaldavEventsGet(c) {
+  return { json: { byAccount: await readCaldavCache(c.settings) } }
+}
+
 // ---- 路由表与调度：命中即本地应答，未命中返回 null → 回落代理 ----
 
 /**
@@ -1668,6 +1807,11 @@ export const CORE_ROUTES = [
   ['POST', ['schedule'], apiScheduleCreate],
   ['PUT', ['schedule', ':sid'], apiScheduleUpdate],
   ['DELETE', ['schedule', ':sid'], apiScheduleDelete],
+  ['GET', ['caldav', 'accounts'], apiCaldavAccountsGet],
+  ['PUT', ['caldav', 'accounts'], apiCaldavAccountsPut],
+  ['POST', ['caldav', 'accounts', ':aid', 'discover'], apiCaldavDiscover],
+  ['POST', ['caldav', 'accounts', ':aid', 'sync'], apiCaldavSync],
+  ['GET', ['caldav', 'events'], apiCaldavEventsGet],
   ['POST', ['profile', 'build'], apiProfileBuild],
   ['POST', ['mkdir'], apiMkdir],
   ['POST', ['projectize'], apiProjectize],

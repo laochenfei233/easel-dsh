@@ -505,7 +505,7 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   display: flex; align-items: center; gap: 6px; padding: 10px 12px 5px;
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--text-tertiary); font-weight: 700; cursor: pointer; user-select: none;
-}.easel-scope .archived-header:hover { color: var(--text-secondary); }.easel-scope .archived-chevron { display: inline-flex; align-items: center; transition: transform var(--t-fast); color: var(--text-tertiary); }.easel-scope .archived-chevron.open { transform: rotate(90deg); }/* ============ \u901A\u7528\u9875\u5BB9\u5668 ============ */.easel-scope .page-scroll { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; max-width: 1100px; margin: 0 auto 4px; }.easel-scope .notice-error { max-width: 1100px; margin: 14px auto 0; color: var(--red); background: var(--red-soft); border: 1px solid transparent; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; }/* ============ \u70ED\u70B9\u96F7\u8FBE ============ */.easel-scope .trend-platforms { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-grid { max-width: 1100px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }.easel-scope .trend-col { padding: 14px 6px 10px; }.easel-scope .trend-col-head { font-weight: 650; font-size: 14px; padding: 0 12px 8px; display: flex; align-items: center; gap: 8px; }.easel-scope .trend-count { color: var(--text-tertiary); font-size: 12px; font-weight: 500; }.easel-scope .trend-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 8px; transition: background var(--t-fast); }.easel-scope .trend-item:hover { background: var(--surface-hover); }.easel-scope .trend-rank { width: 20px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-tertiary); flex-shrink: 0; }.easel-scope .trend-rank.top { color: var(--accent-end); }.easel-scope .trend-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }.easel-scope .trend-title { font-size: 13px; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .trend-title:hover { color: var(--accent-start); }.easel-scope .trend-hot { font-size: 11px; color: var(--text-tertiary); }.easel-scope .trend-meta { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }.easel-scope .trend-badge { font-size: 10.5px; line-height: 1; padding: 2.5px 6px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }.easel-scope .trend-badge-new { color: var(--accent-end); background: var(--accent-soft); font-weight: 650; }.easel-scope .trend-badge-up { color: var(--trend-up); background: color-mix(in srgb, var(--trend-up) 13%, transparent); }.easel-scope .trend-badge-down { color: var(--trend-down); background: color-mix(in srgb, var(--trend-down) 13%, transparent); }.easel-scope .trend-badge-watch { color: var(--amber, #b45309); background: color-mix(in srgb, var(--amber, #b45309) 13%, transparent); }.easel-scope .trend-age { font-size: 10.5px; color: var(--text-tertiary); white-space: nowrap; }.easel-scope .trend-plat { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64px; }.easel-scope .trend-stale { font-size: 11px; color: var(--amber, #b45309); font-weight: 500; }.easel-scope .trend-more { font-size: 11.5px; color: var(--text-tertiary); padding: 2px 12px 6px; }.easel-scope .trend-viewsep { width: 1px; align-self: stretch; background: var(--border); margin: 2px 4px; }.easel-scope .trend-watch-card { padding: 12px 6px 6px; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-watch-group { display: flex; align-items: center; gap: 8px; padding: 0 8px; }.easel-scope .trend-watch-group + .trend-watch-group { border-top: 1px dashed var(--border); }.easel-scope .trend-watch-items { flex: 1; min-width: 0; }.easel-scope .trend-watch-group .trend-item { padding-top: 5px; padding-bottom: 5px; }.easel-scope .trend-watch-group .trend-item .trend-use, .easel-scope .trend-watch-group .trend-item .trend-save { opacity: 1; }.easel-scope .trend-watch-key { font-size: 12px; font-weight: 650; color: var(--accent-end); background: var(--accent-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; flex-shrink: 0; }.easel-scope .trend-cluster { padding: 12px 6px 8px; }.easel-scope .trend-cluster-head { display: flex; align-items: center; gap: 8px; padding: 0 12px 6px; }.easel-scope .trend-cluster-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }.easel-scope .trend-cluster-actions .trend-save, .easel-scope .trend-cluster-actions .trend-use { opacity: 1; }.easel-scope .trend-cluster-platforms { display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; flex-wrap: wrap; }.easel-scope .trend-chip { font-size: 10.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface-hover); color: var(--text-secondary); }.easel-scope .trend-use { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); cursor: pointer; white-space: nowrap; color: var(--accent-end); }.easel-scope .trend-item:hover .trend-use { opacity: 1; }.easel-scope .trend-use:hover { background: var(--accent-soft); border-color: transparent; }.easel-scope .trend-empty { color: var(--text-tertiary); font-size: 13px; padding: 10px 12px; }/* ============ \u5185\u5BB9\u65E5\u5386 ============ */.easel-scope .cal-nav { display: flex; align-items: center; gap: 8px; }.easel-scope .cal-month { font-weight: 650; font-size: 14px; min-width: 120px; text-align: center; }.easel-scope .cal-grid-head { max-width: 1100px; margin: 18px auto 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-wd { text-align: center; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }.easel-scope .cal-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-cell { height: 132px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 7px; cursor: pointer; transition: all var(--t-fast); display: flex; flex-direction: column; gap: 4px; overflow: hidden; }.easel-scope .cal-cell:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }.easel-scope .cal-cell.dim { opacity: 0.4; }.easel-scope .cal-cell.today { border-color: var(--accent-start); box-shadow: 0 0 0 2px var(--accent-soft); }.easel-scope .cal-daynum { font-size: 12px; color: var(--text-secondary); font-weight: 600; }.easel-scope .cal-cell.today .cal-daynum { color: var(--accent-end); }.easel-scope .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }.easel-scope .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }.easel-scope .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }/* ============ \u5DE5\u4F5C\u53F0 ============ */.easel-scope .dash-hero { max-width: 1100px; margin: 0 auto 8px; }.easel-scope .dash-quick { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }.easel-scope .dash-quick-btn {
+}.easel-scope .archived-header:hover { color: var(--text-secondary); }.easel-scope .archived-chevron { display: inline-flex; align-items: center; transition: transform var(--t-fast); color: var(--text-tertiary); }.easel-scope .archived-chevron.open { transform: rotate(90deg); }/* ============ \u901A\u7528\u9875\u5BB9\u5668 ============ */.easel-scope .page-scroll { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; max-width: 1100px; margin: 0 auto 4px; }.easel-scope .notice-error { max-width: 1100px; margin: 14px auto 0; color: var(--red); background: var(--red-soft); border: 1px solid transparent; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; }/* ============ \u70ED\u70B9\u96F7\u8FBE ============ */.easel-scope .trend-platforms { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-grid { max-width: 1100px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }.easel-scope .trend-col { padding: 14px 6px 10px; }.easel-scope .trend-col-head { font-weight: 650; font-size: 14px; padding: 0 12px 8px; display: flex; align-items: center; gap: 8px; }.easel-scope .trend-count { color: var(--text-tertiary); font-size: 12px; font-weight: 500; }.easel-scope .trend-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 8px; transition: background var(--t-fast); }.easel-scope .trend-item:hover { background: var(--surface-hover); }.easel-scope .trend-rank { width: 20px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-tertiary); flex-shrink: 0; }.easel-scope .trend-rank.top { color: var(--accent-end); }.easel-scope .trend-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }.easel-scope .trend-title { font-size: 13px; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .trend-title:hover { color: var(--accent-start); }.easel-scope .trend-hot { font-size: 11px; color: var(--text-tertiary); }.easel-scope .trend-meta { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }.easel-scope .trend-badge { font-size: 10.5px; line-height: 1; padding: 2.5px 6px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }.easel-scope .trend-badge-new { color: var(--accent-end); background: var(--accent-soft); font-weight: 650; }.easel-scope .trend-badge-up { color: var(--trend-up); background: color-mix(in srgb, var(--trend-up) 13%, transparent); }.easel-scope .trend-badge-down { color: var(--trend-down); background: color-mix(in srgb, var(--trend-down) 13%, transparent); }.easel-scope .trend-badge-watch { color: var(--amber, #b45309); background: color-mix(in srgb, var(--amber, #b45309) 13%, transparent); }.easel-scope .trend-age { font-size: 10.5px; color: var(--text-tertiary); white-space: nowrap; }.easel-scope .trend-plat { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64px; }.easel-scope .trend-stale { font-size: 11px; color: var(--amber, #b45309); font-weight: 500; }.easel-scope .trend-more { font-size: 11.5px; color: var(--text-tertiary); padding: 2px 12px 6px; }.easel-scope .trend-viewsep { width: 1px; align-self: stretch; background: var(--border); margin: 2px 4px; }.easel-scope .trend-watch-card { padding: 12px 6px 6px; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-watch-group { display: flex; align-items: center; gap: 8px; padding: 0 8px; }.easel-scope .trend-watch-group + .trend-watch-group { border-top: 1px dashed var(--border); }.easel-scope .trend-watch-items { flex: 1; min-width: 0; }.easel-scope .trend-watch-group .trend-item { padding-top: 5px; padding-bottom: 5px; }.easel-scope .trend-watch-group .trend-item .trend-use, .easel-scope .trend-watch-group .trend-item .trend-save { opacity: 1; }.easel-scope .trend-watch-key { font-size: 12px; font-weight: 650; color: var(--accent-end); background: var(--accent-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; flex-shrink: 0; }.easel-scope .trend-cluster { padding: 12px 6px 8px; }.easel-scope .trend-cluster-head { display: flex; align-items: center; gap: 8px; padding: 0 12px 6px; }.easel-scope .trend-cluster-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }.easel-scope .trend-cluster-actions .trend-save, .easel-scope .trend-cluster-actions .trend-use { opacity: 1; }.easel-scope .trend-cluster-platforms { display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; flex-wrap: wrap; }.easel-scope .trend-chip { font-size: 10.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface-hover); color: var(--text-secondary); }.easel-scope .trend-use { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); cursor: pointer; white-space: nowrap; color: var(--accent-end); }.easel-scope .trend-item:hover .trend-use { opacity: 1; }.easel-scope .trend-use:hover { background: var(--accent-soft); border-color: transparent; }.easel-scope .trend-empty { color: var(--text-tertiary); font-size: 13px; padding: 10px 12px; }/* ============ \u5185\u5BB9\u65E5\u5386 ============ */.easel-scope .cal-nav { display: flex; align-items: center; gap: 8px; }.easel-scope .cal-month { font-weight: 650; font-size: 14px; min-width: 120px; text-align: center; }.easel-scope .cal-grid-head { max-width: 1100px; margin: 18px auto 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-wd { text-align: center; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }.easel-scope .cal-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-cell { height: 132px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 7px; cursor: pointer; transition: all var(--t-fast); display: flex; flex-direction: column; gap: 4px; overflow: hidden; }.easel-scope .cal-cell:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }.easel-scope .cal-cell.dim { opacity: 0.4; }.easel-scope .cal-cell.today { border-color: var(--accent-start); box-shadow: 0 0 0 2px var(--accent-soft); }.easel-scope .cal-daynum { font-size: 12px; color: var(--text-secondary); font-weight: 600; }.easel-scope .cal-cell.today .cal-daynum { color: var(--accent-end); }/* \u8282\u5047\u65E5\u5E95\u56FE\uFF08T2\uFF09\uFF1A\u4F11/\u73ED\u89D2\u6807 + \u8282\u65E5\u540D */.easel-scope .calendar-page { --cal-rest: #e5484d; --cal-festival: #b7791f; }.easel-scope .cal-daynum-row { display: flex; align-items: center; gap: 4px; }.easel-scope .cal-festival { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 4px; font-size: 10px; font-weight: 700; flex-shrink: 0; }.easel-scope .cal-festival.rest { color: #fff; background: var(--cal-rest); }.easel-scope .cal-festival.work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 15%, transparent); }.easel-scope .cal-festnames { font-size: 11px; color: var(--cal-festival); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }.easel-scope .cal-fest-day { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }.easel-scope .cal-festival-tag { font-size: 12px; padding: 2px 9px; border-radius: 999px; }.easel-scope .cal-festival-tag.is-statutory-rest { color: #fff; background: var(--cal-rest); font-weight: 600; }.easel-scope .cal-festival-tag.is-statutory-work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 14%, transparent); }.easel-scope .cal-festival-tag.is-lunar { color: #fff; background: var(--cal-festival); }.easel-scope .cal-festival-tag.is-fixed { color: var(--cal-festival); background: color-mix(in srgb, var(--cal-festival) 14%, transparent); }/* \u53F3\u952E\u83DC\u5355\uFF08T3\uFF09\uFF1A\u900F\u660E\u906E\u7F69\u4E0A\u7684\u6D6E\u5C42\u83DC\u5355 */.easel-scope .overlay.is-menu { background: transparent; }.easel-scope .cal-menu { position: fixed; z-index: 80; min-width: 176px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 5px; display: flex; flex-direction: column; }.easel-scope .cal-menu > button { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 10px; font-size: 13px; color: var(--text); background: none; border: 0; border-radius: 7px; cursor: pointer; text-align: left; }.easel-scope .cal-menu > button:hover { background: var(--accent-soft); }.easel-scope .cal-menu-sep { height: 1px; background: var(--border); margin: 3px 4px; }.easel-scope .cal-menu > .cal-menu-del { color: var(--text-tertiary); }.easel-scope .cal-menu > .cal-menu-del:hover { color: var(--cal-rest); }.easel-scope .cal-repeat { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; color: var(--text-secondary); cursor: pointer; }/* CalDAV \u8BA2\u9605\uFF08T6\uFF09\uFF1A\u53EA\u8BFB chip\uFF08\u7A7A\u5FC3\u70B9\uFF09\u4E0E\u8D26\u53F7\u7BA1\u7406\u5F39\u7A97 */.easel-scope .cal-event.is-caldav { background: color-mix(in srgb, var(--ev) 7%, transparent); border: 1px dashed color-mix(in srgb, var(--ev) 40%, transparent); cursor: default; }.easel-scope .cal-event.is-caldav .cal-event-dot { background: transparent; border: 2px solid var(--ev); }.easel-scope .cal-sub-hint { font-size: 12.5px; color: var(--text-tertiary); margin: 0 0 12px; line-height: 1.5; }.easel-scope .cal-sub-row { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }.easel-scope .cal-sub-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-sub-main { flex: 1; min-width: 0; }.easel-scope .cal-sub-url { font-size: 12px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .cal-sub-form { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }.easel-scope .cal-sub-error { margin-top: 10px; font-size: 12.5px; color: var(--cal-rest); }.easel-scope .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }.easel-scope .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }.easel-scope .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }/* ============ \u5DE5\u4F5C\u53F0 ============ */.easel-scope .dash-hero { max-width: 1100px; margin: 0 auto 8px; }.easel-scope .dash-quick { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }.easel-scope .dash-quick-btn {
   display: flex; align-items: center; gap: 7px; padding: 9px 15px;
   font-size: 13.5px; font-weight: 550; cursor: pointer; color: var(--text);
   background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
@@ -1363,6 +1363,29 @@ function updateSchedule(id, item) {
 }
 function deleteSchedule(id) {
   return request(`/api/schedule/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+function fetchCaldavAccounts() {
+  return request("/api/caldav/accounts");
+}
+function putCaldavAccounts(accounts) {
+  return request("/api/caldav/accounts", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ accounts })
+  });
+}
+function discoverCaldav(id, creds) {
+  return request(`/api/caldav/accounts/${encodeURIComponent(id)}/discover`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(creds)
+  });
+}
+function syncCaldav(id) {
+  return request(`/api/caldav/accounts/${encodeURIComponent(id)}/sync`, { method: "POST" });
+}
+function fetchCaldavEvents() {
+  return request("/api/caldav/events");
 }
 function fetchIdeas() {
   return request("/api/ideas");
@@ -2477,7 +2500,7 @@ __export(ideas_exports, {
 // src/components/IdeasPage.tsx
 var import_react4 = require("react");
 
-// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../../easel-handoff-payload/node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3634,7 +3657,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../../easel-handoff-payload/node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -5925,6 +5948,484 @@ __export(calendar_exports, {
 
 // src/components/CalendarPage.tsx
 var import_react5 = require("react");
+
+// src/data/holidays-cn.js
+var HOLIDAYS_CN = {
+  2025: {
+    "2025-01-01": ["\u5143\u65E6", 1],
+    "2025-01-26": ["\u6625\u8282", 0],
+    "2025-01-28": ["\u6625\u8282", 1],
+    "2025-01-29": ["\u6625\u8282", 1],
+    "2025-01-30": ["\u6625\u8282", 1],
+    "2025-01-31": ["\u6625\u8282", 1],
+    "2025-02-01": ["\u6625\u8282", 1],
+    "2025-02-02": ["\u6625\u8282", 1],
+    "2025-02-03": ["\u6625\u8282", 1],
+    "2025-02-04": ["\u6625\u8282", 1],
+    "2025-02-08": ["\u6625\u8282", 0],
+    "2025-04-04": ["\u6E05\u660E\u8282", 1],
+    "2025-04-05": ["\u6E05\u660E\u8282", 1],
+    "2025-04-06": ["\u6E05\u660E\u8282", 1],
+    "2025-04-27": ["\u52B3\u52A8\u8282", 0],
+    "2025-05-01": ["\u52B3\u52A8\u8282", 1],
+    "2025-05-02": ["\u52B3\u52A8\u8282", 1],
+    "2025-05-03": ["\u52B3\u52A8\u8282", 1],
+    "2025-05-04": ["\u52B3\u52A8\u8282", 1],
+    "2025-05-05": ["\u52B3\u52A8\u8282", 1],
+    "2025-05-31": ["\u7AEF\u5348\u8282", 1],
+    "2025-06-01": ["\u7AEF\u5348\u8282", 1],
+    "2025-06-02": ["\u7AEF\u5348\u8282", 1],
+    "2025-09-28": ["\u56FD\u5E86\u8282", 0],
+    "2025-10-01": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-02": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-03": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-04": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-05": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-06": ["\u4E2D\u79CB\u8282", 1],
+    "2025-10-07": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-08": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-11": ["\u56FD\u5E86\u8282", 0]
+  },
+  2026: {
+    "2026-01-01": ["\u5143\u65E6", 1],
+    "2026-01-02": ["\u5143\u65E6", 1],
+    "2026-01-03": ["\u5143\u65E6", 1],
+    "2026-01-04": ["\u5143\u65E6", 0],
+    "2026-02-14": ["\u6625\u8282", 0],
+    "2026-02-15": ["\u6625\u8282", 1],
+    "2026-02-16": ["\u6625\u8282", 1],
+    "2026-02-17": ["\u6625\u8282", 1],
+    "2026-02-18": ["\u6625\u8282", 1],
+    "2026-02-19": ["\u6625\u8282", 1],
+    "2026-02-20": ["\u6625\u8282", 1],
+    "2026-02-21": ["\u6625\u8282", 1],
+    "2026-02-22": ["\u6625\u8282", 1],
+    "2026-02-23": ["\u6625\u8282", 1],
+    "2026-02-28": ["\u6625\u8282", 0],
+    "2026-04-04": ["\u6E05\u660E\u8282", 1],
+    "2026-04-05": ["\u6E05\u660E\u8282", 1],
+    "2026-04-06": ["\u6E05\u660E\u8282", 1],
+    "2026-05-01": ["\u52B3\u52A8\u8282", 1],
+    "2026-05-02": ["\u52B3\u52A8\u8282", 1],
+    "2026-05-03": ["\u52B3\u52A8\u8282", 1],
+    "2026-05-04": ["\u52B3\u52A8\u8282", 1],
+    "2026-05-05": ["\u52B3\u52A8\u8282", 1],
+    "2026-05-09": ["\u52B3\u52A8\u8282", 0],
+    "2026-06-19": ["\u7AEF\u5348\u8282", 1],
+    "2026-06-20": ["\u7AEF\u5348\u8282", 1],
+    "2026-06-21": ["\u7AEF\u5348\u8282", 1],
+    "2026-09-20": ["\u56FD\u5E86\u8282", 0],
+    "2026-09-25": ["\u4E2D\u79CB\u8282", 1],
+    "2026-09-26": ["\u4E2D\u79CB\u8282", 1],
+    "2026-09-27": ["\u4E2D\u79CB\u8282", 1],
+    "2026-10-01": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-02": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-03": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-04": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-05": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-06": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-07": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-10": ["\u56FD\u5E86\u8282", 0]
+  }
+};
+
+// src/lib/lunar.js
+var LUNAR_INFO = [
+  19416,
+  19168,
+  42352,
+  21717,
+  53856,
+  55632,
+  91476,
+  22176,
+  39632,
+  21970,
+  // 1900-1909
+  19168,
+  42422,
+  42192,
+  53840,
+  119381,
+  46400,
+  54944,
+  44450,
+  38320,
+  84343,
+  // 1910-1919
+  18800,
+  42160,
+  46261,
+  27216,
+  27968,
+  109396,
+  11104,
+  38256,
+  21234,
+  18800,
+  // 1920-1929
+  25958,
+  54432,
+  59984,
+  28309,
+  23248,
+  11104,
+  100067,
+  37600,
+  116951,
+  51536,
+  // 1930-1939
+  54432,
+  120998,
+  46416,
+  22176,
+  107956,
+  9680,
+  37584,
+  53938,
+  43344,
+  46423,
+  // 1940-1949
+  27808,
+  46416,
+  86869,
+  19872,
+  42416,
+  83315,
+  21168,
+  43432,
+  59728,
+  27296,
+  // 1950-1959
+  44710,
+  43856,
+  19296,
+  43748,
+  42352,
+  21088,
+  62051,
+  55632,
+  23383,
+  22176,
+  // 1960-1969
+  38608,
+  19925,
+  19152,
+  42192,
+  54484,
+  53840,
+  54616,
+  46400,
+  46752,
+  103846,
+  // 1970-1979
+  38320,
+  18864,
+  43380,
+  42160,
+  45690,
+  27216,
+  27968,
+  44870,
+  43872,
+  38256,
+  // 1980-1989
+  19189,
+  18800,
+  25776,
+  29859,
+  59984,
+  27480,
+  23232,
+  43872,
+  38613,
+  37600,
+  // 1990-1999
+  51552,
+  55636,
+  54432,
+  55888,
+  30034,
+  22176,
+  43959,
+  9680,
+  37584,
+  51893,
+  // 2000-2009
+  43344,
+  46240,
+  47780,
+  44368,
+  21977,
+  19360,
+  42416,
+  86390,
+  21168,
+  43312,
+  // 2010-2019
+  31060,
+  27296,
+  44368,
+  23378,
+  19296,
+  42726,
+  42208,
+  53856,
+  60005,
+  54576,
+  // 2020-2029
+  23200,
+  30371,
+  38608,
+  19195,
+  19152,
+  42192,
+  118966,
+  53840,
+  54560,
+  56645,
+  // 2030-2039
+  46496,
+  22224,
+  21938,
+  18864,
+  42359,
+  42160,
+  43600,
+  111189,
+  27936,
+  44448,
+  // 2040-2049
+  84835,
+  37744,
+  18936,
+  18800,
+  25776,
+  92326,
+  59984,
+  27424,
+  108228,
+  43744,
+  // 2050-2059
+  41696,
+  53987,
+  51552,
+  54615,
+  54432,
+  55888,
+  23893,
+  22176,
+  42704,
+  21972,
+  // 2060-2069
+  21200,
+  43448,
+  43344,
+  46240,
+  46758,
+  44368,
+  21920,
+  43940,
+  42416,
+  21168,
+  // 2070-2079
+  45683,
+  26928,
+  29495,
+  27296,
+  44368,
+  84821,
+  19296,
+  42352,
+  21732,
+  53600,
+  // 2080-2089
+  59752,
+  54560,
+  55968,
+  92838,
+  22224,
+  19168,
+  43476,
+  41680,
+  53584,
+  62034,
+  // 2090-2099
+  54560
+  // 2100
+];
+var BASE_UTC = Date.UTC(1900, 0, 31);
+function lunarLeapMonth(year) {
+  return LUNAR_INFO[year - 1900] & 15;
+}
+function lunarLeapDays(year) {
+  if (lunarLeapMonth(year) === 0) return 0;
+  return LUNAR_INFO[year - 1900] & 65536 ? 30 : 29;
+}
+function lunarMonthDays(year, month) {
+  return LUNAR_INFO[year - 1900] & 65536 >> month ? 30 : 29;
+}
+function lunarYearDays(year) {
+  let sum = 348;
+  for (let mask = 32768; mask > 8; mask >>= 1) sum += LUNAR_INFO[year - 1900] & mask ? 1 : 0;
+  return sum + lunarLeapDays(year);
+}
+function solarToLunar(year, month, day) {
+  if (year < 1900 || year > 2100) return null;
+  let offset = Math.round((Date.UTC(year, month - 1, day) - BASE_UTC) / 864e5);
+  if (offset < 0) return null;
+  let i = 1900;
+  let temp = 0;
+  for (; i < 2101 && offset > 0; i++) {
+    temp = lunarYearDays(i);
+    offset -= temp;
+  }
+  if (offset < 0) {
+    offset += temp;
+    i--;
+  }
+  if (i > 2100) return null;
+  const lunarYear = i;
+  const leap = lunarLeapMonth(lunarYear);
+  let isLeap = false;
+  for (i = 1; i < 13 && offset > 0; i++) {
+    if (leap > 0 && i === leap + 1 && !isLeap) {
+      --i;
+      isLeap = true;
+      temp = lunarLeapDays(lunarYear);
+    } else {
+      temp = lunarMonthDays(lunarYear, i);
+    }
+    if (isLeap && i === leap + 1) isLeap = false;
+    offset -= temp;
+  }
+  if (offset === 0 && leap > 0 && i === leap + 1) {
+    if (isLeap) isLeap = false;
+    else {
+      isLeap = true;
+      --i;
+    }
+  }
+  if (offset < 0) {
+    offset += temp;
+    --i;
+  }
+  return { year: lunarYear, month: i, day: offset + 1, isLeap };
+}
+function qingmingDay(year) {
+  const y2 = year % 100;
+  return Math.floor(y2 * 0.2422 + 4.81) - Math.floor(y2 / 4);
+}
+var LUNAR_FESTIVALS = /* @__PURE__ */ new Map([
+  ["1-1", "\u6625\u8282"],
+  ["1-15", "\u5143\u5BB5\u8282"],
+  ["2-2", "\u9F99\u62AC\u5934"],
+  ["5-5", "\u7AEF\u5348\u8282"],
+  ["7-7", "\u4E03\u5915\u8282"],
+  ["7-15", "\u4E2D\u5143\u8282"],
+  ["8-15", "\u4E2D\u79CB\u8282"],
+  ["9-9", "\u91CD\u9633\u8282"],
+  ["12-8", "\u814A\u516B\u8282"]
+]);
+function ymdOf(year, month, day) {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+function lunarFestivalsFor(year, month) {
+  const result = /* @__PURE__ */ new Map();
+  const first = Date.UTC(year, month - 1, 1);
+  const last = Date.UTC(month === 12 ? year + 1 : year, month === 12 ? 0 : month, 1);
+  for (let t = first; t < last; t += 864e5) {
+    const d2 = new Date(t);
+    const ymd2 = ymdOf(d2.getUTCFullYear(), d2.getUTCMonth() + 1, d2.getUTCDate());
+    const lunar = solarToLunar(d2.getUTCFullYear(), d2.getUTCMonth() + 1, d2.getUTCDate());
+    if (lunar === null) continue;
+    const name = LUNAR_FESTIVALS.get(`${lunar.month}-${lunar.day}`);
+    if (name !== void 0 && !lunar.isLeap) result.set(ymd2, name);
+    const next = new Date(t + 864e5);
+    const nextLunar = solarToLunar(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate());
+    if (nextLunar !== null && nextLunar.month === 1 && nextLunar.day === 1) result.set(ymd2, "\u9664\u5915");
+  }
+  return result;
+}
+
+// src/lib/festivals.js
+var FIXED_FESTIVALS = [
+  ["01-01", "\u5143\u65E6"],
+  ["02-14", "\u60C5\u4EBA\u8282"],
+  ["03-08", "\u5987\u5973\u8282"],
+  ["03-12", "\u690D\u6811\u8282"],
+  ["04-01", "\u611A\u4EBA\u8282"],
+  ["05-01", "\u52B3\u52A8\u8282"],
+  ["05-04", "\u9752\u5E74\u8282"],
+  ["05-12", "\u62A4\u58EB\u8282"],
+  ["06-01", "\u513F\u7AE5\u8282"],
+  ["06-18", "618"],
+  ["07-01", "\u5EFA\u515A\u8282"],
+  ["08-01", "\u5EFA\u519B\u8282"],
+  ["09-10", "\u6559\u5E08\u8282"],
+  ["10-01", "\u56FD\u5E86\u8282"],
+  ["10-31", "\u4E07\u5723\u591C"],
+  ["11-11", "\u53CC11"],
+  ["12-12", "\u53CC12"],
+  ["12-24", "\u5E73\u5B89\u591C"],
+  ["12-25", "\u5723\u8BDE\u8282"]
+];
+var FLOATING_FESTIVALS = [
+  [5, 2, 0, "\u6BCD\u4EB2\u8282"],
+  [6, 3, 0, "\u7236\u4EB2\u8282"],
+  [11, 4, 4, "\u611F\u6069\u8282"]
+];
+function ymdOf2(year, month, day) {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+function floatingDate(year, month, nth, weekday) {
+  const first = new Date(year, month - 1, 1);
+  const offset = (weekday - first.getDay() + 7) % 7;
+  return 1 + offset + (nth - 1) * 7;
+}
+var computedYearCache = /* @__PURE__ */ new Map();
+function computedFestivalsForYear(year) {
+  const cached = computedYearCache.get(year);
+  if (cached) return cached;
+  const map = /* @__PURE__ */ new Map();
+  const push = (ymd2, name, kind) => {
+    const list = map.get(ymd2) || [];
+    if (!list.some((f) => f.name === name)) list.push({ name, kind });
+    map.set(ymd2, list);
+  };
+  for (const [mmdd, name] of FIXED_FESTIVALS) {
+    push(`${year}-${mmdd}`, name, "fixed");
+  }
+  for (const [month, nth, weekday, name] of FLOATING_FESTIVALS) {
+    push(ymdOf2(year, month, floatingDate(year, month, nth, weekday)), name, "fixed");
+  }
+  const qm = ymdOf2(year, 4, qingmingDay(year));
+  if (!(year in HOLIDAYS_CN) || !(qm in HOLIDAYS_CN[year])) push(qm, "\u6E05\u660E\u8282", "lunar");
+  for (let month = 1; month <= 12; month++) {
+    for (const [ymd2, name] of lunarFestivalsFor(year, month)) push(ymd2, name, "lunar");
+  }
+  computedYearCache.set(year, map);
+  return map;
+}
+function festivalsFor(year, month) {
+  const result = /* @__PURE__ */ new Map();
+  const days = new Date(year, month, 0).getDate();
+  const computed = computedFestivalsForYear(year);
+  const statutory = HOLIDAYS_CN[year] || {};
+  for (let day = 1; day <= days; day++) {
+    const ymd2 = ymdOf2(year, month, day);
+    const list = [];
+    const entry = statutory[ymd2];
+    if (entry) list.push({ name: entry[0], kind: entry[1] === 1 ? "statutory-rest" : "statutory-work" });
+    for (const f of computed.get(ymd2) || []) {
+      if (!list.some((x2) => x2.name === f.name)) list.push(f);
+    }
+    if (list.length > 0) result.set(ymd2, list);
+  }
+  return result;
+}
+
+// src/components/CalendarPage.tsx
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var STATUS_META = {
   idea: { label: "\u9009\u9898", color: "var(--text-tertiary)" },
@@ -5958,8 +6459,30 @@ var EMPTY2 = {
   url: "",
   source: "manual",
   event_type: "",
-  end_date: ""
+  end_date: "",
+  repeat: ""
 };
+function eventDates(ev) {
+  const [startDate, startTime] = ev.start.split(" ");
+  const [endDate, endTime] = (ev.end || ev.start).split(" ");
+  const cursor = /* @__PURE__ */ new Date(`${startDate}T00:00`);
+  const last = /* @__PURE__ */ new Date(`${endDate}T00:00`);
+  if (Number.isNaN(cursor.getTime()) || Number.isNaN(last.getTime())) return [startDate];
+  const endInclusive = startTime && endTime ? last : new Date(last.getTime() - 864e5);
+  const dates = [];
+  for (let d2 = new Date(cursor); d2.getTime() <= endInclusive.getTime() && dates.length < 62; d2.setDate(d2.getDate() + 1)) {
+    dates.push(ymd(d2));
+  }
+  return dates.length > 0 ? dates : [startDate];
+}
+function syncAgo(ts) {
+  if (!ts) return "\u672A\u540C\u6B65";
+  const s = Math.floor(Date.now() / 1e3) - ts;
+  if (s < 60) return "\u521A\u521A\u540C\u6B65";
+  if (s < 3600) return `${Math.floor(s / 60)} \u5206\u949F\u524D\u540C\u6B65`;
+  if (s < 86400) return `${Math.floor(s / 3600)} \u5C0F\u65F6\u524D\u540C\u6B65`;
+  return `${Math.floor(s / 86400)} \u5929\u524D\u540C\u6B65`;
+}
 function CalendarPage() {
   const today = (0, import_react5.useMemo)(() => /* @__PURE__ */ new Date(), []);
   const [cursor, setCursor] = (0, import_react5.useState)(() => new Date(today.getFullYear(), today.getMonth(), 1));
@@ -5971,27 +6494,47 @@ function CalendarPage() {
   const [ctx, setCtx] = (0, import_react5.useState)(null);
   const [showSuggest, setShowSuggest] = (0, import_react5.useState)(true);
   const [dayView, setDayView] = (0, import_react5.useState)(null);
+  const [caldav, setCaldav] = (0, import_react5.useState)([]);
+  const [caldavByAccount, setCaldavByAccount] = (0, import_react5.useState)({});
+  const [subOpen, setSubOpen] = (0, import_react5.useState)(false);
+  const [subDraft, setSubDraft] = (0, import_react5.useState)(null);
+  const [subCals, setSubCals] = (0, import_react5.useState)(null);
+  const [subBusy, setSubBusy] = (0, import_react5.useState)("");
+  const [subError, setSubError] = (0, import_react5.useState)("");
+  const loadCaldav = (0, import_react5.useCallback)(() => {
+    fetchCaldavAccounts().then((r) => setCaldav(r.accounts)).catch(() => {
+    });
+    fetchCaldavEvents().then((r) => setCaldavByAccount(r.byAccount || {})).catch(() => {
+    });
+  }, []);
   const load = (0, import_react5.useCallback)(() => {
     fetchSchedule().then(setItems).catch(() => {
     });
     fetchScheduleContext(14).then(setCtx).catch(() => {
     });
-  }, []);
+    loadCaldav();
+  }, [loadCaldav]);
   (0, import_react5.useEffect)(() => {
     load();
   }, [load]);
+  (0, import_react5.useEffect)(() => {
+    let cancelled = false;
+    fetchCaldavAccounts().then(async (r) => {
+      const stale = r.accounts.filter((a) => a.enabled && (!a.syncedAt || Date.now() / 1e3 - a.syncedAt > 86400));
+      if (cancelled || stale.length === 0) return;
+      await Promise.allSettled(stale.map((a) => syncCaldav(a.id)));
+      if (!cancelled) fetchCaldavEvents().then((res) => setCaldavByAccount(res.byAccount || {})).catch(() => {
+      });
+    }).catch(() => {
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const visible = (0, import_react5.useMemo)(
     () => filter === "all" ? items : items.filter((it) => kindOf(it) === filter),
     [items, filter]
   );
-  const byDate = (0, import_react5.useMemo)(() => {
-    const m2 = {};
-    for (const it of visible) {
-      const bucket = m2[it.date] ||= { events: [], content: [] };
-      (kindOf(it) === "event" ? bucket.events : bucket.content).push(it);
-    }
-    return m2;
-  }, [visible]);
   const cells = (0, import_react5.useMemo)(() => {
     const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
     const startOffset = (first.getDay() + 6) % 7;
@@ -6003,6 +6546,54 @@ function CalendarPage() {
       return d2;
     });
   }, [cursor]);
+  const festivalMap = (0, import_react5.useMemo)(() => {
+    const merged = /* @__PURE__ */ new Map();
+    for (const offset of [-1, 0, 1]) {
+      const anchor = new Date(cursor.getFullYear(), cursor.getMonth() + offset, 1);
+      for (const [ymd2, list] of festivalsFor(anchor.getFullYear(), anchor.getMonth() + 1)) {
+        if (!merged.has(ymd2)) merged.set(ymd2, list);
+      }
+    }
+    return merged;
+  }, [cursor]);
+  const byDate = (0, import_react5.useMemo)(() => {
+    const m2 = {};
+    const push = (date, it) => {
+      const bucket = m2[date] ||= { events: [], content: [] };
+      (kindOf(it) === "event" ? bucket.events : bucket.content).push(it);
+    };
+    for (const it of visible) {
+      if (it.repeat === "yearly" && /^\d{4}-\d{2}-\d{2}$/.test(it.date)) {
+        const [, mo, dd] = it.date.split("-").map(Number);
+        for (const d2 of cells) {
+          if (d2.getMonth() + 1 === mo && d2.getDate() === dd) push(ymd(d2), it);
+        }
+        continue;
+      }
+      push(it.date, it);
+    }
+    return m2;
+  }, [visible, cells]);
+  const caldavByDate = (0, import_react5.useMemo)(() => {
+    const m2 = {};
+    for (const [aid, bucket] of Object.entries(caldavByAccount)) {
+      const acc = caldav.find((a) => a.id === aid);
+      if (!acc || !acc.enabled) continue;
+      for (const ev of bucket.events) {
+        for (const ds of eventDates(ev)) (m2[ds] ||= []).push({ ev, acc });
+      }
+    }
+    return m2;
+  }, [caldavByAccount, caldav]);
+  const [menu, setMenu] = (0, import_react5.useState)(null);
+  (0, import_react5.useEffect)(() => {
+    if (!menu) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setMenu(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menu]);
   const openNew = (date) => {
     setDayView(null);
     setEditing(null);
@@ -6059,6 +6650,23 @@ function CalendarPage() {
       it.id
     );
   };
+  const renderCaldavChip = (ev, acc, ds) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+    "div",
+    {
+      className: "cal-event is-caldav",
+      title: `${acc.name} \xB7 ${ev.title}`,
+      style: { ["--ev"]: acc.color || "var(--text-tertiary)" },
+      onClick: (e) => {
+        e.stopPropagation();
+        setDayView(ds);
+      },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-title", children: ev.title })
+      ]
+    },
+    `cd-${ev.uid}-${ev.start}`
+  );
   const save = async () => {
     if (!form || !form.title.trim() || !form.date) return;
     setSaving(true);
@@ -6100,7 +6708,11 @@ function CalendarPage() {
         /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(-1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { style: { transform: "rotate(180deg)", display: "inline-flex" }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) }) }),
         /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => setCursor(new Date(today.getFullYear(), today.getMonth(), 1)), children: "\u672C\u6708" }),
         /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-month", children: monthLabel }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) })
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => {
+          setSubOpen(true);
+          setSubError("");
+        }, children: "\u{1F4C5} \u8BA2\u9605" })
       ] })
     ] }),
     showSuggest && suggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest", children: [
@@ -6123,6 +6735,18 @@ function CalendarPage() {
         /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: EVENT_COLOR } }),
         "\u5E73\u53F0\u6D3B\u52A8"
       ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival rest", children: "\u4F11" }),
+        "\u6CD5\u5B9A\u8282\u5047\u65E5"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival work", children: "\u73ED" }),
+        "\u8C03\u4F11\u4E0A\u73ED"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: "var(--cal-festival)" } }),
+        "\u8282\u65E5"
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-filter", children: ["all", "content", "event"].map((f) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: `chip ${filter === f ? "active" : ""}`, onClick: () => setFilter(f), children: f === "all" ? "\u5168\u90E8" : f === "content" ? "\u5185\u5BB9" : "\u6D3B\u52A8" }, f)) })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid-head", children: WEEKDAYS.map((w2) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-wd", children: [
@@ -6133,18 +6757,37 @@ function CalendarPage() {
       const ds = ymd(d2);
       const inMonth = d2.getMonth() === cursor.getMonth();
       const bucket = byDate[ds] || { events: [], content: [] };
-      const dayItems = [...bucket.events, ...bucket.content];
-      const shown = dayItems.slice(0, MAX_VISIBLE);
-      const hidden = dayItems.length - shown.length;
+      const dayChips = [
+        ...bucket.events.map((it) => ({ kind: "item", it })),
+        ...(caldavByDate[ds] || []).map(({ ev, acc }) => ({ kind: "caldav", ev, acc })),
+        ...bucket.content.map((it) => ({ kind: "item", it }))
+      ];
+      const shown = dayChips.slice(0, MAX_VISIBLE);
+      const hidden = dayChips.length - shown.length;
+      const fests = festivalMap.get(ds) || [];
+      const rest = fests.find((f) => f.kind === "statutory-rest");
+      const work = fests.find((f) => f.kind === "statutory-work");
+      const allFestNames = fests.filter((f) => f.kind !== "statutory-rest" && f.kind !== "statutory-work").map((f) => f.name);
+      const festNames = allFestNames.slice(0, 2);
       return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
         "div",
         {
           className: `cal-cell ${inMonth ? "" : "dim"} ${ds === todayStr ? "today" : ""}`,
-          onClick: () => dayItems.length ? setDayView(ds) : openNew(ds),
+          onClick: () => dayChips.length ? setDayView(ds) : openNew(ds),
+          onContextMenu: (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setMenu({ x: e.clientX, y: e.clientY, ds });
+          },
           children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-daynum", children: d2.getDate() }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-daynum-row", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-daynum", children: d2.getDate() }),
+              rest && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival rest", title: rest.name, children: "\u4F11" }),
+              work && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival work", title: work.name, children: "\u73ED" })
+            ] }),
+            festNames.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-festnames", title: allFestNames.join(" \xB7 "), children: festNames.join(" \xB7 ") }),
             /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-events", children: [
-              shown.map(renderChip),
+              shown.map((chip) => chip.kind === "item" ? renderChip(chip.it) : renderCaldavChip(chip.ev, chip.acc, ds)),
               hidden > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "cal-more", onClick: (e) => {
                 e.stopPropagation();
                 setDayView(ds);
@@ -6159,6 +6802,61 @@ function CalendarPage() {
         i
       );
     }) }),
+    menu && (() => {
+      const customFests = (byDate[menu.ds]?.events || []).filter((it) => it.event_type === "\u8282\u65E5" && it.source === "manual");
+      const openWith = (preset) => {
+        setMenu(null);
+        setDayView(null);
+        setEditing(null);
+        setForm({ ...EMPTY2, date: menu.ds, ...preset });
+      };
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        "div",
+        {
+          className: "overlay is-menu",
+          onClick: () => setMenu(null),
+          onContextMenu: (e) => {
+            e.preventDefault();
+            setMenu(null);
+          },
+          children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+            "div",
+            {
+              className: "cal-menu",
+              style: { left: Math.min(menu.x, window.innerWidth - 200), top: Math.min(menu.y, window.innerHeight - 170) },
+              onClick: (e) => e.stopPropagation(),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { onClick: () => openWith({ kind: "event", event_type: "\u8282\u65E5", status: "idea" }), children: "\u{1F389} \u6DFB\u52A0\u8282\u65E5\u2026" }),
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { onClick: () => openWith({ kind: "event", status: "idea" }), children: "\u{1F4E3} \u6DFB\u52A0\u5E73\u53F0\u6D3B\u52A8\u2026" }),
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { onClick: () => openWith({ kind: "content" }), children: "\u{1F4DD} \u6DFB\u52A0\u6392\u671F\u2026" }),
+                customFests.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-menu-sep" }),
+                customFests.map((it) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+                  "button",
+                  {
+                    className: "cal-menu-del",
+                    title: it.repeat === "yearly" ? "\u6BCF\u5E74\u91CD\u590D" : void 0,
+                    onClick: async () => {
+                      setMenu(null);
+                      await deleteSchedule(it.id);
+                      load();
+                    },
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { children: [
+                        "\u5220\u9664\u300C",
+                        it.title,
+                        "\u300D"
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconTrash, { size: 13 })
+                    ]
+                  },
+                  it.id
+                ))
+              ]
+            }
+          )
+        }
+      );
+    })(),
     dayView && (() => {
       const b2 = byDate[dayView] || { events: [], content: [] };
       const list = [...b2.events, ...b2.content];
@@ -6172,8 +6870,219 @@ function CalendarPage() {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setDayView(null), children: "\xD7" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-dayview-list", children: list.map(renderChip) }),
+        (festivalMap.get(dayView) || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-fest-day", children: (festivalMap.get(dayView) || []).map((f, i) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: `cal-festival-tag is-${f.kind}`, children: f.name }, i)) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-dayview-list", children: [
+          list.map(renderChip),
+          (caldavByDate[dayView] || []).map(({ ev, acc }) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+            "div",
+            {
+              className: "cal-event is-caldav",
+              title: ev.location ? `${acc.name} \xB7 ${ev.location}` : acc.name,
+              style: { ["--ev"]: acc.color || "var(--text-tertiary)" },
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-event-title", children: [
+                  ev.allDay ? "\u5168\u5929" : ev.start.slice(11, 16),
+                  " \xB7 ",
+                  ev.title,
+                  ev.location ? ` @${ev.location}` : ""
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: acc.name })
+              ]
+            },
+            `cd-${ev.uid}-${ev.start}`
+          ))
+        ] }),
         /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: () => openNew(dayView), children: "+ \u65B0\u589E" }) })
+      ] }) });
+    })(),
+    subOpen && (() => {
+      const newDraft = () => ({
+        id: Math.random().toString(16).slice(2, 14),
+        name: "",
+        url: "",
+        username: "",
+        password: "",
+        enabled: true,
+        calendars: []
+      });
+      const startEdit = (acc) => {
+        setSubDraft(acc ? { ...acc, password: "" } : newDraft());
+        setSubCals(null);
+        setSubError("");
+      };
+      const persist = async (accounts) => {
+        setSubBusy("save");
+        setSubError("");
+        try {
+          await putCaldavAccounts(accounts);
+          loadCaldav();
+        } catch (e) {
+          setSubError(e.message || String(e));
+        } finally {
+          setSubBusy("");
+        }
+      };
+      const syncOne = async (acc) => {
+        setSubBusy(acc.id);
+        setSubError("");
+        try {
+          await syncCaldav(acc.id);
+          loadCaldav();
+        } catch (e) {
+          setSubError(e.message || String(e));
+        } finally {
+          setSubBusy("");
+        }
+      };
+      const saveDraft = async () => {
+        if (!subDraft) return;
+        await persist(caldav.some((a) => a.id === subDraft.id) ? caldav.map((a) => a.id === subDraft.id ? subDraft : a) : [...caldav, subDraft]);
+        setSubDraft(null);
+        setSubCals(null);
+      };
+      const probe = async () => {
+        if (!subDraft) return;
+        setSubBusy("probe");
+        setSubError("");
+        try {
+          await putCaldavAccounts(caldav.some((a) => a.id === subDraft.id) ? caldav.map((a) => a.id === subDraft.id ? subDraft : a) : [...caldav, subDraft]);
+          const res = await discoverCaldav(subDraft.id, {
+            url: subDraft.url,
+            username: subDraft.username,
+            password: subDraft.password || void 0
+          });
+          setSubCals(res.calendars);
+          loadCaldav();
+        } catch (e) {
+          setSubError(e.message || String(e));
+        } finally {
+          setSubBusy("");
+        }
+      };
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: () => {
+        setSubOpen(false);
+        setSubDraft(null);
+        setSubCals(null);
+      }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 540, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("h3", { style: { margin: 0 }, children: "\u{1F4C5} \u8BA2\u9605\u65E5\u5386\uFF08CalDAV\uFF09" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => {
+            setSubOpen(false);
+            setSubDraft(null);
+            setSubCals(null);
+          }, children: "\xD7" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("p", { className: "cal-sub-hint", children: "\u53EA\u8BFB\u5BFC\u5165 iCloud / Fastmail / Nextcloud \u7B49\u6807\u51C6 CalDAV \u65E5\u5386\u3002\u586B\u670D\u52A1\u5668\u5730\u5740\u53EF\u81EA\u52A8\u53D1\u73B0\uFF0C\u4E5F\u53EF\u76F4\u63A5\u7C98\u8D34\u65E5\u5386 URL\uFF1B \u5BC6\u7801\u7528\u5404\u670D\u52A1\u7684\u300C\u5E94\u7528\u4E13\u7528\u5BC6\u7801\u300D\u3002Google \u65E5\u5386\u9700 OAuth\uFF0C\u6682\u4E0D\u652F\u6301\u3002" }),
+        caldav.map((acc) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-row", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-sub-dot", style: { ["--ev"]: acc.color || "var(--text-tertiary)" } }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-main", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { fontWeight: 600 }, children: [
+              acc.name,
+              !acc.enabled && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: "\uFF08\u5DF2\u505C\u7528\uFF09" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-url", children: [
+              acc.url,
+              acc.username ? ` \xB7 ${acc.username}` : ""
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-src", children: [
+              syncAgo(acc.syncedAt),
+              caldavByAccount[acc.id] ? ` \xB7 ${caldavByAccount[acc.id].events.length} \u6761\u4E8B\u4EF6` : "",
+              acc.calendars.length > 0 ? ` \xB7 ${acc.calendars.length} \u4E2A\u65E5\u5386` : ""
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "cal-repeat", style: { margin: 0 }, title: "\u542F\u7528/\u505C\u7528", children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              type: "checkbox",
+              checked: acc.enabled,
+              onChange: (e) => persist(caldav.map((a) => a.id === acc.id ? { ...a, enabled: e.target.checked } : a))
+            }
+          ) }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", disabled: subBusy !== "", onClick: () => syncOne(acc), children: subBusy === acc.id ? "\u540C\u6B65\u4E2D\u2026" : "\u540C\u6B65" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => startEdit(acc), children: "\u7F16\u8F91" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-danger", onClick: () => persist(caldav.filter((a) => a.id !== acc.id)), children: "\u5220\u9664" })
+        ] }, acc.id)),
+        !subDraft && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => startEdit(null), children: "+ \u6DFB\u52A0\u8D26\u53F7" }),
+        subDraft && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-form", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u540D\u79F0" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              value: subDraft.name,
+              placeholder: "iCloud / \u516C\u53F8\u65E5\u5386\u2026",
+              onChange: (e) => setSubDraft({ ...subDraft, name: e.target.value })
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u670D\u52A1\u5668\u6216\u65E5\u5386 URL *" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              value: subDraft.url,
+              autoFocus: true,
+              placeholder: "https://caldav.icloud.com/ \u6216\u5B8C\u6574\u65E5\u5386 URL",
+              onChange: (e) => setSubDraft({ ...subDraft, url: e.target.value })
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 10 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7528\u6237\u540D" }),
+              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+                "input",
+                {
+                  className: "field",
+                  value: subDraft.username,
+                  onChange: (e) => setSubDraft({ ...subDraft, username: e.target.value })
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5E94\u7528\u4E13\u7528\u5BC6\u7801" }),
+              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+                "input",
+                {
+                  className: "field",
+                  type: "password",
+                  value: subDraft.password,
+                  placeholder: caldav.some((a) => a.id === subDraft.id) ? "\u5DF2\u4FDD\u5B58\uFF08\u7559\u7A7A\u4E0D\u6539\uFF09" : "",
+                  onChange: (e) => setSubDraft({ ...subDraft, password: e.target.value })
+                }
+              )
+            ] })
+          ] }),
+          subCals !== null && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("label", { className: "field-label", children: [
+              "\u9009\u62E9\u8981\u8BA2\u9605\u7684\u65E5\u5386\uFF08",
+              subCals.length,
+              " \u4E2A\uFF1B\u4E0D\u9009\u5219\u8BA2\u9605\u586B\u5199\u7684 URL\uFF09"
+            ] }),
+            subCals.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-src", children: "\u672A\u53D1\u73B0\u65E5\u5386" }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: subCals.map((cal) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+              "button",
+              {
+                className: `chip ${subDraft.calendars.includes(cal.href) ? "active" : ""}`,
+                title: cal.href,
+                onClick: () => setSubDraft({
+                  ...subDraft,
+                  calendars: subDraft.calendars.includes(cal.href) ? subDraft.calendars.filter((h) => h !== cal.href) : [...subDraft.calendars, cal.href]
+                }),
+                children: cal.displayname
+              },
+              cal.href
+            )) })
+          ] }),
+          subError && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-sub-error", children: subError }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 14 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => {
+              setSubDraft(null);
+              setSubCals(null);
+            }, children: "\u53D6\u6D88" }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", disabled: subBusy !== "" || !/^https?:\/\//i.test(subDraft.url), onClick: probe, children: subBusy === "probe" ? "\u63A2\u6D4B\u4E2D\u2026" : "\u63A2\u6D4B\u65E5\u5386" }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", disabled: subBusy !== "" || !subDraft.url.trim(), onClick: saveDraft, children: subBusy === "save" ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58" })
+          ] })
+        ] })
       ] }) });
     })(),
     form && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: close, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
@@ -6271,7 +7180,18 @@ function CalendarPage() {
             children: p
           },
           p
-        )) })
+        )) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("label", { className: "cal-repeat", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              type: "checkbox",
+              checked: form.repeat === "yearly",
+              onChange: (e) => setForm({ ...form, repeat: e.target.checked ? "yearly" : "" })
+            }
+          ),
+          "\u6BCF\u5E74\u91CD\u590D\uFF08\u540C\u6708\u540C\u65E5\u81EA\u52A8\u51FA\u73B0\u5728\u6BCF\u4E00\u5E74\uFF09"
+        ] })
       ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
         /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5E73\u53F0" }),
         /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(

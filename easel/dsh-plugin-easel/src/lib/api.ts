@@ -216,6 +216,7 @@ export interface ScheduleItem {
   source?: string;        // manual | publish-page | chat | scheduler
   event_type?: string;    // event 专属：节日/电商/平台活动/行业
   end_date?: string;      // event 专属：活动区间结束日
+  repeat?: string;        // '' | 'yearly'（每年重复，日历客户端按月/日展开）
 }
 export type ScheduleInput = Omit<ScheduleItem, 'id'>;
 export interface ScheduleContext {
@@ -243,6 +244,42 @@ export function updateSchedule(id: string, item: ScheduleInput): Promise<Schedul
 }
 export function deleteSchedule(id: string): Promise<{ ok: boolean }> {
   return request(`/api/schedule/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+// ---- CalDAV 订阅 ----
+export interface CaldavAccount {
+  id: string; name: string; url: string; username: string;
+  /** GET 返回掩码；保存时空串 = 保留服务端已存密码 */
+  password: string;
+  enabled: boolean; calendars: string[];
+  color?: string;
+  syncedAt?: number | null;
+}
+export interface CaldavCalendarRef { href: string; displayname: string }
+export interface CaldavEvent {
+  uid: string; title: string; allDay: boolean;
+  /** 全天 'YYYY-MM-DD'，定时 'YYYY-MM-DD HH:MM'；end 为独占端点 */
+  start: string; end: string;
+  location: string; description: string;
+}
+export function fetchCaldavAccounts(): Promise<{ accounts: CaldavAccount[] }> {
+  return request('/api/caldav/accounts');
+}
+export function putCaldavAccounts(accounts: CaldavAccount[]): Promise<{ ok: boolean }> {
+  return request('/api/caldav/accounts', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accounts }),
+  });
+}
+export function discoverCaldav(id: string, creds: { url?: string; username?: string; password?: string }): Promise<{ calendars: CaldavCalendarRef[] }> {
+  return request(`/api/caldav/accounts/${encodeURIComponent(id)}/discover`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(creds),
+  });
+}
+export function syncCaldav(id: string): Promise<{ ok: boolean; count: number }> {
+  return request(`/api/caldav/accounts/${encodeURIComponent(id)}/sync`, { method: 'POST' });
+}
+export function fetchCaldavEvents(): Promise<{ byAccount: Record<string, { syncedAt: number; events: CaldavEvent[] }> }> {
+  return request('/api/caldav/events');
 }
 
 // ---- 选题库 ----

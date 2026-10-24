@@ -914,6 +914,38 @@ textarea.field { resize: vertical; min-height: 90px; }
 .cal-cell.today { border-color: var(--accent-start); box-shadow: 0 0 0 2px var(--accent-soft); }
 .cal-daynum { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
 .cal-cell.today .cal-daynum { color: var(--accent-end); }
+/* 节假日底图（T2）：休/班角标 + 节日名 */
+.calendar-page { --cal-rest: #e5484d; --cal-festival: #b7791f; }
+.cal-daynum-row { display: flex; align-items: center; gap: 4px; }
+.cal-festival { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 4px; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+.cal-festival.rest { color: #fff; background: var(--cal-rest); }
+.cal-festival.work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 15%, transparent); }
+.cal-festnames { font-size: 11px; color: var(--cal-festival); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+.cal-fest-day { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.cal-festival-tag { font-size: 12px; padding: 2px 9px; border-radius: 999px; }
+.cal-festival-tag.is-statutory-rest { color: #fff; background: var(--cal-rest); font-weight: 600; }
+.cal-festival-tag.is-statutory-work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 14%, transparent); }
+.cal-festival-tag.is-lunar { color: #fff; background: var(--cal-festival); }
+.cal-festival-tag.is-fixed { color: var(--cal-festival); background: color-mix(in srgb, var(--cal-festival) 14%, transparent); }
+/* 右键菜单（T3）：透明遮罩上的浮层菜单 */
+.overlay.is-menu { background: transparent; }
+.cal-menu { position: fixed; z-index: 80; min-width: 176px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 5px; display: flex; flex-direction: column; }
+.cal-menu > button { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 10px; font-size: 13px; color: var(--text); background: none; border: 0; border-radius: 7px; cursor: pointer; text-align: left; }
+.cal-menu > button:hover { background: var(--accent-soft); }
+.cal-menu-sep { height: 1px; background: var(--border); margin: 3px 4px; }
+.cal-menu > .cal-menu-del { color: var(--text-tertiary); }
+.cal-menu > .cal-menu-del:hover { color: var(--cal-rest); }
+.cal-repeat { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; color: var(--text-secondary); cursor: pointer; }
+/* CalDAV 订阅（T6）：只读 chip（空心点）与账号管理弹窗 */
+.cal-event.is-caldav { background: color-mix(in srgb, var(--ev) 7%, transparent); border: 1px dashed color-mix(in srgb, var(--ev) 40%, transparent); cursor: default; }
+.cal-event.is-caldav .cal-event-dot { background: transparent; border: 2px solid var(--ev); }
+.cal-sub-hint { font-size: 12.5px; color: var(--text-tertiary); margin: 0 0 12px; line-height: 1.5; }
+.cal-sub-row { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
+.cal-sub-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }
+.cal-sub-main { flex: 1; min-width: 0; }
+.cal-sub-url { font-size: 12px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-sub-form { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.cal-sub-error { margin-top: 10px; font-size: 12.5px; color: var(--cal-rest); }
 .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
 .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }
 .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }
