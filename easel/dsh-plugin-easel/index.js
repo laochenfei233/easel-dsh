@@ -1559,9 +1559,18 @@ async function writeCaldavConfig(settings, accounts) {
 
 async function readCaldavCache(settings) {
   const raw = await readJsonFile(join(settings.projectRoot, 'outputs', CALDAV_CACHE_FILE), null)
-  return raw !== null && typeof raw === 'object' && !Array.isArray(raw) && raw.byAccount !== undefined
-    ? raw.byAccount
-    : {}
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)
+    || raw.byAccount === null || typeof raw.byAccount !== 'object' || Array.isArray(raw.byAccount)) return {}
+  // 耐久文件：条目形状不合规的直接丢弃，不让坏缓存打穿客户端渲染
+  const byAccount = {}
+  for (const [aid, bucket] of Object.entries(raw.byAccount)) {
+    if (bucket === null || typeof bucket !== 'object' || !Array.isArray(bucket.events)) continue
+    byAccount[aid] = {
+      syncedAt: typeof bucket.syncedAt === 'number' ? bucket.syncedAt : null,
+      events: bucket.events.filter((ev) => ev !== null && typeof ev === 'object'),
+    }
+  }
+  return byAccount
 }
 
 async function apiCaldavAccountsGet(c) {
@@ -1586,8 +1595,9 @@ async function apiCaldavAccountsPut(c) {
     if (!isValidHttpUrl(url)) throw new ApiError(400, `无效的 CalDAV URL：${url || '(空)'}`)
     const id = String(item.id ?? '').trim() || randomBytes(6).toString('hex')
     const old = existing.accounts.find((account) => account.id === id)
-    // 空密码 = 未改动（GET 只回掩码），保留原值
-    const password = String(item.password ?? '').trim() === '' ? (old?.password ?? '') : String(item.password)
+    // 空密码或掩码 = 未改动（GET 只回掩码，客户端会原样带回来），保留原值
+    const incomingPassword = String(item.password ?? '').trim()
+    const password = (incomingPassword === '' || incomingPassword.startsWith('••••')) ? (old?.password ?? '') : incomingPassword
     accounts.push({
       id,
       name: String(item.name ?? '').trim().slice(0, 40) || '日历账号',

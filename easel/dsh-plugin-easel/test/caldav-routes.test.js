@@ -1,7 +1,7 @@
 /** CalDAV 路由行为测试：账号掩码/密码保留语义、事件缓存读取、发现/同步错误上抛。 */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CORE_ROUTES, dispatchLocalApi } from '../index.js'
@@ -71,6 +71,22 @@ test('sync 连不上时 502 且错误信息透传', async () => {
   const got = await call('GET', 'caldav/accounts')
   const aid = got.json.accounts.find(a => a.name === '内网').id
   await assert.rejects(call('POST', `caldav/accounts/${aid}/sync`), error => error.status === 502)
+})
+
+test('掩码回写不毁真凭据（GET 响应原样 PUT 回去，磁盘密码不变）', async () => {
+  await call('PUT', 'caldav/accounts', { accounts: [
+    { name: 'RoundTrip', url: 'https://caldav.example.net/', username: 'me', password: 'secret-9876' },
+  ] })
+  const got = await call('GET', 'caldav/accounts')
+  const masked = got.json.accounts.find(a => a.name === 'RoundTrip')
+  // 模拟客户端：整表 PUT 回去（只切换 enabled），password 带的是掩码
+  await call('PUT', 'caldav/accounts', { accounts: [
+    { ...masked, enabled: false, password: masked.password },
+  ] })
+  const onDisk = JSON.parse(readFileSync(join(root, 'outputs', '_caldav_config.json'), 'utf8'))
+  assert.equal(onDisk.accounts[0].password, 'secret-9876', '掩码串不能被存成真密码')
+  const reget = await call('GET', 'caldav/accounts')
+  assert.match(reget.json.accounts.find(a => a.name === 'RoundTrip').password, /••••9876$/)
 })
 
 test('events 缓存路由：空 → 写入 → 读回', async () => {

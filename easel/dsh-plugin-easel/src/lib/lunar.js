@@ -59,12 +59,14 @@ export function lunarYearDays(year) {
 export function solarToLunar(year, month, day) {
   if (year < 1900 || year > 2100) return null
   let offset = Math.round((Date.UTC(year, month - 1, day) - BASE_UTC) / 86400000)
+  if (offset < 0) return null // 表纪元 1900-01-31 之前
   let i = 1900
   let temp = 0
   for (; i < 2101 && offset > 0; i++) {
     temp = lunarYearDays(i)
     offset -= temp
   }
+  if (i > 2100) return null // 表终点之后
   if (offset < 0) {
     offset += temp
     i--

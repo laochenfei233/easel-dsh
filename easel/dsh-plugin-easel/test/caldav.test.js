@@ -253,6 +253,27 @@ test('caldavRequest：401 与 4xx 抛错、认证头正确', async () => {
   assert.equal(seen.headers.Authorization, `Basic ${b64}`)
 })
 
+test('多事件展开互不丢弃：循环主事件之后的单次事件仍在窗内', () => {
+  const events = parseIcsEvents([
+    'BEGIN:VEVENT',
+    'UID:r@x',
+    'SUMMARY:每日站会',
+    'DTSTART:20260101T090000',
+    'RRULE:FREQ=DAILY',
+    'END:VEVENT',
+    'BEGIN:VEVENT',
+    'UID:s@x',
+    'SUMMARY:单次评审',
+    'DTSTART:20260120T140000',
+    'END:VEVENT',
+  ].join('\r\n'))
+  const occurrences = expandEvents(events, WINDOW_START, WINDOW_END)
+  const standups = occurrences.filter((o) => o.title === '每日站会')
+  const reviews = occurrences.filter((o) => o.title === '单次评审')
+  assert.ok(standups.length >= 30, `站会应展开整窗，实际 ${standups.length}`)
+  assert.equal(reviews.length, 1, '循环主事件到窗右缘只能终止它自己，不能吞掉后续事件')
+})
+
 test('calendarQueryBody 时间窗格式', () => {
   assert.match(calendarQueryBody('20260101T000000Z', '20261028T000000Z'), /start="20260101T000000Z" end="20261028T000000Z"/)
 })

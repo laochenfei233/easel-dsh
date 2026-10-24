@@ -200,12 +200,12 @@ export default function CalendarPage() {
     );
   };
 
-  // CalDAV 只读 chip（空心圆点 + 账号色，点击不进编辑）
-  const renderCaldavChip = (ev: CaldavEvent, acc: CaldavAccount) => (
+  // CalDAV 只读 chip（空心圆点 + 账号色，点击进当天详情）
+  const renderCaldavChip = (ev: CaldavEvent, acc: CaldavAccount, ds: string) => (
     <div key={`cd-${ev.uid}-${ev.start}`} className="cal-event is-caldav"
       title={`${acc.name} · ${ev.title}`}
       style={{ ['--ev' as string]: acc.color || 'var(--text-tertiary)' }}
-      onClick={(e) => e.stopPropagation()}>
+      onClick={(e) => { e.stopPropagation(); setDayView(ds); }}>
       <span className="cal-event-dot" />
       <span className="cal-event-title">{ev.title}</span>
     </div>
@@ -304,10 +304,10 @@ export default function CalendarPage() {
           const fests = festivalMap.get(ds) || [];
           const rest = fests.find((f) => f.kind === 'statutory-rest');
           const work = fests.find((f) => f.kind === 'statutory-work');
-          const festNames = fests
+          const allFestNames = fests
             .filter((f) => f.kind !== 'statutory-rest' && f.kind !== 'statutory-work')
-            .slice(0, 2)
             .map((f) => f.name);
+          const festNames = allFestNames.slice(0, 2);
           return (
             <div key={i} className={`cal-cell ${inMonth ? '' : 'dim'} ${ds === todayStr ? 'today' : ''}`}
               onClick={() => (dayChips.length ? setDayView(ds) : openNew(ds))}
@@ -318,10 +318,10 @@ export default function CalendarPage() {
                 {work && <span className="cal-festival work" title={work.name}>班</span>}
               </div>
               {festNames.length > 0 && (
-                <div className="cal-festnames" title={festNames.join(' · ')}>{festNames.join(' · ')}</div>
+                <div className="cal-festnames" title={allFestNames.join(' · ')}>{festNames.join(' · ')}</div>
               )}
               <div className="cal-events">
-                {shown.map((chip) => (chip.kind === 'item' ? renderChip(chip.it) : renderCaldavChip(chip.ev, chip.acc)))}
+                {shown.map((chip) => (chip.kind === 'item' ? renderChip(chip.it) : renderCaldavChip(chip.ev, chip.acc, ds)))}
                 {hidden > 0 && (
                   <button className="cal-more" onClick={(e) => { e.stopPropagation(); setDayView(ds); }}>
                     +{hidden} 更多
@@ -436,11 +436,11 @@ export default function CalendarPage() {
           } catch (e) { setSubError((e as Error).message || String(e)); } finally { setSubBusy(''); }
         };
         return (
-          <div className="overlay" onClick={() => setSubOpen(false)}>
+          <div className="overlay" onClick={() => { setSubOpen(false); setSubDraft(null); setSubCals(null); }}>
             <div className="modal" style={{ width: 540, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                 <h3 style={{ margin: 0 }}>📅 订阅日历（CalDAV）</h3>
-                <button className="icon-btn" onClick={() => setSubOpen(false)}>×</button>
+                <button className="icon-btn" onClick={() => { setSubOpen(false); setSubDraft(null); setSubCals(null); }}>×</button>
               </div>
               <p className="cal-sub-hint">
                 只读导入 iCloud / Fastmail / Nextcloud 等标准 CalDAV 日历。填服务器地址可自动发现，也可直接粘贴日历 URL；

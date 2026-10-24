@@ -37,7 +37,11 @@ export function nodeRequester({ url, method, headers, body }) {
       let size = 0
       res.on('data', (chunk) => {
         size += chunk.length
-        if (size <= 10 * 1024 * 1024) chunks.push(chunk)
+        if (size > 10 * 1024 * 1024) {
+          req.destroy(new Error('CalDAV 响应超过 10MB，已中止'))
+          return
+        }
+        chunks.push(chunk)
       })
       res.on('end', () => resolve({ status: res.statusCode, text: Buffer.concat(chunks).toString('utf8') }))
     })
@@ -474,7 +478,8 @@ export function expandEvents(events, windowStart, windowEnd) {
         if (!withinUntil(date, rule)) break intervalLoop
         generated++
         if (date.getTime() + dur <= windowStart) continue
-        if (date.getTime() >= windowEnd) return result
+        // 批次按时间升序：到窗右缘即结束本事件的展开（不能 return，后续事件还要展开）
+        if (date.getTime() >= windowEnd) break intervalLoop
         if (exKeys.has(occurrenceKey(date, base.allDay))) continue
         result.push({ ...base, start: date, end: new Date(date.getTime() + dur) })
       }

@@ -32,6 +32,7 @@ test('农历换算锚点日期', () => {
   assert.deepEqual(solarToLunar(2025, 7, 25), { year: 2025, month: 6, day: 1, isLeap: true })
   // 表范围外
   assert.equal(solarToLunar(1899, 12, 31), null)
+  assert.equal(solarToLunar(1900, 1, 1), null, '表纪元 1900-01-31 之前')
   assert.equal(solarToLunar(2101, 1, 1), null)
 })
 
