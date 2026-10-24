@@ -912,6 +912,16 @@ textarea.field { resize: vertical; min-height: 90px; }
 .cal-menu > .cal-menu-del { color: var(--text-tertiary); }
 .cal-menu > .cal-menu-del:hover { color: var(--cal-rest); }
 .cal-repeat { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; color: var(--text-secondary); cursor: pointer; }
+/* CalDAV 订阅（T6）：只读 chip（空心点）与账号管理弹窗 */
+.cal-event.is-caldav { background: color-mix(in srgb, var(--ev) 7%, transparent); border: 1px dashed color-mix(in srgb, var(--ev) 40%, transparent); cursor: default; }
+.cal-event.is-caldav .cal-event-dot { background: transparent; border: 2px solid var(--ev); }
+.cal-sub-hint { font-size: 12.5px; color: var(--text-tertiary); margin: 0 0 12px; line-height: 1.5; }
+.cal-sub-row { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }
+.cal-sub-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }
+.cal-sub-main { flex: 1; min-width: 0; }
+.cal-sub-url { font-size: 12px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal-sub-form { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.cal-sub-error { margin-top: 10px; font-size: 12.5px; color: var(--cal-rest); }
 .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
 .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }
 .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }
