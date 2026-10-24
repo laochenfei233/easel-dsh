@@ -505,7 +505,7 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   display: flex; align-items: center; gap: 6px; padding: 10px 12px 5px;
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--text-tertiary); font-weight: 700; cursor: pointer; user-select: none;
-}.easel-scope .archived-header:hover { color: var(--text-secondary); }.easel-scope .archived-chevron { display: inline-flex; align-items: center; transition: transform var(--t-fast); color: var(--text-tertiary); }.easel-scope .archived-chevron.open { transform: rotate(90deg); }/* ============ \u901A\u7528\u9875\u5BB9\u5668 ============ */.easel-scope .page-scroll { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; max-width: 1100px; margin: 0 auto 4px; }.easel-scope .notice-error { max-width: 1100px; margin: 14px auto 0; color: var(--red); background: var(--red-soft); border: 1px solid transparent; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; }/* ============ \u70ED\u70B9\u96F7\u8FBE ============ */.easel-scope .trend-platforms { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-grid { max-width: 1100px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }.easel-scope .trend-col { padding: 14px 6px 10px; }.easel-scope .trend-col-head { font-weight: 650; font-size: 14px; padding: 0 12px 8px; display: flex; align-items: center; gap: 8px; }.easel-scope .trend-count { color: var(--text-tertiary); font-size: 12px; font-weight: 500; }.easel-scope .trend-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 8px; transition: background var(--t-fast); }.easel-scope .trend-item:hover { background: var(--surface-hover); }.easel-scope .trend-rank { width: 20px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-tertiary); flex-shrink: 0; }.easel-scope .trend-rank.top { color: var(--accent-end); }.easel-scope .trend-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }.easel-scope .trend-title { font-size: 13px; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .trend-title:hover { color: var(--accent-start); }.easel-scope .trend-hot { font-size: 11px; color: var(--text-tertiary); }.easel-scope .trend-meta { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }.easel-scope .trend-badge { font-size: 10.5px; line-height: 1; padding: 2.5px 6px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }.easel-scope .trend-badge-new { color: var(--accent-end); background: var(--accent-soft); font-weight: 650; }.easel-scope .trend-badge-up { color: var(--trend-up); background: color-mix(in srgb, var(--trend-up) 13%, transparent); }.easel-scope .trend-badge-down { color: var(--trend-down); background: color-mix(in srgb, var(--trend-down) 13%, transparent); }.easel-scope .trend-badge-watch { color: var(--amber, #b45309); background: color-mix(in srgb, var(--amber, #b45309) 13%, transparent); }.easel-scope .trend-age { font-size: 10.5px; color: var(--text-tertiary); white-space: nowrap; }.easel-scope .trend-plat { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64px; }.easel-scope .trend-stale { font-size: 11px; color: var(--amber, #b45309); font-weight: 500; }.easel-scope .trend-more { font-size: 11.5px; color: var(--text-tertiary); padding: 2px 12px 6px; }.easel-scope .trend-viewsep { width: 1px; align-self: stretch; background: var(--border); margin: 2px 4px; }.easel-scope .trend-watch-card { padding: 12px 6px 6px; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-watch-group { display: flex; align-items: center; gap: 8px; padding: 0 8px; }.easel-scope .trend-watch-group + .trend-watch-group { border-top: 1px dashed var(--border); }.easel-scope .trend-watch-items { flex: 1; min-width: 0; }.easel-scope .trend-watch-group .trend-item { padding-top: 5px; padding-bottom: 5px; }.easel-scope .trend-watch-group .trend-item .trend-use, .easel-scope .trend-watch-group .trend-item .trend-save { opacity: 1; }.easel-scope .trend-watch-key { font-size: 12px; font-weight: 650; color: var(--accent-end); background: var(--accent-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; flex-shrink: 0; }.easel-scope .trend-cluster { padding: 12px 6px 8px; }.easel-scope .trend-cluster-head { display: flex; align-items: center; gap: 8px; padding: 0 12px 6px; }.easel-scope .trend-cluster-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }.easel-scope .trend-cluster-actions .trend-save, .easel-scope .trend-cluster-actions .trend-use { opacity: 1; }.easel-scope .trend-cluster-platforms { display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; flex-wrap: wrap; }.easel-scope .trend-chip { font-size: 10.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface-hover); color: var(--text-secondary); }.easel-scope .trend-use { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); cursor: pointer; white-space: nowrap; color: var(--accent-end); }.easel-scope .trend-item:hover .trend-use { opacity: 1; }.easel-scope .trend-use:hover { background: var(--accent-soft); border-color: transparent; }.easel-scope .trend-empty { color: var(--text-tertiary); font-size: 13px; padding: 10px 12px; }/* ============ \u5185\u5BB9\u65E5\u5386 ============ */.easel-scope .cal-nav { display: flex; align-items: center; gap: 8px; }.easel-scope .cal-month { font-weight: 650; font-size: 14px; min-width: 120px; text-align: center; }.easel-scope .cal-grid-head { max-width: 1100px; margin: 18px auto 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-wd { text-align: center; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }.easel-scope .cal-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-cell { height: 132px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 7px; cursor: pointer; transition: all var(--t-fast); display: flex; flex-direction: column; gap: 4px; overflow: hidden; }.easel-scope .cal-cell:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }.easel-scope .cal-cell.dim { opacity: 0.4; }.easel-scope .cal-cell.today { border-color: var(--accent-start); box-shadow: 0 0 0 2px var(--accent-soft); }.easel-scope .cal-daynum { font-size: 12px; color: var(--text-secondary); font-weight: 600; }.easel-scope .cal-cell.today .cal-daynum { color: var(--accent-end); }/* \u8282\u5047\u65E5\u5E95\u56FE\uFF08T2\uFF09\uFF1A\u4F11/\u73ED\u89D2\u6807 + \u8282\u65E5\u540D */.easel-scope .calendar-page { --cal-rest: #e5484d; --cal-festival: #b7791f; }.easel-scope .cal-daynum-row { display: flex; align-items: center; gap: 4px; }.easel-scope .cal-festival { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 4px; font-size: 10px; font-weight: 700; flex-shrink: 0; }.easel-scope .cal-festival.rest { color: #fff; background: var(--cal-rest); }.easel-scope .cal-festival.work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 15%, transparent); }.easel-scope .cal-festnames { font-size: 11px; color: var(--cal-festival); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }.easel-scope .cal-fest-day { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }.easel-scope .cal-festival-tag { font-size: 12px; padding: 2px 9px; border-radius: 999px; }.easel-scope .cal-festival-tag.is-statutory-rest { color: #fff; background: var(--cal-rest); font-weight: 600; }.easel-scope .cal-festival-tag.is-statutory-work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 14%, transparent); }.easel-scope .cal-festival-tag.is-lunar { color: #fff; background: var(--cal-festival); }.easel-scope .cal-festival-tag.is-fixed { color: var(--cal-festival); background: color-mix(in srgb, var(--cal-festival) 14%, transparent); }/* \u53F3\u952E\u83DC\u5355\uFF08T3\uFF09\uFF1A\u900F\u660E\u906E\u7F69\u4E0A\u7684\u6D6E\u5C42\u83DC\u5355 */.easel-scope .overlay.is-menu { background: transparent; }.easel-scope .cal-menu { position: fixed; z-index: 80; min-width: 176px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 5px; display: flex; flex-direction: column; }.easel-scope .cal-menu > button { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 10px; font-size: 13px; color: var(--text); background: none; border: 0; border-radius: 7px; cursor: pointer; text-align: left; }.easel-scope .cal-menu > button:hover { background: var(--accent-soft); }.easel-scope .cal-menu-sep { height: 1px; background: var(--border); margin: 3px 4px; }.easel-scope .cal-menu > .cal-menu-del { color: var(--text-tertiary); }.easel-scope .cal-menu > .cal-menu-del:hover { color: var(--cal-rest); }.easel-scope .cal-repeat { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; color: var(--text-secondary); cursor: pointer; }/* CalDAV \u8BA2\u9605\uFF08T6\uFF09\uFF1A\u53EA\u8BFB chip\uFF08\u7A7A\u5FC3\u70B9\uFF09\u4E0E\u8D26\u53F7\u7BA1\u7406\u5F39\u7A97 */.easel-scope .cal-event.is-caldav { background: color-mix(in srgb, var(--ev) 7%, transparent); border: 1px dashed color-mix(in srgb, var(--ev) 40%, transparent); cursor: default; }.easel-scope .cal-event.is-caldav .cal-event-dot { background: transparent; border: 2px solid var(--ev); }.easel-scope .cal-sub-hint { font-size: 12.5px; color: var(--text-tertiary); margin: 0 0 12px; line-height: 1.5; }.easel-scope .cal-sub-row { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }.easel-scope .cal-sub-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-sub-main { flex: 1; min-width: 0; }.easel-scope .cal-sub-url { font-size: 12px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .cal-sub-form { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }.easel-scope .cal-sub-error { margin-top: 10px; font-size: 12.5px; color: var(--cal-rest); }.easel-scope .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }.easel-scope .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }.easel-scope .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }/* ============ \u5DE5\u4F5C\u53F0 ============ */.easel-scope .dash-hero { max-width: 1100px; margin: 0 auto 8px; }.easel-scope .dash-quick { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }.easel-scope .dash-quick-btn {
+}.easel-scope .archived-header:hover { color: var(--text-secondary); }.easel-scope .archived-chevron { display: inline-flex; align-items: center; transition: transform var(--t-fast); color: var(--text-tertiary); }.easel-scope .archived-chevron.open { transform: rotate(90deg); }/* ============ \u901A\u7528\u9875\u5BB9\u5668 ============ */.easel-scope .page-scroll { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; max-width: 1100px; margin: 0 auto 4px; }.easel-scope .notice-error { max-width: 1100px; margin: 14px auto 0; color: var(--red); background: var(--red-soft); border: 1px solid transparent; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; }/* ============ \u70ED\u70B9\u96F7\u8FBE ============ */.easel-scope .trend-platforms { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-grid { max-width: 1100px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }.easel-scope .trend-col { padding: 14px 6px 10px; }.easel-scope .trend-col-head { font-weight: 650; font-size: 14px; padding: 0 12px 8px; display: flex; align-items: center; gap: 8px; }.easel-scope .trend-count { color: var(--text-tertiary); font-size: 12px; font-weight: 500; }.easel-scope .trend-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 8px; transition: background var(--t-fast); }.easel-scope .trend-item:hover { background: var(--surface-hover); }.easel-scope .trend-rank { width: 20px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-tertiary); flex-shrink: 0; }.easel-scope .trend-rank.top { color: var(--accent-end); }.easel-scope .trend-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }.easel-scope .trend-title { font-size: 13px; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .trend-title:hover { color: var(--accent-start); }.easel-scope .trend-hot { font-size: 11px; color: var(--text-tertiary); }.easel-scope .trend-use { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--accent-end); cursor: pointer; white-space: nowrap; }.easel-scope .trend-item:hover .trend-use { opacity: 1; }.easel-scope .trend-use:hover { background: var(--accent-soft); border-color: transparent; }.easel-scope .trend-empty { color: var(--text-tertiary); font-size: 13px; padding: 10px 12px; }/* ============ \u5185\u5BB9\u65E5\u5386 ============ */.easel-scope .cal-nav { display: flex; align-items: center; gap: 8px; }.easel-scope .cal-month { font-weight: 650; font-size: 14px; min-width: 120px; text-align: center; }.easel-scope .cal-grid-head { max-width: 1100px; margin: 18px auto 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-wd { text-align: center; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }.easel-scope .cal-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-cell { height: 132px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 7px; cursor: pointer; transition: all var(--t-fast); display: flex; flex-direction: column; gap: 4px; overflow: hidden; }.easel-scope .cal-cell:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }.easel-scope .cal-cell.dim { opacity: 0.4; }.easel-scope .cal-cell.today { border-color: var(--accent-start); box-shadow: 0 0 0 2px var(--accent-soft); }.easel-scope .cal-daynum { font-size: 12px; color: var(--text-secondary); font-weight: 600; }.easel-scope .cal-cell.today .cal-daynum { color: var(--accent-end); }.easel-scope .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }.easel-scope .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }.easel-scope .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }/* ============ \u5DE5\u4F5C\u53F0 ============ */.easel-scope .dash-hero { max-width: 1100px; margin: 0 auto 8px; }.easel-scope .dash-quick { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }.easel-scope .dash-quick-btn {
   display: flex; align-items: center; gap: 7px; padding: 9px 15px;
   font-size: 13.5px; font-weight: 550; cursor: pointer; color: var(--text);
   background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
@@ -522,7 +522,7 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-overview { display: flex; gap: 8px; }.easel-scope .ana-stat { flex: 1; text-align: center; padding: 10px 4px; background: var(--surface-2); border-radius: 12px; }.easel-scope .ana-stat-val { font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }.easel-scope .ana-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }.easel-scope .ana-stat-delta { font-size: 11px; font-weight: 600; margin-top: 5px; font-variant-numeric: tabular-nums; }.easel-scope .ana-muted { color: var(--text-tertiary) !important; font-weight: 400; }.easel-scope .ana-wins { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 14px; }.easel-scope .ana-win { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border);
   background: var(--surface); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); }.easel-scope .ana-win:hover { border-color: var(--border-strong); color: var(--text); }.easel-scope .ana-win.on { background: var(--accent-soft); border-color: transparent; color: var(--accent-end); font-weight: 600; }.easel-scope .ana-wins-note { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; line-height: 1.5; }.easel-scope .ana-sub { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }.easel-scope .ana-metrics { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }.easel-scope .ana-metric { text-align: center; padding: 8px 4px; background: var(--surface-2); border-radius: 10px; }.easel-scope .ana-metric-val { font-size: 16px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }.easel-scope .ana-metric-label { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }.easel-scope .ana-metric-vs { font-size: 10px; font-weight: 600; margin-top: 3px; }.easel-scope .ana-notes { display: flex; flex-direction: column; gap: 6px; }.easel-scope .ana-note { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: 9px;
   background: var(--surface-2); font-size: 12.5px; color: var(--text); text-decoration: none; transition: all var(--t-fast); }.easel-scope .ana-note:hover { background: var(--accent-soft); color: var(--accent-end); }.easel-scope .ana-note-cover { width: 34px; height: 34px; border-radius: 7px; object-fit: cover; flex-shrink: 0; background: var(--surface); }.easel-scope .ana-note-cover-ph { display: flex; align-items: center; justify-content: center; font-size: 15px; }.easel-scope .ana-note-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }.easel-scope .ana-note-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note-stat { font-size: 11px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note:hover .ana-note-stat { color: var(--accent-end); }.easel-scope .ana-note-go { flex-shrink: 0; color: var(--text-tertiary); }.easel-scope .ana-note:hover .ana-note-go { color: var(--accent-end); }/* ============ \u5185\u5BB9\u5E93\u753B\u5ECA ============ */.easel-scope .gallery-page { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .gallery-head { max-width: 1160px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }.easel-scope .gallery-filters { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1160px; margin: 14px auto 0; }.easel-scope .gallery-grid { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }.easel-scope .gcard { padding: 0; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }.easel-scope .gcard-thumb { aspect-ratio: 4/3; background: var(--surface-2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }.easel-scope .gcard-thumb img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-thumb video { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-ph { color: var(--text-tertiary); display: flex; flex-direction: column; align-items: center; gap: 6px; }.easel-scope .gcard-kind { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: rgba(24,24,48,0.55); color: #fff; }.easel-scope .gcard-meta { padding: 10px 12px; }.easel-scope .gcard-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .gcard-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }/* \u5185\u5BB9\u5E93\u9762\u5305\u5C51 */.easel-scope .crumb { cursor: pointer; color: var(--text-secondary); }.easel-scope .crumb:hover { color: var(--accent-start); }.easel-scope .crumb-sep { color: var(--text-tertiary); margin: 0 2px; font-weight: 400; }/* ============ \u9009\u9898\u5E93\u770B\u677F ============ */.easel-scope .kanban { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }.easel-scope .kanban-col { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; min-height: 200px; }.easel-scope .kanban-col-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text-secondary); padding: 2px 4px 10px; }.easel-scope .kanban-dot { width: 9px; height: 9px; border-radius: 3px; }.easel-scope .kanban-count { color: var(--text-tertiary); font-weight: 500; }.easel-scope .kanban-list { display: flex; flex-direction: column; gap: 10px; }.easel-scope .kanban-empty { color: var(--text-tertiary); font-size: 12.5px; padding: 12px 4px; }.easel-scope .idea-card { position: relative; padding: 13px 14px; }.easel-scope .idea-card-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 2px; }.easel-scope .idea-card:hover .idea-card-actions { display: flex; }.easel-scope .idea-title { font-size: 14px; font-weight: 600; line-height: 1.45; padding-right: 40px; }.easel-scope .idea-note { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 7px;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }.easel-scope .idea-foot { display: flex; align-items: center; gap: 4px; margin-top: 11px; flex-wrap: wrap; }.easel-scope .idea-links { display: flex; align-items: center; gap: 4px; margin-top: 7px; }.easel-scope .idea-link { font-size: 11.5px; color: var(--accent-end); background: none; border: none; padding: 2px 4px; cursor: pointer; text-decoration: none; }.easel-scope .idea-link:hover { text-decoration: underline; }.easel-scope .idea-body-preview { max-height: 64vh; overflow: auto; padding: 6px 2px; font-size: 13px; line-height: 1.7; }.easel-scope .idea-act { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 8px; border-radius: 7px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }.easel-scope .idea-foot { display: flex; align-items: center; gap: 4px; margin-top: 11px; flex-wrap: wrap; }.easel-scope .idea-act { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 8px; border-radius: 7px;
   border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); }.easel-scope .idea-act:hover { color: var(--text); border-color: var(--border-strong); }.easel-scope .idea-act.next { margin-left: auto; color: var(--accent-end); }.easel-scope .idea-act.next:hover { background: var(--accent-soft); border-color: transparent; }/* \u70ED\u70B9\u6536\u85CF\u6309\u94AE */.easel-scope .trend-save { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; display: inline-flex; align-items: center;
   padding: 5px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-tertiary); cursor: pointer; }.easel-scope .trend-item:hover .trend-save { opacity: 1; }.easel-scope .trend-save:hover { color: var(--accent-end); background: var(--accent-soft); border-color: transparent; }/* ============ \u53D1\u5E03\u4E2D\u5FC3 ============ */.easel-scope .publish-page { display: flex; height: 100%; overflow: hidden; }.easel-scope .publish-editor { width: 46%; min-width: 400px; max-width: 620px; overflow-y: auto; padding: 28px 28px 60px; border-right: 1px solid var(--border); }.easel-scope .publish-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }.easel-scope .publish-previews { flex: 1; overflow-y: auto; padding: 28px 28px 60px; display: flex; flex-direction: column; gap: 14px; background: var(--surface-2); }.easel-scope .pv-card { padding: 0; overflow: hidden; }.easel-scope .pv-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); }.easel-scope .pv-plat { font-size: 13px; font-weight: 700; }.easel-scope .pv-count { font-size: 12px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }.easel-scope .pv-count.over { color: var(--red); font-weight: 700; }.easel-scope .pv-body { padding: 14px; }.easel-scope .pv-title { font-size: 15px; font-weight: 650; margin-bottom: 8px; }.easel-scope .pv-title.over { color: var(--red); }.easel-scope .pv-text { font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; color: var(--text); word-break: break-word; }.easel-scope .pv-ph { color: var(--text-tertiary); }.easel-scope .pv-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; border-top: 1px solid var(--border); background: var(--bg-elev); }.easel-scope .pv-hint { font-size: 11.5px; color: var(--text-tertiary); }.easel-scope .pv-copy { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); flex-shrink: 0; }.easel-scope .pv-copy:hover { color: var(--text); border-color: var(--border-strong); }/* \u5E73\u53F0\u98CE\u683C\u5FAE\u8C03 */.easel-scope .pv-xiaohongshu .pv-title { color: #ff2e4d; }.easel-scope .pv-douyin { }.easel-scope .pv-weibo .pv-text { }@media (max-width: 900px) {.easel-scope .publish-page { flex-direction: column; }.easel-scope .publish-editor { width: 100%; max-width: none; border-right: none; border-bottom: 1px solid var(--border); }}/* \u53D1\u5E03\u4E2D\u5FC3 AI\u7248\u5FBD\u6807 + \u7206\u6B3E\u62C6\u89E3 */.easel-scope .pv-badge { margin-left: 8px; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-end); }.easel-scope .pv-badge-ok { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }.easel-scope .pv-pubstate { margin: 8px 0 2px; font-size: 12px; padding: 6px 10px; border-radius: 8px; display: flex; align-items: center; gap: 6px; white-space: pre-wrap; word-break: break-word; }.easel-scope .pv-pubstate.publishing { background: var(--accent-soft); color: var(--accent-end); }.easel-scope .pv-pubstate.ok { background: color-mix(in srgb, var(--green) 15%, transparent); color: var(--green); }.easel-scope .pv-pubstate.fail { background: color-mix(in srgb, var(--red) 12%, transparent); color: var(--red); max-height: 120px; overflow: auto; }/* \u5A92\u4F53\u9644\u4EF6\u9009\u62E9 */.easel-scope .media-chip { position: relative; width: 46px; height: 46px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid var(--accent-end); flex-shrink: 0; }.easel-scope .media-chip img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .media-chip .media-vid { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 20px; background: var(--bg-subtle, #eee); }.easel-scope .media-chip .media-x { position: absolute; top: 0; right: 2px; color: #fff; font-weight: 800; text-shadow: 0 0 3px #000; }.easel-scope .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; margin-top: 10px; max-height: 260px; overflow: auto; padding: 4px; border: 1px solid var(--border); border-radius: 10px; }.easel-scope .media-cell { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; background: var(--bg-subtle, #f0f0f0); }.easel-scope .media-cell.sel { border-color: var(--accent-end); }.easel-scope .media-cell img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .media-cell .media-vid { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 22px; text-align: center; font-size: 11px; }.easel-scope .media-cell .media-check { position: absolute; top: 3px; right: 4px; background: var(--accent-end); color: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; }.easel-scope .breakdown-body { max-width: 900px; margin: 16px auto 0; }/* \u53D1\u5E03\u4E2D\u5FC3\uFF1A\u9002\u914D\u8FDB\u5EA6\u63D0\u793A + \u9884\u89C8\u5B8C\u6574\u663E\u793A */.easel-scope .adapt-hint { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12.5px; color: var(--text-secondary); }.easel-scope .pv-card { overflow: visible; }.easel-scope .pv-text { max-height: none; }.easel-scope .publish-saved-note { margin-top: 10px; font-size: 11.5px; color: var(--text-tertiary); }/* ============ \u5B50\u5DE5\u5177\u9876\u90E8\u5C0F\u5BFC\u822A ============ */.easel-scope .page-host { flex: 1; min-height: 0; display: flex; flex-direction: column; }.easel-scope .page-host > * { flex: 1; min-height: 0; }.easel-scope .subnav {
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
@@ -817,15 +817,7 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   color: var(--accent-start);
   font-size: 12px;
   font-weight: 500;
-}.easel-scope .trend-use:hover { background: rgba(0, 113, 227, 0.18); }.easel-scope .trend-use:active { transform: scale(0.94); }/* Trend radar v2: badges, offline hint, watch card, cluster cards */.easel-scope .trend-badge { border-radius: 980px; font-weight: 600; letter-spacing: 0.1px; }.easel-scope .trend-badge-new { color: var(--accent-start); background: var(--accent-soft); }.easel-scope .trend-badge-up { color: var(--trend-up); background: color-mix(in srgb, var(--trend-up) 14%, transparent); }.easel-scope .trend-badge-down { color: var(--trend-down); background: color-mix(in srgb, var(--trend-down) 14%, transparent); }.easel-scope .trend-badge-watch, .easel-scope .trend-stale { color: var(--amber, #b45309); }.easel-scope .trend-age, .easel-scope .trend-more { font-size: 10.5px; color: var(--text-tertiary); }.easel-scope .trend-viewsep { background: var(--border-soft, var(--border)); }.easel-scope .trend-watch-card, .easel-scope .trend-cluster {
-  padding: 14px 8px 10px;
-  border-radius: var(--radius-lg, 18px);
-}.easel-scope .trend-watch-key {
-  border-radius: 980px;
-  color: var(--accent-start);
-  background: var(--accent-soft);
-  font-weight: 650;
-}.easel-scope .trend-watch-group + .trend-watch-group { border-top: 1px solid var(--border-soft, var(--border)); }.easel-scope .trend-chip { border-radius: 980px; background: var(--surface-2, var(--surface-hover)); color: var(--text-secondary); }.easel-scope .trend-cluster-head .trend-title { font-size: 13.5px; }.easel-scope .trend-plat { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); }.easel-scope .idea-link { color: var(--accent-start); border-radius: 6px; }.easel-scope .idea-body-preview { line-height: 1.65; }/* ---------- Notices ---------- */.easel-scope .notice-error {
+}.easel-scope .trend-use:hover { background: rgba(0, 113, 227, 0.18); }.easel-scope .trend-use:active { transform: scale(0.94); }/* ---------- Notices ---------- */.easel-scope .notice-error {
   border: none;
   border-radius: var(--radius);
   background: var(--red-soft);
@@ -1012,18 +1004,14 @@ async function resolveHomeWorkspaceId(projectDir) {
 function pageKey(view11) {
   return `easel.${view11}`;
 }
-function topicPrompt(title, projectDir, inProject = false, bodyPath) {
+function topicPrompt(title, projectDir, inProject = false) {
   const base = `\u56F4\u7ED5\u5F53\u524D\u70ED\u70B9\u300C${title}\u300D\uFF1A\u5148\u5224\u65AD\u5B83\u9002\u4E0D\u9002\u5408\u6211\u7684\u8D26\u53F7\u8D5B\u9053\uFF1B\u82E5\u5408\u9002\uFF0C\u7ED9 2-3 \u4E2A\u5DEE\u5F02\u5316\u7684\u4E8C\u521B\u89D2\u5EA6\uFF0C\u5E76\u628A\u4F60\u6700\u63A8\u8350\u7684\u90A3\u6761\u5199\u6210\u53EF\u76F4\u63A5\u53D1\u5E03\u7684\u6587\u6848\u521D\u7A3F\u3002`;
-  const body = bodyPath ? `
+  if (!projectDir) return base;
+  return inProject ? `${base}
 
-\u8FD9\u6761\u70ED\u70B9\u7684\u6B63\u6587\u5DF2\u6293\u53D6\u5230\u5185\u5BB9\u5E93\uFF1A${bodyPath}\u3002\u5148\u8BFB\u5B83\u518D\u52A8\u7B14\uFF0C\u4E0D\u8981\u51ED\u6807\u9898\u81C6\u6D4B\u5185\u5BB9\u3002` : "";
-  if (!projectDir) return `${base}${body}`;
-  const project = inProject ? `
-
-\u672C\u9879\u76EE\u5DF2\u7ACB\u9879\uFF1A\u5148\u8BFB \u9879\u76EE\u8D44\u6599.md\uFF08\u5C31\u5728\u5F53\u524D\u76EE\u5F55\uFF0C\u9009\u9898\u5361\u3001\u62C6\u89E3\u7D20\u6750\u3001\u753B\u50CF\u5FEB\u7167\u90FD\u5728\u91CC\u9762\uFF0C\u6309\u9700\u53C2\u8003\uFF09\uFF0C\u672C\u6B21\u521B\u4F5C\u7684\u811A\u672C/\u6587\u6848/\u6210\u7247\u7B49\u4EA7\u7269\u4E00\u5F8B\u5199\u5165\u5F53\u524D\u76EE\u5F55\uFF08\u9879\u76EE\u5DE5\u4F5C\u533A\uFF09\u3002` : `
+\u672C\u9879\u76EE\u5DF2\u7ACB\u9879\uFF1A\u5148\u8BFB \u9879\u76EE\u8D44\u6599.md\uFF08\u5C31\u5728\u5F53\u524D\u76EE\u5F55\uFF0C\u9009\u9898\u5361\u3001\u62C6\u89E3\u7D20\u6750\u3001\u753B\u50CF\u5FEB\u7167\u90FD\u5728\u91CC\u9762\uFF0C\u6309\u9700\u53C2\u8003\uFF09\uFF0C\u672C\u6B21\u521B\u4F5C\u7684\u811A\u672C/\u6587\u6848/\u6210\u7247\u7B49\u4EA7\u7269\u4E00\u5F8B\u5199\u5165\u5F53\u524D\u76EE\u5F55\uFF08\u9879\u76EE\u5DE5\u4F5C\u533A\uFF09\u3002` : `${base}
 
 \u672C\u9879\u76EE\u5DF2\u7ACB\u9879\uFF1A\u5148\u8BFB ${projectDir}/\u9879\u76EE\u8D44\u6599.md\uFF08\u9009\u9898\u5361\u3001\u62C6\u89E3\u7D20\u6750\u3001\u753B\u50CF\u5FEB\u7167\u90FD\u5728\u91CC\u9762\uFF0C\u6309\u9700\u53C2\u8003\uFF09\uFF0C\u672C\u6B21\u521B\u4F5C\u7684\u811A\u672C/\u6587\u6848/\u6210\u7247\u7B49\u4EA7\u7269\u4E00\u5F8B\u5199\u5165 ${projectDir}/ \u76EE\u5F55\u3002`;
-  return `${base}${body}${project}`;
 }
 function createShell() {
   let state = { persona: "", personas: [], gatewayStatus: "connecting", apiDirect: false };
@@ -1068,7 +1056,7 @@ function createShellBridge(ctx, t) {
     if (layout === void 0) throw new Error("dsh-plugin-easel: the layout service is absent; cannot navigate");
     layout.selectPanel(page === "chat" ? "conversation" : pageKey(page));
   };
-  const useTopic = (title, projectDir, bodyPath) => {
+  const useTopic = (title, projectDir) => {
     const fallbackPrompt = topicPrompt(title, projectDir);
     const clipboardFallback = () => {
       void navigator.clipboard?.writeText(fallbackPrompt).catch(() => {
@@ -1082,8 +1070,7 @@ function createShellBridge(ctx, t) {
       void (async () => {
         const project = projectDir ? findWorkspaceByPath(projectDir) : null;
         const homeId = project?.workspaceId ?? await resolveHomeWorkspaceId();
-        const bodyPrompt = await bodyPromptLine(bodyPath);
-        const prompt = topicPrompt(title, projectDir, project !== null, bodyPrompt);
+        const prompt = topicPrompt(title, projectDir, project !== null);
         const id = homeId ? await sessions.create({ workspaceId: homeId }) : await sessions.create();
         uiWorkspace.openSession(id);
         await sessions.using(id, { source: "easelTopic" }, async () => {
@@ -1096,12 +1083,6 @@ function createShellBridge(ctx, t) {
     } catch {
       clipboardFallback();
     }
-  };
-  const bodyPromptLine = async (bodyPath) => {
-    if (!bodyPath) return void 0;
-    const root = await projectRoot();
-    if (!root) return void 0;
-    return `${root.replace(/[\\/]+$/, "")}/${bodyPath}`;
   };
   const storedMode = localStorage.getItem("easel.workspace.mode");
   globalThis.__easelWorkspaceUIMode = storedMode === "full" ? "full" : "single";
@@ -1318,28 +1299,8 @@ function savePersonaFile(name, filename, content) {
 function deletePersona(name) {
   return request(`/api/persona/${encodeURIComponent(name)}`, { method: "DELETE" });
 }
-function fetchTrends(platforms, limit = 12, options = {}) {
-  const params = new URLSearchParams({ platforms, limit: String(limit) });
-  if (options.view) params.set("view", options.view);
-  if (options.force) params.set("force", "1");
-  return request(`/api/trends?${params}`);
-}
-function captureTrendArticle(input) {
-  return request("/api/radar/article", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input)
-  });
-}
-function fetchHandoffPaired() {
-  return request("/api/handoff/status");
-}
-function pushFileToPeer(peerId, path) {
-  return request("/api/handoff/push", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ peerId, path })
-  });
+function fetchTrends(platforms, limit = 12) {
+  return request(`/api/trends?platforms=${encodeURIComponent(platforms)}&limit=${limit}`);
 }
 function fetchSchedule() {
   return request("/api/schedule");
@@ -1363,29 +1324,6 @@ function updateSchedule(id, item) {
 }
 function deleteSchedule(id) {
   return request(`/api/schedule/${encodeURIComponent(id)}`, { method: "DELETE" });
-}
-function fetchCaldavAccounts() {
-  return request("/api/caldav/accounts");
-}
-function putCaldavAccounts(accounts) {
-  return request("/api/caldav/accounts", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ accounts })
-  });
-}
-function discoverCaldav(id, creds) {
-  return request(`/api/caldav/accounts/${encodeURIComponent(id)}/discover`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(creds)
-  });
-}
-function syncCaldav(id) {
-  return request(`/api/caldav/accounts/${encodeURIComponent(id)}/sync`, { method: "POST" });
-}
-function fetchCaldavEvents() {
-  return request("/api/caldav/events");
 }
 function fetchIdeas() {
   return request("/api/ideas");
@@ -1466,11 +1404,11 @@ function publishNow(platform, payload) {
 function publishStatus(platform) {
   return request(`/api/publish/${encodeURIComponent(platform)}/status`);
 }
-function submitPublishSms(platform, code2) {
+function submitPublishSms(platform, code) {
   return request(`/api/publish/${encodeURIComponent(platform)}/sms`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code: code2 })
+    body: JSON.stringify({ code })
   });
 }
 function startLogin(platform, mode = "qr") {
@@ -1499,11 +1437,11 @@ function fetchAnalyticsPlatforms() {
 function fetchAccountAnalytics(platform) {
   return request(`/api/analytics/${encodeURIComponent(platform)}`);
 }
-function submitLoginSms(platform, code2) {
+function submitLoginSms(platform, code) {
   return request(`/api/login/${encodeURIComponent(platform)}/sms`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code: code2 })
+    body: JSON.stringify({ code })
   });
 }
 async function fetchStatus() {
@@ -1792,12 +1730,12 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
             d2 && d2 !== "loading" && d2 !== "error" && (!d2.loggedIn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: "\u8BE5\u5E73\u53F0\u767B\u5F55\u6001\u5DF2\u5931\u6548\uFF0C\u53BB\u8D26\u53F7\u9875\u91CD\u767B \u2192" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-body", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-main", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-id", children: d2.nickname ? `@${d2.nickname}` : d2.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-overview", children: [["\u7C89\u4E1D", "followers"], ["\u83B7\u8D5E", "likes"], ["\u5173\u6CE8", "following"]].map(([label2, key]) => {
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-overview", children: [["\u7C89\u4E1D", "followers"], ["\u83B7\u8D5E", "likes"], ["\u5173\u6CE8", "following"]].map(([label, key]) => {
                   const w2 = d2.growth?.[anaWin] ?? null;
                   const g = w2 ? growthInfo(w2[key]) : null;
                   return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-stat", children: [
                     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-val", children: fmtNum(d2[key]) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-label", children: label2 }),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-label", children: label }),
                     g ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta", style: { color: g.color }, children: g.text }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta ana-muted", children: "\u2014" })
                   ] }, key);
                 }) }),
@@ -1901,226 +1839,11 @@ var ALL_PLATFORMS = [
   { key: "baidu", label: "\u767E\u5EA6" },
   { key: "toutiao", label: "\u5934\u6761" }
 ];
-function sourceOf(label2) {
-  return `${label2}\u70ED\u641C`;
-}
-var fmtClock = (seconds) => seconds === void 0 ? "" : new Date(seconds * 1e3).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
-function sortItems(items, rising) {
-  if (!rising) return items;
-  return [...items].sort((a, b2) => Number(b2.isNew === true) - Number(a.isNew === true) || (b2.delta ?? 0) - (a.delta ?? 0) || (a.rank ?? 0) - (b2.rank ?? 0));
-}
-var fmtAge = (ageMin) => ageMin >= 1440 ? `${Math.floor(ageMin / 1440)}\u5929` : `${Math.floor(ageMin / 60)}h`;
-function TrendBadges({ item }) {
-  const delta = typeof item.delta === "number" && item.delta !== 0 ? item.delta : null;
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_jsx_runtime4.Fragment, { children: [
-    item.isNew && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-badge trend-badge-new", children: "\u65B0" }),
-    delta === null ? null : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-badge trend-badge-${delta > 0 ? "up" : "down"}`, children: delta > 0 ? `\u2191${delta}` : `\u2193${-delta}` }),
-    (item.watch ?? []).slice(0, 2).map((w2) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-badge trend-badge-watch", children: w2 }, w2)),
-    typeof item.ageMin === "number" && item.ageMin >= 60 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-age", children: [
-      "\u9996\u73B0 ",
-      fmtAge(item.ageMin)
-    ] })
-  ] });
-}
-function TrendRow({ row: row2, showPlatform, saved, onSave, onUse }) {
-  const payload = JSON.stringify({
-    title: row2.title,
-    url: row2.url,
-    source: row2.source,
-    platform: row2.platform,
-    rank: row2.rank,
-    hot: row2.hot
-  });
-  const rank = row2.rank ?? 0;
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-item", "data-easel-trend": payload, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${rank > 0 && rank <= 3 ? "top" : ""}`, children: rank || "\xB7" }),
-    showPlatform && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-plat", children: row2.label }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        "a",
-        {
-          className: "trend-title",
-          href: row2.url || void 0,
-          target: "_blank",
-          rel: "noreferrer",
-          title: row2.title,
-          children: row2.title
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-meta", children: [
-        row2.hot && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-hot", children: row2.hot }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(TrendBadges, { item: row2 })
-      ] })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-      "button",
-      {
-        className: "trend-save",
-        title: saved ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
-        onClick: onSave,
-        children: saved ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
-      }
-    ),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "trend-use", title: "\u505A\u6210\u5185\u5BB9", onClick: onUse, children: "\u505A\u5185\u5BB9" })
-  ] });
-}
-function TrendColumn({ group, rising, loading, isSaved, onSave, onUse }) {
-  const items = (0, import_react3.useMemo)(() => sortItems(group.items, rising), [group.items, rising]);
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-col", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
-      group.label,
-      group.stale && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-stale", title: "\u5185\u5BB9\u6765\u81EA\u6700\u8FD1\u4E00\u6B21\u6210\u529F\u5FEB\u7167", children: [
-        "\u79BB\u7EBF",
-        group.at ? ` \xB7 \u4E0A\u6B21 ${fmtClock(group.at)}` : ""
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-count", children: group.items.length })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-list", children: [
-      items.length === 0 && !loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: group.ok === false ? "\u8BE5\u5E73\u53F0\u6682\u65F6\u53D6\u4E0D\u5230\uFF08\u6570\u636E\u6E90\u4E0D\u53EF\u7528\uFF09" : "\u6682\u65E0\u6570\u636E" }),
-      items.map((it, i) => {
-        const row2 = { ...it, platform: group.platform, label: group.label, source: group.source };
-        return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-          TrendRow,
-          {
-            row: row2,
-            saved: isSaved(it.title),
-            onSave: () => onSave(row2),
-            onUse: () => onUse(it.title)
-          },
-          it.url || `${it.title}-${i}`
-        );
-      })
-    ] })
-  ] });
-}
-function WatchCard({ watch, isSaved, onSave, onUse }) {
-  const total = watch.reduce((sum, g) => sum + g.items.length, 0);
-  const newCount = watch.reduce((sum, g) => sum + g.items.filter((it) => it.isNew).length, 0);
-  const shown = watch.slice(0, 5);
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-watch-card", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
-      "\u6211\u7684\u5173\u6CE8",
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-count", children: [
-        "\u547D\u4E2D ",
-        total,
-        " \u6761",
-        newCount > 0 ? ` \xB7 \u65B0 ${newCount}` : ""
-      ] })
-    ] }),
-    shown.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-watch-group", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-watch-key", children: g.keyword }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-watch-items", children: g.items.slice(0, 3).map((it, i) => {
-        const row2 = { ...it, source: sourceOf(it.label) };
-        return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-          TrendRow,
-          {
-            row: row2,
-            showPlatform: true,
-            saved: isSaved(it.title),
-            onSave: () => onSave(row2),
-            onUse: () => onUse(it.title)
-          },
-          it.platform + (it.url || it.title) + i
-        );
-      }) }),
-      g.items.length > 3 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-more", children: [
-        "\u8FD8\u6709 ",
-        g.items.length - 3,
-        " \u6761 \xB7 "
-      ] })
-    ] }, g.keyword)),
-    watch.length > 5 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-more", children: [
-      "\u8FD8\u6709 ",
-      watch.length - 5,
-      " \u4E2A\u8BCD\u547D\u4E2D"
-    ] })
-  ] });
-}
-function ClusterCard({ cluster, isSaved, onSave, onUse }) {
-  const rep = cluster.items[0];
-  const shownLabels = cluster.labels.slice(0, 4);
-  const extra = cluster.labels.length - shownLabels.length;
-  const source = `\u8DE8\u5E73\u53F0\u70ED\u641C\uFF08${cluster.labels.join("/")}\uFF09`;
-  const payload = JSON.stringify({
-    title: cluster.title,
-    url: rep?.url ?? "",
-    source,
-    platform: cluster.platforms.join(","),
-    rank: cluster.bestRank
-  });
-  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-cluster", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-cluster-head", "data-easel-trend": payload, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-          "a",
-          {
-            className: "trend-title",
-            href: rep?.url || void 0,
-            target: "_blank",
-            rel: "noreferrer",
-            title: cluster.title,
-            children: cluster.title
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-meta", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-hot", children: [
-            cluster.platforms.length,
-            " \u5E73\u53F0\u5728\u699C \xB7 \u6700\u9AD8\u7B2C ",
-            cluster.bestRank
-          ] }),
-          cluster.isNew && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-badge trend-badge-new", children: "\u65B0" })
-        ] })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-cluster-actions", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-          "button",
-          {
-            className: "trend-save",
-            title: isSaved(cluster.title) ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
-            onClick: () => onSave({
-              title: cluster.title,
-              url: rep?.url ?? "",
-              hot: "",
-              platform: cluster.platforms.join(","),
-              label: "\u805A\u5408",
-              source
-            }),
-            children: isSaved(cluster.title) ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "trend-use", title: "\u505A\u6210\u5185\u5BB9", onClick: () => onUse(cluster.title), children: "\u505A\u5185\u5BB9" })
-      ] })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-cluster-platforms", children: [
-      shownLabels.map((label2) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-chip", children: label2 }, label2)),
-      extra > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-more", children: [
-        "+",
-        extra
-      ] })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-list", children: cluster.items.map((it, i) => {
-      const row2 = { ...it, source: sourceOf(it.label) };
-      return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        TrendRow,
-        {
-          row: row2,
-          showPlatform: true,
-          saved: isSaved(it.title),
-          onSave: () => onSave(row2),
-          onUse: () => onUse(it.title)
-        },
-        it.platform + (it.url || it.title) + i
-      );
-    }) })
-  ] });
-}
 function RadarSettings({ cfg, onSaved, onClose }) {
   const [draft, setDraft] = (0, import_react3.useState)(() => ({
     ...cfg,
-    sources: cfg.sources.map((s) => ({ ...s })),
-    keywords: [...cfg.keywords ?? []]
+    sources: cfg.sources.map((s) => ({ ...s }))
   }));
-  const [keywordText, setKeywordText] = (0, import_react3.useState)((cfg.keywords ?? []).join(" "));
   const [busy, setBusy] = (0, import_react3.useState)(false);
   const [msg, setMsg] = (0, import_react3.useState)("");
   const [err, setErr] = (0, import_react3.useState)("");
@@ -2142,7 +1865,6 @@ function RadarSettings({ cfg, onSaved, onClose }) {
         ...draft,
         proxyUrl: draft.proxyUrl.trim(),
         cdpEndpoint: draft.cdpEndpoint.trim(),
-        keywords: keywordText.split(/[\s,，、;；]+/).map((s) => s.trim()).filter(Boolean),
         sources: draft.sources.filter((s) => s.name.trim() && s.url.trim()).map((s) => ({ ...s, name: s.name.trim(), url: s.url.trim(), category: s.category.trim() || "\u81EA\u5B9A\u4E49" }))
       };
       await saveRadarConfig(cleaned);
@@ -2168,19 +1890,6 @@ function RadarSettings({ cfg, onSaved, onClose }) {
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "overlay", onClick: onClose, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "modal", style: { width: 620, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
     /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("h3", { style: { margin: "0 0 12px" }, children: "\u70ED\u70B9\u96F7\u8FBE \xB7 \u6E90\u4E0E\u4EE3\u7406" }),
     /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card", style: { padding: 14, marginBottom: 12 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { style: { fontWeight: 600, fontSize: 13, marginBottom: 8 }, children: "\u5173\u6CE8\u8BCD" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        "input",
-        {
-          style: field,
-          placeholder: "\u7528\u9017\u53F7\u6216\u7A7A\u683C\u5206\u9694\uFF0C\u4F8B\u5982\uFF1AAI \u8003\u7814 \u65B0\u80FD\u6E90\u6C7D\u8F66",
-          value: keywordText,
-          onChange: (e) => setKeywordText(e.target.value)
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { style: { fontSize: 11.5, color: "var(--text-tertiary)", marginTop: 6 }, children: "\u547D\u4E2D\u7684\u70ED\u70B9\u4F1A\u5728\u9875\u9762\u9876\u90E8\u300C\u6211\u7684\u5173\u6CE8\u300D\u7F6E\u9876\uFF08\u6700\u591A 20 \u4E2A\uFF0C\u6BCF\u4E2A 1\u201324 \u5B57\uFF09\u3002" })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card", style: { padding: 14, marginBottom: 12 }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { style: { fontWeight: 600, fontSize: 13, marginBottom: 8 }, children: "\u4EE3\u7406" }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", gap: 8, alignItems: "center" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
@@ -2205,7 +1914,7 @@ function RadarSettings({ cfg, onSaved, onClose }) {
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { fontSize: 11.5, color: "var(--text-tertiary)", marginTop: 6 }, children: [
-        "\u5E94\u7528\u4E8E\u70ED\u70B9\u6293\u53D6\u3001\u6B63\u6587\u6293\u53D6\u4E0E\u8D26\u53F7\u767B\u5F55\u3002\u73AF\u5883\u53D8\u91CF EASEL_PROXY=",
+        "\u5E94\u7528\u4E8E\u70ED\u70B9\u6293\u53D6\u4E0E\u8D26\u53F7\u767B\u5F55\u3002\u73AF\u5883\u53D8\u91CF EASEL_PROXY=",
         /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("code", { children: cfg.proxyEnv || "\uFF08\u672A\u8BBE\uFF09" }),
         " \u4F1A\u88AB\u8FD9\u91CC\u7684\u914D\u7F6E\u8986\u76D6\u3002"
       ] })
@@ -2284,16 +1993,12 @@ function RadarSettings({ cfg, onSaved, onClose }) {
 function TrendsPage({ onUseTopic }) {
   const [selected, setSelected] = (0, import_react3.useState)(["weibo", "douyin", "zhihu"]);
   const [groups, setGroups] = (0, import_react3.useState)([]);
-  const [clusters, setClusters] = (0, import_react3.useState)(null);
-  const [watch, setWatch] = (0, import_react3.useState)([]);
   const [loading, setLoading] = (0, import_react3.useState)(false);
   const [error, setError] = (0, import_react3.useState)("");
   const [updated, setUpdated] = (0, import_react3.useState)(0);
   const [saved, setSaved] = (0, import_react3.useState)(/* @__PURE__ */ new Set());
   const [settingsOpen, setSettingsOpen] = (0, import_react3.useState)(false);
   const [radarCfg, setRadarCfg] = (0, import_react3.useState)(null);
-  const [viewMode, setViewMode] = (0, import_react3.useState)("list");
-  const [rising, setRising] = (0, import_react3.useState)(false);
   const [categoryFilter, setCategoryFilter] = (0, import_react3.useState)("");
   const loadRadar = (0, import_react3.useCallback)(() => {
     fetchRadarConfig().then(setRadarCfg).catch(() => {
@@ -2302,63 +2007,35 @@ function TrendsPage({ onUseTopic }) {
   const save = async (title, source) => {
     if (saved.has(title)) return;
     try {
-      await createIdea({ title, source, status: "pending" });
+      await createIdea({ title, source: `${source}\u70ED\u641C`, status: "pending" });
       setSaved((prev) => new Set(prev).add(title));
     } catch {
     }
   };
-  const load = (0, import_react3.useCallback)((pfs, options = {}) => {
+  const load = (0, import_react3.useCallback)((pfs) => {
     setLoading(true);
     setError("");
-    fetchTrends(pfs.join(","), 15, options).then((d2) => {
+    fetchTrends(pfs.join(","), 15).then((d2) => {
       setGroups(d2.trends);
-      setWatch(d2.watch ?? []);
       setUpdated(d2.updated);
-      if (d2.clusters !== void 0) setClusters(d2.clusters);
     }).catch(() => setError("\u70ED\u70B9\u62C9\u53D6\u5931\u8D25\u2014\u2014\u8BF7\u786E\u8BA4\u5DF2\u914D\u7F6E\u5916\u7F51\u4EE3\u7406\uFF08EASEL_PROXY \u6216\u70ED\u70B9\u9875\u8BBE\u7F6E\uFF09\u3002")).finally(() => setLoading(false));
   }, []);
-  (0, import_react3.useEffect)(() => {
+  const loadAll = (0, import_react3.useCallback)(() => {
     load(selected);
     loadRadar();
-  }, []);
+  }, [load, selected, loadRadar]);
   (0, import_react3.useEffect)(() => {
-    const onSaved = (event) => {
-      const title = event.detail?.title;
-      if (title) setSaved((prev) => new Set(prev).add(title));
-    };
-    window.addEventListener("easel:trend-saved", onSaved);
-    return () => window.removeEventListener("easel:trend-saved", onSaved);
+    loadAll();
   }, []);
-  const refreshAll = (0, import_react3.useCallback)(() => {
-    load(selected, viewMode === "cluster" ? { view: "cluster", force: true } : { force: true });
-    loadRadar();
-  }, [load, selected, viewMode, loadRadar]);
   const toggle = (k2) => {
     const next = selected.includes(k2) ? selected.filter((x2) => x2 !== k2) : [...selected, k2];
     setSelected(next);
-    load(next, viewMode === "cluster" ? { view: "cluster" } : {});
+    load(next);
   };
-  const toggleView = () => {
-    const next = viewMode === "list" ? "cluster" : "list";
-    setViewMode(next);
-    if (next === "cluster" && clusters === null) load(selected, { view: "cluster" });
-  };
-  const handlers = (0, import_react3.useMemo)(() => ({
-    isSaved: (title) => saved.has(title),
-    onSave: (row2) => {
-      void save(row2.title, row2.source);
-    },
-    onUse: (title) => {
-      onUseTopic(title);
-    }
-  }), [saved, onUseTopic]);
   const customGroups = groups.filter((g) => g.platform.startsWith("custom:"));
   const categories = Array.from(new Set(customGroups.map((g) => g.category || "\u81EA\u5B9A\u4E49")));
   const visibleCustom = categoryFilter === "" ? customGroups : customGroups.filter((g) => g.category === categoryFilter);
-  const columns = [
-    ...builtinColumns(groups),
-    ...visibleCustom.map((g) => ({ ...g, source: sourceOf(g.label) }))
-  ];
+  const builtinGroups = groups.filter((g) => !g.platform.startsWith("custom:"));
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "page-scroll trends-page", children: [
     /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "page-head", children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { children: [
@@ -2367,49 +2044,34 @@ function TrendsPage({ onUseTopic }) {
           " \u70ED\u70B9\u96F7\u8FBE"
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("p", { className: "page-subtitle", children: [
-          "\u591A\u5E73\u53F0\u5B9E\u65F6\u70ED\u641C\uFF1A\u770B\u5347\u8DCC\u3001\u8DE8\u5E73\u53F0\u540C\u9898\u3001\u76EF\u7740\u4F60\u7684\u5173\u6CE8\u8BCD\uFF0C\u53F3\u952E\u628A\u6B63\u6587\u6293\u8FDB\u5185\u5BB9\u5E93\u4E0E\u9009\u9898\u5E93\u3002",
+          "\u591A\u5E73\u53F0\u5B9E\u65F6\u70ED\u641C\uFF0C\u6311\u503C\u5F97\u8E6D\u7684\u9009\u9898\uFF0C\u4E00\u952E\u4EA4\u7ED9 AI \u505A\u6210\u4F60\u7684\u5185\u5BB9\u3002",
           updated > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { style: { color: "var(--text-tertiary)" }, children: [
             " \xB7 ",
             new Date(updated * 1e3).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
-            " \u6570\u636E"
+            " \u66F4\u65B0"
           ] })
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "btn btn-sm", onClick: () => setSettingsOpen(true), title: "\u5173\u6CE8\u8BCD / \u81EA\u5B9A\u4E49\u6E90 / \u4EE3\u7406 / CDP \u7AEF\u70B9", children: "\u2699 \u6E90\u4E0E\u4EE3\u7406" }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("button", { className: "btn btn-sm", onClick: refreshAll, disabled: loading, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "btn btn-sm", onClick: () => setSettingsOpen(true), title: "\u81EA\u5B9A\u4E49\u6E90 / \u4EE3\u7406 / CDP \u7AEF\u70B9", children: "\u2699 \u6E90\u4E0E\u4EE3\u7406" }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("button", { className: "btn btn-sm", onClick: loadAll, disabled: loading, children: [
           /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconRefresh, { size: 14 }),
           " ",
           loading ? "\u5237\u65B0\u4E2D\u2026" : "\u5237\u65B0"
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-platforms", children: [
-      ALL_PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        "button",
-        {
-          className: `chip ${selected.includes(p.key) ? "active" : ""}`,
-          onClick: () => toggle(p.key),
-          children: p.label
-        },
-        p.key
-      )),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-viewsep" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: `chip ${viewMode === "list" ? "active" : ""}`, onClick: toggleView, children: "\u5206\u5E73\u53F0" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: `chip ${viewMode === "cluster" ? "active" : ""}`, onClick: toggleView, children: "\u805A\u5408" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        "button",
-        {
-          className: `chip ${rising ? "active" : ""}`,
-          onClick: () => setRising(!rising),
-          title: rising ? "\u6062\u590D\u699C\u5355\u539F\u5E8F" : "\u6309\u5347\u5E45\u91CD\u6392\uFF08\u4E0D\u91CD\u65B0\u8BF7\u6C42\uFF09",
-          children: rising ? "\u5347\u6E29 \u2713" : "\u5347\u6E29"
-        }
-      )
-    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-platforms", children: ALL_PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      "button",
+      {
+        className: `chip ${selected.includes(p.key) ? "active" : ""}`,
+        onClick: () => toggle(p.key),
+        children: p.label
+      },
+      p.key
+    )) }),
     error && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "notice-error", children: error }),
-    watch.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(WatchCard, { watch, ...handlers }),
-    viewMode === "list" && categories.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-platforms", style: { marginTop: -4 }, children: [
+    customGroups.length > 0 && categories.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-platforms", style: { marginTop: -4 }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
         "button",
         {
@@ -2428,10 +2090,95 @@ function TrendsPage({ onUseTopic }) {
         c
       ))
     ] }),
-    viewMode === "list" && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-grid", children: columns.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(TrendColumn, { group: g, rising, loading, ...handlers }, g.platform)) }),
-    viewMode === "cluster" && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-grid", children: [
-      (clusters ?? []).map((c) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ClusterCard, { cluster: c, ...handlers }, c.id)),
-      !loading && clusters !== null && clusters.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: "\u5F53\u524D\u6E90\u4E4B\u95F4\u6CA1\u6709\u540C\u9898\u805A\u7C7B\u3002" })
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-grid", children: [
+      visibleCustom.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-col", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
+          g.label,
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-count", children: g.items.length })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-list", children: [
+          g.items.length === 0 && !loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: g.ok === false ? "\u8BE5\u6E90\u6682\u65F6\u53D6\u4E0D\u5230\uFF08\u68C0\u67E5 URL/\u7F51\u7EDC/\u4EE3\u7406\uFF09" : "\u6682\u65E0\u6570\u636E" }),
+          g.items.map((it, i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${i < 3 ? "top" : ""}`, children: i + 1 }),
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+                "a",
+                {
+                  className: "trend-title",
+                  href: it.url || void 0,
+                  target: "_blank",
+                  rel: "noreferrer",
+                  title: it.title,
+                  children: it.title
+                }
+              ),
+              it.hot && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-hot", children: it.hot })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+              "button",
+              {
+                className: "trend-save",
+                title: saved.has(it.title) ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
+                onClick: () => save(it.title, g.label),
+                children: saved.has(it.title) ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+              "button",
+              {
+                className: "trend-use",
+                title: "\u505A\u6210\u5185\u5BB9",
+                onClick: () => onUseTopic(it.title),
+                children: "\u505A\u5185\u5BB9"
+              }
+            )
+          ] }, i))
+        ] })
+      ] }, g.platform)),
+      builtinGroups.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-col", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
+          g.label,
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-count", children: g.items.length })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-list", children: [
+          g.items.length === 0 && !loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: g.ok === false ? "\u8BE5\u5E73\u53F0\u6682\u65F6\u53D6\u4E0D\u5230\uFF08\u6570\u636E\u6E90\u4E0D\u53EF\u7528\uFF09" : "\u6682\u65E0\u6570\u636E" }),
+          g.items.map((it, i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-item", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${i < 3 ? "top" : ""}`, children: i + 1 }),
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+                "a",
+                {
+                  className: "trend-title",
+                  href: it.url || void 0,
+                  target: "_blank",
+                  rel: "noreferrer",
+                  title: it.title,
+                  children: it.title
+                }
+              ),
+              it.hot && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-hot", children: it.hot })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+              "button",
+              {
+                className: "trend-save",
+                title: saved.has(it.title) ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
+                onClick: () => save(it.title, g.label),
+                children: saved.has(it.title) ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+              "button",
+              {
+                className: "trend-use",
+                title: "\u505A\u6210\u5185\u5BB9",
+                onClick: () => onUseTopic(it.title),
+                children: "\u505A\u5185\u5BB9"
+              }
+            )
+          ] }, i))
+        ] })
+      ] }, g.platform))
     ] }),
     settingsOpen && radarCfg && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
       RadarSettings,
@@ -2439,7 +2186,7 @@ function TrendsPage({ onUseTopic }) {
         cfg: radarCfg,
         onSaved: () => {
           loadRadar();
-          load(selected, viewMode === "cluster" ? { view: "cluster" } : {});
+          load(selected);
         },
         onClose: () => setSettingsOpen(false)
       }
@@ -2449,9 +2196,6 @@ function TrendsPage({ onUseTopic }) {
       "\u52A0\u8F7D\u914D\u7F6E\u2026"
     ] }) }) })
   ] });
-}
-function builtinColumns(groups) {
-  return groups.filter((g) => !g.platform.startsWith("custom:")).map((g) => ({ ...g, source: sourceOf(g.label) }));
 }
 
 // src/features/trends.tsx
@@ -2499,8 +2243,728 @@ __export(ideas_exports, {
 
 // src/components/IdeasPage.tsx
 var import_react4 = require("react");
+var import_jsx_runtime6 = require("react/jsx-runtime");
+var COLUMNS = [
+  { key: "pending", label: "\u5F85\u505A", color: "var(--text-tertiary)" },
+  { key: "doing", label: "\u8FDB\u884C\u4E2D", color: "var(--layer-attribute)" },
+  { key: "project", label: "\u5DF2\u7ACB\u9879", color: "var(--accent, #7c5cff)" },
+  { key: "done", label: "\u5DF2\u5B8C\u6210", color: "var(--layer-publish)" }
+];
+var NEXT = { pending: "doing", doing: "done", done: "pending" };
+var EMPTY = { title: "", note: "", source: "", status: "pending" };
+function IdeasPage({ onUseTopic }) {
+  const [ideas, setIdeas] = (0, import_react4.useState)([]);
+  const [form, setForm] = (0, import_react4.useState)(null);
+  const [editId, setEditId] = (0, import_react4.useState)(null);
+  const [toast, setToast] = (0, import_react4.useState)("");
+  const [greenlight, setGreenlight] = (0, import_react4.useState)(null);
+  const [personas, setPersonas] = (0, import_react4.useState)([]);
+  const [personaPick, setPersonaPick] = (0, import_react4.useState)("");
+  const [busy, setBusy] = (0, import_react4.useState)(false);
+  const load = (0, import_react4.useCallback)(() => {
+    fetchIdeas().then(setIdeas).catch(() => {
+    });
+  }, []);
+  (0, import_react4.useEffect)(() => {
+    load();
+  }, [load]);
+  const showToast = (m2) => {
+    setToast(m2);
+    setTimeout(() => setToast(""), 2200);
+  };
+  const byStatus = (0, import_react4.useMemo)(() => {
+    const g = { pending: [], doing: [], project: [], done: [] };
+    for (const it of ideas) (g[it.status] || g.pending).push(it);
+    return g;
+  }, [ideas]);
+  const openNew = () => {
+    setEditId(null);
+    setForm({ ...EMPTY });
+  };
+  const openEdit = (it) => {
+    setEditId(it.id);
+    setForm({ title: it.title, note: it.note, source: it.source, status: it.status });
+  };
+  const save = async () => {
+    if (!form || !form.title.trim()) return;
+    if (editId) await updateIdea(editId, form);
+    else await createIdea(form);
+    setForm(null);
+    setEditId(null);
+    load();
+  };
+  const openGreenlight = async (it) => {
+    setGreenlight(it);
+    setPersonaPick("");
+    const status = await fetchStatus();
+    const list = status?.personas ?? [];
+    setPersonas(list);
+    if (list.length === 1) setPersonaPick(list[0].name);
+  };
+  const confirmGreenlight = async () => {
+    const it = greenlight;
+    if (!it || busy) return;
+    setBusy(true);
+    try {
+      const status = await fetchStatus();
+      const root = status?.projectRoot ?? "";
+      if (!root) throw new Error("\u62FF\u4E0D\u5230\u9879\u76EE\u6839");
+      const { safe } = await projectizeTopic({
+        ideaId: it.id,
+        title: it.title,
+        note: it.note,
+        source: it.source,
+        fallback: it.id,
+        deconstruct: it.deconstruct,
+        persona: personaPick
+      });
+      const ws = getWorkspaceService();
+      if (!ws) throw new Error("\u5DE5\u4F5C\u533A\u670D\u52A1\u4E0D\u53EF\u8FBE");
+      try {
+        await ws.create({ path: `${root.replace(/[\/]+$/, "")}/projects/${safe}/` });
+      } catch {
+      }
+      setGreenlight(null);
+      showToast("\u5DF2\u7ACB\u9879\uFF1A\u8D44\u6599\u5DF2\u88C5\u5165\u9879\u76EE\u5DE5\u4F5C\u533A");
+      load();
+    } catch (error) {
+      showToast(`\u7ACB\u9879\u5931\u8D25\uFF1A${error.message ?? error}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const advance = async (it) => {
+    await updateIdea(it.id, { ...it, status: NEXT[it.status] });
+    load();
+  };
+  const remove = async (it) => {
+    await deleteIdea(it.id);
+    load();
+  };
+  const schedule = async (it) => {
+    const d2 = /* @__PURE__ */ new Date();
+    await createSchedule({ title: it.title, date: d2.toISOString().slice(0, 10), platform: "", time: "", status: "idea", note: it.note });
+    showToast("\u5DF2\u52A0\u5165\u65E5\u5386\uFF08\u4ECA\u5929\uFF09");
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-scroll ideas-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-head", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h1", { className: "page-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconIdea, { size: 21 }),
+          " \u9009\u9898\u5E93"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "page-subtitle", children: "\u6512\u4F4F\u6BCF\u4E00\u4E2A\u7075\u611F\u2014\u2014\u4ECE\u70ED\u70B9\u6536\u85CF\u6216\u624B\u52A8\u65B0\u589E\uFF0C\u63A8\u8FDB\u5230\u300C\u505A\u5185\u5BB9\u300D\u518D\u8FDB\u65E5\u5386\u3002" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: openNew, children: "+ \u65B0\u5EFA\u9009\u9898" })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban", children: COLUMNS.map((col) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-dot", style: { background: col.color } }),
+        col.label,
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-count", children: byStatus[col.key].length })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-list", children: [
+        byStatus[col.key].length === 0 && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban-empty", children: "\u62D6\u70B9\u9009\u9898\u8FDB\u6765\u5427" }),
+        byStatus[col.key].map((it) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "card idea-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-card-actions", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act", title: "\u7F16\u8F91", onClick: () => openEdit(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconEdit, { size: 13 }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act danger", title: "\u5220\u9664", onClick: () => remove(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconTrash, { size: 13 }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-title", children: it.title }),
+          it.source && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "badge", style: { marginTop: 6 }, children: it.source }),
+          it.note && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-note", children: it.note }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-foot", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => onUseTopic(it.title, it.projectDir), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChat, { size: 13 }),
+              " \u505A\u5185\u5BB9"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => schedule(it), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconCalendar, { size: 13 }),
+              " \u6392\u671F"
+            ] }),
+            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "idea-act", title: "\u786E\u8BA4\u7ACB\u9879\uFF1A\u5EFA\u540C\u540D\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599", onClick: () => openGreenlight(it), children: "\u{1F6A9} \u7ACB\u9879" }),
+            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act next", onClick: () => advance(it), title: "\u63A8\u8FDB\u72B6\u6001", children: [
+              COLUMNS.find((c) => c.key === NEXT[it.status])?.label,
+              " ",
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChevron, { size: 12 })
+            ] })
+          ] })
+        ] }, it.id))
+      ] })
+    ] }, col.key)) }),
+    form && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setForm(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { style: { margin: 0 }, children: editId ? "\u7F16\u8F91\u9009\u9898" : "\u65B0\u5EFA\u9009\u9898" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setForm(null), children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u9009\u9898 *" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "input",
+        {
+          className: "field",
+          value: form.title,
+          autoFocus: true,
+          placeholder: "\u60F3\u505A\u7684\u5185\u5BB9 / \u89D2\u5EA6",
+          onChange: (e) => setForm({ ...form, title: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u5907\u6CE8 / \u89D2\u5EA6" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "textarea",
+        {
+          className: "field",
+          style: { minHeight: 70 },
+          value: form.note,
+          onChange: (e) => setForm({ ...form, note: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u6765\u6E90" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "input",
+        {
+          className: "field",
+          value: form.source,
+          placeholder: "\u5982\uFF1A\u5FAE\u535A\u70ED\u641C / \u7075\u611F",
+          onChange: (e) => setForm({ ...form, source: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { style: { display: "flex", gap: 7 }, children: COLUMNS.map((c) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "button",
+        {
+          className: `chip ${form.status === c.key ? "active" : ""}`,
+          onClick: () => setForm({ ...form, status: c.key }),
+          children: c.label
+        },
+        c.key
+      )) }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setForm(null), children: "\u53D6\u6D88" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: !form.title.trim(), children: "\u4FDD\u5B58" })
+      ] })
+    ] }) }),
+    greenlight && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setGreenlight(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h3", { style: { margin: 0 }, children: [
+          "\u7ACB\u9879\uFF1A",
+          greenlight.title.slice(0, 20),
+          greenlight.title.length > 20 ? "\u2026" : ""
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setGreenlight(null), children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("p", { style: { margin: "6px 0 12px", fontSize: 12.5, color: "var(--text-secondary)" }, children: [
+        "\u5C06\u5EFA\u540C\u540D\u9879\u76EE\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599",
+        greenlight.deconstruct ? "\uFF08\u62C6\u89E3\u62A5\u544A\u3001\u5B57\u5E55\u3001\u89C6\u9891\u4E0E\u5173\u952E\u5E27\uFF09" : "",
+        "\uFF0C \u8D26\u6237\u753B\u50CF\u6309\u4E0B\u9009\u62E9\u5E26\u5165\u5FEB\u7167\u3002\u4FA7\u680F\u51FA\u73B0\u540C\u540D\u5DE5\u4F5C\u533A\u5206\u7EC4\u3002"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u8D26\u6237\u753B\u50CF" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("select", { className: "field", value: personaPick, onChange: (e) => setPersonaPick(e.target.value), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("option", { value: "", children: "\u4E0D\u5E26\u5165" }),
+        personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("option", { value: p.name, children: [
+          p.name,
+          p.description ? ` \u2014 ${p.description}` : ""
+        ] }, p.name))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setGreenlight(null), children: "\u53D6\u6D88" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: confirmGreenlight, disabled: busy, children: "\u{1F6A9} \u786E\u8BA4\u7ACB\u9879" })
+      ] })
+    ] }) }),
+    toast && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "toast ok", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "toast-icon", children: "\u2713" }),
+      toast
+    ] })
+  ] });
+}
 
-// ../../../easel-handoff-payload/node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// src/features/ideas.tsx
+var import_jsx_runtime7 = require("react/jsx-runtime");
+var view3 = "ideas";
+var order3 = 32;
+var labels3 = { zh: "\u9009\u9898\u5E93", en: "Ideas" };
+var Icon3 = IconIdea;
+var Component3 = IdeasPage;
+var plugin3 = {
+  name: "easel-view-ideas",
+  inject: ["slots", "easelShell"],
+  apply(ctx) {
+    const { useShellProps, t } = ctx.easelShell;
+    ctx.slots.inject("main", () => ctx.slots.register({
+      name: "main",
+      key: pageKey(view3),
+      inject: () => ({})
+    }, function EaselPage() {
+      const props = useShellProps();
+      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Component3, { ...props }) });
+    }));
+    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
+      name: "sidebar.panellist",
+      id: pageKey(view3),
+      order: order3,
+      locale: "easel.panel",
+      label: () => t(view3)
+    }, function EaselRailIcon({ size }) {
+      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Icon3, { size });
+    }));
+  }
+};
+
+// src/features/calendar.tsx
+var calendar_exports = {};
+__export(calendar_exports, {
+  Component: () => Component4,
+  Icon: () => Icon4,
+  labels: () => labels4,
+  order: () => order4,
+  plugin: () => plugin4,
+  view: () => view4
+});
+
+// src/components/CalendarPage.tsx
+var import_react5 = require("react");
+var import_jsx_runtime8 = require("react/jsx-runtime");
+var STATUS_META = {
+  idea: { label: "\u9009\u9898", color: "var(--text-tertiary)" },
+  draft: { label: "\u8349\u7A3F", color: "var(--layer-plan)" },
+  scheduled: { label: "\u5F85\u53D1", color: "var(--layer-attribute)" },
+  published: { label: "\u5DF2\u53D1", color: "var(--layer-publish)" }
+};
+var EVENT_COLOR = "var(--layer-discover)";
+var EVENT_TYPES = ["\u8282\u65E5", "\u7535\u5546", "\u5E73\u53F0\u6D3B\u52A8", "\u884C\u4E1A"];
+var SOURCE_LABEL = {
+  chat: "\u5BF9\u8BDD\u9875",
+  "publish-page": "\u53D1\u5E03\u9875",
+  manual: "\u624B\u52A8",
+  scheduler: "\u6392\u671F"
+};
+var PLATFORMS = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u5FAE\u4FE1\u89C6\u9891\u53F7", "\u5FEB\u624B", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
+var WEEKDAYS = ["\u4E00", "\u4E8C", "\u4E09", "\u56DB", "\u4E94", "\u516D", "\u65E5"];
+function ymd(d2) {
+  return `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, "0")}-${String(d2.getDate()).padStart(2, "0")}`;
+}
+var kindOf = (it) => it.kind === "event" ? "event" : "content";
+var MAX_VISIBLE = 3;
+var EMPTY2 = {
+  title: "",
+  date: "",
+  platform: "",
+  time: "",
+  status: "idea",
+  note: "",
+  kind: "content",
+  url: "",
+  source: "manual",
+  event_type: "",
+  end_date: ""
+};
+function CalendarPage() {
+  const today = (0, import_react5.useMemo)(() => /* @__PURE__ */ new Date(), []);
+  const [cursor, setCursor] = (0, import_react5.useState)(() => new Date(today.getFullYear(), today.getMonth(), 1));
+  const [items, setItems] = (0, import_react5.useState)([]);
+  const [editing, setEditing] = (0, import_react5.useState)(null);
+  const [form, setForm] = (0, import_react5.useState)(null);
+  const [saving, setSaving] = (0, import_react5.useState)(false);
+  const [filter, setFilter] = (0, import_react5.useState)("all");
+  const [ctx, setCtx] = (0, import_react5.useState)(null);
+  const [showSuggest, setShowSuggest] = (0, import_react5.useState)(true);
+  const [dayView, setDayView] = (0, import_react5.useState)(null);
+  const load = (0, import_react5.useCallback)(() => {
+    fetchSchedule().then(setItems).catch(() => {
+    });
+    fetchScheduleContext(14).then(setCtx).catch(() => {
+    });
+  }, []);
+  (0, import_react5.useEffect)(() => {
+    load();
+  }, [load]);
+  const visible = (0, import_react5.useMemo)(
+    () => filter === "all" ? items : items.filter((it) => kindOf(it) === filter),
+    [items, filter]
+  );
+  const byDate = (0, import_react5.useMemo)(() => {
+    const m2 = {};
+    for (const it of visible) {
+      const bucket = m2[it.date] ||= { events: [], content: [] };
+      (kindOf(it) === "event" ? bucket.events : bucket.content).push(it);
+    }
+    return m2;
+  }, [visible]);
+  const cells = (0, import_react5.useMemo)(() => {
+    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+    const startOffset = (first.getDay() + 6) % 7;
+    const start = new Date(first);
+    start.setDate(1 - startOffset);
+    return Array.from({ length: 42 }, (_2, i) => {
+      const d2 = new Date(start);
+      d2.setDate(start.getDate() + i);
+      return d2;
+    });
+  }, [cursor]);
+  const openNew = (date) => {
+    setDayView(null);
+    setEditing(null);
+    setForm({ ...EMPTY2, date, kind: filter === "event" ? "event" : "content" });
+  };
+  const openEdit = (it) => {
+    setDayView(null);
+    setEditing(it);
+    setForm({ ...EMPTY2, ...it });
+  };
+  const close = () => {
+    setForm(null);
+    setEditing(null);
+  };
+  const renderChip = (it) => {
+    if (kindOf(it) === "event") {
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+        "div",
+        {
+          className: "cal-event is-event",
+          title: it.event_type ? `${it.event_type}\xB7${it.title}` : it.title,
+          style: { ["--ev"]: EVENT_COLOR },
+          onClick: (e) => {
+            e.stopPropagation();
+            openEdit(it);
+          },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-title", children: it.title })
+          ]
+        },
+        it.id
+      );
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+      "div",
+      {
+        className: "cal-event",
+        title: it.title,
+        style: { ["--ev"]: STATUS_META[it.status]?.color || "var(--text-tertiary)" },
+        onClick: (e) => {
+          e.stopPropagation();
+          openEdit(it);
+        },
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-event-title", children: [
+            it.platform ? `[${it.platform}] ` : "",
+            it.title
+          ] }),
+          it.status === "published" && it.source && SOURCE_LABEL[it.source] && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: SOURCE_LABEL[it.source] })
+        ]
+      },
+      it.id
+    );
+  };
+  const save = async () => {
+    if (!form || !form.title.trim() || !form.date) return;
+    setSaving(true);
+    try {
+      if (editing) await updateSchedule(editing.id, form);
+      else await createSchedule(form);
+      close();
+      load();
+    } finally {
+      setSaving(false);
+    }
+  };
+  const remove = async () => {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      await deleteSchedule(editing.id);
+      close();
+      load();
+    } finally {
+      setSaving(false);
+    }
+  };
+  const monthLabel = `${cursor.getFullYear()} \u5E74 ${cursor.getMonth() + 1} \u6708`;
+  const shift = (n) => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + n, 1));
+  const todayStr = ymd(today);
+  const isEvent = form?.kind === "event";
+  const suggestions = ctx?.suggestions || [];
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-scroll calendar-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-head", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h1", { className: "page-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconCalendar, { size: 21 }),
+          " \u5185\u5BB9\u65E5\u5386"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("p", { className: "page-subtitle", children: "\u6BCF\u5929\u5404\u5E73\u53F0\u53D1\u4EC0\u4E48\u4E00\u76EE\u4E86\u7136\u2014\u2014\u53D1\u5E03\u81EA\u52A8\u843D\u5E93\uFF0C\u53EF\u8BB0\u5F55\u6392\u671F\u4E0E\u5E73\u53F0\u6D3B\u52A8\u3002" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-nav", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(-1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { style: { transform: "rotate(180deg)", display: "inline-flex" }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => setCursor(new Date(today.getFullYear(), today.getMonth(), 1)), children: "\u672C\u6708" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-month", children: monthLabel }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) })
+      ] })
+    ] }),
+    showSuggest && suggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { children: [
+          "\u{1F4C5} \u65E5\u5386\u5EFA\u8BAE\uFF08\u8FD1 ",
+          ctx?.window_days ?? 14,
+          " \u5929\uFF09"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setShowSuggest(false), children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("ul", { children: suggestions.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("li", { children: s }, i)) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-legend", children: [
+      Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch", style: { ["--sw"]: m2.color } }),
+        m2.label
+      ] }, k2)),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: EVENT_COLOR } }),
+        "\u5E73\u53F0\u6D3B\u52A8"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-filter", children: ["all", "content", "event"].map((f) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: `chip ${filter === f ? "active" : ""}`, onClick: () => setFilter(f), children: f === "all" ? "\u5168\u90E8" : f === "content" ? "\u5185\u5BB9" : "\u6D3B\u52A8" }, f)) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid-head", children: WEEKDAYS.map((w2) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-wd", children: [
+      "\u5468",
+      w2
+    ] }, w2)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid", children: cells.map((d2, i) => {
+      const ds = ymd(d2);
+      const inMonth = d2.getMonth() === cursor.getMonth();
+      const bucket = byDate[ds] || { events: [], content: [] };
+      const dayItems = [...bucket.events, ...bucket.content];
+      const shown = dayItems.slice(0, MAX_VISIBLE);
+      const hidden = dayItems.length - shown.length;
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+        "div",
+        {
+          className: `cal-cell ${inMonth ? "" : "dim"} ${ds === todayStr ? "today" : ""}`,
+          onClick: () => dayItems.length ? setDayView(ds) : openNew(ds),
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-daynum", children: d2.getDate() }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-events", children: [
+              shown.map(renderChip),
+              hidden > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "cal-more", onClick: (e) => {
+                e.stopPropagation();
+                setDayView(ds);
+              }, children: [
+                "+",
+                hidden,
+                " \u66F4\u591A"
+              ] })
+            ] })
+          ]
+        },
+        i
+      );
+    }) }),
+    dayView && (() => {
+      const b2 = byDate[dayView] || { events: [], content: [] };
+      const list = [...b2.events, ...b2.content];
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: () => setDayView(null), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
+            dayView,
+            "\uFF08",
+            list.length,
+            " \u9879\uFF09"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setDayView(null), children: "\xD7" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-dayview-list", children: list.map(renderChip) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: () => openNew(dayView), children: "+ \u65B0\u589E" }) })
+      ] }) });
+    })(),
+    form && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: close, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
+          editing ? "\u7F16\u8F91" : "\u65B0\u589E",
+          isEvent ? "\u5E73\u53F0\u6D3B\u52A8" : "\u6392\u671F"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: close, children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7C7B\u578B" }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 7 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${!isEvent ? "active" : ""}`,
+            onClick: () => setForm({ ...form, kind: "content" }),
+            children: "\u5185\u5BB9 / \u53D1\u5E03"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${isEvent ? "active" : ""}`,
+            onClick: () => setForm({ ...form, kind: "event", status: "idea" }),
+            children: "\u5E73\u53F0\u6D3B\u52A8"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6807\u9898 *" }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        "input",
+        {
+          className: "field",
+          value: form.title,
+          autoFocus: true,
+          placeholder: isEvent ? "\u6D3B\u52A8/\u8282\u70B9\u540D\u79F0" : "\u8981\u53D1\u4EC0\u4E48\u5185\u5BB9",
+          onChange: (e) => setForm({ ...form, title: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 10 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: isEvent ? "\u5F00\u59CB\u65E5\u671F *" : "\u65E5\u671F *" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              type: "date",
+              value: form.date,
+              onChange: (e) => setForm({ ...form, date: e.target.value })
+            }
+          )
+        ] }),
+        isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7ED3\u675F\u65E5\u671F" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              type: "date",
+              value: form.end_date || "",
+              onChange: (e) => setForm({ ...form, end_date: e.target.value })
+            }
+          )
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { width: 120 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u65F6\u95F4" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              type: "time",
+              value: form.time,
+              onChange: (e) => setForm({ ...form, time: e.target.value })
+            }
+          )
+        ] })
+      ] }),
+      isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6D3B\u52A8\u7C7B\u578B" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: EVENT_TYPES.map((t) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.event_type === t ? "active" : ""}`,
+            onClick: () => setForm({ ...form, event_type: form.event_type === t ? "" : t }),
+            children: t
+          },
+          t
+        )) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5173\u8054\u5E73\u53F0\uFF08\u53EF\u9009\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.platform === p ? "active" : ""}`,
+            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
+            children: p
+          },
+          p
+        )) })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5E73\u53F0" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.platform === p ? "active" : ""}`,
+            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
+            children: p
+          },
+          p
+        )) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", gap: 7 }, children: Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.status === k2 ? "active" : ""}`,
+            onClick: () => setForm({ ...form, status: k2 }),
+            children: m2.label
+          },
+          k2
+        )) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5907\u6CE8" }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        "textarea",
+        {
+          className: "field",
+          style: { minHeight: 60 },
+          value: form.note,
+          onChange: (e) => setForm({ ...form, note: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 18 }, children: [
+        editing ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "btn btn-sm btn-danger", onClick: remove, disabled: saving, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconTrash, { size: 13 }),
+          " \u5220\u9664"
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", {}),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: close, children: "\u53D6\u6D88" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: saving || !form.title.trim() || !form.date, children: saving ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58" })
+        ] })
+      ] })
+    ] }) })
+  ] });
+}
+
+// src/features/calendar.tsx
+var import_jsx_runtime9 = require("react/jsx-runtime");
+var view4 = "calendar";
+var order4 = 33;
+var labels4 = { zh: "\u5185\u5BB9\u65E5\u5386", en: "Calendar" };
+var Icon4 = IconCalendar;
+var Component4 = CalendarPage;
+var plugin4 = {
+  name: "easel-view-calendar",
+  inject: ["slots", "easelShell"],
+  apply(ctx) {
+    const { useShellProps, t } = ctx.easelShell;
+    ctx.slots.inject("main", () => ctx.slots.register({
+      name: "main",
+      key: pageKey(view4),
+      inject: () => ({})
+    }, function EaselPage() {
+      const props = useShellProps();
+      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Component4, { ...props }) });
+    }));
+    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
+      name: "sidebar.panellist",
+      id: pageKey(view4),
+      order: order4,
+      locale: "easel.panel",
+      label: () => t(view4)
+    }, function EaselRailIcon({ size }) {
+      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Icon4, { size });
+    }));
+  }
+};
+
+// src/features/skills.tsx
+var skills_exports = {};
+__export(skills_exports, {
+  Component: () => Component5,
+  Icon: () => Icon5,
+  labels: () => labels5,
+  order: () => order5,
+  plugin: () => plugin5,
+  view: () => view5
+});
+
+// src/components/SkillPage.tsx
+var import_react7 = require("react");
+
+// src/components/SkillDrawer.tsx
+var import_react6 = require("react");
+
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3657,7 +4121,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../../easel-handoff-payload/node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -5640,1653 +6104,6 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
-// src/components/IdeasPage.tsx
-var import_jsx_runtime6 = require("react/jsx-runtime");
-var COLUMNS = [
-  { key: "pending", label: "\u5F85\u505A", color: "var(--text-tertiary)" },
-  { key: "doing", label: "\u8FDB\u884C\u4E2D", color: "var(--layer-attribute)" },
-  { key: "project", label: "\u5DF2\u7ACB\u9879", color: "var(--accent, #7c5cff)" },
-  { key: "done", label: "\u5DF2\u5B8C\u6210", color: "var(--layer-publish)" }
-];
-var NEXT = { pending: "doing", doing: "done", done: "pending" };
-var EMPTY = { title: "", note: "", source: "", status: "pending" };
-function IdeasPage({ onUseTopic }) {
-  const [ideas, setIdeas] = (0, import_react4.useState)([]);
-  const [form, setForm] = (0, import_react4.useState)(null);
-  const [editId, setEditId] = (0, import_react4.useState)(null);
-  const [toast, setToast] = (0, import_react4.useState)("");
-  const [greenlight, setGreenlight] = (0, import_react4.useState)(null);
-  const [personas, setPersonas] = (0, import_react4.useState)([]);
-  const [personaPick, setPersonaPick] = (0, import_react4.useState)("");
-  const [busy, setBusy] = (0, import_react4.useState)(false);
-  const load = (0, import_react4.useCallback)(() => {
-    fetchIdeas().then(setIdeas).catch(() => {
-    });
-  }, []);
-  (0, import_react4.useEffect)(() => {
-    load();
-  }, [load]);
-  const showToast = (m2) => {
-    setToast(m2);
-    setTimeout(() => setToast(""), 2200);
-  };
-  const [bodyPreview, setBodyPreview] = (0, import_react4.useState)(null);
-  const openBody = async (it) => {
-    setBodyPreview({ idea: it, content: "", error: "" });
-    try {
-      const file = await fetchOutputContent(it.bodyPath);
-      const error = file.isBinary ? "\u8BE5\u6587\u4EF6\u4E0D\u662F\u6587\u672C" : "";
-      setBodyPreview({ idea: it, content: error === "" ? file.content : "", error });
-    } catch (e) {
-      setBodyPreview({ idea: it, content: "", error: e instanceof Error ? e.message : "\u6B63\u6587\u8BFB\u53D6\u5931\u8D25\uFF08\u6587\u4EF6\u53EF\u80FD\u5DF2\u5220\u9664\uFF09" });
-    }
-  };
-  const byStatus = (0, import_react4.useMemo)(() => {
-    const g = { pending: [], doing: [], project: [], done: [] };
-    for (const it of ideas) (g[it.status] || g.pending).push(it);
-    return g;
-  }, [ideas]);
-  const openNew = () => {
-    setEditId(null);
-    setForm({ ...EMPTY });
-  };
-  const openEdit = (it) => {
-    setEditId(it.id);
-    setForm({ title: it.title, note: it.note, source: it.source, status: it.status });
-  };
-  const save = async () => {
-    if (!form || !form.title.trim()) return;
-    if (editId) await updateIdea(editId, form);
-    else await createIdea(form);
-    setForm(null);
-    setEditId(null);
-    load();
-  };
-  const openGreenlight = async (it) => {
-    setGreenlight(it);
-    setPersonaPick("");
-    const status = await fetchStatus();
-    const list = status?.personas ?? [];
-    setPersonas(list);
-    if (list.length === 1) setPersonaPick(list[0].name);
-  };
-  const confirmGreenlight = async () => {
-    const it = greenlight;
-    if (!it || busy) return;
-    setBusy(true);
-    try {
-      const status = await fetchStatus();
-      const root = status?.projectRoot ?? "";
-      if (!root) throw new Error("\u62FF\u4E0D\u5230\u9879\u76EE\u6839");
-      const { safe } = await projectizeTopic({
-        ideaId: it.id,
-        title: it.title,
-        note: it.note,
-        source: it.source,
-        fallback: it.id,
-        deconstruct: it.deconstruct,
-        persona: personaPick
-      });
-      const ws = getWorkspaceService();
-      if (!ws) throw new Error("\u5DE5\u4F5C\u533A\u670D\u52A1\u4E0D\u53EF\u8FBE");
-      try {
-        await ws.create({ path: `${root.replace(/[\/]+$/, "")}/projects/${safe}/` });
-      } catch {
-      }
-      setGreenlight(null);
-      showToast("\u5DF2\u7ACB\u9879\uFF1A\u8D44\u6599\u5DF2\u88C5\u5165\u9879\u76EE\u5DE5\u4F5C\u533A");
-      load();
-    } catch (error) {
-      showToast(`\u7ACB\u9879\u5931\u8D25\uFF1A${error.message ?? error}`);
-    } finally {
-      setBusy(false);
-    }
-  };
-  const advance = async (it) => {
-    await updateIdea(it.id, { ...it, status: NEXT[it.status] });
-    load();
-  };
-  const remove = async (it) => {
-    await deleteIdea(it.id);
-    load();
-  };
-  const schedule = async (it) => {
-    const d2 = /* @__PURE__ */ new Date();
-    await createSchedule({ title: it.title, date: d2.toISOString().slice(0, 10), platform: "", time: "", status: "idea", note: it.note });
-    showToast("\u5DF2\u52A0\u5165\u65E5\u5386\uFF08\u4ECA\u5929\uFF09");
-  };
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-scroll ideas-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-head", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h1", { className: "page-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconIdea, { size: 21 }),
-          " \u9009\u9898\u5E93"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "page-subtitle", children: "\u6512\u4F4F\u6BCF\u4E00\u4E2A\u7075\u611F\u2014\u2014\u4ECE\u70ED\u70B9\u6536\u85CF\u6216\u624B\u52A8\u65B0\u589E\uFF0C\u63A8\u8FDB\u5230\u300C\u505A\u5185\u5BB9\u300D\u518D\u8FDB\u65E5\u5386\u3002" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: openNew, children: "+ \u65B0\u5EFA\u9009\u9898" })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban", children: COLUMNS.map((col) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-dot", style: { background: col.color } }),
-        col.label,
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-count", children: byStatus[col.key].length })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-list", children: [
-        byStatus[col.key].length === 0 && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban-empty", children: "\u62D6\u70B9\u9009\u9898\u8FDB\u6765\u5427" }),
-        byStatus[col.key].map((it) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "card idea-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-card-actions", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act", title: "\u7F16\u8F91", onClick: () => openEdit(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconEdit, { size: 13 }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act danger", title: "\u5220\u9664", onClick: () => remove(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconTrash, { size: 13 }) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-title", children: it.title }),
-          it.source && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "badge", style: { marginTop: 6 }, children: it.source }),
-          it.note && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-note", children: it.note }),
-          (it.bodyPath || it.url) && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-links", children: [
-            it.bodyPath && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "idea-link", onClick: () => openBody(it), children: "\u6B63\u6587" }),
-            it.url && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("a", { className: "idea-link", href: it.url, target: "_blank", rel: "noreferrer", children: "\u539F\u6587" })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-foot", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => onUseTopic(it.title, it.projectDir, it.bodyPath), children: [
-              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChat, { size: 13 }),
-              " \u505A\u5185\u5BB9"
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => schedule(it), children: [
-              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconCalendar, { size: 13 }),
-              " \u6392\u671F"
-            ] }),
-            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "idea-act", title: "\u786E\u8BA4\u7ACB\u9879\uFF1A\u5EFA\u540C\u540D\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599", onClick: () => openGreenlight(it), children: "\u{1F6A9} \u7ACB\u9879" }),
-            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act next", onClick: () => advance(it), title: "\u63A8\u8FDB\u72B6\u6001", children: [
-              COLUMNS.find((c) => c.key === NEXT[it.status])?.label,
-              " ",
-              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChevron, { size: 12 })
-            ] })
-          ] })
-        ] }, it.id))
-      ] })
-    ] }, col.key)) }),
-    form && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setForm(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { style: { margin: 0 }, children: editId ? "\u7F16\u8F91\u9009\u9898" : "\u65B0\u5EFA\u9009\u9898" }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setForm(null), children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u9009\u9898 *" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "input",
-        {
-          className: "field",
-          value: form.title,
-          autoFocus: true,
-          placeholder: "\u60F3\u505A\u7684\u5185\u5BB9 / \u89D2\u5EA6",
-          onChange: (e) => setForm({ ...form, title: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u5907\u6CE8 / \u89D2\u5EA6" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "textarea",
-        {
-          className: "field",
-          style: { minHeight: 70 },
-          value: form.note,
-          onChange: (e) => setForm({ ...form, note: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u6765\u6E90" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "input",
-        {
-          className: "field",
-          value: form.source,
-          placeholder: "\u5982\uFF1A\u5FAE\u535A\u70ED\u641C / \u7075\u611F",
-          onChange: (e) => setForm({ ...form, source: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { style: { display: "flex", gap: 7 }, children: COLUMNS.map((c) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "button",
-        {
-          className: `chip ${form.status === c.key ? "active" : ""}`,
-          onClick: () => setForm({ ...form, status: c.key }),
-          children: c.label
-        },
-        c.key
-      )) }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setForm(null), children: "\u53D6\u6D88" }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: !form.title.trim(), children: "\u4FDD\u5B58" })
-      ] })
-    ] }) }),
-    bodyPreview && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setBodyPreview(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 760, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { style: { margin: 0, fontSize: 15 }, children: bodyPreview.idea.title }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setBodyPreview(null), children: "\xD7" })
-      ] }),
-      bodyPreview.error !== "" ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { style: { color: "var(--red)", fontSize: 12.5, padding: "12px 0" }, children: bodyPreview.error }) : /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "div",
-        {
-          className: "idea-body-preview outputs-viewer-content",
-          dangerouslySetInnerHTML: { __html: renderMarkdown(bodyPreview.content) }
-        }
-      )
-    ] }) }),
-    greenlight && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setGreenlight(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h3", { style: { margin: 0 }, children: [
-          "\u7ACB\u9879\uFF1A",
-          greenlight.title.slice(0, 20),
-          greenlight.title.length > 20 ? "\u2026" : ""
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setGreenlight(null), children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("p", { style: { margin: "6px 0 12px", fontSize: 12.5, color: "var(--text-secondary)" }, children: [
-        "\u5C06\u5EFA\u540C\u540D\u9879\u76EE\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599",
-        greenlight.deconstruct ? "\uFF08\u62C6\u89E3\u62A5\u544A\u3001\u5B57\u5E55\u3001\u89C6\u9891\u4E0E\u5173\u952E\u5E27\uFF09" : "",
-        "\uFF0C \u8D26\u6237\u753B\u50CF\u6309\u4E0B\u9009\u62E9\u5E26\u5165\u5FEB\u7167\u3002\u4FA7\u680F\u51FA\u73B0\u540C\u540D\u5DE5\u4F5C\u533A\u5206\u7EC4\u3002"
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u8D26\u6237\u753B\u50CF" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("select", { className: "field", value: personaPick, onChange: (e) => setPersonaPick(e.target.value), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("option", { value: "", children: "\u4E0D\u5E26\u5165" }),
-        personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("option", { value: p.name, children: [
-          p.name,
-          p.description ? ` \u2014 ${p.description}` : ""
-        ] }, p.name))
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setGreenlight(null), children: "\u53D6\u6D88" }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: confirmGreenlight, disabled: busy, children: "\u{1F6A9} \u786E\u8BA4\u7ACB\u9879" })
-      ] })
-    ] }) }),
-    toast && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "toast ok", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "toast-icon", children: "\u2713" }),
-      toast
-    ] })
-  ] });
-}
-
-// src/features/ideas.tsx
-var import_jsx_runtime7 = require("react/jsx-runtime");
-var view3 = "ideas";
-var order3 = 32;
-var labels3 = { zh: "\u9009\u9898\u5E93", en: "Ideas" };
-var Icon3 = IconIdea;
-var Component3 = IdeasPage;
-var plugin3 = {
-  name: "easel-view-ideas",
-  inject: ["slots", "easelShell"],
-  apply(ctx) {
-    const { useShellProps, t } = ctx.easelShell;
-    ctx.slots.inject("main", () => ctx.slots.register({
-      name: "main",
-      key: pageKey(view3),
-      inject: () => ({})
-    }, function EaselPage() {
-      const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Component3, { ...props }) });
-    }));
-    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
-      name: "sidebar.panellist",
-      id: pageKey(view3),
-      order: order3,
-      locale: "easel.panel",
-      label: () => t(view3)
-    }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Icon3, { size });
-    }));
-  }
-};
-
-// src/features/calendar.tsx
-var calendar_exports = {};
-__export(calendar_exports, {
-  Component: () => Component4,
-  Icon: () => Icon4,
-  labels: () => labels4,
-  order: () => order4,
-  plugin: () => plugin4,
-  view: () => view4
-});
-
-// src/components/CalendarPage.tsx
-var import_react5 = require("react");
-
-// src/data/holidays-cn.js
-var HOLIDAYS_CN = {
-  2025: {
-    "2025-01-01": ["\u5143\u65E6", 1],
-    "2025-01-26": ["\u6625\u8282", 0],
-    "2025-01-28": ["\u6625\u8282", 1],
-    "2025-01-29": ["\u6625\u8282", 1],
-    "2025-01-30": ["\u6625\u8282", 1],
-    "2025-01-31": ["\u6625\u8282", 1],
-    "2025-02-01": ["\u6625\u8282", 1],
-    "2025-02-02": ["\u6625\u8282", 1],
-    "2025-02-03": ["\u6625\u8282", 1],
-    "2025-02-04": ["\u6625\u8282", 1],
-    "2025-02-08": ["\u6625\u8282", 0],
-    "2025-04-04": ["\u6E05\u660E\u8282", 1],
-    "2025-04-05": ["\u6E05\u660E\u8282", 1],
-    "2025-04-06": ["\u6E05\u660E\u8282", 1],
-    "2025-04-27": ["\u52B3\u52A8\u8282", 0],
-    "2025-05-01": ["\u52B3\u52A8\u8282", 1],
-    "2025-05-02": ["\u52B3\u52A8\u8282", 1],
-    "2025-05-03": ["\u52B3\u52A8\u8282", 1],
-    "2025-05-04": ["\u52B3\u52A8\u8282", 1],
-    "2025-05-05": ["\u52B3\u52A8\u8282", 1],
-    "2025-05-31": ["\u7AEF\u5348\u8282", 1],
-    "2025-06-01": ["\u7AEF\u5348\u8282", 1],
-    "2025-06-02": ["\u7AEF\u5348\u8282", 1],
-    "2025-09-28": ["\u56FD\u5E86\u8282", 0],
-    "2025-10-01": ["\u56FD\u5E86\u8282", 1],
-    "2025-10-02": ["\u56FD\u5E86\u8282", 1],
-    "2025-10-03": ["\u56FD\u5E86\u8282", 1],
-    "2025-10-04": ["\u56FD\u5E86\u8282", 1],
-    "2025-10-05": ["\u56FD\u5E86\u8282", 1],
-    "2025-10-06": ["\u4E2D\u79CB\u8282", 1],
-    "2025-10-07": ["\u56FD\u5E86\u8282", 1],
-    "2025-10-08": ["\u56FD\u5E86\u8282", 1],
-    "2025-10-11": ["\u56FD\u5E86\u8282", 0]
-  },
-  2026: {
-    "2026-01-01": ["\u5143\u65E6", 1],
-    "2026-01-02": ["\u5143\u65E6", 1],
-    "2026-01-03": ["\u5143\u65E6", 1],
-    "2026-01-04": ["\u5143\u65E6", 0],
-    "2026-02-14": ["\u6625\u8282", 0],
-    "2026-02-15": ["\u6625\u8282", 1],
-    "2026-02-16": ["\u6625\u8282", 1],
-    "2026-02-17": ["\u6625\u8282", 1],
-    "2026-02-18": ["\u6625\u8282", 1],
-    "2026-02-19": ["\u6625\u8282", 1],
-    "2026-02-20": ["\u6625\u8282", 1],
-    "2026-02-21": ["\u6625\u8282", 1],
-    "2026-02-22": ["\u6625\u8282", 1],
-    "2026-02-23": ["\u6625\u8282", 1],
-    "2026-02-28": ["\u6625\u8282", 0],
-    "2026-04-04": ["\u6E05\u660E\u8282", 1],
-    "2026-04-05": ["\u6E05\u660E\u8282", 1],
-    "2026-04-06": ["\u6E05\u660E\u8282", 1],
-    "2026-05-01": ["\u52B3\u52A8\u8282", 1],
-    "2026-05-02": ["\u52B3\u52A8\u8282", 1],
-    "2026-05-03": ["\u52B3\u52A8\u8282", 1],
-    "2026-05-04": ["\u52B3\u52A8\u8282", 1],
-    "2026-05-05": ["\u52B3\u52A8\u8282", 1],
-    "2026-05-09": ["\u52B3\u52A8\u8282", 0],
-    "2026-06-19": ["\u7AEF\u5348\u8282", 1],
-    "2026-06-20": ["\u7AEF\u5348\u8282", 1],
-    "2026-06-21": ["\u7AEF\u5348\u8282", 1],
-    "2026-09-20": ["\u56FD\u5E86\u8282", 0],
-    "2026-09-25": ["\u4E2D\u79CB\u8282", 1],
-    "2026-09-26": ["\u4E2D\u79CB\u8282", 1],
-    "2026-09-27": ["\u4E2D\u79CB\u8282", 1],
-    "2026-10-01": ["\u56FD\u5E86\u8282", 1],
-    "2026-10-02": ["\u56FD\u5E86\u8282", 1],
-    "2026-10-03": ["\u56FD\u5E86\u8282", 1],
-    "2026-10-04": ["\u56FD\u5E86\u8282", 1],
-    "2026-10-05": ["\u56FD\u5E86\u8282", 1],
-    "2026-10-06": ["\u56FD\u5E86\u8282", 1],
-    "2026-10-07": ["\u56FD\u5E86\u8282", 1],
-    "2026-10-10": ["\u56FD\u5E86\u8282", 0]
-  }
-};
-
-// src/lib/lunar.js
-var LUNAR_INFO = [
-  19416,
-  19168,
-  42352,
-  21717,
-  53856,
-  55632,
-  91476,
-  22176,
-  39632,
-  21970,
-  // 1900-1909
-  19168,
-  42422,
-  42192,
-  53840,
-  119381,
-  46400,
-  54944,
-  44450,
-  38320,
-  84343,
-  // 1910-1919
-  18800,
-  42160,
-  46261,
-  27216,
-  27968,
-  109396,
-  11104,
-  38256,
-  21234,
-  18800,
-  // 1920-1929
-  25958,
-  54432,
-  59984,
-  28309,
-  23248,
-  11104,
-  100067,
-  37600,
-  116951,
-  51536,
-  // 1930-1939
-  54432,
-  120998,
-  46416,
-  22176,
-  107956,
-  9680,
-  37584,
-  53938,
-  43344,
-  46423,
-  // 1940-1949
-  27808,
-  46416,
-  86869,
-  19872,
-  42416,
-  83315,
-  21168,
-  43432,
-  59728,
-  27296,
-  // 1950-1959
-  44710,
-  43856,
-  19296,
-  43748,
-  42352,
-  21088,
-  62051,
-  55632,
-  23383,
-  22176,
-  // 1960-1969
-  38608,
-  19925,
-  19152,
-  42192,
-  54484,
-  53840,
-  54616,
-  46400,
-  46752,
-  103846,
-  // 1970-1979
-  38320,
-  18864,
-  43380,
-  42160,
-  45690,
-  27216,
-  27968,
-  44870,
-  43872,
-  38256,
-  // 1980-1989
-  19189,
-  18800,
-  25776,
-  29859,
-  59984,
-  27480,
-  23232,
-  43872,
-  38613,
-  37600,
-  // 1990-1999
-  51552,
-  55636,
-  54432,
-  55888,
-  30034,
-  22176,
-  43959,
-  9680,
-  37584,
-  51893,
-  // 2000-2009
-  43344,
-  46240,
-  47780,
-  44368,
-  21977,
-  19360,
-  42416,
-  86390,
-  21168,
-  43312,
-  // 2010-2019
-  31060,
-  27296,
-  44368,
-  23378,
-  19296,
-  42726,
-  42208,
-  53856,
-  60005,
-  54576,
-  // 2020-2029
-  23200,
-  30371,
-  38608,
-  19195,
-  19152,
-  42192,
-  118966,
-  53840,
-  54560,
-  56645,
-  // 2030-2039
-  46496,
-  22224,
-  21938,
-  18864,
-  42359,
-  42160,
-  43600,
-  111189,
-  27936,
-  44448,
-  // 2040-2049
-  84835,
-  37744,
-  18936,
-  18800,
-  25776,
-  92326,
-  59984,
-  27424,
-  108228,
-  43744,
-  // 2050-2059
-  41696,
-  53987,
-  51552,
-  54615,
-  54432,
-  55888,
-  23893,
-  22176,
-  42704,
-  21972,
-  // 2060-2069
-  21200,
-  43448,
-  43344,
-  46240,
-  46758,
-  44368,
-  21920,
-  43940,
-  42416,
-  21168,
-  // 2070-2079
-  45683,
-  26928,
-  29495,
-  27296,
-  44368,
-  84821,
-  19296,
-  42352,
-  21732,
-  53600,
-  // 2080-2089
-  59752,
-  54560,
-  55968,
-  92838,
-  22224,
-  19168,
-  43476,
-  41680,
-  53584,
-  62034,
-  // 2090-2099
-  54560
-  // 2100
-];
-var BASE_UTC = Date.UTC(1900, 0, 31);
-function lunarLeapMonth(year) {
-  return LUNAR_INFO[year - 1900] & 15;
-}
-function lunarLeapDays(year) {
-  if (lunarLeapMonth(year) === 0) return 0;
-  return LUNAR_INFO[year - 1900] & 65536 ? 30 : 29;
-}
-function lunarMonthDays(year, month) {
-  return LUNAR_INFO[year - 1900] & 65536 >> month ? 30 : 29;
-}
-function lunarYearDays(year) {
-  let sum = 348;
-  for (let mask = 32768; mask > 8; mask >>= 1) sum += LUNAR_INFO[year - 1900] & mask ? 1 : 0;
-  return sum + lunarLeapDays(year);
-}
-function solarToLunar(year, month, day) {
-  if (year < 1900 || year > 2100) return null;
-  let offset = Math.round((Date.UTC(year, month - 1, day) - BASE_UTC) / 864e5);
-  if (offset < 0) return null;
-  let i = 1900;
-  let temp = 0;
-  for (; i < 2101 && offset > 0; i++) {
-    temp = lunarYearDays(i);
-    offset -= temp;
-  }
-  if (offset < 0) {
-    offset += temp;
-    i--;
-  }
-  if (i > 2100) return null;
-  const lunarYear = i;
-  const leap = lunarLeapMonth(lunarYear);
-  let isLeap = false;
-  for (i = 1; i < 13 && offset > 0; i++) {
-    if (leap > 0 && i === leap + 1 && !isLeap) {
-      --i;
-      isLeap = true;
-      temp = lunarLeapDays(lunarYear);
-    } else {
-      temp = lunarMonthDays(lunarYear, i);
-    }
-    if (isLeap && i === leap + 1) isLeap = false;
-    offset -= temp;
-  }
-  if (offset === 0 && leap > 0 && i === leap + 1) {
-    if (isLeap) isLeap = false;
-    else {
-      isLeap = true;
-      --i;
-    }
-  }
-  if (offset < 0) {
-    offset += temp;
-    --i;
-  }
-  return { year: lunarYear, month: i, day: offset + 1, isLeap };
-}
-function qingmingDay(year) {
-  const y2 = year % 100;
-  return Math.floor(y2 * 0.2422 + 4.81) - Math.floor(y2 / 4);
-}
-var LUNAR_FESTIVALS = /* @__PURE__ */ new Map([
-  ["1-1", "\u6625\u8282"],
-  ["1-15", "\u5143\u5BB5\u8282"],
-  ["2-2", "\u9F99\u62AC\u5934"],
-  ["5-5", "\u7AEF\u5348\u8282"],
-  ["7-7", "\u4E03\u5915\u8282"],
-  ["7-15", "\u4E2D\u5143\u8282"],
-  ["8-15", "\u4E2D\u79CB\u8282"],
-  ["9-9", "\u91CD\u9633\u8282"],
-  ["12-8", "\u814A\u516B\u8282"]
-]);
-function ymdOf(year, month, day) {
-  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-function lunarFestivalsFor(year, month) {
-  const result = /* @__PURE__ */ new Map();
-  const first = Date.UTC(year, month - 1, 1);
-  const last = Date.UTC(month === 12 ? year + 1 : year, month === 12 ? 0 : month, 1);
-  for (let t = first; t < last; t += 864e5) {
-    const d2 = new Date(t);
-    const ymd2 = ymdOf(d2.getUTCFullYear(), d2.getUTCMonth() + 1, d2.getUTCDate());
-    const lunar = solarToLunar(d2.getUTCFullYear(), d2.getUTCMonth() + 1, d2.getUTCDate());
-    if (lunar === null) continue;
-    const name = LUNAR_FESTIVALS.get(`${lunar.month}-${lunar.day}`);
-    if (name !== void 0 && !lunar.isLeap) result.set(ymd2, name);
-    const next = new Date(t + 864e5);
-    const nextLunar = solarToLunar(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate());
-    if (nextLunar !== null && nextLunar.month === 1 && nextLunar.day === 1) result.set(ymd2, "\u9664\u5915");
-  }
-  return result;
-}
-
-// src/lib/festivals.js
-var FIXED_FESTIVALS = [
-  ["01-01", "\u5143\u65E6"],
-  ["02-14", "\u60C5\u4EBA\u8282"],
-  ["03-08", "\u5987\u5973\u8282"],
-  ["03-12", "\u690D\u6811\u8282"],
-  ["04-01", "\u611A\u4EBA\u8282"],
-  ["05-01", "\u52B3\u52A8\u8282"],
-  ["05-04", "\u9752\u5E74\u8282"],
-  ["05-12", "\u62A4\u58EB\u8282"],
-  ["06-01", "\u513F\u7AE5\u8282"],
-  ["06-18", "618"],
-  ["07-01", "\u5EFA\u515A\u8282"],
-  ["08-01", "\u5EFA\u519B\u8282"],
-  ["09-10", "\u6559\u5E08\u8282"],
-  ["10-01", "\u56FD\u5E86\u8282"],
-  ["10-31", "\u4E07\u5723\u591C"],
-  ["11-11", "\u53CC11"],
-  ["12-12", "\u53CC12"],
-  ["12-24", "\u5E73\u5B89\u591C"],
-  ["12-25", "\u5723\u8BDE\u8282"]
-];
-var FLOATING_FESTIVALS = [
-  [5, 2, 0, "\u6BCD\u4EB2\u8282"],
-  [6, 3, 0, "\u7236\u4EB2\u8282"],
-  [11, 4, 4, "\u611F\u6069\u8282"]
-];
-function ymdOf2(year, month, day) {
-  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-}
-function floatingDate(year, month, nth, weekday) {
-  const first = new Date(year, month - 1, 1);
-  const offset = (weekday - first.getDay() + 7) % 7;
-  return 1 + offset + (nth - 1) * 7;
-}
-var computedYearCache = /* @__PURE__ */ new Map();
-function computedFestivalsForYear(year) {
-  const cached = computedYearCache.get(year);
-  if (cached) return cached;
-  const map = /* @__PURE__ */ new Map();
-  const push = (ymd2, name, kind) => {
-    const list = map.get(ymd2) || [];
-    if (!list.some((f) => f.name === name)) list.push({ name, kind });
-    map.set(ymd2, list);
-  };
-  for (const [mmdd, name] of FIXED_FESTIVALS) {
-    push(`${year}-${mmdd}`, name, "fixed");
-  }
-  for (const [month, nth, weekday, name] of FLOATING_FESTIVALS) {
-    push(ymdOf2(year, month, floatingDate(year, month, nth, weekday)), name, "fixed");
-  }
-  const qm = ymdOf2(year, 4, qingmingDay(year));
-  if (!(year in HOLIDAYS_CN) || !(qm in HOLIDAYS_CN[year])) push(qm, "\u6E05\u660E\u8282", "lunar");
-  for (let month = 1; month <= 12; month++) {
-    for (const [ymd2, name] of lunarFestivalsFor(year, month)) push(ymd2, name, "lunar");
-  }
-  computedYearCache.set(year, map);
-  return map;
-}
-function festivalsFor(year, month) {
-  const result = /* @__PURE__ */ new Map();
-  const days = new Date(year, month, 0).getDate();
-  const computed = computedFestivalsForYear(year);
-  const statutory = HOLIDAYS_CN[year] || {};
-  for (let day = 1; day <= days; day++) {
-    const ymd2 = ymdOf2(year, month, day);
-    const list = [];
-    const entry = statutory[ymd2];
-    if (entry) list.push({ name: entry[0], kind: entry[1] === 1 ? "statutory-rest" : "statutory-work" });
-    for (const f of computed.get(ymd2) || []) {
-      if (!list.some((x2) => x2.name === f.name)) list.push(f);
-    }
-    if (list.length > 0) result.set(ymd2, list);
-  }
-  return result;
-}
-
-// src/components/CalendarPage.tsx
-var import_jsx_runtime8 = require("react/jsx-runtime");
-var STATUS_META = {
-  idea: { label: "\u9009\u9898", color: "var(--text-tertiary)" },
-  draft: { label: "\u8349\u7A3F", color: "var(--layer-plan)" },
-  scheduled: { label: "\u5F85\u53D1", color: "var(--layer-attribute)" },
-  published: { label: "\u5DF2\u53D1", color: "var(--layer-publish)" }
-};
-var EVENT_COLOR = "var(--layer-discover)";
-var EVENT_TYPES = ["\u8282\u65E5", "\u7535\u5546", "\u5E73\u53F0\u6D3B\u52A8", "\u884C\u4E1A"];
-var SOURCE_LABEL = {
-  chat: "\u5BF9\u8BDD\u9875",
-  "publish-page": "\u53D1\u5E03\u9875",
-  manual: "\u624B\u52A8",
-  scheduler: "\u6392\u671F"
-};
-var PLATFORMS = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u5FAE\u4FE1\u89C6\u9891\u53F7", "\u5FEB\u624B", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
-var WEEKDAYS = ["\u4E00", "\u4E8C", "\u4E09", "\u56DB", "\u4E94", "\u516D", "\u65E5"];
-function ymd(d2) {
-  return `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, "0")}-${String(d2.getDate()).padStart(2, "0")}`;
-}
-var kindOf = (it) => it.kind === "event" ? "event" : "content";
-var MAX_VISIBLE = 3;
-var EMPTY2 = {
-  title: "",
-  date: "",
-  platform: "",
-  time: "",
-  status: "idea",
-  note: "",
-  kind: "content",
-  url: "",
-  source: "manual",
-  event_type: "",
-  end_date: "",
-  repeat: ""
-};
-function eventDates(ev) {
-  const [startDate, startTime] = ev.start.split(" ");
-  const [endDate, endTime] = (ev.end || ev.start).split(" ");
-  const cursor = /* @__PURE__ */ new Date(`${startDate}T00:00`);
-  const last = /* @__PURE__ */ new Date(`${endDate}T00:00`);
-  if (Number.isNaN(cursor.getTime()) || Number.isNaN(last.getTime())) return [startDate];
-  const endInclusive = startTime && endTime ? last : new Date(last.getTime() - 864e5);
-  const dates = [];
-  for (let d2 = new Date(cursor); d2.getTime() <= endInclusive.getTime() && dates.length < 62; d2.setDate(d2.getDate() + 1)) {
-    dates.push(ymd(d2));
-  }
-  return dates.length > 0 ? dates : [startDate];
-}
-function syncAgo(ts) {
-  if (!ts) return "\u672A\u540C\u6B65";
-  const s = Math.floor(Date.now() / 1e3) - ts;
-  if (s < 60) return "\u521A\u521A\u540C\u6B65";
-  if (s < 3600) return `${Math.floor(s / 60)} \u5206\u949F\u524D\u540C\u6B65`;
-  if (s < 86400) return `${Math.floor(s / 3600)} \u5C0F\u65F6\u524D\u540C\u6B65`;
-  return `${Math.floor(s / 86400)} \u5929\u524D\u540C\u6B65`;
-}
-function CalendarPage() {
-  const today = (0, import_react5.useMemo)(() => /* @__PURE__ */ new Date(), []);
-  const [cursor, setCursor] = (0, import_react5.useState)(() => new Date(today.getFullYear(), today.getMonth(), 1));
-  const [items, setItems] = (0, import_react5.useState)([]);
-  const [editing, setEditing] = (0, import_react5.useState)(null);
-  const [form, setForm] = (0, import_react5.useState)(null);
-  const [saving, setSaving] = (0, import_react5.useState)(false);
-  const [filter, setFilter] = (0, import_react5.useState)("all");
-  const [ctx, setCtx] = (0, import_react5.useState)(null);
-  const [showSuggest, setShowSuggest] = (0, import_react5.useState)(true);
-  const [dayView, setDayView] = (0, import_react5.useState)(null);
-  const [caldav, setCaldav] = (0, import_react5.useState)([]);
-  const [caldavByAccount, setCaldavByAccount] = (0, import_react5.useState)({});
-  const [subOpen, setSubOpen] = (0, import_react5.useState)(false);
-  const [subDraft, setSubDraft] = (0, import_react5.useState)(null);
-  const [subCals, setSubCals] = (0, import_react5.useState)(null);
-  const [subBusy, setSubBusy] = (0, import_react5.useState)("");
-  const [subError, setSubError] = (0, import_react5.useState)("");
-  const loadCaldav = (0, import_react5.useCallback)(() => {
-    fetchCaldavAccounts().then((r) => setCaldav(r.accounts)).catch(() => {
-    });
-    fetchCaldavEvents().then((r) => setCaldavByAccount(r.byAccount || {})).catch(() => {
-    });
-  }, []);
-  const load = (0, import_react5.useCallback)(() => {
-    fetchSchedule().then(setItems).catch(() => {
-    });
-    fetchScheduleContext(14).then(setCtx).catch(() => {
-    });
-    loadCaldav();
-  }, [loadCaldav]);
-  (0, import_react5.useEffect)(() => {
-    load();
-  }, [load]);
-  (0, import_react5.useEffect)(() => {
-    let cancelled = false;
-    fetchCaldavAccounts().then(async (r) => {
-      const stale = r.accounts.filter((a) => a.enabled && (!a.syncedAt || Date.now() / 1e3 - a.syncedAt > 86400));
-      if (cancelled || stale.length === 0) return;
-      await Promise.allSettled(stale.map((a) => syncCaldav(a.id)));
-      if (!cancelled) fetchCaldavEvents().then((res) => setCaldavByAccount(res.byAccount || {})).catch(() => {
-      });
-    }).catch(() => {
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  const visible = (0, import_react5.useMemo)(
-    () => filter === "all" ? items : items.filter((it) => kindOf(it) === filter),
-    [items, filter]
-  );
-  const cells = (0, import_react5.useMemo)(() => {
-    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-    const startOffset = (first.getDay() + 6) % 7;
-    const start = new Date(first);
-    start.setDate(1 - startOffset);
-    return Array.from({ length: 42 }, (_2, i) => {
-      const d2 = new Date(start);
-      d2.setDate(start.getDate() + i);
-      return d2;
-    });
-  }, [cursor]);
-  const festivalMap = (0, import_react5.useMemo)(() => {
-    const merged = /* @__PURE__ */ new Map();
-    for (const offset of [-1, 0, 1]) {
-      const anchor = new Date(cursor.getFullYear(), cursor.getMonth() + offset, 1);
-      for (const [ymd2, list] of festivalsFor(anchor.getFullYear(), anchor.getMonth() + 1)) {
-        if (!merged.has(ymd2)) merged.set(ymd2, list);
-      }
-    }
-    return merged;
-  }, [cursor]);
-  const byDate = (0, import_react5.useMemo)(() => {
-    const m2 = {};
-    const push = (date, it) => {
-      const bucket = m2[date] ||= { events: [], content: [] };
-      (kindOf(it) === "event" ? bucket.events : bucket.content).push(it);
-    };
-    for (const it of visible) {
-      if (it.repeat === "yearly" && /^\d{4}-\d{2}-\d{2}$/.test(it.date)) {
-        const [, mo, dd] = it.date.split("-").map(Number);
-        for (const d2 of cells) {
-          if (d2.getMonth() + 1 === mo && d2.getDate() === dd) push(ymd(d2), it);
-        }
-        continue;
-      }
-      push(it.date, it);
-    }
-    return m2;
-  }, [visible, cells]);
-  const caldavByDate = (0, import_react5.useMemo)(() => {
-    const m2 = {};
-    for (const [aid, bucket] of Object.entries(caldavByAccount)) {
-      const acc = caldav.find((a) => a.id === aid);
-      if (!acc || !acc.enabled) continue;
-      for (const ev of bucket.events) {
-        for (const ds of eventDates(ev)) (m2[ds] ||= []).push({ ev, acc });
-      }
-    }
-    return m2;
-  }, [caldavByAccount, caldav]);
-  const [menu, setMenu] = (0, import_react5.useState)(null);
-  (0, import_react5.useEffect)(() => {
-    if (!menu) return;
-    const onKey = (e) => {
-      if (e.key === "Escape") setMenu(null);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [menu]);
-  const openNew = (date) => {
-    setDayView(null);
-    setEditing(null);
-    setForm({ ...EMPTY2, date, kind: filter === "event" ? "event" : "content" });
-  };
-  const openEdit = (it) => {
-    setDayView(null);
-    setEditing(it);
-    setForm({ ...EMPTY2, ...it });
-  };
-  const close = () => {
-    setForm(null);
-    setEditing(null);
-  };
-  const renderChip = (it) => {
-    if (kindOf(it) === "event") {
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-        "div",
-        {
-          className: "cal-event is-event",
-          title: it.event_type ? `${it.event_type}\xB7${it.title}` : it.title,
-          style: { ["--ev"]: EVENT_COLOR },
-          onClick: (e) => {
-            e.stopPropagation();
-            openEdit(it);
-          },
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-title", children: it.title })
-          ]
-        },
-        it.id
-      );
-    }
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-      "div",
-      {
-        className: "cal-event",
-        title: it.title,
-        style: { ["--ev"]: STATUS_META[it.status]?.color || "var(--text-tertiary)" },
-        onClick: (e) => {
-          e.stopPropagation();
-          openEdit(it);
-        },
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-event-title", children: [
-            it.platform ? `[${it.platform}] ` : "",
-            it.title
-          ] }),
-          it.status === "published" && it.source && SOURCE_LABEL[it.source] && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: SOURCE_LABEL[it.source] })
-        ]
-      },
-      it.id
-    );
-  };
-  const renderCaldavChip = (ev, acc, ds) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-    "div",
-    {
-      className: "cal-event is-caldav",
-      title: `${acc.name} \xB7 ${ev.title}`,
-      style: { ["--ev"]: acc.color || "var(--text-tertiary)" },
-      onClick: (e) => {
-        e.stopPropagation();
-        setDayView(ds);
-      },
-      children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-title", children: ev.title })
-      ]
-    },
-    `cd-${ev.uid}-${ev.start}`
-  );
-  const save = async () => {
-    if (!form || !form.title.trim() || !form.date) return;
-    setSaving(true);
-    try {
-      if (editing) await updateSchedule(editing.id, form);
-      else await createSchedule(form);
-      close();
-      load();
-    } finally {
-      setSaving(false);
-    }
-  };
-  const remove = async () => {
-    if (!editing) return;
-    setSaving(true);
-    try {
-      await deleteSchedule(editing.id);
-      close();
-      load();
-    } finally {
-      setSaving(false);
-    }
-  };
-  const monthLabel = `${cursor.getFullYear()} \u5E74 ${cursor.getMonth() + 1} \u6708`;
-  const shift = (n) => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + n, 1));
-  const todayStr = ymd(today);
-  const isEvent = form?.kind === "event";
-  const suggestions = ctx?.suggestions || [];
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-scroll calendar-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-head", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h1", { className: "page-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconCalendar, { size: 21 }),
-          " \u5185\u5BB9\u65E5\u5386"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("p", { className: "page-subtitle", children: "\u6BCF\u5929\u5404\u5E73\u53F0\u53D1\u4EC0\u4E48\u4E00\u76EE\u4E86\u7136\u2014\u2014\u53D1\u5E03\u81EA\u52A8\u843D\u5E93\uFF0C\u53EF\u8BB0\u5F55\u6392\u671F\u4E0E\u5E73\u53F0\u6D3B\u52A8\u3002" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-nav", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(-1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { style: { transform: "rotate(180deg)", display: "inline-flex" }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => setCursor(new Date(today.getFullYear(), today.getMonth(), 1)), children: "\u672C\u6708" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-month", children: monthLabel }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => {
-          setSubOpen(true);
-          setSubError("");
-        }, children: "\u{1F4C5} \u8BA2\u9605" })
-      ] })
-    ] }),
-    showSuggest && suggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { children: [
-          "\u{1F4C5} \u65E5\u5386\u5EFA\u8BAE\uFF08\u8FD1 ",
-          ctx?.window_days ?? 14,
-          " \u5929\uFF09"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setShowSuggest(false), children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("ul", { children: suggestions.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("li", { children: s }, i)) })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-legend", children: [
-      Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch", style: { ["--sw"]: m2.color } }),
-        m2.label
-      ] }, k2)),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: EVENT_COLOR } }),
-        "\u5E73\u53F0\u6D3B\u52A8"
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival rest", children: "\u4F11" }),
-        "\u6CD5\u5B9A\u8282\u5047\u65E5"
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival work", children: "\u73ED" }),
-        "\u8C03\u4F11\u4E0A\u73ED"
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: "var(--cal-festival)" } }),
-        "\u8282\u65E5"
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-filter", children: ["all", "content", "event"].map((f) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: `chip ${filter === f ? "active" : ""}`, onClick: () => setFilter(f), children: f === "all" ? "\u5168\u90E8" : f === "content" ? "\u5185\u5BB9" : "\u6D3B\u52A8" }, f)) })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid-head", children: WEEKDAYS.map((w2) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-wd", children: [
-      "\u5468",
-      w2
-    ] }, w2)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid", children: cells.map((d2, i) => {
-      const ds = ymd(d2);
-      const inMonth = d2.getMonth() === cursor.getMonth();
-      const bucket = byDate[ds] || { events: [], content: [] };
-      const dayChips = [
-        ...bucket.events.map((it) => ({ kind: "item", it })),
-        ...(caldavByDate[ds] || []).map(({ ev, acc }) => ({ kind: "caldav", ev, acc })),
-        ...bucket.content.map((it) => ({ kind: "item", it }))
-      ];
-      const shown = dayChips.slice(0, MAX_VISIBLE);
-      const hidden = dayChips.length - shown.length;
-      const fests = festivalMap.get(ds) || [];
-      const rest = fests.find((f) => f.kind === "statutory-rest");
-      const work = fests.find((f) => f.kind === "statutory-work");
-      const allFestNames = fests.filter((f) => f.kind !== "statutory-rest" && f.kind !== "statutory-work").map((f) => f.name);
-      const festNames = allFestNames.slice(0, 2);
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-        "div",
-        {
-          className: `cal-cell ${inMonth ? "" : "dim"} ${ds === todayStr ? "today" : ""}`,
-          onClick: () => dayChips.length ? setDayView(ds) : openNew(ds),
-          onContextMenu: (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setMenu({ x: e.clientX, y: e.clientY, ds });
-          },
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-daynum-row", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-daynum", children: d2.getDate() }),
-              rest && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival rest", title: rest.name, children: "\u4F11" }),
-              work && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival work", title: work.name, children: "\u73ED" })
-            ] }),
-            festNames.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-festnames", title: allFestNames.join(" \xB7 "), children: festNames.join(" \xB7 ") }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-events", children: [
-              shown.map((chip) => chip.kind === "item" ? renderChip(chip.it) : renderCaldavChip(chip.ev, chip.acc, ds)),
-              hidden > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "cal-more", onClick: (e) => {
-                e.stopPropagation();
-                setDayView(ds);
-              }, children: [
-                "+",
-                hidden,
-                " \u66F4\u591A"
-              ] })
-            ] })
-          ]
-        },
-        i
-      );
-    }) }),
-    menu && (() => {
-      const customFests = (byDate[menu.ds]?.events || []).filter((it) => it.event_type === "\u8282\u65E5" && it.source === "manual");
-      const openWith = (preset) => {
-        setMenu(null);
-        setDayView(null);
-        setEditing(null);
-        setForm({ ...EMPTY2, date: menu.ds, ...preset });
-      };
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-        "div",
-        {
-          className: "overlay is-menu",
-          onClick: () => setMenu(null),
-          onContextMenu: (e) => {
-            e.preventDefault();
-            setMenu(null);
-          },
-          children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-            "div",
-            {
-              className: "cal-menu",
-              style: { left: Math.min(menu.x, window.innerWidth - 200), top: Math.min(menu.y, window.innerHeight - 170) },
-              onClick: (e) => e.stopPropagation(),
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { onClick: () => openWith({ kind: "event", event_type: "\u8282\u65E5", status: "idea" }), children: "\u{1F389} \u6DFB\u52A0\u8282\u65E5\u2026" }),
-                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { onClick: () => openWith({ kind: "event", status: "idea" }), children: "\u{1F4E3} \u6DFB\u52A0\u5E73\u53F0\u6D3B\u52A8\u2026" }),
-                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { onClick: () => openWith({ kind: "content" }), children: "\u{1F4DD} \u6DFB\u52A0\u6392\u671F\u2026" }),
-                customFests.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-menu-sep" }),
-                customFests.map((it) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-                  "button",
-                  {
-                    className: "cal-menu-del",
-                    title: it.repeat === "yearly" ? "\u6BCF\u5E74\u91CD\u590D" : void 0,
-                    onClick: async () => {
-                      setMenu(null);
-                      await deleteSchedule(it.id);
-                      load();
-                    },
-                    children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { children: [
-                        "\u5220\u9664\u300C",
-                        it.title,
-                        "\u300D"
-                      ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconTrash, { size: 13 })
-                    ]
-                  },
-                  it.id
-                ))
-              ]
-            }
-          )
-        }
-      );
-    })(),
-    dayView && (() => {
-      const b2 = byDate[dayView] || { events: [], content: [] };
-      const list = [...b2.events, ...b2.content];
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: () => setDayView(null), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
-            dayView,
-            "\uFF08",
-            list.length,
-            " \u9879\uFF09"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setDayView(null), children: "\xD7" })
-        ] }),
-        (festivalMap.get(dayView) || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-fest-day", children: (festivalMap.get(dayView) || []).map((f, i) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: `cal-festival-tag is-${f.kind}`, children: f.name }, i)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-dayview-list", children: [
-          list.map(renderChip),
-          (caldavByDate[dayView] || []).map(({ ev, acc }) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-            "div",
-            {
-              className: "cal-event is-caldav",
-              title: ev.location ? `${acc.name} \xB7 ${ev.location}` : acc.name,
-              style: { ["--ev"]: acc.color || "var(--text-tertiary)" },
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
-                /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-event-title", children: [
-                  ev.allDay ? "\u5168\u5929" : ev.start.slice(11, 16),
-                  " \xB7 ",
-                  ev.title,
-                  ev.location ? ` @${ev.location}` : ""
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: acc.name })
-              ]
-            },
-            `cd-${ev.uid}-${ev.start}`
-          ))
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: () => openNew(dayView), children: "+ \u65B0\u589E" }) })
-      ] }) });
-    })(),
-    subOpen && (() => {
-      const newDraft = () => ({
-        id: Math.random().toString(16).slice(2, 14),
-        name: "",
-        url: "",
-        username: "",
-        password: "",
-        enabled: true,
-        calendars: []
-      });
-      const startEdit = (acc) => {
-        setSubDraft(acc ? { ...acc, password: "" } : newDraft());
-        setSubCals(null);
-        setSubError("");
-      };
-      const persist = async (accounts) => {
-        setSubBusy("save");
-        setSubError("");
-        try {
-          await putCaldavAccounts(accounts);
-          loadCaldav();
-        } catch (e) {
-          setSubError(e.message || String(e));
-        } finally {
-          setSubBusy("");
-        }
-      };
-      const syncOne = async (acc) => {
-        setSubBusy(acc.id);
-        setSubError("");
-        try {
-          await syncCaldav(acc.id);
-          loadCaldav();
-        } catch (e) {
-          setSubError(e.message || String(e));
-        } finally {
-          setSubBusy("");
-        }
-      };
-      const saveDraft = async () => {
-        if (!subDraft) return;
-        await persist(caldav.some((a) => a.id === subDraft.id) ? caldav.map((a) => a.id === subDraft.id ? subDraft : a) : [...caldav, subDraft]);
-        setSubDraft(null);
-        setSubCals(null);
-      };
-      const probe = async () => {
-        if (!subDraft) return;
-        setSubBusy("probe");
-        setSubError("");
-        try {
-          await putCaldavAccounts(caldav.some((a) => a.id === subDraft.id) ? caldav.map((a) => a.id === subDraft.id ? subDraft : a) : [...caldav, subDraft]);
-          const res = await discoverCaldav(subDraft.id, {
-            url: subDraft.url,
-            username: subDraft.username,
-            password: subDraft.password || void 0
-          });
-          setSubCals(res.calendars);
-          loadCaldav();
-        } catch (e) {
-          setSubError(e.message || String(e));
-        } finally {
-          setSubBusy("");
-        }
-      };
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: () => {
-        setSubOpen(false);
-        setSubDraft(null);
-        setSubCals(null);
-      }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 540, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("h3", { style: { margin: 0 }, children: "\u{1F4C5} \u8BA2\u9605\u65E5\u5386\uFF08CalDAV\uFF09" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => {
-            setSubOpen(false);
-            setSubDraft(null);
-            setSubCals(null);
-          }, children: "\xD7" })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("p", { className: "cal-sub-hint", children: "\u53EA\u8BFB\u5BFC\u5165 iCloud / Fastmail / Nextcloud \u7B49\u6807\u51C6 CalDAV \u65E5\u5386\u3002\u586B\u670D\u52A1\u5668\u5730\u5740\u53EF\u81EA\u52A8\u53D1\u73B0\uFF0C\u4E5F\u53EF\u76F4\u63A5\u7C98\u8D34\u65E5\u5386 URL\uFF1B \u5BC6\u7801\u7528\u5404\u670D\u52A1\u7684\u300C\u5E94\u7528\u4E13\u7528\u5BC6\u7801\u300D\u3002Google \u65E5\u5386\u9700 OAuth\uFF0C\u6682\u4E0D\u652F\u6301\u3002" }),
-        caldav.map((acc) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-row", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-sub-dot", style: { ["--ev"]: acc.color || "var(--text-tertiary)" } }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-main", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { fontWeight: 600 }, children: [
-              acc.name,
-              !acc.enabled && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: "\uFF08\u5DF2\u505C\u7528\uFF09" })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-url", children: [
-              acc.url,
-              acc.username ? ` \xB7 ${acc.username}` : ""
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-src", children: [
-              syncAgo(acc.syncedAt),
-              caldavByAccount[acc.id] ? ` \xB7 ${caldavByAccount[acc.id].events.length} \u6761\u4E8B\u4EF6` : "",
-              acc.calendars.length > 0 ? ` \xB7 ${acc.calendars.length} \u4E2A\u65E5\u5386` : ""
-            ] })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "cal-repeat", style: { margin: 0 }, title: "\u542F\u7528/\u505C\u7528", children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              type: "checkbox",
-              checked: acc.enabled,
-              onChange: (e) => persist(caldav.map((a) => a.id === acc.id ? { ...a, enabled: e.target.checked } : a))
-            }
-          ) }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", disabled: subBusy !== "", onClick: () => syncOne(acc), children: subBusy === acc.id ? "\u540C\u6B65\u4E2D\u2026" : "\u540C\u6B65" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => startEdit(acc), children: "\u7F16\u8F91" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-danger", onClick: () => persist(caldav.filter((a) => a.id !== acc.id)), children: "\u5220\u9664" })
-        ] }, acc.id)),
-        !subDraft && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => startEdit(null), children: "+ \u6DFB\u52A0\u8D26\u53F7" }),
-        subDraft && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-form", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u540D\u79F0" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              value: subDraft.name,
-              placeholder: "iCloud / \u516C\u53F8\u65E5\u5386\u2026",
-              onChange: (e) => setSubDraft({ ...subDraft, name: e.target.value })
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u670D\u52A1\u5668\u6216\u65E5\u5386 URL *" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              value: subDraft.url,
-              autoFocus: true,
-              placeholder: "https://caldav.icloud.com/ \u6216\u5B8C\u6574\u65E5\u5386 URL",
-              onChange: (e) => setSubDraft({ ...subDraft, url: e.target.value })
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 10 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7528\u6237\u540D" }),
-              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-                "input",
-                {
-                  className: "field",
-                  value: subDraft.username,
-                  onChange: (e) => setSubDraft({ ...subDraft, username: e.target.value })
-                }
-              )
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5E94\u7528\u4E13\u7528\u5BC6\u7801" }),
-              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-                "input",
-                {
-                  className: "field",
-                  type: "password",
-                  value: subDraft.password,
-                  placeholder: caldav.some((a) => a.id === subDraft.id) ? "\u5DF2\u4FDD\u5B58\uFF08\u7559\u7A7A\u4E0D\u6539\uFF09" : "",
-                  onChange: (e) => setSubDraft({ ...subDraft, password: e.target.value })
-                }
-              )
-            ] })
-          ] }),
-          subCals !== null && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("label", { className: "field-label", children: [
-              "\u9009\u62E9\u8981\u8BA2\u9605\u7684\u65E5\u5386\uFF08",
-              subCals.length,
-              " \u4E2A\uFF1B\u4E0D\u9009\u5219\u8BA2\u9605\u586B\u5199\u7684 URL\uFF09"
-            ] }),
-            subCals.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-src", children: "\u672A\u53D1\u73B0\u65E5\u5386" }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: subCals.map((cal) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-              "button",
-              {
-                className: `chip ${subDraft.calendars.includes(cal.href) ? "active" : ""}`,
-                title: cal.href,
-                onClick: () => setSubDraft({
-                  ...subDraft,
-                  calendars: subDraft.calendars.includes(cal.href) ? subDraft.calendars.filter((h) => h !== cal.href) : [...subDraft.calendars, cal.href]
-                }),
-                children: cal.displayname
-              },
-              cal.href
-            )) })
-          ] }),
-          subError && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-sub-error", children: subError }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 14 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => {
-              setSubDraft(null);
-              setSubCals(null);
-            }, children: "\u53D6\u6D88" }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", disabled: subBusy !== "" || !/^https?:\/\//i.test(subDraft.url), onClick: probe, children: subBusy === "probe" ? "\u63A2\u6D4B\u4E2D\u2026" : "\u63A2\u6D4B\u65E5\u5386" }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", disabled: subBusy !== "" || !subDraft.url.trim(), onClick: saveDraft, children: subBusy === "save" ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58" })
-          ] })
-        ] })
-      ] }) });
-    })(),
-    form && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: close, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
-          editing ? "\u7F16\u8F91" : "\u65B0\u589E",
-          isEvent ? "\u5E73\u53F0\u6D3B\u52A8" : "\u6392\u671F"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: close, children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7C7B\u578B" }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 7 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${!isEvent ? "active" : ""}`,
-            onClick: () => setForm({ ...form, kind: "content" }),
-            children: "\u5185\u5BB9 / \u53D1\u5E03"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${isEvent ? "active" : ""}`,
-            onClick: () => setForm({ ...form, kind: "event", status: "idea" }),
-            children: "\u5E73\u53F0\u6D3B\u52A8"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6807\u9898 *" }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-        "input",
-        {
-          className: "field",
-          value: form.title,
-          autoFocus: true,
-          placeholder: isEvent ? "\u6D3B\u52A8/\u8282\u70B9\u540D\u79F0" : "\u8981\u53D1\u4EC0\u4E48\u5185\u5BB9",
-          onChange: (e) => setForm({ ...form, title: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 10 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: isEvent ? "\u5F00\u59CB\u65E5\u671F *" : "\u65E5\u671F *" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              type: "date",
-              value: form.date,
-              onChange: (e) => setForm({ ...form, date: e.target.value })
-            }
-          )
-        ] }),
-        isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7ED3\u675F\u65E5\u671F" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              type: "date",
-              value: form.end_date || "",
-              onChange: (e) => setForm({ ...form, end_date: e.target.value })
-            }
-          )
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { width: 120 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u65F6\u95F4" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              type: "time",
-              value: form.time,
-              onChange: (e) => setForm({ ...form, time: e.target.value })
-            }
-          )
-        ] })
-      ] }),
-      isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6D3B\u52A8\u7C7B\u578B" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: EVENT_TYPES.map((t) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.event_type === t ? "active" : ""}`,
-            onClick: () => setForm({ ...form, event_type: form.event_type === t ? "" : t }),
-            children: t
-          },
-          t
-        )) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5173\u8054\u5E73\u53F0\uFF08\u53EF\u9009\uFF09" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.platform === p ? "active" : ""}`,
-            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
-            children: p
-          },
-          p
-        )) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("label", { className: "cal-repeat", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              type: "checkbox",
-              checked: form.repeat === "yearly",
-              onChange: (e) => setForm({ ...form, repeat: e.target.checked ? "yearly" : "" })
-            }
-          ),
-          "\u6BCF\u5E74\u91CD\u590D\uFF08\u540C\u6708\u540C\u65E5\u81EA\u52A8\u51FA\u73B0\u5728\u6BCF\u4E00\u5E74\uFF09"
-        ] })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5E73\u53F0" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.platform === p ? "active" : ""}`,
-            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
-            children: p
-          },
-          p
-        )) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", gap: 7 }, children: Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.status === k2 ? "active" : ""}`,
-            onClick: () => setForm({ ...form, status: k2 }),
-            children: m2.label
-          },
-          k2
-        )) })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5907\u6CE8" }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-        "textarea",
-        {
-          className: "field",
-          style: { minHeight: 60 },
-          value: form.note,
-          onChange: (e) => setForm({ ...form, note: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 18 }, children: [
-        editing ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "btn btn-sm btn-danger", onClick: remove, disabled: saving, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconTrash, { size: 13 }),
-          " \u5220\u9664"
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", {}),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: close, children: "\u53D6\u6D88" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: saving || !form.title.trim() || !form.date, children: saving ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58" })
-        ] })
-      ] })
-    ] }) })
-  ] });
-}
-
-// src/features/calendar.tsx
-var import_jsx_runtime9 = require("react/jsx-runtime");
-var view4 = "calendar";
-var order4 = 33;
-var labels4 = { zh: "\u5185\u5BB9\u65E5\u5386", en: "Calendar" };
-var Icon4 = IconCalendar;
-var Component4 = CalendarPage;
-var plugin4 = {
-  name: "easel-view-calendar",
-  inject: ["slots", "easelShell"],
-  apply(ctx) {
-    const { useShellProps, t } = ctx.easelShell;
-    ctx.slots.inject("main", () => ctx.slots.register({
-      name: "main",
-      key: pageKey(view4),
-      inject: () => ({})
-    }, function EaselPage() {
-      const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Component4, { ...props }) });
-    }));
-    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
-      name: "sidebar.panellist",
-      id: pageKey(view4),
-      order: order4,
-      locale: "easel.panel",
-      label: () => t(view4)
-    }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Icon4, { size });
-    }));
-  }
-};
-
-// src/features/skills.tsx
-var skills_exports = {};
-__export(skills_exports, {
-  Component: () => Component5,
-  Icon: () => Icon5,
-  labels: () => labels5,
-  order: () => order5,
-  plugin: () => plugin5,
-  view: () => view5
-});
-
-// src/components/SkillPage.tsx
-var import_react7 = require("react");
-
-// src/components/SkillDrawer.tsx
-var import_react6 = require("react");
-
 // src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
   "ai-image-gen": "AI \u751F\u56FE",
@@ -7941,8 +6758,8 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   const remove = (0, import_react8.useCallback)(async (node, e) => {
     e.stopPropagation();
     const isDir = node.type === "dir";
-    const label2 = isDir ? `\u9879\u76EE/\u6587\u4EF6\u5939\u300C${node.meta?.title || node.name}\u300D\u53CA\u5176\u5168\u90E8\u5185\u5BB9` : `\u6587\u4EF6\u300C${node.name}\u300D`;
-    if (!window.confirm(`\u786E\u5B9A\u5220\u9664${label2}\uFF1F
+    const label = isDir ? `\u9879\u76EE/\u6587\u4EF6\u5939\u300C${node.meta?.title || node.name}\u300D\u53CA\u5176\u5168\u90E8\u5185\u5BB9` : `\u6587\u4EF6\u300C${node.name}\u300D`;
+    if (!window.confirm(`\u786E\u5B9A\u5220\u9664${label}\uFF1F
 \u6B64\u64CD\u4F5C\u4E0D\u53EF\u6062\u590D\u3002`)) return;
     try {
       await deleteOutput(node.path);
@@ -8422,7 +7239,7 @@ function PublishPage({ persona }) {
     setPublishing(false);
     showToast("\u53D1\u5E03\u6D41\u7A0B\u7ED3\u675F\uFF0C\u89C1\u5404\u5E73\u53F0\u5361\u7247\u72B6\u6001");
   };
-  const pollAsyncPublish = (key, label2) => new Promise((resolve) => {
+  const pollAsyncPublish = (key, label) => new Promise((resolve) => {
     const started = Date.now();
     const iv = setInterval(async () => {
       if (Date.now() - started > 15 * 60 * 1e3) {
@@ -8439,7 +7256,7 @@ function PublishPage({ persona }) {
         return;
       }
       if (s.state === "sms_required" || s.state === "verifying") {
-        setPubSms({ platform: key, name: label2, state: s.state, message: s.message });
+        setPubSms({ platform: key, name: label, state: s.state, message: s.message });
         setPub((r) => ({ ...r, [key]: { status: "publishing", msg: s.message || "\u9700\u77ED\u4FE1\u9A8C\u8BC1" } }));
       } else if (s.state === "success") {
         clearInterval(iv);
@@ -8458,14 +7275,14 @@ function PublishPage({ persona }) {
   });
   const submitPubSms = async () => {
     if (!pubSms) return;
-    const code2 = pubSmsCode.replace(/\D/g, "");
-    if (code2.length < 4) {
+    const code = pubSmsCode.replace(/\D/g, "");
+    if (code.length < 4) {
       showToast("\u9A8C\u8BC1\u7801\u5E94\u4E3A 4-6 \u4F4D\u6570\u5B57");
       return;
     }
     setPubSmsBusy(true);
     try {
-      await submitPublishSms(pubSms.platform, code2);
+      await submitPublishSms(pubSms.platform, code);
       setPubSmsCode("");
       setPubSms((p) => p && { ...p, state: "verifying", message: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" });
     } catch (e) {
@@ -8899,19 +7716,19 @@ function DeconstructSources() {
       setSaving(false);
     }
   };
-  const badge2 = (row2) => {
-    if (!row2.authRequired) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u514D\u767B\u5F55" });
-    if (row2.loggedIn) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u5DF2\u626B\u7801\u767B\u5F55" });
-    if (row2.cookieSet) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "cookie \u5DF2\u914D\u7F6E" });
+  const badge2 = (row) => {
+    if (!row.authRequired) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u514D\u767B\u5F55" });
+    if (row.loggedIn) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u5DF2\u626B\u7801\u767B\u5F55" });
+    if (row.cookieSet) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "cookie \u5DF2\u914D\u7F6E" });
     return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--amber)" }, children: "\u672A\u914D\u7F6E" });
   };
   return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "card", style: { marginTop: 16, padding: 14 }, children: [
     /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "account-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "account-card-name", children: "\u62C6\u89E3\u6570\u636E\u6E90\uFF08\u7206\u6B3E\u62C6\u89E3\u7684\u89C6\u9891\u6293\u53D6\u767B\u5F55\u6001\uFF09" }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }, children: rows.map((row2) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 10, alignItems: "baseline", fontSize: 13, flexWrap: "wrap" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("b", { style: { minWidth: 52 }, children: NAMES[row2.platform] ?? row2.platform }),
-      badge2(row2),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { color: "var(--text-secondary)", fontSize: 12.5 }, children: HINTS[row2.platform] ?? "" })
-    ] }, row2.platform)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }, children: rows.map((row) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 10, alignItems: "baseline", fontSize: 13, flexWrap: "wrap" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("b", { style: { minWidth: 52 }, children: NAMES[row.platform] ?? row.platform }),
+      badge2(row),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { color: "var(--text-secondary)", fontSize: 12.5 }, children: HINTS[row.platform] ?? "" })
+    ] }, row.platform)) }),
     /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
       "textarea",
       {
@@ -9023,15 +7840,15 @@ function AccountsPage() {
     load();
   }, [stopPoll, load]);
   const submitSms = (0, import_react10.useCallback)(async () => {
-    const code2 = smsCode.replace(/\D/g, "");
-    if (code2.length < 4) {
+    const code = smsCode.replace(/\D/g, "");
+    if (code.length < 4) {
       setSmsErr("\u8BF7\u8F93\u5165\u624B\u673A\u6536\u5230\u7684\u9A8C\u8BC1\u7801");
       return;
     }
     setSmsBusy(true);
     setSmsErr("");
     try {
-      await submitLoginSms(qrPlatformRef.current, code2);
+      await submitLoginSms(qrPlatformRef.current, code);
       setSmsCode("");
       setQr((prev) => prev && { ...prev, state: "verifying", message: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" });
     } catch (e) {
@@ -9802,7 +8619,7 @@ ${formToInstruction(name, form)}`;
       setSubmitting(false);
     }
   };
-  const box2 = {
+  const box = {
     width: "100%",
     padding: "10px 12px",
     marginTop: 6,
@@ -9813,7 +8630,7 @@ ${formToInstruction(name, form)}`;
     fontSize: 14,
     fontFamily: "inherit"
   };
-  const label2 = { display: "block", marginTop: 16, fontSize: 13, color: "var(--text-secondary)" };
+  const label = { display: "block", marginTop: 16, fontSize: 13, color: "var(--text-secondary)" };
   const chip = (active) => ({
     padding: "6px 13px",
     borderRadius: 999,
@@ -9854,33 +8671,33 @@ ${formToInstruction(name, form)}`;
       /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { marginTop: 20 }, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { className: "btn btn-primary", onClick: () => onCreated(form.name.trim()), children: "\u5148\u8FDB\u53BB\u7528" }) })
     ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { style: { minHeight: 240 }, children: [
       step === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u753B\u50CF\u540D *\uFF08\u4E00\u4E2A\u4EBA\u8BBE = \u4E00\u4E2A\u753B\u50CF\uFF0C\u53EF\u8DE8\u591A\u5E73\u53F0\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u753B\u50CF\u540D *\uFF08\u4E00\u4E2A\u4EBA\u8BBE = \u4E00\u4E2A\u753B\u50CF\uFF0C\u53EF\u8DE8\u591A\u5E73\u53F0\uFF09" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "input",
           {
-            style: box2,
+            style: box,
             value: form.name,
             placeholder: "\u5982\uFF1A\u79D1\u6280\u6570\u7801\u8FBE\u4EBA",
             onChange: (e) => set("name", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u8FD0\u8425\u5E73\u53F0\uFF08\u53EF\u591A\u9009\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u8FD0\u8425\u5E73\u53F0\uFF08\u53EF\u591A\u9009\uFF09" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }, children: PLATFORMS3.map((p) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => togglePlatform(p), style: chip(form.platforms.includes(p)), children: p }, p)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u8D77\u53F7\u72B6\u6001" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u8D77\u53F7\u72B6\u6001" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "flex", gap: 8, marginTop: 6 }, children: ["\u5168\u65B0\u8D77\u53F7", "\u5DF2\u6709\u8D26\u53F7"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => set("accountStage", s), style: chip(form.accountStage === s), children: s }, s)) })
       ] }),
       step === 1 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)", marginTop: 12 }, children: "\u8D34\u4E0A\u5404\u5E73\u53F0\u4E3B\u9875\u94FE\u63A5\uFF0CAI \u4F1A\u5C3D\u529B\u5206\u6790\u4F60\u5DF2\u53D1\u7684\u5185\u5BB9\u548C\u98CE\u683C\uFF08\u6293\u4E0D\u5230\u4F1A\u8DF3\u8FC7\uFF0C\u53EF\u7559\u7A7A\uFF09\u3002" }),
         form.platforms.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)" }, children: "\uFF08\u672A\u9009\u5E73\u53F0\uFF0C\u53EF\u76F4\u63A5\u4E0B\u4E00\u6B65\uFF09" }),
         form.platforms.map((p) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { style: label2, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { style: label, children: [
             p,
             " \u4E3B\u9875\u94FE\u63A5"
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
             "input",
             {
-              style: box2,
+              style: box,
               value: form.links[p] || "",
               placeholder: `https://\u2026`,
               onChange: (e) => set("links", { ...form.links, [p]: e.target.value })
@@ -9889,40 +8706,40 @@ ${formToInstruction(name, form)}`;
         ] }, p))
       ] }),
       step === 2 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u60F3\u505A\u4EC0\u4E48\u65B9\u5411\u7684\u5185\u5BB9 *\uFF08\u8D8A\u5177\u4F53\u8D8A\u597D\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u60F3\u505A\u4EC0\u4E48\u65B9\u5411\u7684\u5185\u5BB9 *\uFF08\u8D8A\u5177\u4F53\u8D8A\u597D\uFF09" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "input",
           {
-            style: box2,
+            style: box,
             value: form.direction,
             placeholder: "\u5982\uFF1A\u5E73\u4EF7\u62A4\u80A4\u6D4B\u8BC4",
             onChange: (e) => set("direction", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u4E3A\u4EC0\u4E48\u505A\u8FD9\u4E2A / \u4F60\u7684\u4F18\u52BF\xB7\u72EC\u7279\u7ECF\u5386" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u4E3A\u4EC0\u4E48\u505A\u8FD9\u4E2A / \u4F60\u7684\u4F18\u52BF\xB7\u72EC\u7279\u7ECF\u5386" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "textarea",
           {
-            style: { ...box2, minHeight: 60, resize: "vertical" },
+            style: { ...box, minHeight: 60, resize: "vertical" },
             value: form.reason,
             onChange: (e) => set("reason", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u8FD0\u8425\u76EE\u6807" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u8FD0\u8425\u76EE\u6807" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "input",
           {
-            style: box2,
+            style: box,
             value: form.goal,
             placeholder: "\u6DA8\u7C89 / \u53D8\u73B0 / \u4E2A\u4EBA\u54C1\u724C / \u5F15\u6D41\u79C1\u57DF",
             onChange: (e) => set("goal", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u60F3\u4EA7\u51FA\u7684\u5F62\u5F0F" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u60F3\u4EA7\u51FA\u7684\u5F62\u5F0F" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "input",
           {
-            style: box2,
+            style: box,
             value: form.formats,
             placeholder: "\u56FE\u6587 / \u77ED\u89C6\u9891 / \u4E2D\u957F\u89C6\u9891 / \u957F\u6587",
             onChange: (e) => set("formats", e.target.value)
@@ -9930,22 +8747,22 @@ ${formToInstruction(name, form)}`;
         )
       ] }),
       step === 3 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u559C\u6B22\u770B\u7684\u5185\u5BB9 / \u5BF9\u6807\u8D26\u53F7" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u559C\u6B22\u770B\u7684\u5185\u5BB9 / \u5BF9\u6807\u8D26\u53F7" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "textarea",
           {
-            style: { ...box2, minHeight: 60, resize: "vertical" },
+            style: { ...box, minHeight: 60, resize: "vertical" },
             value: form.likes,
             onChange: (e) => set("likes", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u671F\u671B\u8C03\u6027" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u671F\u671B\u8C03\u6027" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }, children: TONES.map((t) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => set("tone", form.tone === t ? "" : t), style: chip(form.tone === t), children: t }, t)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u4E0D\u505A\u7684\u5185\u5BB9 / \u5408\u89C4\u7EA2\u7EBF" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u4E0D\u505A\u7684\u5185\u5BB9 / \u5408\u89C4\u7EA2\u7EBF" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "textarea",
           {
-            style: { ...box2, minHeight: 60, resize: "vertical" },
+            style: { ...box, minHeight: 60, resize: "vertical" },
             value: form.avoid,
             placeholder: "\u5982\uFF1A\u4E0D\u63A5\u533B\u7597\u529F\u6548\u3001\u4E0D\u505A\u865A\u5047\u5BA3\u4F20",
             onChange: (e) => set("avoid", e.target.value)
@@ -10629,6 +9446,828 @@ var plugin11 = {
   }
 };
 
+// src/components/BackupSettings.tsx
+var import_react16 = require("react");
+
+// src/lib/backup-api.ts
+var BASE2 = "/easel/api/backup";
+async function request2(url, options) {
+  const res = await fetch(`${BASE2}${url}`, { cache: "no-store", ...options });
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      detail = body?.detail ?? body?.message ?? "";
+    } catch {
+    }
+    throw new Error(detail || `\u8BF7\u6C42\u5931\u8D25\uFF08${res.status} ${res.statusText}\uFF09`);
+  }
+  return res.json();
+}
+function getBackupConfig() {
+  return request2("/config");
+}
+function putBackupConfig(config, secrets) {
+  return request2("/config", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ config, secrets }) });
+}
+function testBackupDestination() {
+  return request2("/test", { method: "POST" });
+}
+function runBackup(groups) {
+  return request2("/run", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ groups }) });
+}
+function getBackupStatus() {
+  return request2("/status");
+}
+function listRemoteBackups() {
+  return request2("/remote");
+}
+function restoreBackup(group, stamp, confirm) {
+  return request2("/restore", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ group, stamp, confirm }) });
+}
+function connectSmb(root, username, password) {
+  return request2("/connect-smb", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ root, username, password }) });
+}
+
+// src/components/BackupSettings.tsx
+var import_jsx_runtime26 = require("react/jsx-runtime");
+var GROUPS = [
+  { id: "config", title: "scopeConfig", hint: "scopeConfigHint" },
+  { id: "sessions", title: "scopeSessions", hint: "scopeSessionsHint" },
+  { id: "workspace", title: "scopeWorkspace", hint: "scopeWorkspaceHint" }
+];
+var WEEKDAYS2 = [0, 1, 2, 3, 4, 5, 6];
+var BACKUP_STYLES = `
+.ebk-root { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
+.ebk-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
+.ebk-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 22px; font-weight: 500; }
+.ebk-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0; }
+.ebk-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ebk-field label { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-input, .ebk-select {
+  box-sizing: border-box; width: 100%; height: 36px; padding: 0 10px;
+  border: 0.5px solid var(--dsw-alias-border-l2); border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-fill-primary); color: var(--dsw-alias-label-primary);
+  font-family: inherit; font-size: 14px; line-height: 22px;
+}
+.ebk-select { width: auto; min-width: 140px; }
+.ebk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+.ebk-check { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; cursor: pointer; }
+.ebk-check input { margin-top: 3px; accent-color: var(--dsw-alias-state-business-primary); }
+.ebk-check-main { display: flex; flex-direction: column; gap: 2px; }
+.ebk-check-hint { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ebk-btn {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-family: inherit;
+  height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md);
+  font-size: 14px; line-height: 22px; color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-fill-secondary);
+  transition: transform 100ms ease-out, background-color 120ms ease-out;
+}
+.ebk-btn:disabled { opacity: 0.5; cursor: default; }
+.ebk-btn-primary { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-business-primary); }
+.ebk-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-ok { color: var(--dsw-alias-state-success-primary, #2e9e63); font-size: 12px; line-height: 18px; }
+.ebk-error { color: var(--dsw-alias-state-danger-primary, #d4453f); font-size: 12px; line-height: 18px; word-break: break-all; }
+.ebk-progress { display: flex; flex-direction: column; gap: 4px; }
+.ebk-bar { height: 4px; border-radius: 2px; background: var(--dsw-alias-border-l2); overflow: hidden; }
+.ebk-bar-fill { height: 100%; background: var(--dsw-alias-state-business-primary); transition: width 200ms ease-out; }
+.ebk-history { display: flex; flex-direction: column; }
+.ebk-history-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; }
+.ebk-history-row + .ebk-history-row { border-top: 0.5px solid var(--dsw-alias-border-l2); }
+.ebk-badge { flex: none; padding: 1px 8px; border-radius: 999px; font-size: 11px; line-height: 16px; background: var(--dsw-alias-fill-secondary); }
+.ebk-badge-failed { color: var(--dsw-alias-state-danger-primary, #d4453f); }
+.ebk-badge-ok { color: var(--dsw-alias-state-success-primary, #2e9e63); }
+`;
+var formatBytes = (bytes) => {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${bytes} B`;
+};
+var formatTime = (ms) => new Date(ms).toLocaleString();
+function BackupSettings({ t }) {
+  const [config, setConfig] = (0, import_react16.useState)(null);
+  const [secrets, setSecrets] = (0, import_react16.useState)(null);
+  const [engineReady, setEngineReady] = (0, import_react16.useState)(true);
+  const [secretInputs, setSecretInputs] = (0, import_react16.useState)({});
+  const [status, setStatus] = (0, import_react16.useState)(null);
+  const [remote, setRemote] = (0, import_react16.useState)(null);
+  const [restoreGroup, setRestoreGroup] = (0, import_react16.useState)("config");
+  const [restoreStamp, setRestoreStamp] = (0, import_react16.useState)("");
+  const [plan, setPlan] = (0, import_react16.useState)(null);
+  const [notice, setNotice] = (0, import_react16.useState)(null);
+  const [saving, setSaving] = (0, import_react16.useState)(false);
+  const [testing, setTesting] = (0, import_react16.useState)(false);
+  const [restoring, setRestoring] = (0, import_react16.useState)(false);
+  const pollRef = (0, import_react16.useRef)(void 0);
+  const refreshStatus = (0, import_react16.useCallback)(async () => {
+    try {
+      const next = await getBackupStatus();
+      setStatus(next);
+      return next;
+    } catch {
+      return null;
+    }
+  }, []);
+  (0, import_react16.useEffect)(() => {
+    let active = true;
+    getBackupConfig().then((data) => {
+      if (!active) return;
+      setConfig(data.config);
+      setSecrets(data.secrets);
+      setEngineReady(data.engineReady);
+    }).catch((error) => setNotice({ kind: "error", text: error.message }));
+    refreshStatus();
+    return () => {
+      active = false;
+      if (pollRef.current !== void 0) window.clearInterval(pollRef.current);
+    };
+  }, [refreshStatus]);
+  const busy = status?.busy === true;
+  (0, import_react16.useEffect)(() => {
+    if (!busy) {
+      if (pollRef.current !== void 0) {
+        window.clearInterval(pollRef.current);
+        pollRef.current = void 0;
+      }
+      return;
+    }
+    pollRef.current = window.setInterval(() => {
+      void refreshStatus().then((next) => {
+        if (next !== null && !next.busy) {
+          void listRemoteBackups().then(setRemote).catch(() => {
+          });
+        }
+      });
+    }, 1e3);
+    return () => {
+      if (pollRef.current !== void 0) window.clearInterval(pollRef.current);
+    };
+  }, [busy, refreshStatus]);
+  if (config === null || secrets === null) {
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-root", children: notice?.kind === "error" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-error", children: notice.text }) : null });
+  }
+  const patch = (changes) => setConfig({ ...config, ...changes });
+  const secretValue = (key) => secretInputs[key] ?? "";
+  const collectSecrets = () => {
+    const out = {};
+    for (const [key, value] of Object.entries(secretInputs)) {
+      if (value.length > 0) out[key] = value;
+    }
+    return out;
+  };
+  const save = async () => {
+    setSaving(true);
+    setNotice(null);
+    try {
+      const saved = await putBackupConfig(config, collectSecrets());
+      setConfig(saved.config);
+      setSecrets(saved.secrets);
+      setSecretInputs({});
+      setNotice({ kind: "ok", text: t.saved });
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+  const test = async () => {
+    setTesting(true);
+    setNotice(null);
+    try {
+      await testBackupDestination();
+      setNotice({ kind: "ok", text: t.testOk });
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setTesting(false);
+    }
+  };
+  const run = async () => {
+    const groups = GROUPS.filter((group) => config.groups[group.id]).map((group) => group.id);
+    if (groups.length === 0) {
+      setNotice({ kind: "error", text: t.noGroups });
+      return;
+    }
+    setNotice(null);
+    try {
+      await runBackup(groups);
+      await refreshStatus();
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    }
+  };
+  const openRestore = async () => {
+    setRestoring(true);
+    setNotice(null);
+    setPlan(null);
+    try {
+      const listing = await listRemoteBackups();
+      setRemote(listing);
+      const first = listing.groups[restoreGroup][0];
+      setRestoreStamp(first?.stamp ?? "");
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setRestoring(false);
+    }
+  };
+  const previewRestore = async () => {
+    setRestoring(true);
+    setNotice(null);
+    try {
+      const response = await restoreBackup(restoreGroup, restoreStamp, false);
+      setPlan(response.plan ?? null);
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setRestoring(false);
+    }
+  };
+  const confirmRestore = async () => {
+    setRestoring(true);
+    setNotice(null);
+    try {
+      const response = await restoreBackup(restoreGroup, restoreStamp, true);
+      setPlan(null);
+      setNotice({ kind: "ok", text: `${t.restoreApplied(response.applied ?? 0)}${(response.skipped?.length ?? 0) > 0 ? ` ${t.restoreSkipped(response.skipped?.length ?? 0)}` : ""}` });
+      await refreshStatus();
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setRestoring(false);
+    }
+  };
+  const connectSmbShare = async () => {
+    setNotice(null);
+    try {
+      await connectSmb(config.root, secretValue("smbUser"), secretValue("smbPassword"));
+      setNotice({ kind: "ok", text: t.testOk });
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    }
+  };
+  const progress = status?.progress ?? null;
+  const phaseLabel = progress === null ? "" : t[`phase${progress.phase[0].toUpperCase()}${progress.phase.slice(1)}`];
+  const history = status?.history ?? [];
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-intro", children: t.intro }),
+    !engineReady ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-error", children: t.engineMissing }) : null,
+    notice !== null && notice.text !== "" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: notice.kind === "ok" ? "ebk-ok" : "ebk-error", children: notice.text }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.destinationTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-actions", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: testing, onClick: () => void test(), children: testing ? t.testing : t.test }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: saving, onClick: () => void save(), children: saving ? t.saving : t.save })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.protocol }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+            "select",
+            {
+              className: "ebk-select",
+              value: config.protocol,
+              onChange: (event) => patch({ protocol: event.target.value }),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "webdav", children: t.protocolWebdav }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "s3", children: t.protocolS3 }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "smb", children: t.protocolSmb })
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.remoteDir }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              placeholder: t.remoteDirPlaceholder,
+              value: config.remoteDir,
+              onChange: (event) => patch({ remoteDir: event.target.value })
+            }
+          )
+        ] })
+      ] }),
+      config.protocol === "webdav" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.endpoint }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              placeholder: t.endpointPlaceholder,
+              value: config.endpoint,
+              onChange: (event) => patch({ endpoint: event.target.value })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-grid", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.username }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.username, onChange: (event) => patch({ username: event.target.value }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { children: [
+              t.password,
+              secrets.webdavPassword ? ` \xB7 ${t.passwordSaved}` : ""
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                type: "password",
+                value: secretValue("webdavPassword"),
+                onChange: (event) => setSecretInputs({ ...secretInputs, webdavPassword: event.target.value })
+              }
+            )
+          ] })
+        ] })
+      ] }) : null,
+      config.protocol === "s3" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-grid", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3Endpoint }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.endpoint, onChange: (event) => patch({ endpoint: event.target.value }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3Region }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.region, onChange: (event) => patch({ region: event.target.value }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3Bucket }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { className: "ebk-input", value: config.bucket, onChange: (event) => patch({ bucket: event.target.value }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: "\xA0" }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ebk-check", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("input", { type: "checkbox", checked: config.pathStyle, onChange: (event) => patch({ pathStyle: event.target.checked }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-hint", children: t.s3PathStyle })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { children: [
+            t.s3AccessKeyId,
+            secrets.s3Keys ? ` \xB7 ${t.passwordSaved}` : ""
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              type: "password",
+              value: secretValue("s3AccessKeyId"),
+              onChange: (event) => setSecretInputs({ ...secretInputs, s3AccessKeyId: event.target.value })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.s3SecretAccessKey }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              type: "password",
+              value: secretValue("s3SecretAccessKey"),
+              onChange: (event) => setSecretInputs({ ...secretInputs, s3SecretAccessKey: event.target.value })
+            }
+          )
+        ] })
+      ] }) : null,
+      config.protocol === "smb" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.smbRoot }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              placeholder: t.smbRootPlaceholder,
+              value: config.root,
+              onChange: (event) => patch({ root: event.target.value })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-grid", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.smbUser }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                value: secretValue("smbUser"),
+                onChange: (event) => setSecretInputs({ ...secretInputs, smbUser: event.target.value })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.smbPassword }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                type: "password",
+                value: secretValue("smbPassword"),
+                onChange: (event) => setSecretInputs({ ...secretInputs, smbPassword: event.target.value })
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", onClick: () => void connectSmbShare(), children: t.smbConnect }) })
+      ] }) : null
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.scopeTitle }) }),
+      GROUPS.map((group) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ebk-check", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "input",
+          {
+            type: "checkbox",
+            checked: config.groups[group.id],
+            onChange: (event) => patch({ groups: { ...config.groups, [group.id]: event.target.checked } })
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-check-main", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t[group.title] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-hint", children: t[group.hint] })
+        ] })
+      ] }, group.id))
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.encryptionTitle }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ebk-muted", style: { margin: 0 }, children: t.encryptionHint }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ebk-check", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "input",
+          {
+            type: "checkbox",
+            checked: config.encryption.enabled,
+            onChange: (event) => patch({ encryption: { enabled: event.target.checked } })
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-check-main", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.encryptionOn }) })
+      ] }),
+      config.encryption.enabled ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { children: [
+          t.passphrase,
+          secrets.passphrase ? ` \xB7 ${t.passwordSaved}` : ""
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+          "input",
+          {
+            className: "ebk-input",
+            type: "password",
+            value: secretValue("passphrase"),
+            onChange: (event) => setSecretInputs({ ...secretInputs, passphrase: event.target.value })
+          }
+        )
+      ] }) : null
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.scheduleTitle }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: "\xA0" }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
+            "select",
+            {
+              className: "ebk-select",
+              value: config.schedule.mode,
+              onChange: (event) => patch({ schedule: { ...config.schedule, mode: event.target.value } }),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "off", children: t.scheduleOff }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "daily", children: t.scheduleDaily }),
+                /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "weekly", children: t.scheduleWeekly })
+              ]
+            }
+          )
+        ] }),
+        config.schedule.mode !== "off" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(import_jsx_runtime26.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.scheduleAt }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                style: { width: 120 },
+                type: "time",
+                value: config.schedule.at,
+                onChange: (event) => patch({ schedule: { ...config.schedule, at: event.target.value } })
+              }
+            )
+          ] }),
+          config.schedule.mode === "weekly" ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.scheduleWeekday }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "select",
+              {
+                className: "ebk-select",
+                value: config.schedule.weekday,
+                onChange: (event) => patch({ schedule: { ...config.schedule, weekday: Number(event.target.value) } }),
+                children: WEEKDAYS2.map((day) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: day, children: t[`weekday${day}`] }, day))
+              }
+            )
+          ] }) : null
+        ] }) : null,
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.retention }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-row", style: { gap: 6 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                style: { width: 90 },
+                type: "number",
+                min: 1,
+                max: 100,
+                value: config.retention,
+                onChange: (event) => patch({ retention: Number(event.target.value) })
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.retentionUnit })
+          ] })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.runTitle }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: busy, onClick: () => void run(), children: t.run })
+      ] }),
+      progress !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-progress", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: `${t.running} \xB7 ${progress.group} \xB7 ${phaseLabel} \xB7 ${progress.fileCount} \xB7 ${formatBytes(progress.totalBytes)}` }) }) : null,
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-history", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.historyTitle }),
+        history.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.historyEmpty }) : history.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-history-row", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-muted", children: [
+            formatTime(entry.startedAt),
+            " \xB7 ",
+            entry.trigger === "manual" ? t.historyManual : t.historySchedule,
+            " \xB7 ",
+            entry.groups.map((item) => item.group).join(", ") || "\u2014"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: `ebk-badge ${entry.status === "completed" ? "ebk-badge-ok" : "ebk-badge-failed"}`, children: [
+            entry.status === "completed" ? t.historyCompleted : t.historyFailed,
+            entry.status === "failed" && entry.error !== void 0 ? ` \u2014 ${entry.error}` : ""
+          ] })
+        ] }, entry.startedAt))
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.restoreTitle }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || busy, onClick: () => void openRestore(), children: t.restorePreview }) }),
+      remote !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.restorePickGroup }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+            "select",
+            {
+              className: "ebk-select",
+              value: restoreGroup,
+              onChange: (event) => {
+                const group = event.target.value;
+                setRestoreGroup(group);
+                setRestoreStamp(remote.groups[group][0]?.stamp ?? "");
+                setPlan(null);
+              },
+              children: GROUPS.map((group) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("option", { value: group.id, children: [
+                t[group.title],
+                "\uFF08",
+                remote.groups[group.id].length,
+                "\uFF09"
+              ] }, group.id))
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.restorePickStamp }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("select", { className: "ebk-select", value: restoreStamp, onChange: (event) => {
+            setRestoreStamp(event.target.value);
+            setPlan(null);
+          }, children: remote.groups[restoreGroup].length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: "\u2014" }) : remote.groups[restoreGroup].map((item) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("option", { value: item.stamp, children: [
+            item.stamp,
+            " \xB7 ",
+            formatBytes(item.size)
+          ] }, item.stamp)) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || restoreStamp === "", onClick: () => void previewRestore(), children: t.restorePreview }) })
+      ] }) : null,
+      plan !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-muted", children: [
+          t.restorePlan(plan.fileCount),
+          " \xB7 ",
+          formatBytes(plan.bytes)
+        ] }),
+        plan.preview.slice(0, 8).map((file) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ebk-muted", style: { wordBreak: "break-all" }, children: [
+          file.path,
+          " \xB7 ",
+          formatBytes(file.size)
+        ] }, file.path)),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: restoring, onClick: () => void confirmRestore(), children: t.restoreConfirm }) })
+      ] }) : null
+    ] })
+  ] });
+}
+
+// src/locales/backup.ts
+var BACKUP_COPY = {
+  en: {
+    nav: "Backup",
+    intro: "Back up configuration, sessions, and workspace files to your own WebDAV, SMB, or S3 server, and restore them here. Backups are full archives grouped by scope.",
+    engineMissing: "The backup engine is missing from this install. Reinstall Easel to enable backups.",
+    destinationTitle: "Destination",
+    protocol: "Protocol",
+    protocolWebdav: "WebDAV",
+    protocolS3: "S3",
+    protocolSmb: "SMB (network share)",
+    endpoint: "WebDAV URL",
+    endpointPlaceholder: "https://dav.example.com/dav",
+    username: "Username",
+    password: "Password",
+    passwordSaved: "Saved \u2014 leave blank to keep",
+    remoteDir: "Remote subdirectory (optional)",
+    remoteDirPlaceholder: "easel-backup",
+    s3Endpoint: "Endpoint (optional, blank for AWS)",
+    s3Region: "Region",
+    s3Bucket: "Bucket",
+    s3AccessKeyId: "Access key id",
+    s3SecretAccessKey: "Secret access key",
+    s3PathStyle: "Path-style addressing (MinIO and most NAS gateways)",
+    smbRoot: "Share path",
+    smbRootPlaceholder: "\\\\server\\share or a mapped drive",
+    smbConnect: "Connect with credentials (Windows)",
+    smbUser: "Username (optional)",
+    smbPassword: "Password (optional)",
+    test: "Test connection",
+    testing: "Testing\u2026",
+    testOk: "Destination reachable.",
+    scopeTitle: "What to back up",
+    scopeConfig: "Configuration & credentials",
+    scopeConfigHint: "Profile patches, API keys, personas, skills, state stores",
+    scopeSessions: "Sessions & attachments",
+    scopeSessionsHint: "Conversation logs and durable attachments",
+    scopeWorkspace: "Projects & outputs (media)",
+    scopeWorkspaceHint: "Projects and the full outputs tree \u2014 can be large",
+    encryptionTitle: "Encryption",
+    encryptionHint: "Backups include API keys. Encrypt with a passphrase (AES-256-GCM) before uploading to a cloud drive.",
+    encryptionOn: "Encrypt backups",
+    passphrase: "Passphrase",
+    scheduleTitle: "Schedule",
+    scheduleOff: "Manual only",
+    scheduleDaily: "Daily",
+    scheduleWeekly: "Weekly",
+    scheduleAt: "Time",
+    scheduleWeekday: "Day",
+    weekday0: "Sunday",
+    weekday1: "Monday",
+    weekday2: "Tuesday",
+    weekday3: "Wednesday",
+    weekday4: "Thursday",
+    weekday5: "Friday",
+    weekday6: "Saturday",
+    retention: "Keep",
+    retentionUnit: "copies per group",
+    save: "Save",
+    saving: "Saving\u2026",
+    saved: "Saved.",
+    runTitle: "Back up now",
+    run: "Back up",
+    running: "Backing up",
+    phaseCollect: "collecting",
+    phaseArchive: "archiving",
+    phaseUpload: "uploading",
+    phasePrune: "pruning",
+    noGroups: "Pick at least one scope above.",
+    historyTitle: "Recent backups",
+    historyEmpty: "No backups yet.",
+    historyManual: "manual",
+    historySchedule: "scheduled",
+    historyCompleted: "completed",
+    historyFailed: "failed",
+    restoreTitle: "Restore",
+    restorePickGroup: "Group",
+    restorePickStamp: "Copy",
+    restorePreview: "Preview restore",
+    restoreConfirm: "Overwrite now",
+    restorePlan: (count) => `${count} files will be overwritten with the archived copies. Confirm to proceed.`,
+    restoreApplied: (count) => `Restored ${count} files. Restart the app if sessions were restored.`,
+    restoreSkipped: (count) => `${count} entries skipped (unknown scope).`
+  },
+  zh: {
+    nav: "\u5907\u4EFD",
+    intro: "\u628A\u914D\u7F6E\u3001\u4F1A\u8BDD\u4E0E\u5DE5\u4F5C\u533A\u6587\u4EF6\u5907\u4EFD\u5230\u4F60\u81EA\u5DF1\u7684 WebDAV\u3001SMB \u6216 S3 \u670D\u52A1\u5668\uFF0C\u5E76\u53EF\u5728\u6B64\u6062\u590D\u3002\u5907\u4EFD\u6309\u8303\u56F4\u5206\u7EC4\u6253\u5305\u6210\u5B8C\u6574\u538B\u7F29\u5305\u3002",
+    engineMissing: "\u672C\u5B89\u88C5\u7F3A\u5C11\u5907\u4EFD\u5F15\u64CE\uFF0C\u91CD\u65B0\u5B89\u88C5 Easel \u540E\u53EF\u7528\u3002",
+    destinationTitle: "\u76EE\u6807\u7AEF",
+    protocol: "\u534F\u8BAE",
+    protocolWebdav: "WebDAV",
+    protocolS3: "S3",
+    protocolSmb: "SMB\uFF08\u7F51\u7EDC\u5171\u4EAB\uFF09",
+    endpoint: "WebDAV \u5730\u5740",
+    endpointPlaceholder: "https://dav.example.com/dav",
+    username: "\u7528\u6237\u540D",
+    password: "\u5BC6\u7801",
+    passwordSaved: "\u5DF2\u4FDD\u5B58\u2014\u2014\u7559\u7A7A\u4FDD\u6301\u4E0D\u53D8",
+    remoteDir: "\u8FDC\u7AEF\u5B50\u76EE\u5F55\uFF08\u53EF\u9009\uFF09",
+    remoteDirPlaceholder: "easel-backup",
+    s3Endpoint: "Endpoint\uFF08\u7559\u7A7A\u4E3A AWS\uFF09",
+    s3Region: "\u533A\u57DF",
+    s3Bucket: "\u5B58\u50A8\u6876",
+    s3AccessKeyId: "Access Key Id",
+    s3SecretAccessKey: "Secret Access Key",
+    s3PathStyle: "Path-style \u5BFB\u5740\uFF08MinIO \u4E0E\u591A\u6570 NAS \u7F51\u5173\uFF09",
+    smbRoot: "\u5171\u4EAB\u8DEF\u5F84",
+    smbRootPlaceholder: "\\\\\u670D\u52A1\u5668\\\u5171\u4EAB \u6216\u6620\u5C04\u76D8",
+    smbConnect: "\u5E26\u51ED\u636E\u8FDE\u63A5\uFF08Windows\uFF09",
+    smbUser: "\u7528\u6237\u540D\uFF08\u53EF\u9009\uFF09",
+    smbPassword: "\u5BC6\u7801\uFF08\u53EF\u9009\uFF09",
+    test: "\u6D4B\u8BD5\u8FDE\u63A5",
+    testing: "\u6D4B\u8BD5\u4E2D\u2026",
+    testOk: "\u76EE\u6807\u7AEF\u53EF\u8FBE\u3002",
+    scopeTitle: "\u5907\u4EFD\u5185\u5BB9",
+    scopeConfig: "\u914D\u7F6E\u4E0E\u51ED\u636E",
+    scopeConfigHint: "profiles \u8865\u4E01\u3001API \u5BC6\u94A5\u3001\u4EBA\u8BBE\u3001skills\u3001\u72B6\u6001\u5E93",
+    scopeSessions: "\u4F1A\u8BDD\u4E0E\u9644\u4EF6",
+    scopeSessionsHint: "\u4F1A\u8BDD\u65E5\u5FD7\u4E0E\u6301\u4E45\u9644\u4EF6",
+    scopeWorkspace: "\u9879\u76EE\u4E0E\u4EA7\u51FA\uFF08\u5A92\u4F53\uFF09",
+    scopeWorkspaceHint: "\u9879\u76EE\u4E0E\u5B8C\u6574 outputs \u6811\u2014\u2014\u53EF\u80FD\u5F88\u5927",
+    encryptionTitle: "\u52A0\u5BC6",
+    encryptionHint: "\u5907\u4EFD\u5305\u542B API \u5BC6\u94A5\u3002\u4E0A\u4F20\u5230\u4E91\u7AEF\u524D\u5EFA\u8BAE\u7528\u53E3\u4EE4\u52A0\u5BC6\uFF08AES-256-GCM\uFF09\u3002",
+    encryptionOn: "\u52A0\u5BC6\u5907\u4EFD",
+    passphrase: "\u53E3\u4EE4",
+    scheduleTitle: "\u5B9A\u65F6",
+    scheduleOff: "\u4EC5\u624B\u52A8",
+    scheduleDaily: "\u6BCF\u5929",
+    scheduleWeekly: "\u6BCF\u5468",
+    scheduleAt: "\u65F6\u523B",
+    scheduleWeekday: "\u661F\u671F",
+    weekday0: "\u5468\u65E5",
+    weekday1: "\u5468\u4E00",
+    weekday2: "\u5468\u4E8C",
+    weekday3: "\u5468\u4E09",
+    weekday4: "\u5468\u56DB",
+    weekday5: "\u5468\u4E94",
+    weekday6: "\u5468\u516D",
+    retention: "\u4FDD\u7559",
+    retentionUnit: "\u4EFD\uFF08\u6BCF\u7EC4\uFF09",
+    save: "\u4FDD\u5B58",
+    saving: "\u4FDD\u5B58\u4E2D\u2026",
+    saved: "\u5DF2\u4FDD\u5B58\u3002",
+    runTitle: "\u7ACB\u5373\u5907\u4EFD",
+    run: "\u5907\u4EFD",
+    running: "\u5907\u4EFD\u4E2D",
+    phaseCollect: "\u6536\u96C6",
+    phaseArchive: "\u6253\u5305",
+    phaseUpload: "\u4E0A\u4F20",
+    phasePrune: "\u6E05\u7406",
+    noGroups: "\u8BF7\u5148\u5728\u4E0A\u9762\u52FE\u9009\u81F3\u5C11\u4E00\u9879\u5907\u4EFD\u5185\u5BB9\u3002",
+    historyTitle: "\u6700\u8FD1\u5907\u4EFD",
+    historyEmpty: "\u8FD8\u6CA1\u6709\u5907\u4EFD\u8BB0\u5F55\u3002",
+    historyManual: "\u624B\u52A8",
+    historySchedule: "\u5B9A\u65F6",
+    historyCompleted: "\u5B8C\u6210",
+    historyFailed: "\u5931\u8D25",
+    restoreTitle: "\u6062\u590D",
+    restorePickGroup: "\u5206\u7EC4",
+    restorePickStamp: "\u5907\u4EFD\u4EFD",
+    restorePreview: "\u9884\u89C8\u6062\u590D",
+    restoreConfirm: "\u786E\u8BA4\u8986\u76D6",
+    restorePlan: (count) => `\u5C06\u7528\u5F52\u6863\u526F\u672C\u8986\u76D6 ${count} \u4E2A\u6587\u4EF6\uFF0C\u786E\u8BA4\u540E\u6267\u884C\u3002`,
+    restoreApplied: (count) => `\u5DF2\u6062\u590D ${count} \u4E2A\u6587\u4EF6\u3002\u82E5\u6062\u590D\u4E86\u4F1A\u8BDD\u8BB0\u5F55\uFF0C\u5EFA\u8BAE\u91CD\u542F\u5E94\u7528\u3002`,
+    restoreSkipped: (count) => `\u8DF3\u8FC7 ${count} \u4E2A\u672A\u77E5\u8303\u56F4\u6761\u76EE\u3002`
+  }
+};
+
+// src/features/backup.tsx
+var NS = "easel.backup";
+var STYLE_ID = "easel-backup-settings-styles";
+var plugin12 = {
+  name: "easel-backup-settings",
+  inject: ["slots", "locale"],
+  apply(ctx) {
+    ctx.effect(() => ctx.locale.register(NS, BACKUP_COPY), "easel: backup dictionaries");
+    ctx.effect(() => {
+      const style = document.createElement("style");
+      style.id = STYLE_ID;
+      style.textContent = BACKUP_STYLES;
+      document.head.append(style);
+      return () => {
+        style.remove();
+      };
+    }, "easel: backup styles");
+    const t = ctx.locale.bind(NS);
+    ctx.slots.inject("settings.section", () => ctx.slots.register({
+      name: "settings.section",
+      id: "easel-backup",
+      order: 70,
+      locale: NS,
+      label: () => t("nav"),
+      inject: () => ({ t })
+    }, BackupSettings));
+  }
+};
+
 // src/lib/context-menu-model.js
 var FILE_ROW_SELECTOR = "[data-files-entry]";
 var FILE_ROOT_SELECTOR = "[data-files-root]";
@@ -10641,7 +10280,6 @@ var EDITABLE_SELECTOR = [
 var CHAT_FLOW_SELECTOR = "[data-chat-flow]";
 var CHAT_NODE_SELECTOR = "[data-chat-node-key]";
 var PRESENTED_FILE_SELECTOR = "[data-presented-file]";
-var TREND_ROW_SELECTOR = "[data-easel-trend]";
 var FILE_LINK_SELECTOR = "button[title]";
 var MESSAGE_KINDS = /* @__PURE__ */ new Set(["user", "assistant-step"]);
 function dataOf(element, name) {
@@ -10672,51 +10310,26 @@ function fileLinkSurface(target) {
   }
   return null;
 }
-function trendPayloadOf(element) {
-  const raw = element?.dataset?.easelTrend;
-  if (typeof raw !== "string" || raw === "") return null;
-  try {
-    const data = JSON.parse(raw);
-    if (data === null || typeof data !== "object") return null;
-    const title = typeof data.title === "string" ? data.title.trim() : "";
-    if (title === "") return null;
-    return {
-      title,
-      url: typeof data.url === "string" ? data.url : "",
-      source: typeof data.source === "string" ? data.source : "",
-      platform: typeof data.platform === "string" ? data.platform : "",
-      ...typeof data.rank === "number" ? { rank: data.rank } : {},
-      ...typeof data.hot === "string" && data.hot !== "" ? { hot: data.hot } : {}
-    };
-  } catch {
-    return null;
-  }
-}
 function resolveSurface(target, selection) {
   if (target == null || typeof target.closest !== "function") return null;
-  const row2 = target.closest(FILE_ROW_SELECTOR);
-  if (row2 != null && typeof row2.closest === "function") {
-    const root = row2.closest(FILE_ROOT_SELECTOR);
-    const path = dataOf(row2, "filesPath");
-    const entry = dataOf(row2, "filesEntry");
+  const row = target.closest(FILE_ROW_SELECTOR);
+  if (row != null && typeof row.closest === "function") {
+    const root = row.closest(FILE_ROOT_SELECTOR);
+    const path = dataOf(row, "filesPath");
+    const entry = dataOf(row, "filesEntry");
     if (root != null && typeof path === "string" && path !== "" && entry !== "other") {
       return {
         kind: "file",
-        row: row2,
+        row,
         path,
         root: dataOf(root, "filesRoot"),
         entry,
-        preview: row2.querySelector?.("button") ?? null
+        preview: row.querySelector?.("button") ?? null
       };
     }
   }
   const link = fileLinkSurface(target);
   if (link !== null) return link;
-  const trendRow = target.closest(TREND_ROW_SELECTOR);
-  if (trendRow != null) {
-    const trend = trendPayloadOf(trendRow);
-    if (trend !== null) return { kind: "trend", element: trendRow, trend };
-  }
   const editable = target.closest(EDITABLE_SELECTOR);
   if (editable != null) return { kind: "editable", element: editable };
   const chat = target.closest(CHAT_FLOW_SELECTOR);
@@ -10774,12 +10387,11 @@ function fileNameOf(path) {
 }
 
 // src/features/context-menu.js
-var STYLE_ID = "easel-context-menu-style";
+var STYLE_ID2 = "easel-context-menu-style";
 var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
 var SEPARATOR_CLASS = "easel-ctx-menu__separator";
 var HINT_CLASS = "easel-ctx-menu__hint";
-var TOAST_CLASS = "easel-ctx-toast";
 var CSS = `
 .${MENU_CLASS} {
   position: fixed;
@@ -10838,28 +10450,9 @@ var CSS = `
   margin: 4px 6px;
   background: var(--dsw-alias-border-l1, rgba(15, 23, 42, 0.08));
 }
-.${TOAST_CLASS} {
-  position: fixed;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
-  z-index: 2147483000;
-  max-width: min(70vw, 460px);
-  padding: 9px 16px;
-  border-radius: var(--dsw-radius-md, 8px);
-  background: var(--dsw-menu-surface-fill, var(--dsw-alias-bg-elevated, #ffffff));
-  box-shadow: var(--dsw-elevation-prominent, 0 12px 32px rgba(15, 23, 42, 0.2));
-  color: var(--dsw-alias-label-primary, #1f2329);
-  font: var(--dsw-text-body-font, 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif);
-  text-align: center;
-  pointer-events: none;
-}
-.${TOAST_CLASS}--ok { color: var(--dsh-success-text, #0f9d58); }
-.${TOAST_CLASS}--warn { color: var(--dsh-warning-text, #b45309); }
-.${TOAST_CLASS}--error { color: var(--dsh-error-text, #dc2626); }
 `;
 var SEPARATOR = Object.freeze({ separator: true });
-var plugin12 = {
+var plugin13 = {
   name: "easel-context-menu",
   inject: [
     "sessions",
@@ -10875,10 +10468,10 @@ var plugin12 = {
   }
 };
 function installStyles() {
-  if (document.getElementById(STYLE_ID) !== null) return () => {
+  if (document.getElementById(STYLE_ID2) !== null) return () => {
   };
   const style = document.createElement("style");
-  style.id = STYLE_ID;
+  style.id = STYLE_ID2;
   style.textContent = CSS;
   document.head.append(style);
   return () => {
@@ -10933,7 +10526,6 @@ function installListener(ctx) {
 }
 function itemsFor(ctx, surface) {
   if (surface.kind === "file") return fileItems(ctx, surface);
-  if (surface.kind === "trend") return trendItems(surface.trend);
   if (surface.kind === "editable") return editableItems(surface.element);
   return [
     menuRow("\u590D\u5236", () => copyOrThrow(surface.text)),
@@ -10942,76 +10534,6 @@ function itemsFor(ctx, surface) {
     menuRow("\u6DFB\u52A0\u5230\u5F53\u524D\u4EFB\u52A1", () => addToTask(ctx, surface.text), { disabled: currentInput(ctx) === void 0 }),
     menuRow("\u5728\u8F85\u52A9\u5BF9\u8BDD\u4E2D\u63D0\u95EE", () => askInAuxiliaryConversation(ctx, surface.text), { disabled: currentSessionId(ctx) === void 0 })
   ];
-}
-function trendItems(trend) {
-  const { title, url, source } = trend;
-  return [
-    menuRow("\u6293\u53D6\u6B63\u6587\u5E76\u5165\u5E93", () => captureTrend(trend), {
-      disabled: url === "",
-      hint: url === "" ? "\u65E0\u539F\u6587\u94FE\u63A5" : void 0
-    }),
-    menuRow("\u4EC5\u6536\u85CF\u6807\u9898\u5230\u9009\u9898\u5E93", () => saveTrendTitle(title, source)),
-    SEPARATOR,
-    menuRow("\u590D\u5236\u6807\u9898", () => copyOrThrow(title)),
-    menuRow("\u590D\u5236\u539F\u6587\u94FE\u63A5", () => copyOrThrow(url), { disabled: url === "" }),
-    menuRow("\u6253\u5F00\u539F\u6587", () => openTrendUrl(url), { disabled: url === "" })
-  ];
-}
-async function captureTrend(trend) {
-  contextToast("\u6B63\u5728\u6293\u53D6\u6B63\u6587\u2026", "info");
-  try {
-    const result = await captureTrendArticle({
-      title: trend.title,
-      url: trend.url,
-      source: trend.source,
-      platform: trend.platform,
-      rank: trend.rank,
-      hot: trend.hot
-    });
-    if (typeof result.warning === "string" && result.warning !== "") {
-      contextToast(`\u5DF2\u5165\u5E93 \xB7 ${result.warning}`, "warn");
-    } else {
-      contextToast(result.reused === true ? "\u6B63\u6587\u5DF2\u66F4\u65B0" : "\u5DF2\u5B58\u5165\u5185\u5BB9\u5E93\u4E0E\u9009\u9898\u5E93", "ok");
-    }
-    notifyTrendSaved(trend.title);
-  } catch (error) {
-    contextToast(`\u6293\u53D6\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
-  }
-}
-function saveTrendTitle(title, source) {
-  createIdea({ title, source }).then(() => {
-    contextToast("\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93", "ok");
-    notifyTrendSaved(title);
-  }).catch((error) => {
-    contextToast(`\u6536\u85CF\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
-  });
-}
-function notifyTrendSaved(title) {
-  window.dispatchEvent(new CustomEvent("easel:trend-saved", { detail: { title } }));
-}
-function openTrendUrl(url) {
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.target = "_blank";
-  anchor.rel = "noreferrer";
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-}
-var contextToastTimer = null;
-function contextToast(message, kind) {
-  const previous = document.querySelector(`.${TOAST_CLASS}`);
-  if (previous !== null) previous.remove();
-  if (contextToastTimer !== null) clearTimeout(contextToastTimer);
-  const toast = document.createElement("div");
-  toast.className = `${TOAST_CLASS} ${TOAST_CLASS}--${kind}`;
-  toast.setAttribute("role", "status");
-  toast.textContent = message;
-  document.body.append(toast);
-  contextToastTimer = setTimeout(() => toast.remove(), 2600);
-}
-function messageOf(error) {
-  return error instanceof Error ? error.message : String(error);
 }
 function fileItems(ctx, surface) {
   const { path, root, entry, preview } = surface;
@@ -11034,39 +10556,7 @@ function fileItems(ctx, surface) {
   items.push(menuRow("\u590D\u5236\u76F8\u5BF9\u8DEF\u5F84", () => copyOrThrow(relative)));
   items.push(menuRow("\u590D\u5236\u7EDD\u5BF9\u8DEF\u5F84", () => copyOrThrow(absolute)));
   if (entry === "file") items.push(menuRow("\u590D\u5236\u6587\u4EF6\u540D", () => copyOrThrow(fileNameOf(absolute))));
-  items.push(SEPARATOR);
-  items.push(menuRow("\u63A8\u9001\u5230\u8BBE\u5907\u2026", (menu) => showPushTargets(ctx, surface, menu, items), { keepOpen: true }));
   return items;
-}
-async function showPushTargets(ctx, surface, menu, previousItems) {
-  menu.render([{ label: "\u6B63\u5728\u67E5\u627E\u5DF2\u914D\u5BF9\u8BBE\u5907\u2026", disabled: true }]);
-  const path = await resolveHostPath(ctx, surface);
-  let status;
-  try {
-    status = await fetchHandoffPaired();
-  } catch {
-    status = { available: false, paired: [] };
-  }
-  const items = [];
-  if (status.available !== true || status.paired.length === 0) {
-    items.push({ label: status.available ? "\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907" : "\u9694\u7A7A\u4F20\u9001\u672A\u542F\u7528", disabled: true });
-  } else {
-    for (const device of status.paired) {
-      items.push(menuRow(`\u63A8\u9001\u5230\u300C${device.name}\u300D`, () => pushToDevice(device.id, device.name, path)));
-    }
-  }
-  items.push(SEPARATOR);
-  items.push(menuRow("\u2190 \u8FD4\u56DE", (row2) => row2.render(previousItems), { keepOpen: true }));
-  menu.render(items);
-}
-async function pushToDevice(peerId, deviceName, path) {
-  contextToast(`\u6B63\u5728\u63A8\u9001\u5230\u300C${deviceName}\u300D\u2026`, "info");
-  try {
-    await pushFileToPeer(peerId, path);
-    contextToast(`\u5DF2\u63A8\u9001\u5230\u300C${deviceName}\u300D`, "ok");
-  } catch (error) {
-    contextToast(`\u63A8\u9001\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
-  }
 }
 function editableItems(element) {
   const selected = hasSelection(element);
@@ -11085,8 +10575,8 @@ function editableItems(element) {
     menuRow("\u5168\u9009", () => selectAll(element), { hint: `${mod}A` })
   ];
 }
-function menuRow(label2, action, options = {}) {
-  return { label: label2, action, hint: options.hint, disabled: options.disabled === true, keepOpen: options.keepOpen === true };
+function menuRow(label, action, options = {}) {
+  return { label, action, hint: options.hint, disabled: options.disabled === true, keepOpen: options.keepOpen === true };
 }
 function showMenu({ x: x2, y: y2, items, onClosed, onError }) {
   const menu = document.createElement("div");
@@ -11191,9 +10681,9 @@ function itemElement(item, close, restoreFocus, render, onError) {
   button.className = ITEM_CLASS;
   button.setAttribute("role", "menuitem");
   button.disabled = item.disabled === true;
-  const label2 = document.createElement("span");
-  label2.textContent = item.label;
-  button.append(label2);
+  const label = document.createElement("span");
+  label.textContent = item.label;
+  button.append(label);
   if (typeof item.hint === "string" && item.hint !== "") {
     const hint = document.createElement("span");
     hint.className = HINT_CLASS;
@@ -11323,13 +10813,13 @@ function addToTask(ctx, text2) {
   if (input === void 0) throw new Error("\u5F53\u524D\u6CA1\u6709\u53EF\u7528\u7684\u8F93\u5165\u6846");
   const block = draftBlock(text2);
   if (block === "") return;
-  const actions2 = input.actions;
-  if (typeof actions2?.captureInsertion === "function" && typeof actions2?.insertText === "function") {
-    if (actions2.insertText(block, actions2.captureInsertion())) {
+  const actions = input.actions;
+  if (typeof actions?.captureInsertion === "function" && typeof actions?.insertText === "function") {
+    if (actions.insertText(block, actions.captureInsertion())) {
       input.focus();
       return;
     }
-    if (actions2.insertText(block, actions2.captureInsertion())) {
+    if (actions.insertText(block, actions.captureInsertion())) {
       input.focus();
       return;
     }
@@ -11458,554 +10948,6 @@ function reportError(ctx, error) {
   }
 }
 
-// src/components/HandoffSettings.tsx
-var import_react16 = require("react");
-
-// src/lib/handoff-api.ts
-var BASE2 = "/easel";
-async function request2(url, options) {
-  const res = await fetch(`${BASE2}${url}`, { cache: "no-store", ...options });
-  if (!res.ok) {
-    let detail = "";
-    try {
-      const payload = await res.json();
-      detail = payload && (payload.detail || payload.error) || "";
-    } catch {
-    }
-    throw new Error(detail || `\u8BF7\u6C42\u5931\u8D25\uFF08${res.status} ${res.statusText}\uFF09`);
-  }
-  return res.json();
-}
-function getHandoffStatus() {
-  return request2("/api/handoff/status");
-}
-function getHandoffWorkspaces() {
-  return request2("/api/handoff/workspaces");
-}
-function pairWithPeer(peerId) {
-  return request2("/api/handoff/pair", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ peerId })
-  });
-}
-function acceptPairing(id) {
-  return request2(`/api/handoff/pair/${encodeURIComponent(id)}/accept`, { method: "POST" });
-}
-function rejectPairing(id) {
-  return request2(`/api/handoff/pair/${encodeURIComponent(id)}/reject`, { method: "POST" });
-}
-function sendHandoff(peerId, workspacePath, payload) {
-  return request2("/api/handoff/send", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ peerId, workspacePath, payload })
-  });
-}
-
-// src/components/HandoffSettings.tsx
-var import_jsx_runtime26 = require("react/jsx-runtime");
-var COPY = {
-  en: {
-    nav: "Air Transfer",
-    intro: "Send a project and its agent sessions to another device on this network, or receive one. Both devices stay on the same network with the app open.",
-    unavailable: "Air Transfer is not enabled in this profile.",
-    device: "This device",
-    port: "port",
-    refresh: "Refresh",
-    paired: "Paired devices",
-    pairedBadge: "Paired",
-    noPaired: "Nothing paired yet. Pair a nearby device first.",
-    nearby: "Nearby devices",
-    noNearby: "No devices found. Keep both apps open on the same network, then refresh.",
-    pair: "Pair",
-    pending: "Waiting for confirmation",
-    sasHint: "Check that both screens show this number, then confirm on each. Only pair when they match.",
-    confirm: "They match \u2014 pair",
-    reject: "Decline",
-    sendTitle: "Send a project",
-    pickWorkspace: "Choose a project",
-    pickPeer: "Choose a device",
-    payloadTitle: "Include",
-    withSessions: "Sessions (agent continuation)",
-    withMaterials: "Project materials (\u7D20\u6750/)",
-    withLibrary: "Content library (outputs/)",
-    withConfig: "Config (.env / profiles / skills)",
-    configHint: "Contains API keys \u2014 only sent when selected, merged into the receiving device\u2019s own config on arrival.",
-    send: "Send",
-    sending: "Sending\u2026",
-    sent: "Handoff complete.",
-    failed: "Handoff failed"
-  },
-  zh: {
-    nav: "\u9694\u7A7A\u4F20\u9001",
-    intro: "\u628A\u9879\u76EE\u8FDE\u540C agent \u4F1A\u8BDD\u53D1\u5230\u672C\u7F51\u7EDC\u7684\u53E6\u4E00\u53F0\u8BBE\u5907\uFF0C\u6216\u4ECE\u53E6\u4E00\u53F0\u8BBE\u5907\u63A5\u6536\u3002\u4E24\u53F0\u8BBE\u5907\u9700\u5728\u540C\u4E00\u7F51\u7EDC\u5E76\u90FD\u4FDD\u6301\u5E94\u7528\u5F00\u542F\u3002",
-    unavailable: "\u5F53\u524D profile \u672A\u542F\u7528\u9694\u7A7A\u4F20\u9001\u3002",
-    device: "\u672C\u673A",
-    port: "\u7AEF\u53E3",
-    refresh: "\u5237\u65B0",
-    paired: "\u5DF2\u914D\u5BF9\u8BBE\u5907",
-    pairedBadge: "\u5DF2\u914D\u5BF9",
-    noPaired: "\u8FD8\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907\uFF0C\u5148\u5728\u9644\u8FD1\u8BBE\u5907\u91CC\u914D\u5BF9\u3002",
-    nearby: "\u9644\u8FD1\u8BBE\u5907",
-    noNearby: "\u5C1A\u672A\u53D1\u73B0\u8BBE\u5907\u3002\u8BF7\u8BA9\u4E24\u53F0\u8BBE\u5907\u90FD\u5F00\u7740\u5E94\u7528\u5E76\u5904\u4E8E\u540C\u4E00\u7F51\u7EDC\uFF0C\u7136\u540E\u5237\u65B0\u3002",
-    pair: "\u914D\u5BF9",
-    pending: "\u7B49\u5F85\u786E\u8BA4",
-    sasHint: "\u8BF7\u6838\u5BF9\u4E24\u53F0\u5C4F\u5E55\u663E\u793A\u7684\u662F\u540C\u4E00\u4E32\u6570\u5B57\uFF0C\u518D\u5206\u522B\u5728\u5404\u81EA\u8BBE\u5907\u4E0A\u786E\u8BA4\uFF1B\u4E00\u81F4\u624D\u914D\u5BF9\u3002",
-    confirm: "\u4E00\u81F4\uFF0C\u914D\u5BF9",
-    reject: "\u62D2\u7EDD",
-    sendTitle: "\u53D1\u9001\u9879\u76EE",
-    pickWorkspace: "\u9009\u62E9\u9879\u76EE",
-    pickPeer: "\u9009\u62E9\u8BBE\u5907",
-    payloadTitle: "\u968F\u5305\u5185\u5BB9",
-    withSessions: "\u4F1A\u8BDD\uFF08agent \u7EED\u4F5C\u4E0A\u4E0B\u6587\uFF09",
-    withMaterials: "\u9879\u76EE\u7D20\u6750\uFF08\u7D20\u6750/\uFF09",
-    withLibrary: "\u5185\u5BB9\u5E93\uFF08outputs/\uFF09",
-    withConfig: "\u914D\u7F6E\u9879\uFF08.env / \u753B\u50CF / \u6280\u80FD\uFF09",
-    configHint: "\u914D\u7F6E\u9879\u542B API \u5BC6\u94A5\uFF0C\u53EA\u5728\u52FE\u9009\u540E\u968F\u5305\u53D1\u9001\uFF1B\u5230\u8FBE\u540E\u5408\u5E76\u8FDB\u5BF9\u65B9\u672C\u673A\u914D\u7F6E\u3002",
-    send: "\u53D1\u9001",
-    sending: "\u53D1\u9001\u4E2D\u2026",
-    sent: "\u4EA4\u63A5\u5B8C\u6210\u3002",
-    failed: "\u4EA4\u63A5\u5931\u8D25"
-  }
-};
-var HANDOFF_STYLES = `
-.ehs-root {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 8px 0;
-  font-size: 13px;
-  line-height: 22px;
-  color: var(--dsw-alias-label-primary);
-}
-.ehs-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
-.ehs-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px 16px;
-  border: 0.5px solid var(--dsw-alias-settings-card-stroke);
-  border-radius: var(--dsw-radius-xl);
-  background: var(--dsw-alias-settings-card-fill);
-}
-.ehs-card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 500;
-}
-.ehs-pending { border-color: var(--dsw-alias-state-business-primary); }
-.ehs-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 8px 0;
-}
-.ehs-row + .ehs-row { border-top: 0.5px solid var(--dsw-alias-border-l2); }
-.ehs-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.ehs-row-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ehs-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
-.ehs-device { display: flex; flex-direction: column; gap: 2px; }
-.ehs-device-name { font-size: 14px; line-height: 22px; }
-.ehs-device-meta { display: flex; align-items: center; gap: 8px; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
-.ehs-device-meta code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.02em; }
-.ehs-sas-block { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 0 2px; text-align: center; }
-.ehs-sas {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-variant-numeric: tabular-nums;
-  font-size: 32px;
-  line-height: 40px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  padding-left: 0.18em;
-}
-.ehs-actions { display: flex; gap: 8px; justify-content: center; }
-.ehs-empty { padding: 6px 0; color: var(--dsw-alias-label-secondary); }
-.ehs-btn {
-  box-sizing: border-box;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: var(--dsw-radius-sm);
-  font-size: 12px;
-  line-height: 18px;
-  color: var(--dsw-alias-label-primary);
-  background: transparent;
-  transition: transform 100ms ease-out, background-color 120ms ease-out;
-}
-.ehs-btn-md { height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md); font-size: 14px; line-height: 22px; }
-.ehs-btn:active:not(:disabled) { transform: scale(0.97); }
-.ehs-btn:disabled { cursor: not-allowed; opacity: 0.4; }
-.ehs-btn:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
-.ehs-btn-primary { background: var(--dsw-alias-button-primary-fill); color: var(--dsw-alias-label-primary-foreground); }
-.ehs-btn-primary:hover:not(:disabled) { background: var(--dsw-alias-button-primary-hover); }
-.ehs-btn-outline { border: 0.5px solid var(--dsw-alias-border-l3); }
-.ehs-btn-outline:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
-.ehs-btn-ghost:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
-.ehs-chip {
-  flex: none;
-  padding: 1px 8px;
-  border-radius: var(--dsw-radius-sm);
-  background: var(--dsw-alias-interactive-bg-hover);
-  color: var(--dsw-alias-label-secondary);
-  font-size: 12px;
-  line-height: 18px;
-}
-.ehs-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
-.ehs-field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 1; }
-.ehs-field > span { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
-.ehs-payload { display: flex; flex-direction: column; gap: 6px; width: 100%; }
-.ehs-payload-row { display: flex; flex-wrap: wrap; gap: 4px 18px; }
-.ehs-check { display: inline-flex; align-items: center; gap: 7px; color: var(--dsw-alias-label-primary); font-size: 13px; line-height: 20px; cursor: pointer; }
-.ehs-check input { width: 14px; height: 14px; margin: 0; accent-color: var(--dsw-alias-state-business-primary); cursor: pointer; }
-.ehs-check input:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
-.ehs-hint { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
-.ehs-select {
-  box-sizing: border-box;
-  height: 32px;
-  padding: 0 8px;
-  border: 0.5px solid var(--dsw-alias-border-l4);
-  border-radius: var(--dsw-radius-md);
-  background: var(--dsw-alias-bg-layer-1);
-  color: var(--dsw-alias-label-primary);
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 22px;
-}
-.ehs-select:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
-.ehs-outcome { font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); }
-.ehs-outcome[data-tone='ok'] { color: var(--dsw-alias-state-success-primary); }
-.ehs-outcome[data-tone='fail'] { color: var(--dsw-alias-state-error-primary); }
-.ehs-error { margin: 0; color: var(--dsw-alias-state-error-primary); font-size: 12px; line-height: 18px; }
-@media (prefers-reduced-motion: reduce) {
-  .ehs-btn { transition: none; }
-  .ehs-btn:active:not(:disabled) { transform: none; }
-}
-`;
-function HandoffSettings({ t }) {
-  const [status, setStatus] = (0, import_react16.useState)(void 0);
-  const [workspaces, setWorkspaces] = (0, import_react16.useState)([]);
-  const [error, setError] = (0, import_react16.useState)("");
-  const [busy, setBusy] = (0, import_react16.useState)(void 0);
-  const [workspacePath, setWorkspacePath] = (0, import_react16.useState)("");
-  const [peerId, setPeerId] = (0, import_react16.useState)("");
-  const [payload, setPayload] = (0, import_react16.useState)({ sessions: true, materials: true, library: false, config: false });
-  const mounted = (0, import_react16.useRef)(true);
-  (0, import_react16.useEffect)(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-    };
-  }, []);
-  const refresh = (0, import_react16.useCallback)(async () => {
-    try {
-      const next = await getHandoffStatus();
-      if (!mounted.current) return;
-      setStatus(next);
-      if (next.available) {
-        const listing = await getHandoffWorkspaces();
-        if (!mounted.current) return;
-        setWorkspaces(listing.workspaces);
-        setWorkspacePath((current) => current !== "" && listing.workspaces.some((item) => item.path === current) ? current : listing.workspaces[0]?.path ?? "");
-        setPeerId((current) => current !== "" && next.paired.some((item) => item.id === current) ? current : next.paired[0]?.id ?? "");
-      }
-    } catch (failure) {
-      if (mounted.current) setError(failure instanceof Error ? failure.message : String(failure));
-    }
-  }, []);
-  (0, import_react16.useEffect)(() => {
-    void refresh();
-    const timer = setInterval(() => {
-      if (!document.hidden) void refresh();
-    }, 3e3);
-    return () => {
-      clearInterval(timer);
-    };
-  }, [refresh]);
-  const run = async (action, work) => {
-    setBusy(action);
-    setError("");
-    try {
-      await work();
-      await refresh();
-    } catch (failure) {
-      if (mounted.current) setError(failure instanceof Error ? failure.message : String(failure));
-    } finally {
-      if (mounted.current) setBusy(void 0);
-    }
-  };
-  if (status === void 0) {
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-root", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-muted", children: error || "\u2026" }) });
-  }
-  const pending = status.pending;
-  const unpaired = status.discovered.filter((peer) => !status.paired.some((paired) => paired.id === peer.id));
-  const last = status.last ?? void 0;
-  const canSend = workspacePath !== "" && peerId !== "";
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-root", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-intro", children: t("intro") }),
-    status.available && status.device !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-card-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("device") }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-          "button",
-          {
-            type: "button",
-            className: "ehs-btn ehs-btn-ghost",
-            disabled: busy !== void 0,
-            onClick: () => {
-              void run("refresh", refresh);
-            },
-            children: t("refresh")
-          }
-        )
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-device", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-device-name", children: status.device.name }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-device-meta", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { children: status.device.id.slice(0, 12) }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: "\xB7" }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { children: [
-            t("port"),
-            " ",
-            status.device.port
-          ] })
-        ] })
-      ] })
-    ] }),
-    !status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-empty", children: status.reason ?? t("unavailable") }),
-    status.available && pending.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card ehs-pending", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("pending") }) }),
-      pending.map((offer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-sas-block", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { children: [
-          offer.peer.name,
-          " ",
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ehs-muted", children: [
-            "(",
-            offer.peer.platform,
-            ")"
-          ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-sas", "aria-label": `${offer.sas}`, children: offer.sas }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-muted", children: t("sasHint") }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-actions", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-            "button",
-            {
-              type: "button",
-              className: "ehs-btn ehs-btn-outline",
-              disabled: busy !== void 0,
-              onClick: () => {
-                void run(`reject:${offer.id}`, () => rejectPairing(offer.id));
-              },
-              children: t("reject")
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-            "button",
-            {
-              type: "button",
-              className: "ehs-btn ehs-btn-primary",
-              disabled: busy !== void 0,
-              onClick: () => {
-                void run(`accept:${offer.id}`, () => acceptPairing(offer.id));
-              },
-              children: t("confirm")
-            }
-          )
-        ] })
-      ] }, offer.id))
-    ] }),
-    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("nearby") }) }),
-      unpaired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-empty", children: t("noNearby") }) : unpaired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row-main", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-row-title", children: peer.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ehs-muted", children: [
-            peer.platform,
-            peer.compatible === false ? " \xB7 \u26A0" : ""
-          ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-          "button",
-          {
-            type: "button",
-            className: "ehs-btn ehs-btn-outline",
-            disabled: busy !== void 0,
-            onClick: () => {
-              void run(`pair:${peer.id}`, () => pairWithPeer(peer.id));
-            },
-            children: t("pair")
-          }
-        )
-      ] }, peer.id))
-    ] }),
-    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("paired") }) }),
-      status.paired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-empty", children: t("noPaired") }) : status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-row-main", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-row-title", children: peer.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("span", { className: "ehs-muted", children: [
-            peer.platform,
-            " \xB7 ",
-            peer.id.slice(0, 8)
-          ] })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-chip", children: t("pairedBadge") })
-      ] }, peer.id))
-    ] }),
-    status.available && /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ehs-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("sendTitle") }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-form", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("pickWorkspace") }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
-            "select",
-            {
-              className: "ehs-select",
-              value: workspacePath,
-              onChange: (event) => {
-                setWorkspacePath(event.target.value);
-              },
-              children: [
-                workspaces.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t("pickWorkspace") }),
-                workspaces.map((workspace) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: workspace.path, children: workspace.title }, workspace.path))
-              ]
-            }
-          )
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-field", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t("pickPeer") }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)(
-            "select",
-            {
-              className: "ehs-select",
-              value: peerId,
-              onChange: (event) => {
-                setPeerId(event.target.value);
-              },
-              children: [
-                status.paired.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: "", children: t("pickPeer") }),
-                status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("option", { value: peer.id, children: peer.name }, peer.id))
-              ]
-            }
-          )
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-          "button",
-          {
-            type: "button",
-            className: "ehs-btn ehs-btn-md ehs-btn-primary",
-            disabled: busy !== void 0 || !canSend,
-            onClick: () => {
-              void run("send", () => sendHandoff(peerId, workspacePath, payload));
-            },
-            children: busy === "send" ? t("sending") : t("send")
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-payload", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-hint", children: t("payloadTitle") }),
-          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-payload-row", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-check", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-                "input",
-                {
-                  type: "checkbox",
-                  checked: payload.sessions,
-                  onChange: (event) => {
-                    setPayload((current) => ({ ...current, sessions: event.target.checked }));
-                  }
-                }
-              ),
-              t("withSessions")
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-check", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-                "input",
-                {
-                  type: "checkbox",
-                  checked: payload.materials,
-                  onChange: (event) => {
-                    setPayload((current) => ({ ...current, materials: event.target.checked }));
-                  }
-                }
-              ),
-              t("withMaterials")
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-check", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-                "input",
-                {
-                  type: "checkbox",
-                  checked: payload.library,
-                  onChange: (event) => {
-                    setPayload((current) => ({ ...current, library: event.target.checked }));
-                  }
-                }
-              ),
-              t("withLibrary")
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-check", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-                "input",
-                {
-                  type: "checkbox",
-                  checked: payload.config,
-                  onChange: (event) => {
-                    setPayload((current) => ({ ...current, config: event.target.checked }));
-                  }
-                }
-              ),
-              t("withConfig")
-            ] })
-          ] }),
-          payload.config && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-hint", children: t("configHint") })
-        ] })
-      ] }),
-      last !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-outcome", "data-tone": last.ok ? "ok" : "fail", "aria-live": "polite", children: last.ok ? t("sent") : `${t("failed")}\uFF1A${last.detail}` })
-    ] }),
-    error !== "" && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { className: "ehs-error", role: "alert", children: error })
-  ] });
-}
-
-// src/features/handoff.tsx
-var NS = "easel.handoff";
-var STYLE_ID2 = "easel-handoff-settings-styles";
-var plugin13 = {
-  name: "easel-handoff-settings",
-  inject: ["slots", "locale"],
-  apply(ctx) {
-    ctx.effect(() => ctx.locale.register(NS, COPY), "easel: handoff dictionaries");
-    ctx.effect(() => {
-      const style = document.createElement("style");
-      style.id = STYLE_ID2;
-      style.textContent = HANDOFF_STYLES;
-      document.head.append(style);
-      return () => {
-        style.remove();
-      };
-    }, "easel: handoff styles");
-    const t = ctx.locale.bind(NS);
-    ctx.slots.inject("settings.section", () => ctx.slots.register({
-      name: "settings.section",
-      id: "easel-handoff",
-      order: 60,
-      locale: NS,
-      label: () => t("nav"),
-      inject: () => ({ t })
-    }, HandoffSettings));
-  }
-};
-
 // src/features/index.ts
 var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
 var FEATURES = views.map((module2) => ({
@@ -12016,214 +10958,18 @@ var FEATURES = views.map((module2) => ({
 }));
 var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12, plugin13];
 
-// src/components/DataRootSection.tsx
-var import_react17 = require("react");
-var import_jsx_runtime27 = require("react/jsx-runtime");
-var box = { display: "flex", flexDirection: "column", gap: 12, fontSize: 13 };
-var row = { display: "flex", flexDirection: "column", gap: 4 };
-var label = { opacity: 0.7 };
-var code = { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12, wordBreak: "break-all" };
-var actions = { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" };
-var inputStyle = {
-  flex: "1 1 320px",
-  minWidth: 0,
-  padding: "6px 8px",
-  borderRadius: 6,
-  border: "1px solid rgba(127,127,127,.35)",
-  background: "transparent",
-  color: "inherit",
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-  fontSize: 12
-};
-var buttonStyle = {
-  padding: "5px 10px",
-  borderRadius: 6,
-  border: "1px solid rgba(127,127,127,.35)",
-  background: "transparent",
-  color: "inherit",
-  cursor: "pointer"
-};
-var primaryStyle = {
-  ...buttonStyle,
-  border: "none",
-  background: "var(--dsw-accent, #4f7cff)",
-  color: "#fff"
-};
-var warningStyle = { margin: 0, padding: "8px 10px", borderRadius: 6, background: "rgba(214,158,46,.12)", color: "inherit" };
-var errorStyle = { margin: 0, color: "var(--dsw-danger, #d14)", whiteSpace: "pre-wrap" };
-async function request3(path, init) {
-  const headers = {
-    accept: "application/json",
-    ...init?.body === void 0 ? {} : { "content-type": "application/json" },
-    ...init?.headers
-  };
-  const res = await fetch(`/easel/api${path}`, { ...init, headers, cache: "no-store" });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    const detail = data.detail ?? data.message ?? `HTTP ${res.status}`;
-    throw new Error(detail);
-  }
-  return data;
-}
-function DataRootSection({ t }) {
-  const [status, setStatus] = (0, import_react17.useState)(null);
-  const [value, setValue] = (0, import_react17.useState)("");
-  const [busy, setBusy] = (0, import_react17.useState)(false);
-  const [error, setError] = (0, import_react17.useState)(null);
-  const [notice, setNotice] = (0, import_react17.useState)(null);
-  (0, import_react17.useEffect)(() => {
-    let active = true;
-    request3("/data-root").then((next) => {
-      if (!active) return;
-      setStatus(next);
-      setValue(next.current ?? next.default ?? "");
-    }).catch((err) => {
-      if (active) setError(err.message);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
-  if (status !== null && !status.supported) {
-    return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { style: box, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { children: t("nav") }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { children: t("onlyDesktop") })
-    ] });
-  }
-  if (status === null) {
-    return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { style: box, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { children: t("nav") }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { children: t("loading") }),
-      error === null ? null : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { style: errorStyle, role: "alert", children: error })
-    ] });
-  }
-  const choose = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const picked = await request3("/data-root/pick", { method: "POST" });
-      if (picked.path) setValue(picked.path);
-    } catch (err) {
-      const message = err.message;
-      setNotice(message === "picker-unavailable" ? t("pickUnavailable") : message);
-    } finally {
-      setBusy(false);
-    }
-  };
-  const migrate = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      await request3("/data-root", { method: "POST", body: JSON.stringify({ path: value.trim() }) });
-      setNotice(t("migrating"));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
-  };
-  const trimmed = value.trim().replace(/[\\/]+$/, "");
-  const current = (status.current ?? "").replace(/[\\/]+$/, "");
-  const unchanged = trimmed.length === 0 || trimmed === current;
-  return /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("section", { style: box, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("h2", { children: t("nav") }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { style: { margin: 0 }, children: t("intro") }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { style: row, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { style: label, children: t("current") }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("code", { style: code, children: status.current })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { style: row, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("span", { style: label, children: t("default") }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("code", { style: code, children: status.default })
-    ] }),
-    status.isDefault ? null : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { style: actions, children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
-      "button",
-      {
-        type: "button",
-        style: buttonStyle,
-        disabled: busy,
-        onClick: () => {
-          setValue(status.default ?? "");
-          setNotice(null);
-        },
-        children: t("useDefault")
-      }
-    ) }),
-    status.cloudSynced ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { style: warningStyle, children: t("cloudWarning") }) : null,
-    status.pending ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { style: { margin: 0 }, children: t("pending") }) : null,
-    status.lastError ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { style: errorStyle, role: "alert", children: status.lastError }) : null,
-    notice ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { style: { margin: 0 }, children: notice }) : null,
-    error ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { style: errorStyle, role: "alert", children: error }) : null,
-    /* @__PURE__ */ (0, import_jsx_runtime27.jsxs)("div", { style: actions, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
-        "input",
-        {
-          style: inputStyle,
-          value,
-          spellCheck: false,
-          onChange: (event) => {
-            setValue(event.target.value);
-            setNotice(null);
-          },
-          "aria-label": t("current")
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("button", { type: "button", style: buttonStyle, disabled: busy, onClick: () => {
-        void choose();
-      }, children: t("choose") }),
-      /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("button", { type: "button", style: primaryStyle, disabled: busy || unchanged, onClick: () => {
-        void migrate();
-      }, children: t("migrate") })
-    ] })
-  ] });
-}
-
-// src/locales/dataRoot.ts
-var DATA_ROOT_COPY = {
-  zh: {
-    nav: "\u6570\u636E\u4F4D\u7F6E",
-    intro: "\u9879\u76EE\u548C\u4F1A\u8BDD\u5B58\u653E\u5728\u8FD9\u91CC\u3002\u8FC1\u79FB\u4F1A\u628A\u6574\u4E2A\u6570\u636E\u76EE\u5F55\u79FB\u5230\u65B0\u4F4D\u7F6E\uFF0C\u65E7\u8DEF\u5F84\u4FDD\u7559\u94FE\u63A5\uFF0C\u5DF2\u6709\u9879\u76EE\u4ECD\u53EF\u76F4\u63A5\u6253\u5F00\u3002",
-    current: "\u5F53\u524D\u76EE\u5F55",
-    default: "\u9ED8\u8BA4\u4F4D\u7F6E",
-    useDefault: "\u4F7F\u7528\u9ED8\u8BA4\u4F4D\u7F6E",
-    choose: "\u9009\u62E9\u6587\u4EF6\u5939\u2026",
-    migrate: "\u8FC1\u79FB\u5E76\u91CD\u542F",
-    migrating: "\u6B63\u5728\u8FC1\u79FB\uFF0C\u5E94\u7528\u4F1A\u81EA\u52A8\u91CD\u542F\u2026",
-    pending: "\u5DF2\u6709\u4E00\u6B21\u8FC1\u79FB\u5728\u7B49\u5F85\u91CD\u542F\u540E\u6267\u884C\u3002",
-    cloudWarning: "\u8FD9\u4E2A\u4F4D\u7F6E\u5728\u4E91\u540C\u6B65\u76EE\u5F55\u4E0B\uFF08OneDrive/iCloud \u7B49\uFF09\uFF0C\u5927\u9879\u76EE\u4F1A\u968F\u4E4B\u4E0A\u4F20\u3002\u53EF\u4EE5\u6362\u5230\u4E0D\u540C\u6B65\u7684\u76EE\u5F55\u3002",
-    onlyDesktop: "\u4EC5\u684C\u9762\u7248\u652F\u6301\u4FEE\u6539\u6570\u636E\u4F4D\u7F6E\u3002",
-    loading: "\u8BFB\u53D6\u4E2D\u2026",
-    pickUnavailable: "\u7CFB\u7EDF\u6CA1\u6709\u53EF\u7528\u7684\u76EE\u5F55\u9009\u62E9\u5668\uFF0C\u8BF7\u76F4\u63A5\u8F93\u5165\u8DEF\u5F84\u3002"
-  },
-  en: {
-    nav: "Data location",
-    intro: "Projects and sessions live here. Moving the data root keeps the old path as a link, so existing projects stay reachable.",
-    current: "Current folder",
-    default: "Default folder",
-    useDefault: "Use default",
-    choose: "Choose folder\u2026",
-    migrate: "Move and restart",
-    migrating: "Moving the data root; the app will restart automatically\u2026",
-    pending: "A move is queued and will run after the next restart.",
-    cloudWarning: "This folder is inside a cloud-sync location (OneDrive/iCloud, etc.), so large projects will be uploaded. Pick a non-synced folder if that is not desired.",
-    onlyDesktop: "Changing the data location is available in the desktop app only.",
-    loading: "Loading\u2026",
-    pickUnavailable: "No folder picker is available; type the path instead."
-  }
-};
-
 // src/client.tsx
 var NS2 = "easel.panel";
 var STYLE_ID3 = "dsh-plugin-easel-style";
 var STYLES = EASEL_CSS;
-var COPY2 = {
+var COPY = {
   zh: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.zh])),
   en: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.en]))
 };
 var client_default = {
   inject: ["slots", "locale", "uiSidebarPanels", "sessions", "uiWorkspace", "remote", "remote.session"],
   apply(ctx) {
-    ctx.effect(() => ctx.locale.register(NS2, COPY2), "easel: rail dictionaries");
+    ctx.effect(() => ctx.locale.register(NS2, COPY), "easel: rail dictionaries");
     ctx.effect(() => {
       const style = document.createElement("style");
       style.id = STYLE_ID3;
@@ -12232,18 +10978,6 @@ var client_default = {
       return () => style.remove();
     }, "easel: workbench styles");
     ctx.effect(() => ctx.uiSidebarPanels.hidden("schedules"), "easel: hide schedules rail icon");
-    ctx.effect(
-      () => ctx.locale.register("settings.dataRoot", DATA_ROOT_COPY),
-      "easel: data root dictionaries"
-    );
-    ctx.slots.inject("settings.section", () => ctx.slots.register({
-      name: "settings.section",
-      id: "data-root",
-      order: 40,
-      label: () => ctx.locale.bind("settings.dataRoot")("nav"),
-      locale: "settings.dataRoot",
-      inject: () => ({})
-    }, DataRootSection));
     const t = ctx.locale.bind(NS2);
     ctx.provide("easelShell", createShellBridge(ctx, t));
     for (const plugin14 of CLIENT_PLUGINS) ctx.plugin(plugin14);

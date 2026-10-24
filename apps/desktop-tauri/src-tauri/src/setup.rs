@@ -587,6 +587,11 @@ pub(crate) fn ensure_easel_bundle_at(
             }
         }
     }
+    ensure_easel_row(
+        &mut rows,
+        "easel-backup",
+        "insert:\n  - id: easel-backup\n    name: dsh-plugin-easel/backup\n",
+    )?;
     if !rows
         .iter()
         .any(|row| row_has_id(row, "ui-plugin-manager"))
@@ -896,7 +901,7 @@ mod easel_tests {
         assert!(patch.contains("disabled: true"));
         assert!(patch.contains("C:\\repo"));
         // The user's easel row plus the fresh rows this shell maintains, one each.
-        for id in ["easel", "easel-skills", "easel-automation", "easel-deconstruct"] {
+        for id in ["easel", "easel-skills", "easel-automation", "easel-deconstruct", "easel-backup"] {
             assert_eq!(patch.matches(&format!("- id: {id}\n")).count(), 1, "row {id}");
         }
     }
