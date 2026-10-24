@@ -11,7 +11,7 @@
  * The auxiliary conversation is dsh's own new-Session path with the selected
  * text as its draft, so the Conversation UI, input, and history stay dsh's.
  */
-import { captureTrendArticle, createIdea } from '../lib/api'
+import { captureTrendArticle, createIdea, fetchHandoffPaired, pushFileToPeer } from '../lib/api'
 import {
   absolutePathFor, draftBlock, fileNameOf, isAbsolutePath, quoteBlock, relativePath, resolveSurface,
 } from '../lib/context-menu-model.js'
@@ -226,20 +226,20 @@ function trendItems(trend) {
 
 /** Fetch the article body into the content library and upsert the idea. */
 async function captureTrend(trend) {
-  trendToast('正在抓取正文…', 'info')
+  contextToast('正在抓取正文…', 'info')
   try {
     const result = await captureTrendArticle({
       title: trend.title, url: trend.url, source: trend.source,
       platform: trend.platform, rank: trend.rank, hot: trend.hot,
     })
     if (typeof result.warning === 'string' && result.warning !== '') {
-      trendToast(`已入库 · ${result.warning}`, 'warn')
+      contextToast(`已入库 · ${result.warning}`, 'warn')
     } else {
-      trendToast(result.reused === true ? '正文已更新' : '已存入内容库与选题库', 'ok')
+      contextToast(result.reused === true ? '正文已更新' : '已存入内容库与选题库', 'ok')
     }
     notifyTrendSaved(trend.title)
   } catch (error) {
-    trendToast(`抓取失败：${messageOf(error)}`, 'error')
+    contextToast(`抓取失败：${messageOf(error)}`, 'error')
   }
 }
 
@@ -247,10 +247,10 @@ async function captureTrend(trend) {
 function saveTrendTitle(title, source) {
   createIdea({ title, source })
     .then(() => {
-      trendToast('已收藏到选题库', 'ok')
+      contextToast('已收藏到选题库', 'ok')
       notifyTrendSaved(title)
     })
-    .catch((error) => { trendToast(`收藏失败：${messageOf(error)}`, 'error') })
+    .catch((error) => { contextToast(`收藏失败：${messageOf(error)}`, 'error') })
 }
 
 /** The trend page marks its bookmark state from this event. */
@@ -270,17 +270,17 @@ function openTrendUrl(url) {
 }
 
 /** One transient status line; a failed capture on a ported page has no composer to notify. */
-let trendToastTimer = null
-function trendToast(message, kind) {
+let contextToastTimer = null
+function contextToast(message, kind) {
   const previous = document.querySelector(`.${TOAST_CLASS}`)
   if (previous !== null) previous.remove()
-  if (trendToastTimer !== null) clearTimeout(trendToastTimer)
+  if (contextToastTimer !== null) clearTimeout(contextToastTimer)
   const toast = document.createElement('div')
   toast.className = `${TOAST_CLASS} ${TOAST_CLASS}--${kind}`
   toast.setAttribute('role', 'status')
   toast.textContent = message
   document.body.append(toast)
-  trendToastTimer = setTimeout(() => toast.remove(), 2600)
+  contextToastTimer = setTimeout(() => toast.remove(), 2600)
 }
 
 function messageOf(error) {
@@ -313,7 +313,51 @@ function fileItems(ctx, surface) {
   items.push(menuRow('复制相对路径', () => copyOrThrow(relative)))
   items.push(menuRow('复制绝对路径', () => copyOrThrow(absolute)))
   if (entry === 'file') items.push(menuRow('复制文件名', () => copyOrThrow(fileNameOf(absolute))))
+  items.push(SEPARATOR)
+  items.push(menuRow('推送到设备…', (menu) => showPushTargets(ctx, surface, menu, items), { keepOpen: true }))
   return items
+}
+
+// ---- 局域网快推（spec easel-handoff-payload §S2）：文件面 → 选设备 → 传输，轻提示回执 ----
+
+/**
+ * Replace the open menu's rows with the paired devices, then push on pick.
+ * @param ctx - plugin context.
+ * @param surface - the file surface being pushed.
+ * @param menu - the row API handed to the keep-open item.
+ * @param previousItems - the file rows, restored by the back row.
+ */
+async function showPushTargets(ctx, surface, menu, previousItems) {
+  menu.render([{ label: '正在查找已配对设备…', disabled: true }])
+  const path = await resolveHostPath(ctx, surface)
+  let status
+  try {
+    status = await fetchHandoffPaired()
+  } catch {
+    status = { available: false, paired: [] }
+  }
+  const items = []
+  if (status.available !== true || status.paired.length === 0) {
+    items.push({ label: status.available ? '没有已配对的设备' : '局域网交接未启用', disabled: true })
+  } else {
+    for (const device of status.paired) {
+      items.push(menuRow(`推送到「${device.name}」`, () => pushToDevice(device.id, device.name, path)))
+    }
+  }
+  items.push(SEPARATOR)
+  items.push(menuRow('← 返回', (row) => row.render(previousItems), { keepOpen: true }))
+  menu.render(items)
+}
+
+/** Push one file/folder and report the outcome in a toast; never rethrows. */
+async function pushToDevice(peerId, deviceName, path) {
+  contextToast(`正在推送到「${deviceName}」…`, 'info')
+  try {
+    await pushFileToPeer(peerId, path)
+    contextToast(`已推送到「${deviceName}」`, 'ok')
+  } catch (error) {
+    contextToast(`推送失败：${messageOf(error)}`, 'error')
+  }
 }
 
 /**

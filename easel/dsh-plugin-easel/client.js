@@ -1331,6 +1331,16 @@ function captureTrendArticle(input) {
     body: JSON.stringify(input)
   });
 }
+function fetchHandoffPaired() {
+  return request("/api/handoff/status");
+}
+function pushFileToPeer(peerId, path) {
+  return request("/api/handoff/push", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ peerId, path })
+  });
+}
 function fetchSchedule() {
   return request("/api/schedule");
 }
@@ -10028,7 +10038,7 @@ function trendItems(trend) {
   ];
 }
 async function captureTrend(trend) {
-  trendToast("\u6B63\u5728\u6293\u53D6\u6B63\u6587\u2026", "info");
+  contextToast("\u6B63\u5728\u6293\u53D6\u6B63\u6587\u2026", "info");
   try {
     const result = await captureTrendArticle({
       title: trend.title,
@@ -10039,21 +10049,21 @@ async function captureTrend(trend) {
       hot: trend.hot
     });
     if (typeof result.warning === "string" && result.warning !== "") {
-      trendToast(`\u5DF2\u5165\u5E93 \xB7 ${result.warning}`, "warn");
+      contextToast(`\u5DF2\u5165\u5E93 \xB7 ${result.warning}`, "warn");
     } else {
-      trendToast(result.reused === true ? "\u6B63\u6587\u5DF2\u66F4\u65B0" : "\u5DF2\u5B58\u5165\u5185\u5BB9\u5E93\u4E0E\u9009\u9898\u5E93", "ok");
+      contextToast(result.reused === true ? "\u6B63\u6587\u5DF2\u66F4\u65B0" : "\u5DF2\u5B58\u5165\u5185\u5BB9\u5E93\u4E0E\u9009\u9898\u5E93", "ok");
     }
     notifyTrendSaved(trend.title);
   } catch (error) {
-    trendToast(`\u6293\u53D6\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
+    contextToast(`\u6293\u53D6\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
   }
 }
 function saveTrendTitle(title, source) {
   createIdea({ title, source }).then(() => {
-    trendToast("\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93", "ok");
+    contextToast("\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93", "ok");
     notifyTrendSaved(title);
   }).catch((error) => {
-    trendToast(`\u6536\u85CF\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
+    contextToast(`\u6536\u85CF\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
   });
 }
 function notifyTrendSaved(title) {
@@ -10068,17 +10078,17 @@ function openTrendUrl(url) {
   anchor.click();
   anchor.remove();
 }
-var trendToastTimer = null;
-function trendToast(message, kind) {
+var contextToastTimer = null;
+function contextToast(message, kind) {
   const previous = document.querySelector(`.${TOAST_CLASS}`);
   if (previous !== null) previous.remove();
-  if (trendToastTimer !== null) clearTimeout(trendToastTimer);
+  if (contextToastTimer !== null) clearTimeout(contextToastTimer);
   const toast = document.createElement("div");
   toast.className = `${TOAST_CLASS} ${TOAST_CLASS}--${kind}`;
   toast.setAttribute("role", "status");
   toast.textContent = message;
   document.body.append(toast);
-  trendToastTimer = setTimeout(() => toast.remove(), 2600);
+  contextToastTimer = setTimeout(() => toast.remove(), 2600);
 }
 function messageOf(error) {
   return error instanceof Error ? error.message : String(error);
@@ -10104,7 +10114,39 @@ function fileItems(ctx, surface) {
   items.push(menuRow("\u590D\u5236\u76F8\u5BF9\u8DEF\u5F84", () => copyOrThrow(relative)));
   items.push(menuRow("\u590D\u5236\u7EDD\u5BF9\u8DEF\u5F84", () => copyOrThrow(absolute)));
   if (entry === "file") items.push(menuRow("\u590D\u5236\u6587\u4EF6\u540D", () => copyOrThrow(fileNameOf(absolute))));
+  items.push(SEPARATOR);
+  items.push(menuRow("\u63A8\u9001\u5230\u8BBE\u5907\u2026", (menu) => showPushTargets(ctx, surface, menu, items), { keepOpen: true }));
   return items;
+}
+async function showPushTargets(ctx, surface, menu, previousItems) {
+  menu.render([{ label: "\u6B63\u5728\u67E5\u627E\u5DF2\u914D\u5BF9\u8BBE\u5907\u2026", disabled: true }]);
+  const path = await resolveHostPath(ctx, surface);
+  let status;
+  try {
+    status = await fetchHandoffPaired();
+  } catch {
+    status = { available: false, paired: [] };
+  }
+  const items = [];
+  if (status.available !== true || status.paired.length === 0) {
+    items.push({ label: status.available ? "\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907" : "\u5C40\u57DF\u7F51\u4EA4\u63A5\u672A\u542F\u7528", disabled: true });
+  } else {
+    for (const device of status.paired) {
+      items.push(menuRow(`\u63A8\u9001\u5230\u300C${device.name}\u300D`, () => pushToDevice(device.id, device.name, path)));
+    }
+  }
+  items.push(SEPARATOR);
+  items.push(menuRow("\u2190 \u8FD4\u56DE", (row) => row.render(previousItems), { keepOpen: true }));
+  menu.render(items);
+}
+async function pushToDevice(peerId, deviceName, path) {
+  contextToast(`\u6B63\u5728\u63A8\u9001\u5230\u300C${deviceName}\u300D\u2026`, "info");
+  try {
+    await pushFileToPeer(peerId, path);
+    contextToast(`\u5DF2\u63A8\u9001\u5230\u300C${deviceName}\u300D`, "ok");
+  } catch (error) {
+    contextToast(`\u63A8\u9001\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
+  }
 }
 function editableItems(element) {
   const selected = hasSelection(element);
@@ -10533,11 +10575,11 @@ function acceptPairing(id) {
 function rejectPairing(id) {
   return request2(`/api/handoff/pair/${encodeURIComponent(id)}/reject`, { method: "POST" });
 }
-function sendHandoff(peerId, workspacePath) {
+function sendHandoff(peerId, workspacePath, payload) {
   return request2("/api/handoff/send", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ peerId, workspacePath })
+    body: JSON.stringify({ peerId, workspacePath, payload })
   });
 }
 
@@ -10564,6 +10606,12 @@ var COPY = {
     sendTitle: "Send a project",
     pickWorkspace: "Choose a project",
     pickPeer: "Choose a device",
+    payloadTitle: "Include",
+    withSessions: "Sessions (agent continuation)",
+    withMaterials: "Project materials (\u7D20\u6750/)",
+    withLibrary: "Content library (outputs/)",
+    withConfig: "Config (.env / profiles / skills)",
+    configHint: "Contains API keys \u2014 only sent when selected, merged into the receiving device\u2019s own config on arrival.",
     send: "Send",
     sending: "Sending\u2026",
     sent: "Handoff complete.",
@@ -10589,6 +10637,12 @@ var COPY = {
     sendTitle: "\u53D1\u9001\u9879\u76EE",
     pickWorkspace: "\u9009\u62E9\u9879\u76EE",
     pickPeer: "\u9009\u62E9\u8BBE\u5907",
+    payloadTitle: "\u968F\u5305\u5185\u5BB9",
+    withSessions: "\u4F1A\u8BDD\uFF08agent \u7EED\u4F5C\u4E0A\u4E0B\u6587\uFF09",
+    withMaterials: "\u9879\u76EE\u7D20\u6750\uFF08\u7D20\u6750/\uFF09",
+    withLibrary: "\u5185\u5BB9\u5E93\uFF08outputs/\uFF09",
+    withConfig: "\u914D\u7F6E\u9879\uFF08.env / \u753B\u50CF / \u6280\u80FD\uFF09",
+    configHint: "\u914D\u7F6E\u9879\u542B API \u5BC6\u94A5\uFF0C\u53EA\u5728\u52FE\u9009\u540E\u968F\u5305\u53D1\u9001\uFF1B\u5230\u8FBE\u540E\u5408\u5E76\u8FDB\u5BF9\u65B9\u672C\u673A\u914D\u7F6E\u3002",
     send: "\u53D1\u9001",
     sending: "\u53D1\u9001\u4E2D\u2026",
     sent: "\u4EA4\u63A5\u5B8C\u6210\u3002",
@@ -10690,6 +10744,12 @@ var HANDOFF_STYLES = `
 .ehs-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
 .ehs-field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 1; }
 .ehs-field > span { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-payload { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.ehs-payload-row { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.ehs-check { display: inline-flex; align-items: center; gap: 7px; color: var(--dsw-alias-label-primary); font-size: 13px; line-height: 20px; cursor: pointer; }
+.ehs-check input { width: 14px; height: 14px; margin: 0; accent-color: var(--dsw-alias-state-business-primary); cursor: pointer; }
+.ehs-check input:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.ehs-hint { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
 .ehs-select {
   box-sizing: border-box;
   height: 32px;
@@ -10719,6 +10779,7 @@ function HandoffSettings({ t }) {
   const [busy, setBusy] = (0, import_react16.useState)(void 0);
   const [workspacePath, setWorkspacePath] = (0, import_react16.useState)("");
   const [peerId, setPeerId] = (0, import_react16.useState)("");
+  const [payload, setPayload] = (0, import_react16.useState)({ sessions: true, materials: true, library: false, config: false });
   const mounted = (0, import_react16.useRef)(true);
   (0, import_react16.useEffect)(() => {
     mounted.current = true;
@@ -10926,11 +10987,69 @@ function HandoffSettings({ t }) {
             className: "ehs-btn ehs-btn-md ehs-btn-primary",
             disabled: busy !== void 0 || !canSend,
             onClick: () => {
-              void run("send", () => sendHandoff(peerId, workspacePath));
+              void run("send", () => sendHandoff(peerId, workspacePath, payload));
             },
             children: busy === "send" ? t("sending") : t("send")
           }
-        )
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-payload", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-hint", children: t("payloadTitle") }),
+          /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ehs-payload-row", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-check", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: payload.sessions,
+                  onChange: (event) => {
+                    setPayload((current) => ({ ...current, sessions: event.target.checked }));
+                  }
+                }
+              ),
+              t("withSessions")
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-check", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: payload.materials,
+                  onChange: (event) => {
+                    setPayload((current) => ({ ...current, materials: event.target.checked }));
+                  }
+                }
+              ),
+              t("withMaterials")
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-check", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: payload.library,
+                  onChange: (event) => {
+                    setPayload((current) => ({ ...current, library: event.target.checked }));
+                  }
+                }
+              ),
+              t("withLibrary")
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("label", { className: "ehs-check", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: payload.config,
+                  onChange: (event) => {
+                    setPayload((current) => ({ ...current, config: event.target.checked }));
+                  }
+                }
+              ),
+              t("withConfig")
+            ] })
+          ] }),
+          payload.config && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ehs-hint", children: t("configHint") })
+        ] })
       ] }),
       last !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ehs-outcome", "data-tone": last.ok ? "ok" : "fail", "aria-live": "polite", children: last.ok ? t("sent") : `${t("failed")}\uFF1A${last.detail}` })
     ] }),
