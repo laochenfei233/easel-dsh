@@ -264,13 +264,16 @@ Function PageReinstall
     Abort
   ${EndIf}
 
-  ; Skip showing the page if passive
+  ; Skip showing the page if passive, or when upgrading: an Easel upgrade
+  ; always installs over the running app (the /UPDATE semantics), so the
+  ; un/reinstall choice page never appears and never offers uninstalling.
   ;
   ; Note that we don't call this earlier at the begining
   ; of this function because we need to populate some variables
   ; related to current installed version if detected and whether
   ; we are downgrading or not.
   ${If} $PassiveMode = 1
+  ${OrIf} $R0 = 1
     Call PageLeaveReinstall
   ${Else}
     nsDialogs::Create 1018
@@ -323,6 +326,12 @@ Function PageLeaveReinstall
 
   ; In update mode, always proceeds without uninstalling
   ${If} $UpdateMode = 1
+    Goto reinst_done
+  ${EndIf}
+
+  ; An Easel upgrade installs over the existing app without uninstalling,
+  ; matching the skipped un/reinstall page above.
+  ${If} $R0 = 1
     Goto reinst_done
   ${EndIf}
 
