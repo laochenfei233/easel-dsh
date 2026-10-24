@@ -68,7 +68,7 @@ Easel 桌面端的全部用户状态集中在数据根（默认 `文档/Easel-ds
 
 ### D7 引擎与并发
 
-备份按组串行（进程内单队列），组内：收集条目 → 流式 zip（可选加密）→ 上传到临时 key → 校验字节数 → rename 到正式 key → retention 清理。运行状态（组、阶段、文件数、字节数）驻内存，`GET status` 轮询；重复触发返回 409。staging 用 `<home>/cache/backup-staging/`（cache 本身可弃，不参与备份）。
+备份按组串行（进程内单队列），组内：收集条目 → 流式 zip（可选加密）→ 直接上传到正式 key（失败时尽力删除远端半截对象，恢复侧的 CRC 与 manifest 校验兜底截断）→ retention 清理。运行状态（组、阶段、文件数、字节数）驻内存，`GET status` 轮询；重复触发返回 409。staging 用 `<home>/cache/backup-staging/`（cache 本身可弃，不参与备份）。
 
 ### D8 恢复
 
@@ -84,7 +84,7 @@ Easel 桌面端的全部用户状态集中在数据根（默认 `文档/Easel-ds
 
 ### D11 插件与包形态
 
-新建工作区包 `packages/backup/easel-backup`（`@deepseek-ai/dsh-easel-backup`，private）：`types` / `archive` / `crypto` / `destinations(fs|webdav|s3)` / `engine` / `schedule` 纯库，依赖 `fflate` 与 `aws4fetch`；进入 `apps/cli/package.json` 的部署闭包（lan-handoff 先例），运行时经 `home/node_modules` junction 解析。`dsh-plugin-easel` 侧：`index.js` 挂 `/easel/api/backup/*` 路由（动态 `import('@deepseek-ai/dsh-easel-backup')`，缺失时报可操作的错误）、注入 `credentials` 服务存取敏感值；客户端 `src/components/BackupSection.tsx` + `src/locales/backup.ts` 由现有 client bundle 带出。不改 setup.rs、不加 Loader 行、不动 bundle patch。
+新建工作区包 `packages/backup/easel-backup`（`@deepseek-ai/dsh-easel-backup`，private）：`types` / `archive` / `crypto` / `destinations(fs|webdav|s3)` / `engine` / `restore` / `schedule` 纯库，依赖 `fflate` 与 `aws4fetch`；进入 `apps/cli/package.json` 的部署闭包（lan-handoff 先例），运行时经 `home/node_modules` junction 解析。`dsh-plugin-easel` 侧：备份做成与 automation 同款的独立子入口 `./backup`（`lib/backup.js`，export name/inject/apply），setup.rs 增加一行 `easel-backup` row——核心 index.js 不动，故障隔离与 automation 一致；路由经 `easelApi` registry 挂载，凭据走注入的 `credentials` 服务，引擎按需动态 import（缺失时报可操作的错误）。客户端 `src/features/backup.tsx` + `src/locales/backup.ts` 由现有 client bundle 带出。
 
 ### D12 版本与同步
 

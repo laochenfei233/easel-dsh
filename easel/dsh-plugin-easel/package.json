@@ -9,6 +9,7 @@
     ".": "./index.js",
     "./automation": "./lib/plugins/automation.js",
     "./deconstruct": "./lib/plugins/deconstruct.js",
+    "./backup": "./lib/backup.js",
     "./client": "./client.js",
     "./package.json": "./package.json"
   },
