@@ -2964,7 +2964,7 @@ var import_react7 = require("react");
 // src/components/SkillDrawer.tsx
 var import_react6 = require("react");
 
-// ../../../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -4121,7 +4121,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -9997,10 +9997,7 @@ function BackupSettings({ t }) {
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.runTitle }),
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: busy, onClick: () => void run(), children: t.run })
       ] }),
-      progress !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-progress", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: `${t.running} \xB7 ${progress.group} \xB7 ${phaseLabel} \xB7 ${progress.fileCount} \xB7 ${formatBytes(progress.totalBytes)}` }),
-        /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-bar", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-bar-fill", style: { width: "40%" } }) })
-      ] }) : null,
+      progress !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-progress", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: `${t.running} \xB7 ${progress.group} \xB7 ${phaseLabel} \xB7 ${progress.fileCount} \xB7 ${formatBytes(progress.totalBytes)}` }) }) : null,
       /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-history", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.historyTitle }),
         history.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { className: "ebk-muted", children: t.historyEmpty }) : history.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-history-row", children: [
@@ -10020,7 +10017,7 @@ function BackupSettings({ t }) {
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { className: "ebk-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { children: t.restoreTitle }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || busy, onClick: () => void openRestore(), children: remote === null ? t.restorePreview : t.restorePreview }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || busy, onClick: () => void openRestore(), children: t.restorePreview }) }),
       remote !== null ? /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-row", children: [
         /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { className: "ebk-field", children: [
           /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("label", { children: t.restorePickGroup }),

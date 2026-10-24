@@ -151,8 +151,6 @@ export interface BackupProgress {
   fileCount: number
   /** Collected byte total, meaningful from `archive` on. */
   totalBytes: number
-  /** Bytes written to the archive so far. */
-  writtenBytes: number
 }
 
 /** Outcome of one completed group backup. */

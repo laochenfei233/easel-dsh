@@ -311,3 +311,27 @@ test('resolveBackupHome 尊重 DSH_HOME，兜底 ~/.easel', () => {
 test('组 id 与引擎约定一致', () => {
   assert.deepEqual(BACKUP_GROUP_IDS, ['config', 'sessions', 'workspace'])
 })
+
+test('入口装配：导出 name/inject/apply，apply 挂路由与定时器（审查 C1 回归）', async () => {
+  const mod = await import('../lib/backup.js')
+  assert.equal(mod.name, 'easel-backup')
+  assert.deepEqual(mod.inject, ['easelApi', 'credentials'])
+  assert.equal(typeof mod.apply, 'function')
+  const registered = []
+  const effects = []
+  const credentials = { async readRecord() { return undefined }, async modifyRecord(_key, mutate) { return mutate(undefined) }, async deleteRecord() {} }
+  const ctx = {
+    easelApi: { settings: { projectRoot: process.cwd() }, register(routes) { registered.push(routes); return () => {} } },
+    credentials,
+    logger: { info() {}, warn() {} },
+    effect(fn, why) {
+      effects.push(why)
+      return fn()
+    },
+  }
+  mod.apply(ctx)
+  assert.equal(registered.length, 1)
+  assert.equal(registered[0].length, 8)
+  assert.ok(effects.includes('easel-backup: routes'))
+  assert.ok(effects.includes('easel-backup: catch-up scheduler'))
+})

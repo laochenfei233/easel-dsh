@@ -110,6 +110,9 @@ function fileSink(output: WriteStream): (chunk: Buffer) => Promise<void> {
   const failure = new Promise<never>((_, reject) => {
     output.once('error', reject)
   })
+  // 竞速窗口之外的流错误（如 EISDIR）已由 finished() 把失败传给调用方；这里
+  // 只消费拒绝，避免未观察拒绝在宿主进程里升级成崩溃。
+  failure.catch(() => {})
   return async (chunk) => {
     if (!output.write(chunk)) await Promise.race([once(output, 'drain'), failure])
   }

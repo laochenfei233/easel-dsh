@@ -197,7 +197,9 @@ async function hasSecrets(credentials) {
  * @returns {string} The dsh home directory.
  */
 export function resolveBackupHome() {
-  return process.env.DSH_HOME ?? join(homedir(), '.easel')
+  const configured = process.env.DSH_HOME
+  // 与 dsh-home-paths 同一裁决：空串视同未设。
+  return configured !== undefined && configured.trim() !== '' ? configured : join(homedir(), '.easel')
 }
 
 /**
@@ -320,7 +322,8 @@ export function createBackupFeature({ settings, credentials, logger = null, engi
   /**
    * Back up the requested groups serially. One history entry records the
    * whole run; `lastRunAt` moves on any completed run so catch-up does not
-   * re-fire right after a manual backup.
+   * re-fire right after a manual backup. Claims `busy` synchronously, so two
+   * callers can never both pass the gate before the first await.
    * @param {string[]} groups - Group ids to back up.
    * @param {string} trigger - 'manual' or 'schedule'.
    * @returns {Promise<Array>} Per-group run results.
@@ -330,7 +333,19 @@ export function createBackupFeature({ settings, credentials, logger = null, engi
     if (groups.length === 0) throw new ApiError(400, '没有勾选任何备份内容')
     busy = true
     progress = null
-    const startedAt = now()
+    return executeRun(groups, trigger, now())
+  }
+
+  /**
+   * Run the whole backup with `busy` already claimed; history and lastRunAt
+   * bookkeeping live here so both the awaited and detached entry points share
+   * one failure story.
+   * @param {string[]} groups - Group ids to back up.
+   * @param {string} trigger - 'manual' or 'schedule'.
+   * @param {number} startedAt - Run start in epoch milliseconds.
+   * @returns {Promise<Array>} Per-group run results.
+   */
+  async function executeRun(groups, trigger, startedAt) {
     try {
       const engineModule = await engine()
       const config = await readBackupConfig(settings)
@@ -452,7 +467,10 @@ export function createBackupFeature({ settings, credentials, logger = null, engi
     const config = await readBackupConfig(settings)
     validateBackupConfig(config)
     await buildDestination(engineModule, config, credentials)
-    runGroups(requested, 'manual').catch(() => {})
+    // busy 在这里同步占位：并发请求在首个 await 前就会被 409 挡下。
+    busy = true
+    progress = null
+    executeRun(requested, 'manual', now()).catch(() => {})
     return { json: { started: true, groups: requested } }
   }
 
@@ -588,4 +606,35 @@ export function createBackupFeature({ settings, credentials, logger = null, engi
   ]
 
   return { routes, tick, isBusy: () => busy }
+}
+
+export const name = 'easel-backup'
+export const inject = ['easelApi', 'credentials']
+
+/**
+ * Mount the backup feature: register its routes into the core easelApi
+ * registry and start the catch-up scheduler. The registry's own settings
+ * (projectRoot) feed the config path, exactly like the request handlers see.
+ * @param {object} ctx - The cordis context.
+ */
+export function apply(ctx) {
+  const feature = createBackupFeature({
+    settings: ctx.easelApi.settings,
+    credentials: ctx.credentials,
+    logger: ctx.logger,
+  })
+  ctx.effect(() => ctx.easelApi.register(feature.routes), 'easel-backup: routes')
+  ctx.effect(() => {
+    const tick = () => {
+      feature.tick().catch(error => ctx.logger?.warn?.(`easel-backup: 定时检查失败：${error.message}`))
+    }
+    // 启动即补跑一次错过的定时，然后每 15 分钟检查一次。
+    tick()
+    const timer = setInterval(tick, 15 * 60_000)
+    timer.unref?.()
+    return () => {
+      clearInterval(timer)
+    }
+  }, 'easel-backup: catch-up scheduler')
+  ctx.logger?.info?.('easel-backup: 备份路由与定时器已挂载')
 }

@@ -468,7 +468,6 @@ export default function BackupSettings({ t }: { t: BackupCopy }) {
             <span className="ebk-muted">
               {`${t.running} · ${progress.group} · ${phaseLabel} · ${progress.fileCount} · ${formatBytes(progress.totalBytes)}`}
             </span>
-            <div className="ebk-bar"><div className="ebk-bar-fill" style={{ width: '40%' }} /></div>
           </div>
         ) : null}
         <div className="ebk-history">
@@ -490,9 +489,7 @@ export default function BackupSettings({ t }: { t: BackupCopy }) {
           <span>{t.restoreTitle}</span>
         </div>
         <div className="ebk-actions">
-          <button type="button" className="ebk-btn" disabled={restoring || busy} onClick={() => void openRestore()}>
-            {remote === null ? t.restorePreview : t.restorePreview}
-          </button>
+          <button type="button" className="ebk-btn" disabled={restoring || busy} onClick={() => void openRestore()}>{t.restorePreview}</button>
         </div>
         {remote !== null ? (
           <div className="ebk-row">

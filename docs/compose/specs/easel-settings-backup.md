@@ -44,11 +44,11 @@ Easel 桌面端的全部用户状态集中在数据根（默认 `文档/Easel-ds
 
 ### D3 归档（复用 fflate）
 
-复用 `fflate` 的流式 `Zip`/`ZipDeflate`（仓库先例：`packages/session-query/session-log-export/src/archive.ts`）。文本类条目 deflate level 6，媒体扩展名（`VIDEO_EXTS`/`AUDIO_EXTS`/`IMAGE_EXTS` 同款）与已压缩内容 store level 0。zip 以流式产出，边压边上传，不在磁盘落整包中间文件。
+复用 `fflate` 的流式 `Zip`/`ZipDeflate`（仓库先例：`packages/session-query/session-log-export/src/archive.ts`）。文本类条目 deflate level 6，媒体与已压缩内容 store level 0。zip 以流式产出落 D7 的 staging 文件，再以显式 `Content-Length` 上传——字节流不整包驻留内存，但会在磁盘落一个中间文件（严格 WebDAV/S3 网关拒绝 chunked 上传，这是换取正确性的取舍）。
 
 ### D4 加密容器
 
-开启加密时，zip 字节流整体包进自定义容器：`magic("EASELBAK\x01") + kdf 参数(u16) + salt(16B) + base nonce(12B) + chunkSize(u32, 4 MiB)`，随后是逐块密文（每块 AES-256-GCM，密文后接 16B tag；AAD = `magic || chunkIndex(u32 BE)`）。密钥由口经 scrypt（N=2^15, r=8, p=1）派生。口令错误表现为首块 tag 校验失败，报「口令错误或文件损坏」；任何中间块被篡改同样 tag 失败。
+开启加密时，zip 字节流整体包进自定义容器：`magic("EASELBAK\x01") + kdf 参数(u16) + salt(16B) + base nonce(12B) + chunkSize(u32, 4 MiB)`，随后是逐块密文（每块 AES-256-GCM，密文后接 16B tag；AAD = `magic+版本(9B) || chunkIndex(u32 BE)`，共 13B）。密钥由口经 scrypt（N=2^15, r=8, p=1）派生。口令错误表现为首块 tag 校验失败，报「口令错误或文件损坏」；任何中间块被篡改同样 tag 失败。
 
 ### D5 目标端协议
 

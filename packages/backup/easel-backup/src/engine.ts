@@ -123,7 +123,7 @@ export async function runBackupGroup(options: BackupRunOptions): Promise<BackupR
   const now = options.now ?? new Date()
   const stamp = stampFor(now)
   const report = (phase: BackupProgress['phase'], fileCount = 0, totalBytes = 0): void => {
-    options.onProgress?.({ group: options.group, stamp, phase, fileCount, totalBytes, writtenBytes: 0 })
+    options.onProgress?.({ group: options.group, stamp, phase, fileCount, totalBytes })
   }
   report('collect')
   const entries = await collectGroup(options.roots, options.group)
