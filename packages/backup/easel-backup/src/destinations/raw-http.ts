@@ -1,16 +1,16 @@
-import { request as requestHttp } from 'node:http';
-import { request as requestHttps } from 'node:https';
-import type { IncomingHttpHeaders, IncomingMessage } from 'node:http';
-import { Readable } from 'node:stream';
+import { request as requestHttp } from 'node:http'
+import { request as requestHttps } from 'node:https'
+import type { IncomingHttpHeaders, IncomingMessage } from 'node:http'
+import { Readable } from 'node:stream'
 
 /** One completed HTTP exchange with the response body still unconsumed. */
 export interface RawResponse {
   /** Status code. */
-  status: number;
+  status: number
   /** Response headers. */
-  headers: IncomingHttpHeaders;
+  headers: IncomingHttpHeaders
   /** Response body stream; the caller must consume or destroy it. */
-  body: IncomingMessage;
+  body: IncomingMessage
 }
 
 /**
@@ -30,20 +30,20 @@ export function requestRaw(
   body?: Readable | Buffer,
 ): Promise<RawResponse> {
   return new Promise((resolve, reject) => {
-    const send = url.protocol === 'https:' ? requestHttps : requestHttp;
-    const req = send(url, { method, headers }, response => {
-      resolve({ status: response.statusCode!, headers: response.headers, body: response });
-    });
-    req.on('error', reject);
+    const send = url.protocol === 'https:' ? requestHttps : requestHttp
+    const req = send(url, { method, headers }, (response) => {
+      resolve({ status: response.statusCode as number, headers: response.headers, body: response })
+    })
+    req.on('error', reject)
     if (body === undefined) {
-      req.end();
+      req.end()
     } else if (Buffer.isBuffer(body)) {
-      req.end(body);
+      req.end(body)
     } else {
-      body.pipe(req);
-      body.on('error', reject);
+      body.pipe(req)
+      body.on('error', reject)
     }
-  });
+  })
 }
 
 /**
@@ -54,15 +54,16 @@ export function requestRaw(
  * @returns The drained UTF-8 text, truncated to the cap.
  */
 export async function readBodyText(body: IncomingMessage, maxBytes: number): Promise<string> {
-  const chunks: Buffer[] = [];
-  let total = 0;
+  const chunks: Buffer[] = []
+  let total = 0
   for await (const chunk of body) {
-    total += chunk.length;
-    chunks.push(chunk as Buffer);
-    if (total >= maxBytes) break;
+    const buffer = chunk as Buffer
+    total += buffer.length
+    chunks.push(buffer)
+    if (total >= maxBytes) break
   }
-  body.destroy();
-  return Buffer.concat(chunks).subarray(0, maxBytes).toString('utf8');
+  body.destroy()
+  return Buffer.concat(chunks).subarray(0, maxBytes).toString('utf8')
 }
 
 /**
@@ -72,5 +73,5 @@ export async function readBodyText(body: IncomingMessage, maxBytes: number): Pro
  * @returns A web readable stream of the same bytes.
  */
 export function toWebResponse(body: IncomingMessage): ReadableStream<Uint8Array> {
-  return Readable.toWeb(body) as ReadableStream<Uint8Array>;
+  return Readable.toWeb(body) as ReadableStream<Uint8Array>
 }

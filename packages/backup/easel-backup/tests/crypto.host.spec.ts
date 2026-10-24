@@ -108,19 +108,19 @@ describe('encryptFileTo + decryptFileTo', () => {
     await expect(decryptFileTo(shortHeader, join(dir, 'x.bin'), 'p')).rejects.toMatchObject({ code: 'CONTAINER_INVALID' })
 
     const badVersion = join(dir, 'version.bin')
-    await writeFile(badVersion, header(buffer => {
+    await writeFile(badVersion, header((buffer) => {
       buffer[8] = 9
     }))
     await expect(decryptFileTo(badVersion, join(dir, 'x.bin'), 'p')).rejects.toMatchObject({ code: 'CONTAINER_INVALID' })
 
     const badKdf = join(dir, 'kdf.bin')
-    await writeFile(badKdf, header(buffer => {
+    await writeFile(badKdf, header((buffer) => {
       buffer.writeUInt16BE(7, 9)
     }))
     await expect(decryptFileTo(badKdf, join(dir, 'x.bin'), 'p')).rejects.toMatchObject({ code: 'CONTAINER_INVALID' })
 
     const tinyBlock = join(dir, 'block.bin')
-    await writeFile(tinyBlock, header(buffer => {
+    await writeFile(tinyBlock, header((buffer) => {
       buffer.writeUInt16BE(1, 9)
       buffer.writeUInt32BE(1, HEADER_LENGTH - 4)
     }))
@@ -148,7 +148,7 @@ describe('encryptFileTo + decryptFileTo', () => {
 
 describe('crypto guards', () => {
   it('blockIv rejects a block counter that would overflow the IV', () => {
-    expect(() => blockIv(Buffer.alloc(12, 1), 2 ** 32)).toThrowError(BackupError)
+    expect(() => blockIv(Buffer.alloc(12, 1), 2 ** 32)).toThrow(BackupError)
     expect(() => blockIv(Buffer.alloc(12, 1), 2 ** 32 - 1)).not.toThrow()
   })
 

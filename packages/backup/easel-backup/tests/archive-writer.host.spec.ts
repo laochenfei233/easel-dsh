@@ -23,7 +23,7 @@ const manifest: BackupManifest = {
 describe('BackupArchiveWriter', () => {
   it('round-trips through an async sink', async () => {
     const chunks: Buffer[] = []
-    const writer = new BackupArchiveWriter(async chunk => {
+    const writer = new BackupArchiveWriter(async (chunk) => {
       chunks.push(chunk)
     })
     await writer.add({ path: 'home/a.txt', source: Buffer.from('hello') })

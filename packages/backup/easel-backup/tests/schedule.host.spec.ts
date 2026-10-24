@@ -49,9 +49,9 @@ describe('computeDue', () => {
   })
 
   it('invalid configurations fail loudly', () => {
-    expect(() => computeDue({ mode: 'daily', at: '25:00' }, null, 0)).toThrowError(BackupError)
-    expect(() => computeDue({ mode: 'daily', at: 'bad' }, null, 0)).toThrowError(BackupError)
-    expect(() => computeDue({ mode: 'weekly', at: '08:00' }, null, 0)).toThrowError(BackupError)
-    expect(() => computeDue({ mode: 'weekly', at: '08:00', weekday: 7 }, null, 0)).toThrowError(BackupError)
+    expect(() => computeDue({ mode: 'daily', at: '25:00' }, null, 0)).toThrow(BackupError)
+    expect(() => computeDue({ mode: 'daily', at: 'bad' }, null, 0)).toThrow(BackupError)
+    expect(() => computeDue({ mode: 'weekly', at: '08:00' }, null, 0)).toThrow(BackupError)
+    expect(() => computeDue({ mode: 'weekly', at: '08:00', weekday: 7 }, null, 0)).toThrow(BackupError)
   })
 })

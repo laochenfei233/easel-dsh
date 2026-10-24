@@ -42,7 +42,10 @@ async function withServer(handler: Handler): Promise<{ url: string; requests: Ca
     requests: capturedRequests,
     close: () => new Promise<void>((resolve, reject) => {
       server.closeAllConnections()
-      server.close(error => (error === undefined ? resolve() : reject(error)))
+      server.close((error) => {
+        if (error === undefined) resolve()
+        else reject(error)
+      })
     }),
   }
 }
@@ -86,8 +89,8 @@ describe('S3Destination', () => {
     expect(s3BucketRoot('http://10.0.0.5:9000', 'us-east-1', 'bkt', true)).toBe('http://10.0.0.5:9000/bkt')
     expect(s3BucketRoot('http://10.0.0.5:9000', 'us-east-1', 'bkt', false)).toBe('http://bkt.10.0.0.5:9000')
     expect(s3BucketRoot('', 'eu-west-2', 'bkt', true)).toBe('https://s3.eu-west-2.amazonaws.com/bkt')
-    expect(() => s3BucketRoot('ftp://bad', 'us-east-1', 'bkt', true)).toThrowError(BackupError)
-    expect(() => s3BucketRoot('notaurl', 'us-east-1', 'bkt', true)).toThrowError(BackupError)
+    expect(() => s3BucketRoot('ftp://bad', 'us-east-1', 'bkt', true)).toThrow(BackupError)
+    expect(() => s3BucketRoot('notaurl', 'us-east-1', 'bkt', true)).toThrow(BackupError)
   })
 
   it('get streams the object and maps 404 to DESTINATION_MISSING', async () => {
@@ -213,6 +216,6 @@ describe('S3Destination remaining paths', () => {
   })
 
   it('a foreign endpoint scheme fails at construction', () => {
-    expect(() => new S3Destination(access('ftp://bad', true))).toThrowError(BackupError)
+    expect(() => new S3Destination(access('ftp://bad', true))).toThrow(BackupError)
   })
 })

@@ -12,7 +12,6 @@ import { join } from 'node:path'
 import { AddressInfo } from 'node:net'
 import { afterEach, describe, expect, it } from 'vitest'
 import { WebDavDestination, parsePropfind } from '../src/destinations/webdav.ts'
-import { BackupError } from '../src/errors.ts'
 
 interface CapturedRequest {
   method: string
@@ -42,7 +41,10 @@ async function withServer(handler: Handler): Promise<{ url: string; requests: Ca
     requests: capturedRequests,
     close: () => new Promise<void>((resolve, reject) => {
       server.closeAllConnections()
-      server.close(error => (error === undefined ? resolve() : reject(error)))
+      server.close((error) => {
+        if (error === undefined) resolve()
+        else reject(error)
+      })
     }),
   }
 }
@@ -55,12 +57,6 @@ afterEach(async () => {
 
 const basic = (user: string, password: string): string =>
   `Basic ${Buffer.from(`${user}:${password}`, 'utf8').toString('base64')}`
-
-const propfindBody = (names: string[]): string => `<?xml version="1.0"?>
-<D:multistatus xmlns:D="DAV:">
-${names.map(name => `<D:response><D:href>/dav/easel-backup/config/${name}</D:href>
-<D:propstat><D:prop><D:getcontentlength>${name.length}</D:getcontentlength></D:prop></D:propstat></D:response>`).join('\n')}
-</D:multistatus>`
 
 describe('WebDavDestination', () => {
   it('probe on an existing directory PROPFINDs depth 0 and leaves no canary', async () => {

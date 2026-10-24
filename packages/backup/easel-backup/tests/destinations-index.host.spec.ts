@@ -32,7 +32,7 @@ describe('createDestination', () => {
   it('rejects a pair whose protocols disagree and missing secret shapes', () => {
     expect(() =>
       createDestination({ protocol: 'smb', root: 'x' }, { protocol: 'webdav', password: 'p' }),
-    ).toThrowError(BackupError)
+    ).toThrow(BackupError)
     expect(() =>
       createDestination(
         { protocol: 'webdav', endpoint: 'https://d.example.com', username: 'u', remoteDir: '' },
@@ -50,7 +50,7 @@ describe('createDestination', () => {
   it('the exhaustive default fails loudly when a foreign protocol slips through', () => {
     const foreign = JSON.parse('{"protocol":"gopher"}') as DestinationConfig
     const secrets = JSON.parse('{"protocol":"gopher"}') as DestinationSecrets
-    expect(() => createDestination(foreign, secrets)).toThrowError(BackupError)
+    expect(() => createDestination(foreign, secrets)).toThrow(BackupError)
   })
 })
 
@@ -61,12 +61,12 @@ describe('createDestination secret mismatches', () => {
         { protocol: 'webdav', endpoint: 'https://d.example.com', username: 'u', remoteDir: '' },
         { protocol: 's3', accessKeyId: 'A', secretAccessKey: 'S' },
       ),
-    ).toThrowError(BackupError)
+    ).toThrow(BackupError)
     expect(() =>
       createDestination(
         { protocol: 's3', region: 'r', bucket: 'b', pathStyle: true },
         { protocol: 'webdav', password: 'p' },
       ),
-    ).toThrowError(BackupError)
+    ).toThrow(BackupError)
   })
 })

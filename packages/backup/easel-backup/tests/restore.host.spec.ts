@@ -186,7 +186,7 @@ describe('restore remoteDir and cleanup failure paths', () => {
       applied += 1
       if (applied === plan.files.length) {
         // 最后一个文件落地后锁住父目录，让 staging 目录的最终清理失败一次。
-        return chmod(base, 0o500)
+        void chmod(base, 0o500).catch(() => {})
       }
     })
     expect(outcome.applied).toBe(plan.files.length)

@@ -5,12 +5,11 @@
  * and a missing object reads as DESTINATION_MISSING.
  */
 
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { FsDestination } from '../src/destinations/fs.ts'
-import { BackupError } from '../src/errors.ts'
 
 async function root(): Promise<{ dir: string; destination: FsDestination }> {
   const dir = await mkdtemp(join(tmpdir(), 'easel-backup-fs-'))

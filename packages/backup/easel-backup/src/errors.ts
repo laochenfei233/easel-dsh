@@ -9,7 +9,7 @@ export type BackupErrorCode =
   | 'ARCHIVE_UNSAFE_PATH'
   | 'DESTINATION_UNREACHABLE'
   | 'DESTINATION_MISSING'
-  | 'HTTP_ERROR';
+  | 'HTTP_ERROR'
 
 /**
  * Typed failure of the backup engine. Callers match on {@link code} to render
@@ -17,7 +17,7 @@ export type BackupErrorCode =
  */
 export class BackupError extends Error {
   /** Machine-readable failure class. */
-  readonly code: BackupErrorCode;
+  readonly code: BackupErrorCode
 
   /**
    * @param code - Failure class.
@@ -25,8 +25,8 @@ export class BackupError extends Error {
    * @param options - Underlying cause, preserved for diagnostics.
    */
   constructor(code: BackupErrorCode, message: string, options?: { cause?: unknown }) {
-    super(message, options);
-    this.name = 'BackupError';
-    this.code = code;
+    super(message, options)
+    this.name = 'BackupError'
+    this.code = code
   }
 }
