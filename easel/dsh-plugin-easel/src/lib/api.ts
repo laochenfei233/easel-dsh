@@ -142,6 +142,7 @@ export interface ScheduleItem {
   source?: string;        // manual | publish-page | chat | scheduler
   event_type?: string;    // event 专属：节日/电商/平台活动/行业
   end_date?: string;      // event 专属：活动区间结束日
+  repeat?: string;        // '' | 'yearly'（每年重复，日历客户端按月/日展开）
 }
 export type ScheduleInput = Omit<ScheduleItem, 'id'>;
 export interface ScheduleContext {

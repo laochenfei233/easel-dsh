@@ -903,6 +903,15 @@ textarea.field { resize: vertical; min-height: 90px; }
 .cal-festival-tag.is-statutory-work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 14%, transparent); }
 .cal-festival-tag.is-lunar { color: #fff; background: var(--cal-festival); }
 .cal-festival-tag.is-fixed { color: var(--cal-festival); background: color-mix(in srgb, var(--cal-festival) 14%, transparent); }
+/* 右键菜单（T3）：透明遮罩上的浮层菜单 */
+.overlay.is-menu { background: transparent; }
+.cal-menu { position: fixed; z-index: 80; min-width: 176px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 5px; display: flex; flex-direction: column; }
+.cal-menu > button { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 10px; font-size: 13px; color: var(--text); background: none; border: 0; border-radius: 7px; cursor: pointer; text-align: left; }
+.cal-menu > button:hover { background: var(--accent-soft); }
+.cal-menu-sep { height: 1px; background: var(--border); margin: 3px 4px; }
+.cal-menu > .cal-menu-del { color: var(--text-tertiary); }
+.cal-menu > .cal-menu-del:hover { color: var(--cal-rest); }
+.cal-repeat { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; color: var(--text-secondary); cursor: pointer; }
 .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
 .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }
 .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }

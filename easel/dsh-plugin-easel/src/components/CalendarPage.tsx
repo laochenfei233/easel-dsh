@@ -26,7 +26,7 @@ const kindOf = (it: ScheduleItem) => (it.kind === 'event' ? 'event' : 'content')
 const MAX_VISIBLE = 3;   // 每格最多显示几条，超出折叠成「+N 更多」→ 点开当天详情
 const EMPTY: ScheduleInput = {
   title: '', date: '', platform: '', time: '', status: 'idea', note: '',
-  kind: 'content', url: '', source: 'manual', event_type: '', end_date: '',
+  kind: 'content', url: '', source: 'manual', event_type: '', end_date: '', repeat: '',
 };
 
 export default function CalendarPage() {
@@ -51,16 +51,6 @@ export default function CalendarPage() {
     () => (filter === 'all' ? items : items.filter((it) => kindOf(it) === filter)),
     [items, filter]);
 
-  // 每格：活动（事件）在上、内容在下
-  const byDate = useMemo(() => {
-    const m: Record<string, { events: ScheduleItem[]; content: ScheduleItem[] }> = {};
-    for (const it of visible) {
-      const bucket = (m[it.date] ||= { events: [], content: [] });
-      (kindOf(it) === 'event' ? bucket.events : bucket.content).push(it);
-    }
-    return m;
-  }, [visible]);
-
   // 构造当月网格（周一开头）
   const cells = useMemo(() => {
     const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
@@ -82,6 +72,35 @@ export default function CalendarPage() {
     }
     return merged;
   }, [cursor]);
+
+  // 每格：活动（事件）在上、内容在下；repeat: yearly 按 月/日 展开进可见窗口
+  const byDate = useMemo(() => {
+    const m: Record<string, { events: ScheduleItem[]; content: ScheduleItem[] }> = {};
+    const push = (date: string, it: ScheduleItem) => {
+      const bucket = (m[date] ||= { events: [], content: [] });
+      (kindOf(it) === 'event' ? bucket.events : bucket.content).push(it);
+    };
+    for (const it of visible) {
+      if (it.repeat === 'yearly' && /^\d{4}-\d{2}-\d{2}$/.test(it.date)) {
+        const [, mo, dd] = it.date.split('-').map(Number);
+        for (const d of cells) {
+          if (d.getMonth() + 1 === mo && d.getDate() === dd) push(ymd(d), it);
+        }
+        continue;
+      }
+      push(it.date, it);
+    }
+    return m;
+  }, [visible, cells]);
+
+  // 右键菜单（日期格上的添加节日/活动/排期入口）
+  const [menu, setMenu] = useState<{ x: number; y: number; ds: string } | null>(null);
+  useEffect(() => {
+    if (!menu) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menu]);
 
   const openNew = (date: string) => {
     setDayView(null);
@@ -209,7 +228,8 @@ export default function CalendarPage() {
             .map((f) => f.name);
           return (
             <div key={i} className={`cal-cell ${inMonth ? '' : 'dim'} ${ds === todayStr ? 'today' : ''}`}
-              onClick={() => (dayItems.length ? setDayView(ds) : openNew(ds))}>
+              onClick={() => (dayItems.length ? setDayView(ds) : openNew(ds))}
+              onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setMenu({ x: e.clientX, y: e.clientY, ds }); }}>
               <div className="cal-daynum-row">
                 <div className="cal-daynum">{d.getDate()}</div>
                 {rest && <span className="cal-festival rest" title={rest.name}>休</span>}
@@ -230,6 +250,33 @@ export default function CalendarPage() {
           );
         })}
       </div>
+
+      {menu && (() => {
+        const customFests = (byDate[menu.ds]?.events || []).filter((it) => it.event_type === '节日' && it.source === 'manual');
+        const openWith = (preset: Partial<ScheduleInput>) => {
+          setMenu(null); setDayView(null); setEditing(null);
+          setForm({ ...EMPTY, date: menu.ds, ...preset });
+        };
+        return (
+          <div className="overlay is-menu" onClick={() => setMenu(null)}
+            onContextMenu={(e) => { e.preventDefault(); setMenu(null); }}>
+            <div className="cal-menu" style={{ left: Math.min(menu.x, window.innerWidth - 200), top: Math.min(menu.y, window.innerHeight - 170) }}
+              onClick={(e) => e.stopPropagation()}>
+              <button onClick={() => openWith({ kind: 'event', event_type: '节日', status: 'idea' })}>🎉 添加节日…</button>
+              <button onClick={() => openWith({ kind: 'event', status: 'idea' })}>📣 添加平台活动…</button>
+              <button onClick={() => openWith({ kind: 'content' })}>📝 添加排期…</button>
+              {customFests.length > 0 && <div className="cal-menu-sep" />}
+              {customFests.map((it) => (
+                <button key={it.id} className="cal-menu-del" title={it.repeat === 'yearly' ? '每年重复' : undefined}
+                  onClick={async () => { setMenu(null); await deleteSchedule(it.id); load(); }}>
+                  <span>删除「{it.title}」</span>
+                  <IconTrash size={13} />
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {dayView && (() => {
         const b = byDate[dayView] || { events: [], content: [] };
@@ -312,6 +359,11 @@ export default function CalendarPage() {
                       onClick={() => setForm({ ...form, platform: form.platform === p ? '' : p })}>{p}</button>
                   ))}
                 </div>
+                <label className="cal-repeat">
+                  <input type="checkbox" checked={form.repeat === 'yearly'}
+                    onChange={(e) => setForm({ ...form, repeat: e.target.checked ? 'yearly' : '' })} />
+                  每年重复（同月同日自动出现在每一年）
+                </label>
               </>
             ) : (
               <>

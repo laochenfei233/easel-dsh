@@ -1129,6 +1129,7 @@ async function apiScheduleCreate(c) {
     source: SCHEDULE_SOURCES.has(body?.source) ? body.source : 'manual',
     event_type: String(body?.event_type ?? ''),
     end_date: String(body?.end_date ?? ''),
+    repeat: body?.repeat === 'yearly' ? 'yearly' : '',
   }
   items.push(item)
   await writeJsonFile(join(c.settings.projectRoot, 'outputs', SCHEDULE_FILE), items)
@@ -1152,6 +1153,9 @@ async function apiScheduleUpdate(c) {
     url: String(body?.url ?? ''),
     event_type: String(body?.event_type ?? ''),
     end_date: String(body?.end_date ?? ''),
+    // repeat 仅 yearly 合法；旧调用方不带该字段时保留原值，显式空串清除
+    repeat: body?.repeat === 'yearly' ? 'yearly'
+      : (body?.repeat === undefined && typeof item.repeat === 'string' ? item.repeat : ''),
   })
   await writeJsonFile(join(c.settings.projectRoot, 'outputs', SCHEDULE_FILE), items)
   return { json: item }
