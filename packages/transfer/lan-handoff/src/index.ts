@@ -584,7 +584,12 @@ export class LanHandoffService extends Service {
     try {
       const files = (await walkProjectTree(workspace.path, options?.signal))
         .filter(file => !excluded(file.relativePath))
-        .map(file => ({ absolutePath: file.absolutePath, relativePath: file.relativePath }))
+        .map(file => ({
+          absolutePath: file.absolutePath,
+          relativePath: file.relativePath,
+          size: file.size,
+          sha256: file.sha256,
+        }))
       prepared = await bundleFromFiles({
         projectTitle: workspace.title.length > 0 ? workspace.title : 'project',
         files,

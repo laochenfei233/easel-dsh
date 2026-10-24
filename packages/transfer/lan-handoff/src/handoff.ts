@@ -543,8 +543,9 @@ async function decideOffer(
       /* v8 ignore stop */
     })
     if (existing !== undefined) {
-      // Quick push merges into the existing directory; a project handoff refuses.
-      if (manifest.mergeIntoExisting !== true) {
+      // Quick push merges into the existing directory; a project handoff, or a
+      // quick push whose title is already a file, refuses.
+      if (manifest.mergeIntoExisting !== true || !existing.isDirectory()) {
         return { accept: false, reason: `destinationExists:${finalPath}` }
       }
       remember(staging, finalPath, title, true)
@@ -696,19 +697,19 @@ async function mergeReceipt(
   host: HandoffImportHost,
   context: CompletionContext,
 ): Promise<ReceivedHandoff> {
-  for (const entry of manifest.entries) {
-    if (entry.kind !== 'file') continue
-    const base = resolve(finalPath)
-    const target = resolve(base, entry.path)
-    /* v8 ignore next 3 -- manifest validation refuses escapes before staging */
-    if (target !== base && !target.startsWith(`${base}${sep}`)) {
-      throw new HandoffReceiveError('verification', `entry path "${entry.path}" escapes the destination directory`)
-    }
-    await mkdir(dirname(target), { recursive: true })
-    await copyFile(stagedPathOf(staging.projectRoot, entry), target)
-  }
-  await host.attachProject(finalPath, title, [])
   try {
+    for (const entry of manifest.entries) {
+      if (entry.kind !== 'file') continue
+      const base = resolve(finalPath)
+      const target = resolve(base, entry.path)
+      /* v8 ignore next 3 -- manifest validation refuses escapes before staging */
+      if (target !== base && !target.startsWith(`${base}${sep}`)) {
+        throw new HandoffReceiveError('verification', `entry path "${entry.path}" escapes the destination directory`)
+      }
+      await mkdir(dirname(target), { recursive: true })
+      await copyFile(stagedPathOf(staging.projectRoot, entry), target)
+    }
+    await host.attachProject(finalPath, title, [])
     await applyDataFiles(staging, manifest, context.dataDirectory)
   } finally {
     await cleanupStaging(staging)

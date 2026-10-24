@@ -130,8 +130,8 @@ test('send defaults to the full payload and always keeps .env out of the tree', 
 test('send forwards the payload checkboxes as sessions, exclude, and data files', async () => {
   const root = await mkdtemp(join(tmpdir(), 'easel-handoff-payload-'))
   try {
-    // 数据根：.env（白名单外内各一把）、画像、技能、内容库。
-    await writeFile(join(root, '.env'), 'IMG_API_KEY=k\nSECRET_USER_KEY=v\n', 'utf8')
+    // 数据根：.env（白名单外、白名单内空值、白名单内占位符各一把）、画像、技能、内容库。
+    await writeFile(join(root, '.env'), 'IMG_API_KEY=k\nSECRET_USER_KEY=v\nVIDEO_PROVIDER=\nARK_API_KEY=replace_me\n', 'utf8')
     await mkdir(join(root, 'profiles', '小乙'), { recursive: true })
     await writeFile(join(root, 'profiles', '小乙', 'identity.md'), '# 人设', 'utf8')
     await mkdir(join(root, 'profiles', '_system'), { recursive: true })
@@ -163,6 +163,9 @@ test('send forwards the payload checkboxes as sessions, exclude, and data files'
     const envText = Buffer.from(dataFiles.find(file => file.path === '.env').bytes).toString('utf8')
     assert.match(envText, /IMG_API_KEY=k/)
     assert.doesNotMatch(envText, /SECRET_USER_KEY/)
+    // 空值与占位符都不上包：接收端合并时跳过它们，避免覆盖对端已配置的真值。
+    assert.doesNotMatch(envText, /VIDEO_PROVIDER=/)
+    assert.doesNotMatch(envText, /ARK_API_KEY=/)
     assert.ok(paths.includes('profiles/小乙/identity.md'))
     assert.ok(!paths.some(path => path.startsWith('profiles/_system')))
     assert.ok(paths.includes('skills/openclaw/demo/SKILL.md'))
@@ -228,6 +231,31 @@ test('push refuses a missing path', async () => {
     call(fakeService(), 'POST', ['handoff', 'push'], { peerId: PEER_ID, path: 'C:\\definitely-missing.bin' }),
     error => error instanceof ApiError && error.status === 404,
   )
+})
+
+test('config assembly fails loud when the skills dir sits outside the data root', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'easel-handoff-skills-'))
+  const outside = await mkdtemp(join(tmpdir(), 'easel-handoff-skills-out-'))
+  try {
+    await mkdir(join(outside, 'openclaw'), { recursive: true })
+    await writeFile(join(outside, 'openclaw', 'SKILL.md'), '---\n---\n', 'utf8')
+    const service = fakeService()
+    const ctx = { get: name => name === 'lanHandoff' ? service : undefined }
+    await assert.rejects(
+      dispatchLocalApi(
+        { ...settings, projectRoot: root, skillsDir: join(outside, 'openclaw') },
+        'POST', ['handoff', 'send'], new URLSearchParams(), async () => ({
+          peerId: PEER_ID,
+          workspacePath: 'C:\\easel-root\\projects\\p1',
+          payload: { config: true },
+        }), {}, createHandoffRoutes(ctx),
+      ),
+      error => error instanceof ApiError && error.status === 400,
+    )
+  } finally {
+    await rm(root, { recursive: true, force: true })
+    await rm(outside, { recursive: true, force: true })
+  }
 })
 
 test('push requires both identifiers', async () => {

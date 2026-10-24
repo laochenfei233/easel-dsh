@@ -506,3 +506,16 @@ it('merges a quick push that also carries data files, and appends after a file w
   expect(host.created).toEqual([{ projectPath: join(parent, '混合'), title: '混合' }])
   expect(mergeEnvText('A=1', 'B=2')).toBe('A=1\n\nB=2\n')
 })
+
+it('refuses a merge push whose title is already a file on the receiving device', async () => {
+  const { parent } = await fixture()
+  await writeFile(join(parent, '撞名'), 'a file, not a directory', 'utf8')
+  const prepared = await prepare({ title: '撞名', files: [{ name: 'a.txt', content: 'A' }], merge: true })
+  const loop = await loopback()
+  cleanup.push(loop.close)
+  await expect(Promise.all([
+    receiveHandoff(loop.server, { targetParentDirectory: parent, host: new RecordingHost() }),
+    sendPreparedBundle(loop.client, prepared),
+  ])).rejects.toMatchObject({ name: 'TransferRejectedError', reason: `destinationExists:${join(parent, '撞名')}` })
+  expect(await readFile(join(parent, '撞名'), 'utf8')).toBe('a file, not a directory')
+})

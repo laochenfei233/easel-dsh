@@ -1,16 +1,25 @@
 ---
 feature: easel-handoff-payload
-status: in-progress
+status: delivered
 updated: 2026-10-24
 branch: feat/easel-handoff-payload
-commits: # filled at delivery
+commits: a4a7cfefdc..7a03c82d01
 ---
 
 # LAN 交接载荷选择：配置项/素材库可推送 + 右键快速推送
 
 ## Report
 
-（交付时填写）
+**What was built** — LAN 交接的发送从固定载荷改为可勾选：会话（默认开）、项目 `素材/`（默认开，可排除大媒体）、内容库 `outputs/`（默认关）与配置项 `.env`+画像+技能（默认关，含密钥）。新增 wire 类别 `data`（按接收端数据根寻址），接收端在项目落位后把数据条目写入 `dataDirectory`：`.env` 逐行合并（保留本机未提及行与 key），画像/技能/内容库按路径覆盖写入；未配置 `dataDirectory` 时整包拒绝并把理由回传发送端。`.env` 永不随项目树行走。右键菜单的文件面（文件树行/交付卡片/文件提及）新增「推送到设备…」：菜单原位列出已配对设备，选中后走新路由 `/handoff/push` 装配**无会话**的快推 bundle（`mergeIntoExisting`），接收端并入同名的既有目录（同名覆盖）或新建目录，不注册工作区；轻提示回执成功/失败。项目整包交接行为不变（目标已存在仍拒绝）。壳激活行补 `dataDirectory`（含老安装的补写）。
+
+**Verification** — 全仓 `pnpm run typecheck` 5/5；`packages/transfer/lan-handoff` vitest 126/126 + `packages/session-query/session-log-import` 全绿，两包 v8 覆盖率 100%（lines/branches/functions/statements）；`easel/dsh-plugin-easel` node --test 146/146；`pnpm run build:artifacts` + `build:check` 绿；`cargo check -p easel-desktop` 绿；oxlint staged 配置 0 告警（全仓 lint 与 doc-sync 的失败集合与 master 基线完全一致，为 PRE-EXISTING：包内 41 条 type-aware 违规与 doc 门 11+2 项在改动前后同集合）；jscpd 0 clone；verify-client-ui-i18n 绿；config/plugin-packages/tsconfig-paths 三个目录生成器已再生成并提交。
+
+**Journey log** —
+- 接收端 `serveSync` 无条件要求 `sessionLogImporter`：快推（无会话）也必须挂该服务才能收包，测试端双设备回环初版因缺 importer 被「拒配对」表象误导（实际是 serveSync 抛错毁连）。坑在错误信息与现象的距离。
+- `mergeEnvText` 的空行语义：替换已有 key 不加空行，仅**新追加**的 key 在非空行后补一空行；空文件/无尾换行/CRLF 各有边界，全部需要用例钉住。
+- esbuild 对非 ASCII 默认转义（`charset` 未设 ascii 时按 target 决定）：client.js 里中文以 `\uXXXX` 存在，bundle 断言只能匹配 ASCII 符号名。
+- vitest 根配置 include 以仓根为基准：包目录下 `npx vitest run` 找不到用例，必须从仓根跑并带包路径过滤。
+- 覆盖率 100% 门下，防御性 `?? ''`/`instanceof` 重抛这类「TS 不知道但运行时不可达」的分支比手写 v8 ignore 更好的解法往往是改写成所有分支都可达（如 `out.at(-1)` 换成显式 `lastLine !== undefined`）。
 
 ## [S1] Problem
 
@@ -41,7 +50,7 @@ LAN 交接（easel-lan-handoff）目前是固定载荷：选中工作区 → 整
 ### 接收端落位
 
 - 服务新增配置 `dataDirectory`（默认空 = 未配置数据根）。Easel 壳激活行写入数据根路径。
-- `data` 条目先暂存到独立 staging 根；项目重命名落位、会话导入完成后逐条写入数据根：
+- `data` 条目先暂存到独立 staging 根；项目重命名落位后、会话导入前逐条写入数据根（数据落位不依赖会话；会话导入失败时项目与配置已就绪，重试导入即可）：
   - `.env` **合并**：保留本机已有其它行与未提及 key，仅更新/追加来包中的 key（空值跳过）——与既有写 .env 路由同语义；
   - `profiles/`、`skills/`、`outputs/` 按路径覆盖写入（内容寻址校验已在逐条入站时做过）。
 - manifest 带 `data` 条目但本机未配置 `dataDirectory` → decideOffer 显式拒绝（fail loud，理由回传发送端）。
@@ -66,7 +75,7 @@ LAN 交接（easel-lan-handoff）目前是固定载荷：选中工作区 → 整
 
 ### 风险登记
 
-- 快推到接收端尚不存在的项目 → 落为 `projects/<标题>/` 下的未注册目录（侧栏不显示）；先做过整包交接或由 agent 在该目录开会话后即可注册。记录为已知限制。
+- 无会话的接收一律不注册工作区：快推如此，**整包交接但取消会话勾选（或工作区本就无挂靠会话）也如此**——侧栏要等该目录挂上会话后才可见。记录为已知限制（包 README 同步）。
 - 数据根 `.env` 合并无白名单（白名单在发送端过滤）；配对设备本就可写 projects/ 下任意文件，威胁模型不变。
 - `主项目`（数据根本身作为工作区）整树推送仍会带上 `profiles/`、`skills/`、`outputs/`（含 `_login` 登录态）——现状行为，本次不扩scope 改它；「配置项」是白名单式的安全替代。
 
@@ -86,12 +95,12 @@ LAN 交接（easel-lan-handoff）目前是固定载荷：选中工作区 → 整
 
 ## Tasks
 
-- [ ] T1: 传输协议 `data` 类别 + `mergeIntoExisting` 校验（kind 字面量五处、类型、单测）
-- [ ] T2: `handoff.ts`：`bundleFromFiles` 拆分、数据 staging 根与落位（.env 合并）、合并模式收包（全条目到场校验）
-- [ ] T3: 服务：`sendProjectToPeer` 选项、`sendFilesToPeer`、`Config.dataDirectory`、serveSync 传参 + 会话less 不注册；壳 setup.rs 激活行补 `dataDirectory`
-- [ ] T4: easel 宿主：`/handoff/send` 载荷装配（`.env` 白名单、画像/技能/内容库遍历）、`/handoff/push`
-- [ ] T5: easel 客户端：设置页勾选 + 文案、context-menu 推送设备子列表 + 轻提示、`client.js` 重建、双语配对
-- [ ] T6: 验证（typecheck / 两包测试+覆盖率 / 插件测试 / build:artifacts+build:check）+ 评审 + spec 定稿
+- [x] T1: 传输协议 `data` 类别 + `mergeIntoExisting` 校验（kind 字面量五处、类型、单测）
+- [x] T2: `handoff.ts`：`bundleFromFiles` 拆分、数据 staging 根与落位（.env 合并）、合并模式收包（全条目到场校验）
+- [x] T3: 服务：`sendProjectToPeer` 选项、`sendFilesToPeer`、`Config.dataDirectory`、serveSync 传参 + 会话less 不注册；壳 setup.rs 激活行补 `dataDirectory`
+- [x] T4: easel 宿主：`/handoff/send` 载荷装配（`.env` 白名单、画像/技能/内容库遍历）、`/handoff/push`
+- [x] T5: easel 客户端：设置页勾选 + 文案、context-menu 推送设备子列表 + 轻提示、`client.js` 重建、双语配对
+- [x] T6: 验证（typecheck / 两包测试+覆盖率 / 插件测试 / build:artifacts+build:check）+ 评审 + spec 定稿
 
 ## [S4] Acceptance
 

@@ -2046,6 +2046,9 @@ async function collectConfigDataFiles(settings) {
     }
   }
   const skillPrefix = relative(settings.projectRoot, settings.skillsDir).split(sep).join('/')
+  if (skillPrefix.startsWith('..')) {
+    throw new ApiError(400, `技能目录 ${settings.skillsDir} 不在数据根内，无法随配置项推送`)
+  }
   const walkSkills = async (dir, rel) => {
     const entries = await readdir(dir, { withFileTypes: true }).catch(() => [])
     for (const item of entries) {
