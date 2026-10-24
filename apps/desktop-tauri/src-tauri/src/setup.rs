@@ -18,8 +18,9 @@ const STATE_FILE: &str = "desktop.json";
 
 pub fn dsh_home() -> PathBuf {
     // EASEL-DIVERGENCE(easel-dsh-layout): installed builds resolve to
-    // <install>\data\home; dev builds and pre-migration installs fall back to
-    // the historical ~/.easel (layout::dsh_home owns that precedence).
+    // <data_root>\home (the pointer/default root); dev builds and pre-migration
+    // installs fall back to the historical ~/.easel (layout::dsh_home owns that
+    // precedence).
     crate::layout::dsh_home()
 }
 

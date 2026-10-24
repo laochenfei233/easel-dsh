@@ -1,0 +1,33 @@
+/** Locale copy for the data-location settings section. */
+export const DATA_ROOT_COPY = {
+  zh: {
+    nav: '数据位置',
+    intro: '项目和会话存放在这里。迁移会把整个数据目录移到新位置，旧路径保留链接，已有项目仍可直接打开。',
+    current: '当前目录',
+    default: '默认位置',
+    useDefault: '使用默认位置',
+    choose: '选择文件夹…',
+    migrate: '迁移并重启',
+    migrating: '正在迁移，应用会自动重启…',
+    pending: '已有一次迁移在等待重启后执行。',
+    cloudWarning: '这个位置在云同步目录下（OneDrive/iCloud 等），大项目会随之上传。可以换到不同步的目录。',
+    onlyDesktop: '仅桌面版支持修改数据位置。',
+    loading: '读取中…',
+    pickUnavailable: '系统没有可用的目录选择器，请直接输入路径。',
+  },
+  en: {
+    nav: 'Data location',
+    intro: 'Projects and sessions live here. Moving the data root keeps the old path as a link, so existing projects stay reachable.',
+    current: 'Current folder',
+    default: 'Default folder',
+    useDefault: 'Use default',
+    choose: 'Choose folder…',
+    migrate: 'Move and restart',
+    migrating: 'Moving the data root; the app will restart automatically…',
+    pending: 'A move is queued and will run after the next restart.',
+    cloudWarning: 'This folder is inside a cloud-sync location (OneDrive/iCloud, etc.), so large projects will be uploaded. Pick a non-synced folder if that is not desired.',
+    onlyDesktop: 'Changing the data location is available in the desktop app only.',
+    loading: 'Loading…',
+    pickUnavailable: 'No folder picker is available; type the path instead.',
+  },
+}

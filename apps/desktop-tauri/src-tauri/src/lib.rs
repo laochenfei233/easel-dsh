@@ -9,10 +9,6 @@
 mod dsh_runner;
 mod layout;
 mod setup;
-// Loopback proxy for the WebKit app window; unused (and allowed to be) on
-// WebView2, where the iframe + pre-installed cookie flow stays.
-#[allow(dead_code)]
-mod proxy;
 mod tray;
 
 use tauri::webview::{NewWindowFeatures, NewWindowResponse};
@@ -187,10 +183,6 @@ fn hide_child_consoles() {}
 
 pub fn run() {
     hide_child_consoles();
-    // EASEL-DIVERGENCE(easel-dsh-layout): move pre-layout data into
-    // <install>\data before any command reads the first-run state or the dsh
-    // home. Installed-only; dev launches keep their scratch paths.
-    layout::migrate();
     let builder = tauri::Builder::default();
     // Release only: a second launch of the installed shell must surface the
     // resident instance instead of stacking another tray-resident one (window
@@ -206,6 +198,11 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
         .setup(|app| {
+            // EASEL-DIVERGENCE(easel-dsh-layout): relocate user data before the
+            // first-run state or the dsh home is read. Installed-only; this runs
+            // after the single-instance guard so a second launch cannot migrate
+            // under the resident server.
+            layout::migrate();
             build_main_window(app.handle())?;
             let handle = DshHandle::spawn(app.handle())?;
             app.manage(handle);

@@ -23,14 +23,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// easel/dsh-plugin-easel/src/client.tsx
+// src/client.tsx
 var client_exports = {};
 __export(client_exports, {
   default: () => client_default
 });
 module.exports = __toCommonJS(client_exports);
 
-// easel/dsh-plugin-easel/src/generated/easel-css.js
+// src/generated/easel-css.js
 var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .easel-scope {
   color-scheme: dark;
   --bg: #14171e;
@@ -893,10 +893,10 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
     box-shadow: inset 0 0 0 1px var(--border-strong);
   }}`;
 
-// easel/dsh-plugin-easel/src/lib/shell.tsx
+// src/lib/shell.tsx
 var import_react = require("react");
 
-// easel/dsh-plugin-easel/src/lib/task.ts
+// src/lib/task.ts
 var getServices = null;
 var cwdResolver = null;
 function configureTasks(cfg) {
@@ -1000,7 +1000,7 @@ async function resolveHomeWorkspaceId(projectDir) {
   return root ? findWorkspaceByPath(root)?.workspaceId ?? null : null;
 }
 
-// easel/dsh-plugin-easel/src/lib/shell.tsx
+// src/lib/shell.tsx
 function pageKey(view11) {
   return `easel.${view11}`;
 }
@@ -1130,7 +1130,7 @@ function createShellBridge(ctx, t) {
   return { useShellProps, navigate, useTopic, t, refresh: shell.refresh, setPersona: shell.setPersona };
 }
 
-// easel/dsh-plugin-easel/src/features/dashboard.tsx
+// src/features/dashboard.tsx
 var dashboard_exports = {};
 __export(dashboard_exports, {
   Component: () => Component,
@@ -1141,7 +1141,7 @@ __export(dashboard_exports, {
   view: () => view
 });
 
-// easel/dsh-plugin-easel/src/components/icons.tsx
+// src/components/icons.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 var svg = (size = 18, sw = 1.8) => ({
   width: size,
@@ -1268,10 +1268,10 @@ var IconPublish = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, impo
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6" })
 ] });
 
-// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
+// src/components/DashboardPage.tsx
 var import_react2 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/api.ts
+// src/lib/api.ts
 var BASE = "/easel";
 async function request(url, options) {
   const res = await fetch(`${BASE}${url}`, { cache: "no-store", ...options });
@@ -1404,11 +1404,11 @@ function publishNow(platform, payload) {
 function publishStatus(platform) {
   return request(`/api/publish/${encodeURIComponent(platform)}/status`);
 }
-function submitPublishSms(platform, code) {
+function submitPublishSms(platform, code2) {
   return request(`/api/publish/${encodeURIComponent(platform)}/sms`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code })
+    body: JSON.stringify({ code: code2 })
   });
 }
 function startLogin(platform, mode = "qr") {
@@ -1437,11 +1437,11 @@ function fetchAnalyticsPlatforms() {
 function fetchAccountAnalytics(platform) {
   return request(`/api/analytics/${encodeURIComponent(platform)}`);
 }
-function submitLoginSms(platform, code) {
+function submitLoginSms(platform, code2) {
   return request(`/api/login/${encodeURIComponent(platform)}/sms`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code })
+    body: JSON.stringify({ code: code2 })
   });
 }
 async function fetchStatus() {
@@ -1451,7 +1451,7 @@ function projectizeTopic(body) {
   return request("/api/projectize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 }
 
-// easel/dsh-plugin-easel/src/lib/whoami.ts
+// src/lib/whoami.ts
 var KEY = "easel_whoami";
 var WHOAMI_TTL_MS = 6e5;
 function getWhoamiCache() {
@@ -1497,7 +1497,7 @@ function verifyStale(platforms, opts = {}) {
   );
 }
 
-// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
+// src/components/DashboardPage.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
 function fmtNum(n) {
   if (n == null) return "\u2014";
@@ -1730,12 +1730,12 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
             d2 && d2 !== "loading" && d2 !== "error" && (!d2.loggedIn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: "\u8BE5\u5E73\u53F0\u767B\u5F55\u6001\u5DF2\u5931\u6548\uFF0C\u53BB\u8D26\u53F7\u9875\u91CD\u767B \u2192" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-body", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-main", children: [
                 /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-id", children: d2.nickname ? `@${d2.nickname}` : d2.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-overview", children: [["\u7C89\u4E1D", "followers"], ["\u83B7\u8D5E", "likes"], ["\u5173\u6CE8", "following"]].map(([label, key]) => {
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-overview", children: [["\u7C89\u4E1D", "followers"], ["\u83B7\u8D5E", "likes"], ["\u5173\u6CE8", "following"]].map(([label2, key]) => {
                   const w2 = d2.growth?.[anaWin] ?? null;
                   const g = w2 ? growthInfo(w2[key]) : null;
                   return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-stat", children: [
                     /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-val", children: fmtNum(d2[key]) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-label", children: label }),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-label", children: label2 }),
                     g ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta", style: { color: g.color }, children: g.text }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta ana-muted", children: "\u2014" })
                   ] }, key);
                 }) }),
@@ -1785,7 +1785,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/dashboard.tsx
+// src/features/dashboard.tsx
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var view = "dashboard";
 var order = 30;
@@ -1817,7 +1817,7 @@ var plugin = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/trends.tsx
+// src/features/trends.tsx
 var trends_exports = {};
 __export(trends_exports, {
   Component: () => Component2,
@@ -1828,7 +1828,7 @@ __export(trends_exports, {
   view: () => view2
 });
 
-// easel/dsh-plugin-easel/src/components/TrendsPage.tsx
+// src/components/TrendsPage.tsx
 var import_react3 = require("react");
 var import_jsx_runtime4 = require("react/jsx-runtime");
 var ALL_PLATFORMS = [
@@ -2198,7 +2198,7 @@ function TrendsPage({ onUseTopic }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/trends.tsx
+// src/features/trends.tsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
 var view2 = "trends";
 var order2 = 31;
@@ -2230,7 +2230,7 @@ var plugin2 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/ideas.tsx
+// src/features/ideas.tsx
 var ideas_exports = {};
 __export(ideas_exports, {
   Component: () => Component3,
@@ -2241,7 +2241,7 @@ __export(ideas_exports, {
   view: () => view3
 });
 
-// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
+// src/components/IdeasPage.tsx
 var import_react4 = require("react");
 var import_jsx_runtime6 = require("react/jsx-runtime");
 var COLUMNS = [
@@ -2477,7 +2477,7 @@ function IdeasPage({ onUseTopic }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/ideas.tsx
+// src/features/ideas.tsx
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var view3 = "ideas";
 var order3 = 32;
@@ -2509,7 +2509,7 @@ var plugin3 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/calendar.tsx
+// src/features/calendar.tsx
 var calendar_exports = {};
 __export(calendar_exports, {
   Component: () => Component4,
@@ -2520,7 +2520,7 @@ __export(calendar_exports, {
   view: () => view4
 });
 
-// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
+// src/components/CalendarPage.tsx
 var import_react5 = require("react");
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var STATUS_META = {
@@ -2915,7 +2915,7 @@ function CalendarPage() {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/calendar.tsx
+// src/features/calendar.tsx
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var view4 = "calendar";
 var order4 = 33;
@@ -2947,7 +2947,7 @@ var plugin4 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/skills.tsx
+// src/features/skills.tsx
 var skills_exports = {};
 __export(skills_exports, {
   Component: () => Component5,
@@ -2958,13 +2958,13 @@ __export(skills_exports, {
   view: () => view5
 });
 
-// easel/dsh-plugin-easel/src/components/SkillPage.tsx
+// src/components/SkillPage.tsx
 var import_react7 = require("react");
 
-// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
+// src/components/SkillDrawer.tsx
 var import_react6 = require("react");
 
-// node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -4121,7 +4121,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -6096,7 +6096,7 @@ function createDOMPurify() {
 }
 var purify_default = createDOMPurify();
 
-// easel/dsh-plugin-easel/src/lib/sanitize.ts
+// src/lib/sanitize.ts
 k.setOptions({ breaks: true, gfm: true });
 function renderMarkdown(md) {
   if (!md) return "";
@@ -6104,7 +6104,7 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
-// easel/dsh-plugin-easel/src/lib/skillDisplayNames.ts
+// src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
   "ai-image-gen": "AI \u751F\u56FE",
   "ai-music": "BGM / \u97F3\u4E50\u751F\u6210",
@@ -6224,7 +6224,7 @@ function displayName(raw) {
   return SKILL_DISPLAY_NAMES[raw] || raw;
 }
 
-// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
+// src/components/SkillDrawer.tsx
 var import_jsx_runtime10 = require("react/jsx-runtime");
 function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) {
   const [detail, setDetail] = (0, import_react6.useState)(null);
@@ -6445,7 +6445,7 @@ ${input.trim()}
   ] }) });
 }
 
-// easel/dsh-plugin-easel/src/components/SkillPage.tsx
+// src/components/SkillPage.tsx
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var LAYERS = [
   { key: "discover", label: "\u53D1\u73B0", Icon: IconSearch, color: "var(--layer-discover)" },
@@ -6591,7 +6591,7 @@ function SkillPage({ persona, onNavigate }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/skills.tsx
+// src/features/skills.tsx
 var import_jsx_runtime12 = require("react/jsx-runtime");
 var view5 = "skills";
 var order5 = 34;
@@ -6623,7 +6623,7 @@ var plugin5 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/outputs.tsx
+// src/features/outputs.tsx
 var outputs_exports = {};
 __export(outputs_exports, {
   Component: () => Component6,
@@ -6634,7 +6634,7 @@ __export(outputs_exports, {
   view: () => view6
 });
 
-// easel/dsh-plugin-easel/src/components/OutputsPage.tsx
+// src/components/OutputsPage.tsx
 var import_react8 = require("react");
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var FILTERS = [
@@ -6758,8 +6758,8 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   const remove = (0, import_react8.useCallback)(async (node, e) => {
     e.stopPropagation();
     const isDir = node.type === "dir";
-    const label = isDir ? `\u9879\u76EE/\u6587\u4EF6\u5939\u300C${node.meta?.title || node.name}\u300D\u53CA\u5176\u5168\u90E8\u5185\u5BB9` : `\u6587\u4EF6\u300C${node.name}\u300D`;
-    if (!window.confirm(`\u786E\u5B9A\u5220\u9664${label}\uFF1F
+    const label2 = isDir ? `\u9879\u76EE/\u6587\u4EF6\u5939\u300C${node.meta?.title || node.name}\u300D\u53CA\u5176\u5168\u90E8\u5185\u5BB9` : `\u6587\u4EF6\u300C${node.name}\u300D`;
+    if (!window.confirm(`\u786E\u5B9A\u5220\u9664${label2}\uFF1F
 \u6B64\u64CD\u4F5C\u4E0D\u53EF\u6062\u590D\u3002`)) return;
     try {
       await deleteOutput(node.path);
@@ -6940,7 +6940,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/outputs.tsx
+// src/features/outputs.tsx
 var import_jsx_runtime14 = require("react/jsx-runtime");
 var view6 = "outputs";
 var order6 = 35;
@@ -6972,7 +6972,7 @@ var plugin6 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/publish.tsx
+// src/features/publish.tsx
 var publish_exports = {};
 __export(publish_exports, {
   Component: () => Component7,
@@ -6983,10 +6983,10 @@ __export(publish_exports, {
   view: () => view7
 });
 
-// easel/dsh-plugin-easel/src/components/PublishPage.tsx
+// src/components/PublishPage.tsx
 var import_react9 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/store.ts
+// src/lib/store.ts
 var PUBLISH_KEY = "easel_publish_draft";
 var PREVIOUS_BRAND = ["post", "craft"].join("");
 function readMigratedLocalValue(key, suffix) {
@@ -7023,7 +7023,7 @@ function savePublishDraft(d2) {
   }
 }
 
-// easel/dsh-plugin-easel/src/components/PublishPage.tsx
+// src/components/PublishPage.tsx
 var import_jsx_runtime15 = require("react/jsx-runtime");
 var PLATFORMS2 = [
   { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", titleLimit: 20, bodyLimit: 1e3, hint: "\u6807\u9898\u226420\uFF0C\u6B63\u6587\u22641000\uFF0C\u91CD\u60C5\u7EEA+\u8BDD\u9898\u6807\u7B7E" },
@@ -7239,7 +7239,7 @@ function PublishPage({ persona }) {
     setPublishing(false);
     showToast("\u53D1\u5E03\u6D41\u7A0B\u7ED3\u675F\uFF0C\u89C1\u5404\u5E73\u53F0\u5361\u7247\u72B6\u6001");
   };
-  const pollAsyncPublish = (key, label) => new Promise((resolve) => {
+  const pollAsyncPublish = (key, label2) => new Promise((resolve) => {
     const started = Date.now();
     const iv = setInterval(async () => {
       if (Date.now() - started > 15 * 60 * 1e3) {
@@ -7256,7 +7256,7 @@ function PublishPage({ persona }) {
         return;
       }
       if (s.state === "sms_required" || s.state === "verifying") {
-        setPubSms({ platform: key, name: label, state: s.state, message: s.message });
+        setPubSms({ platform: key, name: label2, state: s.state, message: s.message });
         setPub((r) => ({ ...r, [key]: { status: "publishing", msg: s.message || "\u9700\u77ED\u4FE1\u9A8C\u8BC1" } }));
       } else if (s.state === "success") {
         clearInterval(iv);
@@ -7275,14 +7275,14 @@ function PublishPage({ persona }) {
   });
   const submitPubSms = async () => {
     if (!pubSms) return;
-    const code = pubSmsCode.replace(/\D/g, "");
-    if (code.length < 4) {
+    const code2 = pubSmsCode.replace(/\D/g, "");
+    if (code2.length < 4) {
       showToast("\u9A8C\u8BC1\u7801\u5E94\u4E3A 4-6 \u4F4D\u6570\u5B57");
       return;
     }
     setPubSmsBusy(true);
     try {
-      await submitPublishSms(pubSms.platform, code);
+      await submitPublishSms(pubSms.platform, code2);
       setPubSmsCode("");
       setPubSms((p) => p && { ...p, state: "verifying", message: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" });
     } catch (e) {
@@ -7572,7 +7572,7 @@ function PublishPage({ persona }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/publish.tsx
+// src/features/publish.tsx
 var import_jsx_runtime16 = require("react/jsx-runtime");
 var view7 = "publish";
 var order7 = 36;
@@ -7604,7 +7604,7 @@ var plugin7 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/accounts.tsx
+// src/features/accounts.tsx
 var accounts_exports = {};
 __export(accounts_exports, {
   Component: () => Component8,
@@ -7615,7 +7615,7 @@ __export(accounts_exports, {
   view: () => view8
 });
 
-// easel/dsh-plugin-easel/src/components/AccountsPage.tsx
+// src/components/AccountsPage.tsx
 var import_react10 = require("react");
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var STATE_LABEL = {
@@ -7716,19 +7716,19 @@ function DeconstructSources() {
       setSaving(false);
     }
   };
-  const badge2 = (row) => {
-    if (!row.authRequired) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u514D\u767B\u5F55" });
-    if (row.loggedIn) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u5DF2\u626B\u7801\u767B\u5F55" });
-    if (row.cookieSet) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "cookie \u5DF2\u914D\u7F6E" });
+  const badge2 = (row2) => {
+    if (!row2.authRequired) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u514D\u767B\u5F55" });
+    if (row2.loggedIn) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u5DF2\u626B\u7801\u767B\u5F55" });
+    if (row2.cookieSet) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "cookie \u5DF2\u914D\u7F6E" });
     return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--amber)" }, children: "\u672A\u914D\u7F6E" });
   };
   return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "card", style: { marginTop: 16, padding: 14 }, children: [
     /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "account-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "account-card-name", children: "\u62C6\u89E3\u6570\u636E\u6E90\uFF08\u7206\u6B3E\u62C6\u89E3\u7684\u89C6\u9891\u6293\u53D6\u767B\u5F55\u6001\uFF09" }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }, children: rows.map((row) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 10, alignItems: "baseline", fontSize: 13, flexWrap: "wrap" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("b", { style: { minWidth: 52 }, children: NAMES[row.platform] ?? row.platform }),
-      badge2(row),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { color: "var(--text-secondary)", fontSize: 12.5 }, children: HINTS[row.platform] ?? "" })
-    ] }, row.platform)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }, children: rows.map((row2) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 10, alignItems: "baseline", fontSize: 13, flexWrap: "wrap" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("b", { style: { minWidth: 52 }, children: NAMES[row2.platform] ?? row2.platform }),
+      badge2(row2),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { color: "var(--text-secondary)", fontSize: 12.5 }, children: HINTS[row2.platform] ?? "" })
+    ] }, row2.platform)) }),
     /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
       "textarea",
       {
@@ -7840,15 +7840,15 @@ function AccountsPage() {
     load();
   }, [stopPoll, load]);
   const submitSms = (0, import_react10.useCallback)(async () => {
-    const code = smsCode.replace(/\D/g, "");
-    if (code.length < 4) {
+    const code2 = smsCode.replace(/\D/g, "");
+    if (code2.length < 4) {
       setSmsErr("\u8BF7\u8F93\u5165\u624B\u673A\u6536\u5230\u7684\u9A8C\u8BC1\u7801");
       return;
     }
     setSmsBusy(true);
     setSmsErr("");
     try {
-      await submitLoginSms(qrPlatformRef.current, code);
+      await submitLoginSms(qrPlatformRef.current, code2);
       setSmsCode("");
       setQr((prev) => prev && { ...prev, state: "verifying", message: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" });
     } catch (e) {
@@ -8272,7 +8272,7 @@ function AccountsPage() {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/accounts.tsx
+// src/features/accounts.tsx
 var import_jsx_runtime18 = require("react/jsx-runtime");
 var view8 = "accounts";
 var order8 = 37;
@@ -8304,7 +8304,7 @@ var plugin8 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/profile.tsx
+// src/features/profile.tsx
 var profile_exports = {};
 __export(profile_exports, {
   Component: () => Component9,
@@ -8315,10 +8315,10 @@ __export(profile_exports, {
   view: () => view9
 });
 
-// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
+// src/components/PersonaBrowser.tsx
 var import_react13 = require("react");
 
-// easel/dsh-plugin-easel/src/components/ProfilePage.tsx
+// src/components/ProfilePage.tsx
 var import_react11 = require("react");
 var import_jsx_runtime19 = require("react/jsx-runtime");
 function fanTier(n) {
@@ -8546,7 +8546,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/components/OnboardingWizard.tsx
+// src/components/OnboardingWizard.tsx
 var import_react12 = require("react");
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var PLATFORMS3 = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u89C6\u9891\u53F7", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
@@ -8619,7 +8619,7 @@ ${formToInstruction(name, form)}`;
       setSubmitting(false);
     }
   };
-  const box = {
+  const box2 = {
     width: "100%",
     padding: "10px 12px",
     marginTop: 6,
@@ -8630,7 +8630,7 @@ ${formToInstruction(name, form)}`;
     fontSize: 14,
     fontFamily: "inherit"
   };
-  const label = { display: "block", marginTop: 16, fontSize: 13, color: "var(--text-secondary)" };
+  const label2 = { display: "block", marginTop: 16, fontSize: 13, color: "var(--text-secondary)" };
   const chip = (active) => ({
     padding: "6px 13px",
     borderRadius: 999,
@@ -8671,33 +8671,33 @@ ${formToInstruction(name, form)}`;
       /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { marginTop: 20 }, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { className: "btn btn-primary", onClick: () => onCreated(form.name.trim()), children: "\u5148\u8FDB\u53BB\u7528" }) })
     ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { style: { minHeight: 240 }, children: [
       step === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u753B\u50CF\u540D *\uFF08\u4E00\u4E2A\u4EBA\u8BBE = \u4E00\u4E2A\u753B\u50CF\uFF0C\u53EF\u8DE8\u591A\u5E73\u53F0\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u753B\u50CF\u540D *\uFF08\u4E00\u4E2A\u4EBA\u8BBE = \u4E00\u4E2A\u753B\u50CF\uFF0C\u53EF\u8DE8\u591A\u5E73\u53F0\uFF09" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "input",
           {
-            style: box,
+            style: box2,
             value: form.name,
             placeholder: "\u5982\uFF1A\u79D1\u6280\u6570\u7801\u8FBE\u4EBA",
             onChange: (e) => set("name", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u8FD0\u8425\u5E73\u53F0\uFF08\u53EF\u591A\u9009\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u8FD0\u8425\u5E73\u53F0\uFF08\u53EF\u591A\u9009\uFF09" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }, children: PLATFORMS3.map((p) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => togglePlatform(p), style: chip(form.platforms.includes(p)), children: p }, p)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u8D77\u53F7\u72B6\u6001" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u8D77\u53F7\u72B6\u6001" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "flex", gap: 8, marginTop: 6 }, children: ["\u5168\u65B0\u8D77\u53F7", "\u5DF2\u6709\u8D26\u53F7"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => set("accountStage", s), style: chip(form.accountStage === s), children: s }, s)) })
       ] }),
       step === 1 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)", marginTop: 12 }, children: "\u8D34\u4E0A\u5404\u5E73\u53F0\u4E3B\u9875\u94FE\u63A5\uFF0CAI \u4F1A\u5C3D\u529B\u5206\u6790\u4F60\u5DF2\u53D1\u7684\u5185\u5BB9\u548C\u98CE\u683C\uFF08\u6293\u4E0D\u5230\u4F1A\u8DF3\u8FC7\uFF0C\u53EF\u7559\u7A7A\uFF09\u3002" }),
         form.platforms.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)" }, children: "\uFF08\u672A\u9009\u5E73\u53F0\uFF0C\u53EF\u76F4\u63A5\u4E0B\u4E00\u6B65\uFF09" }),
         form.platforms.map((p) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { style: label, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { style: label2, children: [
             p,
             " \u4E3B\u9875\u94FE\u63A5"
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
             "input",
             {
-              style: box,
+              style: box2,
               value: form.links[p] || "",
               placeholder: `https://\u2026`,
               onChange: (e) => set("links", { ...form.links, [p]: e.target.value })
@@ -8706,40 +8706,40 @@ ${formToInstruction(name, form)}`;
         ] }, p))
       ] }),
       step === 2 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u60F3\u505A\u4EC0\u4E48\u65B9\u5411\u7684\u5185\u5BB9 *\uFF08\u8D8A\u5177\u4F53\u8D8A\u597D\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u60F3\u505A\u4EC0\u4E48\u65B9\u5411\u7684\u5185\u5BB9 *\uFF08\u8D8A\u5177\u4F53\u8D8A\u597D\uFF09" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "input",
           {
-            style: box,
+            style: box2,
             value: form.direction,
             placeholder: "\u5982\uFF1A\u5E73\u4EF7\u62A4\u80A4\u6D4B\u8BC4",
             onChange: (e) => set("direction", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u4E3A\u4EC0\u4E48\u505A\u8FD9\u4E2A / \u4F60\u7684\u4F18\u52BF\xB7\u72EC\u7279\u7ECF\u5386" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u4E3A\u4EC0\u4E48\u505A\u8FD9\u4E2A / \u4F60\u7684\u4F18\u52BF\xB7\u72EC\u7279\u7ECF\u5386" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "textarea",
           {
-            style: { ...box, minHeight: 60, resize: "vertical" },
+            style: { ...box2, minHeight: 60, resize: "vertical" },
             value: form.reason,
             onChange: (e) => set("reason", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u8FD0\u8425\u76EE\u6807" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u8FD0\u8425\u76EE\u6807" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "input",
           {
-            style: box,
+            style: box2,
             value: form.goal,
             placeholder: "\u6DA8\u7C89 / \u53D8\u73B0 / \u4E2A\u4EBA\u54C1\u724C / \u5F15\u6D41\u79C1\u57DF",
             onChange: (e) => set("goal", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u60F3\u4EA7\u51FA\u7684\u5F62\u5F0F" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u60F3\u4EA7\u51FA\u7684\u5F62\u5F0F" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "input",
           {
-            style: box,
+            style: box2,
             value: form.formats,
             placeholder: "\u56FE\u6587 / \u77ED\u89C6\u9891 / \u4E2D\u957F\u89C6\u9891 / \u957F\u6587",
             onChange: (e) => set("formats", e.target.value)
@@ -8747,22 +8747,22 @@ ${formToInstruction(name, form)}`;
         )
       ] }),
       step === 3 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u559C\u6B22\u770B\u7684\u5185\u5BB9 / \u5BF9\u6807\u8D26\u53F7" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u559C\u6B22\u770B\u7684\u5185\u5BB9 / \u5BF9\u6807\u8D26\u53F7" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "textarea",
           {
-            style: { ...box, minHeight: 60, resize: "vertical" },
+            style: { ...box2, minHeight: 60, resize: "vertical" },
             value: form.likes,
             onChange: (e) => set("likes", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u671F\u671B\u8C03\u6027" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u671F\u671B\u8C03\u6027" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }, children: TONES.map((t) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => set("tone", form.tone === t ? "" : t), style: chip(form.tone === t), children: t }, t)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label, children: "\u4E0D\u505A\u7684\u5185\u5BB9 / \u5408\u89C4\u7EA2\u7EBF" }),
+        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u4E0D\u505A\u7684\u5185\u5BB9 / \u5408\u89C4\u7EA2\u7EBF" }),
         /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
           "textarea",
           {
-            style: { ...box, minHeight: 60, resize: "vertical" },
+            style: { ...box2, minHeight: 60, resize: "vertical" },
             value: form.avoid,
             placeholder: "\u5982\uFF1A\u4E0D\u63A5\u533B\u7597\u529F\u6548\u3001\u4E0D\u505A\u865A\u5047\u5BA3\u4F20",
             onChange: (e) => set("avoid", e.target.value)
@@ -8778,7 +8778,7 @@ ${formToInstruction(name, form)}`;
   ] }) });
 }
 
-// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
+// src/components/PersonaBrowser.tsx
 var import_jsx_runtime21 = require("react/jsx-runtime");
 function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }) {
   const [wizardOpen, setWizardOpen] = (0, import_react13.useState)(false);
@@ -8848,7 +8848,7 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/profile.tsx
+// src/features/profile.tsx
 var import_jsx_runtime22 = require("react/jsx-runtime");
 var view9 = "profile";
 var order9 = 38;
@@ -8880,7 +8880,7 @@ var plugin9 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/breakdown.tsx
+// src/features/breakdown.tsx
 var breakdown_exports = {};
 __export(breakdown_exports, {
   Component: () => Component10,
@@ -8891,7 +8891,7 @@ __export(breakdown_exports, {
   view: () => view10
 });
 
-// easel/dsh-plugin-easel/src/components/BreakdownPage.tsx
+// src/components/BreakdownPage.tsx
 var import_react14 = require("react");
 var import_jsx_runtime23 = require("react/jsx-runtime");
 var FETCH_STAGES = [
@@ -9219,7 +9219,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/breakdown.tsx
+// src/features/breakdown.tsx
 var import_jsx_runtime24 = require("react/jsx-runtime");
 var view10 = "breakdown";
 var order10 = 39;
@@ -9251,10 +9251,10 @@ var plugin10 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/media-preview.tsx
+// src/lib/media-preview.tsx
 var import_react15 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/media-url.js
+// src/lib/media-url.js
 var VIDEO_EXTENSIONS = ["mp4", "m4v", "mov", "webm", "mkv"];
 var AUDIO_EXTENSIONS = ["mp3", "wav", "m4a", "aac", "flac", "ogg", "opus"];
 var MEDIA_EXTENSIONS = [...VIDEO_EXTENSIONS, ...AUDIO_EXTENSIONS];
@@ -9285,7 +9285,7 @@ function workspaceMediaPath(absolutePath, projectRoot2) {
   return rel;
 }
 
-// easel/dsh-plugin-easel/src/lib/media-preview.tsx
+// src/lib/media-preview.tsx
 var import_jsx_runtime25 = require("react/jsx-runtime");
 var MEDIA_BODY_ID = "easel-media-player";
 var MEDIA_COPY = {
@@ -9433,7 +9433,7 @@ function registerMediaPreview(ctx) {
   else if (ctx.get?.("documentPreviews") !== void 0) attach(ctx);
 }
 
-// easel/dsh-plugin-easel/src/features/media.ts
+// src/features/media.ts
 var plugin11 = {
   name: "easel-media",
   inject: ["slots", "locale"],
@@ -9446,7 +9446,7 @@ var plugin11 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/context-menu-model.js
+// src/lib/context-menu-model.js
 var FILE_ROW_SELECTOR = "[data-files-entry]";
 var FILE_ROOT_SELECTOR = "[data-files-root]";
 var EDITABLE_SELECTOR = [
@@ -9490,19 +9490,19 @@ function fileLinkSurface(target) {
 }
 function resolveSurface(target, selection) {
   if (target == null || typeof target.closest !== "function") return null;
-  const row = target.closest(FILE_ROW_SELECTOR);
-  if (row != null && typeof row.closest === "function") {
-    const root = row.closest(FILE_ROOT_SELECTOR);
-    const path = dataOf(row, "filesPath");
-    const entry = dataOf(row, "filesEntry");
+  const row2 = target.closest(FILE_ROW_SELECTOR);
+  if (row2 != null && typeof row2.closest === "function") {
+    const root = row2.closest(FILE_ROOT_SELECTOR);
+    const path = dataOf(row2, "filesPath");
+    const entry = dataOf(row2, "filesEntry");
     if (root != null && typeof path === "string" && path !== "" && entry !== "other") {
       return {
         kind: "file",
-        row,
+        row: row2,
         path,
         root: dataOf(root, "filesRoot"),
         entry,
-        preview: row.querySelector?.("button") ?? null
+        preview: row2.querySelector?.("button") ?? null
       };
     }
   }
@@ -9564,7 +9564,7 @@ function fileNameOf(path) {
   return parts[parts.length - 1] ?? "";
 }
 
-// easel/dsh-plugin-easel/src/features/context-menu.js
+// src/features/context-menu.js
 var STYLE_ID = "easel-context-menu-style";
 var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
@@ -9753,8 +9753,8 @@ function editableItems(element) {
     menuRow("\u5168\u9009", () => selectAll(element), { hint: `${mod}A` })
   ];
 }
-function menuRow(label, action, options = {}) {
-  return { label, action, hint: options.hint, disabled: options.disabled === true, keepOpen: options.keepOpen === true };
+function menuRow(label2, action, options = {}) {
+  return { label: label2, action, hint: options.hint, disabled: options.disabled === true, keepOpen: options.keepOpen === true };
 }
 function showMenu({ x: x2, y: y2, items, onClosed, onError }) {
   const menu = document.createElement("div");
@@ -9859,9 +9859,9 @@ function itemElement(item, close, restoreFocus, render, onError) {
   button.className = ITEM_CLASS;
   button.setAttribute("role", "menuitem");
   button.disabled = item.disabled === true;
-  const label = document.createElement("span");
-  label.textContent = item.label;
-  button.append(label);
+  const label2 = document.createElement("span");
+  label2.textContent = item.label;
+  button.append(label2);
   if (typeof item.hint === "string" && item.hint !== "") {
     const hint = document.createElement("span");
     hint.className = HINT_CLASS;
@@ -9991,13 +9991,13 @@ function addToTask(ctx, text2) {
   if (input === void 0) throw new Error("\u5F53\u524D\u6CA1\u6709\u53EF\u7528\u7684\u8F93\u5165\u6846");
   const block = draftBlock(text2);
   if (block === "") return;
-  const actions = input.actions;
-  if (typeof actions?.captureInsertion === "function" && typeof actions?.insertText === "function") {
-    if (actions.insertText(block, actions.captureInsertion())) {
+  const actions2 = input.actions;
+  if (typeof actions2?.captureInsertion === "function" && typeof actions2?.insertText === "function") {
+    if (actions2.insertText(block, actions2.captureInsertion())) {
       input.focus();
       return;
     }
-    if (actions.insertText(block, actions.captureInsertion())) {
+    if (actions2.insertText(block, actions2.captureInsertion())) {
       input.focus();
       return;
     }
@@ -10126,7 +10126,7 @@ function reportError(ctx, error) {
   }
 }
 
-// easel/dsh-plugin-easel/src/features/index.ts
+// src/features/index.ts
 var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
 var FEATURES = views.map((module2) => ({
   view: module2.view,
@@ -10136,7 +10136,203 @@ var FEATURES = views.map((module2) => ({
 }));
 var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12];
 
-// easel/dsh-plugin-easel/src/client.tsx
+// src/components/DataRootSection.tsx
+var import_react16 = require("react");
+var import_jsx_runtime26 = require("react/jsx-runtime");
+var box = { display: "flex", flexDirection: "column", gap: 12, fontSize: 13 };
+var row = { display: "flex", flexDirection: "column", gap: 4 };
+var label = { opacity: 0.7 };
+var code = { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12, wordBreak: "break-all" };
+var actions = { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" };
+var inputStyle = {
+  flex: "1 1 320px",
+  minWidth: 0,
+  padding: "6px 8px",
+  borderRadius: 6,
+  border: "1px solid rgba(127,127,127,.35)",
+  background: "transparent",
+  color: "inherit",
+  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+  fontSize: 12
+};
+var buttonStyle = {
+  padding: "5px 10px",
+  borderRadius: 6,
+  border: "1px solid rgba(127,127,127,.35)",
+  background: "transparent",
+  color: "inherit",
+  cursor: "pointer"
+};
+var primaryStyle = {
+  ...buttonStyle,
+  border: "none",
+  background: "var(--dsw-accent, #4f7cff)",
+  color: "#fff"
+};
+var warningStyle = { margin: 0, padding: "8px 10px", borderRadius: 6, background: "rgba(214,158,46,.12)", color: "inherit" };
+var errorStyle = { margin: 0, color: "var(--dsw-danger, #d14)", whiteSpace: "pre-wrap" };
+async function request2(path, init) {
+  const headers = {
+    accept: "application/json",
+    ...init?.body === void 0 ? {} : { "content-type": "application/json" },
+    ...init?.headers
+  };
+  const res = await fetch(`/easel/api${path}`, { ...init, headers, cache: "no-store" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const detail = data.detail ?? data.message ?? `HTTP ${res.status}`;
+    throw new Error(detail);
+  }
+  return data;
+}
+function DataRootSection({ t }) {
+  const [status, setStatus] = (0, import_react16.useState)(null);
+  const [value, setValue] = (0, import_react16.useState)("");
+  const [busy, setBusy] = (0, import_react16.useState)(false);
+  const [error, setError] = (0, import_react16.useState)(null);
+  const [notice, setNotice] = (0, import_react16.useState)(null);
+  (0, import_react16.useEffect)(() => {
+    let active = true;
+    request2("/data-root").then((next) => {
+      if (!active) return;
+      setStatus(next);
+      setValue(next.current ?? next.default ?? "");
+    }).catch((err) => {
+      if (active) setError(err.message);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+  if (status !== null && !status.supported) {
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { style: box, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: t("nav") }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: t("onlyDesktop") })
+    ] });
+  }
+  if (status === null) {
+    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { style: box, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: t("nav") }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: t("loading") }),
+      error === null ? null : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: errorStyle, role: "alert", children: error })
+    ] });
+  }
+  const choose = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const picked = await request2("/data-root/pick", { method: "POST" });
+      if (picked.path) setValue(picked.path);
+    } catch (err) {
+      const message = err.message;
+      setNotice(message === "picker-unavailable" ? t("pickUnavailable") : message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const migrate = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await request2("/data-root", { method: "POST", body: JSON.stringify({ path: value.trim() }) });
+      setNotice(t("migrating"));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const trimmed = value.trim().replace(/[\\/]+$/, "");
+  const current = (status.current ?? "").replace(/[\\/]+$/, "");
+  const unchanged = trimmed.length === 0 || trimmed === current;
+  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { style: box, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: t("nav") }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: { margin: 0 }, children: t("intro") }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: row, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { style: label, children: t("current") }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { style: code, children: status.current })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: row, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { style: label, children: t("default") }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { style: code, children: status.default })
+    ] }),
+    status.isDefault ? null : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: actions, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+      "button",
+      {
+        type: "button",
+        style: buttonStyle,
+        disabled: busy,
+        onClick: () => {
+          setValue(status.default ?? "");
+          setNotice(null);
+        },
+        children: t("useDefault")
+      }
+    ) }),
+    status.cloudSynced ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: warningStyle, children: t("cloudWarning") }) : null,
+    status.pending ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: { margin: 0 }, children: t("pending") }) : null,
+    status.lastError ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: errorStyle, role: "alert", children: status.lastError }) : null,
+    notice ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: { margin: 0 }, children: notice }) : null,
+    error ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: errorStyle, role: "alert", children: error }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: actions, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
+        "input",
+        {
+          style: inputStyle,
+          value,
+          spellCheck: false,
+          onChange: (event) => {
+            setValue(event.target.value);
+            setNotice(null);
+          },
+          "aria-label": t("current")
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", style: buttonStyle, disabled: busy, onClick: () => {
+        void choose();
+      }, children: t("choose") }),
+      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", style: primaryStyle, disabled: busy || unchanged, onClick: () => {
+        void migrate();
+      }, children: t("migrate") })
+    ] })
+  ] });
+}
+
+// src/locales/dataRoot.ts
+var DATA_ROOT_COPY = {
+  zh: {
+    nav: "\u6570\u636E\u4F4D\u7F6E",
+    intro: "\u9879\u76EE\u548C\u4F1A\u8BDD\u5B58\u653E\u5728\u8FD9\u91CC\u3002\u8FC1\u79FB\u4F1A\u628A\u6574\u4E2A\u6570\u636E\u76EE\u5F55\u79FB\u5230\u65B0\u4F4D\u7F6E\uFF0C\u65E7\u8DEF\u5F84\u4FDD\u7559\u94FE\u63A5\uFF0C\u5DF2\u6709\u9879\u76EE\u4ECD\u53EF\u76F4\u63A5\u6253\u5F00\u3002",
+    current: "\u5F53\u524D\u76EE\u5F55",
+    default: "\u9ED8\u8BA4\u4F4D\u7F6E",
+    useDefault: "\u4F7F\u7528\u9ED8\u8BA4\u4F4D\u7F6E",
+    choose: "\u9009\u62E9\u6587\u4EF6\u5939\u2026",
+    migrate: "\u8FC1\u79FB\u5E76\u91CD\u542F",
+    migrating: "\u6B63\u5728\u8FC1\u79FB\uFF0C\u5E94\u7528\u4F1A\u81EA\u52A8\u91CD\u542F\u2026",
+    pending: "\u5DF2\u6709\u4E00\u6B21\u8FC1\u79FB\u5728\u7B49\u5F85\u91CD\u542F\u540E\u6267\u884C\u3002",
+    cloudWarning: "\u8FD9\u4E2A\u4F4D\u7F6E\u5728\u4E91\u540C\u6B65\u76EE\u5F55\u4E0B\uFF08OneDrive/iCloud \u7B49\uFF09\uFF0C\u5927\u9879\u76EE\u4F1A\u968F\u4E4B\u4E0A\u4F20\u3002\u53EF\u4EE5\u6362\u5230\u4E0D\u540C\u6B65\u7684\u76EE\u5F55\u3002",
+    onlyDesktop: "\u4EC5\u684C\u9762\u7248\u652F\u6301\u4FEE\u6539\u6570\u636E\u4F4D\u7F6E\u3002",
+    loading: "\u8BFB\u53D6\u4E2D\u2026",
+    pickUnavailable: "\u7CFB\u7EDF\u6CA1\u6709\u53EF\u7528\u7684\u76EE\u5F55\u9009\u62E9\u5668\uFF0C\u8BF7\u76F4\u63A5\u8F93\u5165\u8DEF\u5F84\u3002"
+  },
+  en: {
+    nav: "Data location",
+    intro: "Projects and sessions live here. Moving the data root keeps the old path as a link, so existing projects stay reachable.",
+    current: "Current folder",
+    default: "Default folder",
+    useDefault: "Use default",
+    choose: "Choose folder\u2026",
+    migrate: "Move and restart",
+    migrating: "Moving the data root; the app will restart automatically\u2026",
+    pending: "A move is queued and will run after the next restart.",
+    cloudWarning: "This folder is inside a cloud-sync location (OneDrive/iCloud, etc.), so large projects will be uploaded. Pick a non-synced folder if that is not desired.",
+    onlyDesktop: "Changing the data location is available in the desktop app only.",
+    loading: "Loading\u2026",
+    pickUnavailable: "No folder picker is available; type the path instead."
+  }
+};
+
+// src/client.tsx
 var NS = "easel.panel";
 var STYLE_ID2 = "dsh-plugin-easel-style";
 var STYLES = EASEL_CSS;
@@ -10156,6 +10352,18 @@ var client_default = {
       return () => style.remove();
     }, "easel: workbench styles");
     ctx.effect(() => ctx.uiSidebarPanels.hidden("schedules"), "easel: hide schedules rail icon");
+    ctx.effect(
+      () => ctx.locale.register("settings.dataRoot", DATA_ROOT_COPY),
+      "easel: data root dictionaries"
+    );
+    ctx.slots.inject("settings.section", () => ctx.slots.register({
+      name: "settings.section",
+      id: "data-root",
+      order: 40,
+      label: () => ctx.locale.bind("settings.dataRoot")("nav"),
+      locale: "settings.dataRoot",
+      inject: () => ({})
+    }, DataRootSection));
     const t = ctx.locale.bind(NS);
     ctx.provide("easelShell", createShellBridge(ctx, t));
     for (const plugin13 of CLIENT_PLUGINS) ctx.plugin(plugin13);
