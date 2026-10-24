@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchSchedule, createSchedule, updateSchedule, deleteSchedule, fetchScheduleContext } from '../lib/api';
 import type { ScheduleItem, ScheduleInput, ScheduleContext } from '../lib/api';
+import { festivalsFor } from '../lib/festivals';
 import { IconCalendar, IconTrash, IconChevron } from './icons';
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -68,6 +69,18 @@ export default function CalendarPage() {
     return Array.from({ length: 42 }, (_, i) => {
       const d = new Date(start); d.setDate(start.getDate() + i); return d;
     });
+  }, [cursor]);
+
+  // 节假日底图：网格会露出前后月的日期，取三个月合并
+  const festivalMap = useMemo(() => {
+    const merged = new Map();
+    for (const offset of [-1, 0, 1]) {
+      const anchor = new Date(cursor.getFullYear(), cursor.getMonth() + offset, 1);
+      for (const [ymd, list] of festivalsFor(anchor.getFullYear(), anchor.getMonth() + 1)) {
+        if (!merged.has(ymd)) merged.set(ymd, list);
+      }
+    }
+    return merged;
   }, [cursor]);
 
   const openNew = (date: string) => {
@@ -158,6 +171,15 @@ export default function CalendarPage() {
         <span className="cal-legend-item">
           <span className="cal-legend-swatch sq" style={{ ['--sw' as string]: EVENT_COLOR }} />平台活动
         </span>
+        <span className="cal-legend-item">
+          <span className="cal-festival rest">休</span>法定节假日
+        </span>
+        <span className="cal-legend-item">
+          <span className="cal-festival work">班</span>调休上班
+        </span>
+        <span className="cal-legend-item">
+          <span className="cal-legend-swatch sq" style={{ ['--sw' as string]: 'var(--cal-festival)' }} />节日
+        </span>
         <span className="cal-legend-filter">
           {(['all', 'content', 'event'] as Filter[]).map((f) => (
             <button key={f} className={`chip ${filter === f ? 'active' : ''}`} onClick={() => setFilter(f)}>
@@ -178,10 +200,24 @@ export default function CalendarPage() {
           const dayItems = [...bucket.events, ...bucket.content];  // 活动在前
           const shown = dayItems.slice(0, MAX_VISIBLE);
           const hidden = dayItems.length - shown.length;
+          const fests = festivalMap.get(ds) || [];
+          const rest = fests.find((f) => f.kind === 'statutory-rest');
+          const work = fests.find((f) => f.kind === 'statutory-work');
+          const festNames = fests
+            .filter((f) => f.kind !== 'statutory-rest' && f.kind !== 'statutory-work')
+            .slice(0, 2)
+            .map((f) => f.name);
           return (
             <div key={i} className={`cal-cell ${inMonth ? '' : 'dim'} ${ds === todayStr ? 'today' : ''}`}
               onClick={() => (dayItems.length ? setDayView(ds) : openNew(ds))}>
-              <div className="cal-daynum">{d.getDate()}</div>
+              <div className="cal-daynum-row">
+                <div className="cal-daynum">{d.getDate()}</div>
+                {rest && <span className="cal-festival rest" title={rest.name}>休</span>}
+                {work && <span className="cal-festival work" title={work.name}>班</span>}
+              </div>
+              {festNames.length > 0 && (
+                <div className="cal-festnames" title={festNames.join(' · ')}>{festNames.join(' · ')}</div>
+              )}
               <div className="cal-events">
                 {shown.map(renderChip)}
                 {hidden > 0 && (
@@ -205,6 +241,13 @@ export default function CalendarPage() {
                 <h3 style={{ margin: 0 }}>{dayView}（{list.length} 项）</h3>
                 <button className="icon-btn" onClick={() => setDayView(null)}>×</button>
               </div>
+              {(festivalMap.get(dayView) || []).length > 0 && (
+                <div className="cal-fest-day">
+                  {(festivalMap.get(dayView) || []).map((f, i) => (
+                    <span key={i} className={`cal-festival-tag is-${f.kind}`}>{f.name}</span>
+                  ))}
+                </div>
+              )}
               <div className="cal-dayview-list">
                 {list.map(renderChip)}
               </div>

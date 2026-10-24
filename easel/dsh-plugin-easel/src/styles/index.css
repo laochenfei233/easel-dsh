@@ -890,6 +890,19 @@ textarea.field { resize: vertical; min-height: 90px; }
 .cal-cell.today { border-color: var(--accent-start); box-shadow: 0 0 0 2px var(--accent-soft); }
 .cal-daynum { font-size: 12px; color: var(--text-secondary); font-weight: 600; }
 .cal-cell.today .cal-daynum { color: var(--accent-end); }
+/* 节假日底图（T2）：休/班角标 + 节日名 */
+.calendar-page { --cal-rest: #e5484d; --cal-festival: #b7791f; }
+.cal-daynum-row { display: flex; align-items: center; gap: 4px; }
+.cal-festival { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 4px; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+.cal-festival.rest { color: #fff; background: var(--cal-rest); }
+.cal-festival.work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 15%, transparent); }
+.cal-festnames { font-size: 11px; color: var(--cal-festival); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }
+.cal-fest-day { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.cal-festival-tag { font-size: 12px; padding: 2px 9px; border-radius: 999px; }
+.cal-festival-tag.is-statutory-rest { color: #fff; background: var(--cal-rest); font-weight: 600; }
+.cal-festival-tag.is-statutory-work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 14%, transparent); }
+.cal-festival-tag.is-lunar { color: #fff; background: var(--cal-festival); }
+.cal-festival-tag.is-fixed { color: var(--cal-festival); background: color-mix(in srgb, var(--cal-festival) 14%, transparent); }
 .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }
 .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }
 .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }
