@@ -59,7 +59,7 @@
     "@deepseek-ai/dsh-home-paths": "workspace:*",
     "@deepseek-ai/dsh-http-proxy": "workspace:*",
     "@deepseek-ai/dsh-jobs-local": "workspace:*",
-    "@deepseek-ai/dsh-lan-handoff": "workspace:*",
+    "@easel-dsh/easel-air-transfer": "workspace:*",
     "@deepseek-ai/dsh-launch-environment": "workspace:*",
     "@deepseek-ai/dsh-mcp-client": "workspace:*",
     "@deepseek-ai/dsh-mcp-resources": "workspace:*",

@@ -359,9 +359,6 @@ importers:
       '@deepseek-ai/dsh-jobs-local':
         specifier: workspace:*
         version: link:../../packages/jobs/jobs-local
-      '@deepseek-ai/dsh-lan-handoff':
-        specifier: workspace:*
-        version: link:../../packages/transfer/lan-handoff
       '@deepseek-ai/dsh-launch-environment':
         specifier: workspace:*
         version: link:../../packages/util/launch-environment
@@ -494,6 +491,9 @@ importers:
       '@deepseek-ai/schemastery':
         specifier: link:../../vendor/schemastery
         version: link:../../vendor/schemastery
+      '@easel-dsh/easel-air-transfer':
+        specifier: workspace:*
+        version: link:../../packages/transfer/lan-handoff
       commander:
         specifier: ^15.0.0
         version: 15.0.0

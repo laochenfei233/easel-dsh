@@ -3,7 +3,7 @@ description: "LAN project handoff peer service: persistent device identity, TLS 
 kind: "package-reference"
 ---
 
-# @deepseek-ai/dsh-lan-handoff
+# @easel-dsh/easel-air-transfer
 
 English | [中文](README.zh.md)
 

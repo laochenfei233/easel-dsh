@@ -5,7 +5,7 @@
  * display names, platforms, and pairing timestamps; identity keys live in the
  * identity file, and nothing from the peer beyond what discovery already
  * shows is duplicated here.
- * @module @deepseek-ai/dsh-lan-handoff/peers
+ * @module @easel-dsh/easel-air-transfer/peers
  */
 
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'

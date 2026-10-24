@@ -7,7 +7,7 @@
  * adding messages never breaks an older one. Resume is at entry granularity:
  * the receiver reports entries it already holds complete, and the sender
  * skips them.
- * @module @deepseek-ai/dsh-lan-handoff/transfer
+ * @module @easel-dsh/easel-air-transfer/transfer
  */
 
 import { createHash } from 'node:crypto'

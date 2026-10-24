@@ -5,7 +5,7 @@
  * `binaryLength` travels inside the JSON header, so the reader never needs a
  * message boundary from TLS. Unknown message types are skipped by consumers,
  * never by the frame layer.
- * @module @deepseek-ai/dsh-lan-handoff/frame
+ * @module @easel-dsh/easel-air-transfer/frame
  */
 
 /** JSON header cap after authentication, matching a bundle manifest's practical size. */
