@@ -54,5 +54,15 @@
     "shortDescription": "Easel-dsh desktop client",
     "longDescription": "A standalone desktop client for Easel-dsh. Embeds the dsh web UI in a native window with a bundled Node runtime."
   },
-  "plugins": {}
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://laochenfei233.github.io/easel-dsh/updates/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEEwOUJCOUZBQTYxOEQwQTUKUldTbDBCaW0rcm1ib0xhRzVDY0ZZcWlQVEp4OXlNandwTWp2WVpPMTRrTVVFTmpXRDBUV1dwencK",
+      "windows": {
+        "installMode": "basicUi"
+      }
+    }
+  }
 }
