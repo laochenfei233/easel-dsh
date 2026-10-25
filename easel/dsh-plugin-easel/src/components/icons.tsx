@@ -213,13 +213,3 @@ export const IconGithub = ({ size, className, strokeWidth }: P) => (
     <path d="M9 18c-4.51 2-5-2-7-2" />
   </svg>
 );
-export const IconEaselMark = ({ size, className }: P) => (
-  <svg width={size ?? 24} height={size ?? 24} viewBox="0 0 24 24" fill="none" className={className}
-    stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <path d="M12 2.6v9.2" />
-    <path d="M5.2 8.4h13.6" />
-    <path d="M5.6 21.4 10 13.2" />
-    <path d="m18.4 21.4-4.4-8.2" />
-    <path d="M5.2 8.4 3.4 6.6M18.8 8.4l1.8-1.8" />
-  </svg>
-);

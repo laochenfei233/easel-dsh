@@ -10,7 +10,8 @@
 import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { EaselUpdate } from '../lib/hostUpdate'
 import type { EaselAboutCopyKey } from '../locales/easelAbout'
-import { IconChat, IconChevron, IconEaselMark, IconFile, IconGithub, IconGlobe } from './icons'
+import { IconChat, IconChevron, IconFile, IconGithub, IconGlobe } from './icons'
+import appIcon from '../assets/app-icon.png'
 
 /** Stylesheet injected once per client by the core plugin. */
 export const ABOUT_STYLES = `
@@ -19,9 +20,8 @@ export const ABOUT_STYLES = `
 .eau-hero { padding: 18px 18px 4px; }
 .eau-brand { display: flex; align-items: flex-start; gap: 12px; }
 .eau-mark {
-  flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
-  color: #fff; background: linear-gradient(145deg, var(--dsw-alias-state-business-primary) 10%, #7c5cff 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  flex: none; width: 44px; height: 44px; border-radius: 11px; display: block; object-fit: contain;
+  background: #fff; box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 .eau-id { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding-top: 1px; }
 .eau-name { font-size: 15px; line-height: 22px; font-weight: 600; letter-spacing: 0.01em; }
@@ -192,7 +192,7 @@ export function AboutSection({ t, update }: AboutSectionProps) {
   return <div className="eau-root">
     <section className="eau-card eau-hero">
       <div className="eau-brand">
-        <span className="eau-mark"><IconEaselMark size={26} /></span>
+        <img className="eau-mark" src={appIcon} alt="" width={44} height={44} />
         <div className="eau-id">
           <span className="eau-name">{t('appName')}</span>
           <span className="eau-tagline">{t('tagline')}</span>
