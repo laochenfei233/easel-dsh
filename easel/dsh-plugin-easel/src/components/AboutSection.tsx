@@ -51,6 +51,8 @@ export const ABOUT_STYLES = `
  * easel-website spec, and a domain change lands here once it is bought. */
 export const WEBSITE_URL = 'https://laochenfei233.github.io/easel-dsh/'
 export const CHANGELOG_URL = `${WEBSITE_URL}#changelog`
+/** The repository issue tracker the feedback link opens. */
+export const ISSUES_URL = 'https://github.com/laochenfei233/easel-dsh/issues'
 
 export interface AboutSectionProps {
   /** Locale-bound copy for `settings.easelAbout`. */
@@ -68,8 +70,16 @@ export function AboutSection({ t, update }: AboutSectionProps) {
 
   useEffect(() => { void update.refresh() }, [update])
 
+  // The link row belongs to the page rather than the update cards: feedback
+  // stays reachable where the update channel does not exist.
+  const links = <div className="eau-row">
+    <a className="eau-link" href={WEBSITE_URL} target="_blank" rel="noreferrer">{t('websiteLink')}</a>
+    <a className="eau-link" href={CHANGELOG_URL} target="_blank" rel="noreferrer">{t('changelogLink')}</a>
+    <a className="eau-link" href={ISSUES_URL} target="_blank" rel="noreferrer">{t('feedbackLink')}</a>
+  </div>
+
   if (!state.supported) {
-    return <div className="eau-root"><p className="eau-muted">{t('desktopOnly')}</p></div>
+    return <div className="eau-root"><p className="eau-muted">{t('desktopOnly')}</p>{links}</div>
   }
 
   // The check row: the primary button and the outcome text share the state
@@ -132,9 +142,6 @@ export function AboutSection({ t, update }: AboutSectionProps) {
         : <p className="eau-muted">{t('sourceUnavailable')}</p>}
     </section>
 
-    <div className="eau-row">
-      <a className="eau-link" href={WEBSITE_URL} target="_blank" rel="noreferrer">{t('websiteLink')}</a>
-      <a className="eau-link" href={CHANGELOG_URL} target="_blank" rel="noreferrer">{t('changelogLink')}</a>
-    </div>
+    {links}
   </div>
 }

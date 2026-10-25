@@ -36,7 +36,6 @@ import { DesktopUpdateSource } from './desktop-update-source.ts'
 import { CloseLabel, HeaderContent, TriggerContent } from './chrome.tsx'
 import { GeneralSection } from './GeneralSection.tsx'
 import { CurrentVersionRow } from './CurrentVersionRow.tsx'
-import { FeedbackRow } from './FeedbackRow.tsx'
 import { DeveloperToolsRow, type DeveloperToolsRowInjected } from './DeveloperToolsRow.tsx'
 import { SettingsDocumentAction } from './SettingsDocumentAction.tsx'
 import type { SettingsDocumentActionInjected } from './SettingsDocumentAction.tsx'
@@ -89,10 +88,6 @@ export function apply(ctx: ClientContext): void {
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({
     name: 'settings.general.item', id: 'current-version', order: 100, locale: NS,
   }, CurrentVersionRow))
-  // Feedback closes the section: the repository issue tracker opens in a new tab.
-  ctx.slots.inject('settings.general.item', () => ctx.slots.register({
-    name: 'settings.general.item', id: 'feedback', order: 110, locale: NS,
-  }, FeedbackRow))
   ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'ui-settings-general: dictionaries')
   const connection = ctx.get('connection') as ConnectionHandle
   const carrier = (globalThis as typeof globalThis & { dshDesktop?: { protocolVersion: number; updates?: DesktopUpdateBridge } }).dshDesktop

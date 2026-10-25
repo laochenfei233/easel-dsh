@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-easel",
-  "version": "0.2.26",
+  "version": "0.2.27",
   "private": true,
   "description": "Easel inside DeepSeek Harness: Easel's skills become dsh skills, the workbench data API runs in-process, and the Easel workbench gets a sidebar panel. The platform automation and breakdown pipeline live in separate plugin entries of this package so each can be enabled or fail independently.",
   "type": "module",

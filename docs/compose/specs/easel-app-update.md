@@ -11,7 +11,7 @@ worktree: .worktrees/easel-app-update
 
 ## Report
 
-**What was built** — 三个面：①设置·关于节（`settings.section` id `easel.about`，order 90）：当前版本、检查更新（五态按钮：检查中/已最新/可更新·立即更新/重试/检查更新）、下载进度条、最近检查时间、更新源卡片（default/override/error 徽标 + 生效端点）、官网与更新日志链接；非桌面环境降级为一行「仅桌面版提供」静态文案，不出死按钮。②延迟更新弹窗（`shell.overlay` id `easel.update-notice`）：发现新版满 24h 才提醒一次，常驻注册、无 announce 渲染 null；「暂不 / 立即更新」，下载中显示进度，失败态显示原因并可重试。③壳内更新器 `app_update.rs`：tauri-plugin-updater Rust API（endpoints 可被 `update-source.json` 整体覆盖，非法即响亮记入 lastError）、`update-state.json`（数据根，坏 JSON 自愈）、semver 规则 11 比较 + 无状态 24h 判定（notedVersion 去重）、三条命令 `easel_check_update` / `easel_update_state` / `easel_install_update`、`easel://update-progress` 与 `easel://update-available` 事件、安装前经 spawn_blocking 停 dsh、INSTALL_RUNNING 单链 + Drop guard（失败与 panic 都释放）、进度按百分比节流。启动 30s 后静默自动检查，发现新版只发事件，提醒节奏由客户端控制。
+**What was built** — 三个面：①设置·关于节（`settings.section` id `easel.about`，order 90）：当前版本、检查更新（五态按钮：检查中/已最新/可更新·立即更新/重试/检查更新）、下载进度条、最近检查时间、更新源卡片（default/override/error 徽标 + 生效端点）、官网 / 更新日志 / 意见反馈（GitHub issues）链接行；非桌面环境降级为一行「仅桌面版提供」静态文案（链接行仍保留，反馈入口不随更新通道消失），不出死按钮。②延迟更新弹窗（`shell.overlay` id `easel.update-notice`）：发现新版满 24h 才提醒一次，常驻注册、无 announce 渲染 null；「暂不 / 立即更新」，下载中显示进度，失败态显示原因并可重试。③壳内更新器 `app_update.rs`：tauri-plugin-updater Rust API（endpoints 可被 `update-source.json` 整体覆盖，非法即响亮记入 lastError）、`update-state.json`（数据根，坏 JSON 自愈）、semver 规则 11 比较 + 无状态 24h 判定（notedVersion 去重）、三条命令 `easel_check_update` / `easel_update_state` / `easel_install_update`、`easel://update-progress` 与 `easel://update-available` 事件、安装前经 spawn_blocking 停 dsh、INSTALL_RUNNING 单链 + Drop guard（失败与 panic 都释放）、进度按百分比节流。启动 30s 后静默自动检查，发现新版只发事件，提醒节奏由客户端控制。
 
 **Verification** — `cargo test` 43/43（semver 顺序、24h 门槛、notedVersion、state 往返与自愈、update-source 五种非法输入、percent_of、五个 relay payload 的 wire-key 契约）；easel 插件 `node --test` 230/230，`node build.mjs` 产物与已提交 client.js 逐字节一致；typecheck 全绿（5 门）；`git diff --check` 干净；doc-sync 失败项（electron 笔记断链、旧 spec commit-hash、packages 配对漂移、spec md-wrap）经基线 `bec60b1414` 对照全部预存在，本次新增文件零命中；lint/duplication/hygiene/build:check 属仓库级门，本改动文件零 lint 错误且未触及 workspace 包，未重复跑全量。两轮独立复审终审：spec compliance / correctness / codebase consistency 全 PASS（SHIP）；两处阻塞（InstallStart 缺 kebab-case 致每次安装误报失败；`hostUpdate.js/.d.ts` 被根 `lib/` 忽略吞掉致分支不可构建）与四条中等项（payload camelCase、init 记录误配置、failed 相位保留、安装锁并发）均修复并以测试锁定。
 
@@ -63,7 +63,7 @@ worktree: .worktrees/easel-app-update
 ### 设置·关于节（新建）
 
 - 注册 `settings.section`：id `easel.about`，order 90 置于末尾。
-- 内容：应用名 + 当前版本号；「检查更新」主按钮（idle / busy / 错误 / 已是最新 / 有新版 五态，有新版态即变「立即更新」）；安装进行中按钮让位给进度条与阶段文案；更新源卡片（当前源 URL + 默认/自定义/不可用徽章）；链接行：官网、更新日志（指向官网 release 锚点）。
+- 内容：应用名 + 当前版本号；「检查更新」主按钮（idle / busy / 错误 / 已是最新 / 有新版 五态，有新版态即变「立即更新」）；安装进行中按钮让位给进度条与阶段文案；更新源卡片（当前源 URL + 默认/自定义/不可用徽章）；链接行：官网、更新日志（指向官网 release 锚点）、意见反馈（GitHub issues，通用设置底部的同名行已迁到这里，非桌面降级态也保留链接行，反馈入口不随更新通道消失）。
 - 设计语言复用设置页卡片语言（`DataRootSection` 同款：inline styles、13px 基准、灰描边按钮 + accent 主按钮），不另起炉灶。
 - 文案字典 `settings.easelAbout`（`locales/easelAbout.ts`，zh 主 + en），遵守 locale-owned copy 门。
 

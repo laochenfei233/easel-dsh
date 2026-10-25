@@ -13255,13 +13255,22 @@ var ABOUT_STYLES = `
 `;
 var WEBSITE_URL = "https://laochenfei233.github.io/easel-dsh/";
 var CHANGELOG_URL = `${WEBSITE_URL}#changelog`;
+var ISSUES_URL = "https://github.com/laochenfei233/easel-dsh/issues";
 function AboutSection({ t, update }) {
   const state = (0, import_react19.useSyncExternalStore)(update.subscribe, update.snapshot);
   (0, import_react19.useEffect)(() => {
     void update.refresh();
   }, [update]);
+  const links = /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-row", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "eau-link", href: WEBSITE_URL, target: "_blank", rel: "noreferrer", children: t("websiteLink") }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("changelogLink") }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "eau-link", href: ISSUES_URL, target: "_blank", rel: "noreferrer", children: t("feedbackLink") })
+  ] });
   if (!state.supported) {
-    return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "eau-root", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: t("desktopOnly") }) });
+    return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-root", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: t("desktopOnly") }),
+      links
+    ] });
   }
   const installing = state.progress?.phase === "installing";
   const downloading = state.progress?.phase === "downloading";
@@ -13306,10 +13315,7 @@ function AboutSection({ t, update }) {
       ] }),
       state.endpoints.length > 0 ? state.endpoints.map((endpoint) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: endpoint }, endpoint)) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: t("sourceUnavailable") })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-row", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "eau-link", href: WEBSITE_URL, target: "_blank", rel: "noreferrer", children: t("websiteLink") }),
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("changelogLink") })
-    ] })
+    links
   ] });
 }
 
@@ -13364,6 +13370,7 @@ var EASEL_ABOUT_COPY = {
     sourceUnavailable: "\u4E0D\u53EF\u7528",
     websiteLink: "\u5B98\u7F51",
     changelogLink: "\u66F4\u65B0\u65E5\u5FD7",
+    feedbackLink: "\u610F\u89C1\u53CD\u9988",
     desktopOnly: "\u5E94\u7528\u7248\u672C\u4E0E\u66F4\u65B0\u68C0\u67E5\u4EC5\u5728\u684C\u9762\u7248\u63D0\u4F9B\u3002",
     noticeTitle: "\u53D1\u73B0\u65B0\u7248\u672C {version}",
     noticeInstallNow: "\u7ACB\u5373\u66F4\u65B0",
@@ -13389,6 +13396,7 @@ var EASEL_ABOUT_COPY = {
     sourceUnavailable: "Unavailable",
     websiteLink: "Website",
     changelogLink: "Changelog",
+    feedbackLink: "Feedback",
     desktopOnly: "The app version and update check are available in the desktop app only.",
     noticeTitle: "New version {version} available",
     noticeInstallNow: "Install update",

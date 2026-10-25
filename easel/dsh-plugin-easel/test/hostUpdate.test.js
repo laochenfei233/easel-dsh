@@ -1,5 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import { detectHostUpdateBridge, createUpdateStore } from '../src/lib/hostUpdate.js'
 
 function fakeWindow(globals = {}) {
@@ -129,4 +130,11 @@ test('subscribers observe every state change until disposed', async () => {
   unsubscribe()
   bridge.emit('easel://update-available', { version: '0.2.3' })
   assert.equal(seen, 1)
+})
+
+test('the client bundle carries the About section and its feedback link', () => {
+  const bundle = readFileSync(new URL('../client.js', import.meta.url), 'utf8')
+  assert.match(bundle, /easel\.about/)
+  assert.match(bundle, /https:\/\/github\.com\/laochenfei233\/easel-dsh\/issues/)
+  assert.match(bundle, /feedbackLink/)
 })
