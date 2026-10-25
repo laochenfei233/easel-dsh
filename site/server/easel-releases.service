@@ -1,0 +1,16 @@
+[Unit]
+Description=Easel-dsh release mirror sync
+Documentation=https://github.com/laochenfei233/easel-dsh
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=easel
+Group=easel
+EnvironmentFile=/etc/easel-releases.env
+ExecStart=/usr/bin/node /srv/easel-site/src/site/server/sync-releases.mjs
+# Rebuild the static page so its download card and checksums match the
+# mirror. The build is idempotent and runs on every successful beat.
+ExecStartPost=/usr/bin/node /srv/easel-site/src/site/tools/build-site.mjs --source /srv/easel-site/src/CHANGELOG.md --downloads /srv/easel-site/web/updates/downloads.json --out-dir /srv/easel-site/web
+TimeoutStartSec=900
