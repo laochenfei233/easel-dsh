@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="features-title features-desc">
+  <title id="features-title">Easel-dsh 三大能力：一站式创作流、内容资产本地化、多模型随插随用</title>
+  <desc id="features-desc">三列能力卡：一站式创作流（立项、拆解、AI 技能创作、成品沉淀）、内容资产本地化（媒体库、技能与画像、本地数据、备份）、多模型随插随用（DeepSeek 登录、OpenAI 兼容、视频生成、用量计量）。</desc>
+  <rect x="0" y="0" width="1200" height="560" rx="24" fill="#f7f4ee" stroke="#e7e2d8" stroke-width="1"/>
+
+  <!-- 头部 -->
+  <text x="76" y="76" font-family="'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif" font-size="20" letter-spacing="4" fill="#b45309">WORKBENCH · 三大能力</text>
+  <text x="74" y="122" font-family="'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif" font-size="40" font-weight="700" fill="#1c1917">一个工作台，跑完从选题到发布</text>
+  <text x="1124" y="76" text-anchor="end" font-family="'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif" font-size="20" fill="#78716c">Easel-dsh</text>
+  <line x1="76" y1="150" x2="1124" y2="150" stroke="#e5dfd3" stroke-width="1"/>
+
+  <!-- 卡 1：一站式创作流（featured） -->
+  <rect x="68" y="166" width="336" height="360" rx="16" fill="#fffdf9" stroke="#b45309" stroke-width="2"/>
+  <text x="100" y="236" font-family="Georgia, 'Times New Roman', serif" font-size="48" fill="#b45309" fill-opacity="0.35">01</text>
+  <text x="100" y="286" font-family="'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif" font-size="32" font-weight="700" fill="#1c1917">一站式创作流</text>
+  <line x1="100" y1="306" x2="140" y2="306" stroke="#b45309" stroke-width="4" stroke-linecap="round"/>
+  <g font-family="'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif" font-size="20" fill="#57534e">
+    <text x="100" y="344">立项：热点雷达选题入库</text>
+    <text x="100" y="380">拆解：一键生成任务清单</text>
+    <text x="100" y="416">创作：AI 技能代写初稿</text>
+    <text x="100" y="452">成品：沉淀输出随时复盘</text>
+  </g>
+
+  <!-- 卡 2：内容资产本地化 -->
+  <rect x="428" y="166" width="336" height="360" rx="16" fill="#fbf8f2" stroke="#e2dccf" stroke-width="1"/>
+  <text x="460" y="236" font-family="Georgia, 'Times New Roman', serif" font-size="48" fill="#b45309" fill-opacity="0.35">02</text>
+  <text x="460" y="286" font-family="'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif" font-size="32" font-weight="700" fill="#1c1917">内容资产本地化</text>
+  <line x1="460" y1="306" x2="500" y2="306" stroke="#b45309" stroke-width="4" stroke-linecap="round"/>
+  <g font-family="'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif" font-size="20" fill="#57534e">
+    <text x="460" y="344">媒体库与素材管理</text>
+    <text x="460" y="380">技能与用户画像</text>
+    <text x="460" y="416">数据默认存本地目录</text>
+    <text x="460" y="452">WebDAV / SMB / S3 备份</text>
+  </g>
+
+  <!-- 卡 3：多模型随插随用 -->
+  <rect x="788" y="166" width="336" height="360" rx="16" fill="#fbf8f2" stroke="#e2dccf" stroke-width="1"/>
+  <text x="820" y="236" font-family="Georgia, 'Times New Roman', serif" font-size="48" fill="#b45309" fill-opacity="0.35">03</text>
+  <text x="820" y="286" font-family="'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif" font-size="32" font-weight="700" fill="#1c1917">多模型随插随用</text>
+  <line x1="820" y1="306" x2="860" y2="306" stroke="#b45309" stroke-width="4" stroke-linecap="round"/>
+  <g font-family="'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'Segoe UI', sans-serif" font-size="20" fill="#57534e">
+    <text x="820" y="344">DeepSeek 账号登录</text>
+    <text x="820" y="380">OpenAI 兼容 API Key</text>
+    <text x="820" y="416">视频生成模型</text>
+    <text x="820" y="452">token 用量计量</text>
+  </g>
+</svg>
