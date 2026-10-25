@@ -48,7 +48,7 @@ worktree: .worktrees/easel-app-update
 ### Shell 命令面（薄封装 tauri-plugin-updater Rust API）
 
 - `easel_check_update`：手动检查，返回 `{status: "up-to-date" | "available" | "error", detail}`；error 时带原因。
-- `easel_update_state`：返回当前状态（当前版本、上次检查时间、notedVersion、pending 提醒）。
+- `easel_update_state`：返回当前状态（当前版本、生效端点列表、源状态、上次检查时间与结果、notedVersion、已知最新版）。
 - `easel_install_update`：先 `dsh.stop()`，再 `download_and_install`（basicUi）；进度经 `easel://update-progress` 事件推给客户端，下载完成后安装器窗口接管（壳进程退出）。
 
 ### 设置·关于节（新建）
@@ -73,7 +73,7 @@ worktree: .worktrees/easel-app-update
   - 客户端 Tauri 桥（桌面检测 + 降级）、设置·关于节、延迟更新弹窗；
   - 全部新增文案的 zh/en 字典；
   - 单元测试：判定谓词（未满 24h 不弹 / noted 不弹 / 满足即 pending）、state 读写、桥降级逻辑；
-  - 受影响文档（INSTALL-DESKTOP / 文档投影）同步更新。
+  - 受影响文档（桌面 README 中英两份及配对记录）同步更新。
 - Out of scope:
   - 官网实现与发布管道（`easel-website.md`，其他对话实现；latest.json/.sig 的生成归该管道）；
   - macOS .app 自动更新（后续独立特性）；
@@ -93,6 +93,6 @@ worktree: .worktrees/easel-app-update
 - [ ] typecheck / lint / duplication / hygiene / build:check 全绿（干净工作树）
 - [ ] 判定谓词单测覆盖：版本相同不弹、版本更高但未满 24h 不弹、更高且满 24h 弹、notedVersion 命中不弹
 - [ ] state 读写单测：缺文件、坏 JSON、正常读写往返
-- [ ] 浏览器环境：About 检查按钮禁用且文案说明仅桌面可用；弹窗 entry 不注册（组件测试证据）
+- [ ] 浏览器环境：About 节降级为一行「仅桌面版提供」文案（不出死按钮）；弹窗 entry 注册但 announce 无事件即渲染 null（证据：hostUpdate.test.js 的检测/降级用例 + store 的 supported 流转）
 - [ ] 生成的 `installer.nsi` 可 grep 到 `UpdateMode` 语义未被破坏（重打核对）
 - [ ] 文档写明应用内检查更新路径及其与手动 `/UPDATE` 的等价关系

@@ -42,7 +42,7 @@ node scripts/bundle-runtime.mjs --platform win   # win|mac|linux; generates runt
 pnpm tauri build            # package installers (runtime/ is bundled as resources)
 ```
 
-CI（`.github/workflows/desktop-release.yml`）在三平台矩阵上执行同一流程并上传 GitHub Release；打 `v*` tag 或手动触发（`.github/workflows/easel-package.yml` 是 hosted 试构建变体，只出 artifact 不发 Release）。
+CI（`.github/workflows/desktop-release.yml`）在平台矩阵上执行同一流程并上传 GitHub Release；打 `v*` tag 或手动触发（`.github/workflows/easel-package.yml` 是 hosted 试构建变体，只出 artifact 不发 Release）。
 
 ## 应用内更新器（Windows）
 

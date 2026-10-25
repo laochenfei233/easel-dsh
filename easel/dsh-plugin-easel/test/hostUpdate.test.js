@@ -92,7 +92,7 @@ test('install flips progress on start, clears it on up-to-date, and events drive
   bridge.emit('easel://update-progress', { phase: 'installing' })
   assert.equal(store.snapshot().progress?.phase, 'installing')
   bridge.emit('easel://update-progress', { phase: 'failed', version: '0.2.2' })
-  assert.equal(store.snapshot().progress, undefined)
+  assert.equal(store.snapshot().progress?.phase, 'failed')
   // The failed phase re-read the snapshot for the recorded error; give the
   // fire-and-forget refresh its microtask.
   await new Promise((resolve) => setTimeout(resolve, 0))

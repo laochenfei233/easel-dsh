@@ -12947,7 +12947,7 @@ function createUpdateStore(bridge) {
   };
   const offProgress = bridge?.onEvent?.(EVENT_PROGRESS, (payload) => {
     if (payload?.phase === "failed") {
-      set({ progress: void 0 });
+      set({ progress: payload });
       void refresh();
     } else {
       set({ progress: payload });

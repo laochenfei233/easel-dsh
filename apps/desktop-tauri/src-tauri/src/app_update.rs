@@ -17,7 +17,7 @@
 
 use std::cmp::Ordering;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicU64, Ordering as AtomicOrdering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering as AtomicOrdering};
 use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -26,7 +26,9 @@ use tauri::{AppHandle, Emitter, Manager, Url};
 use tauri_plugin_updater::UpdaterExt;
 
 /// Shell-owned update state, beside the data home's other shell records.
+/// JSON keys are camelCase to match the JS-facing payload convention.
 #[derive(Serialize, Deserialize, Default, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
 struct UpdateState {
     /// Epoch ms of the last completed check.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -49,6 +51,7 @@ struct UpdateState {
 /// The release a check found. `pub_date_ms` comes from the manifest's
 /// `pub_date`; an absent date counts as long past its release.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct LatestRelease {
     pub version: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -82,6 +85,7 @@ impl std::fmt::Debug for UpdateSource {
 
 /// Registrant-facing snapshot of the updater for the About section.
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateStateSnapshot {
     /// The shell's own version.
     pub version: String,
@@ -111,6 +115,7 @@ pub enum SourceState {
 
 /// Result of one manual or deferred check.
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CheckUpdateResult {
     pub status: CheckStatus,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -119,7 +124,7 @@ pub struct CheckUpdateResult {
     pub notes: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pub_date_ms: Option<i64>,
-    /// Raw diagnostic when `error`; the About page pairs it with localized copy.
+    /// Diagnostic the About section renders beside the source URL.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub detail: Option<String>,
 }
@@ -142,6 +147,7 @@ struct ProgressPayload {
 }
 
 #[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 struct AvailablePayload {
     version: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -294,6 +300,16 @@ fn reminder_due(current: &str, latest: &LatestRelease, noted: Option<&str>, now_
         && noted != Some(latest.version.as_str())
 }
 
+/// Downloaded/total as an integer percent, clamped to 100; `None` when the
+/// total is unknown (or zero). The u64 overflow guard keeps huge totals sane.
+fn percent_of(downloaded: u64, total: u64) -> Option<u8> {
+    if total == 0 {
+        return None;
+    }
+    let downloaded = downloaded.min(total);
+    Some((downloaded * 100 / total).min(100) as u8)
+}
+
 fn now_ms() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -326,7 +342,7 @@ async fn run_check(app: &AppHandle, home: &Path, notify: bool) -> CheckUpdateRes
     };
     state.last_check_ms = Some(now_ms());
     state.last_error = None;
-    check_with_endpoints(app, endpoints, notify, state).await
+    check_with_endpoints(app, home, endpoints, notify, state).await
 }
 
 /// Serializes state writes between the deferred check, the manual check, and
@@ -335,11 +351,11 @@ static CHECK_LOCK: tauri::async_runtime::Mutex<()> = tauri::async_runtime::Mutex
 
 async fn check_with_endpoints(
     app: &AppHandle,
+    home: &Path,
     endpoints: Option<Vec<Url>>,
     notify: bool,
     mut state: UpdateState,
 ) -> CheckUpdateResult {
-    let home = crate::setup::dsh_home();
     let current = app.package_info().version.to_string();
     let updater = match endpoints {
         Some(urls) => app.updater_builder().endpoints(urls),
@@ -349,14 +365,14 @@ async fn check_with_endpoints(
     .map_err(|e| format!("更新器配置不可用：{e}"));
     let updater = match updater {
         Ok(updater) => updater,
-        Err(err) => return record_error(&home, &mut state, err),
+        Err(err) => return record_error(home, &mut state, err),
     };
     match updater.check().await {
         Ok(None) => {
             state.last_check_status = Some(CheckStatus::UpToDate);
             state.latest = None;
             state.last_error = None;
-            let _ = write_state_at(&home, &state);
+            let _ = write_state_at(home, &state);
             CheckUpdateResult {
                 status: CheckStatus::UpToDate,
                 version: None,
@@ -378,7 +394,7 @@ async fn check_with_endpoints(
             state.last_check_status = Some(CheckStatus::Available);
             state.latest = Some(latest.clone());
             state.last_error = None;
-            let _ = write_state_at(&home, &state);
+            let _ = write_state_at(home, &state);
             if due && notify {
                 let _ = app.emit(
                     AVAILABLE_EVENT,
@@ -397,7 +413,7 @@ async fn check_with_endpoints(
                 detail: None,
             }
         }
-        Err(err) => record_error(&home, &mut state, format!("无法连接更新源：{err}")),
+        Err(err) => record_error(home, &mut state, format!("无法连接更新源：{err}")),
     }
 }
 
@@ -414,8 +430,16 @@ fn record_error(home: &Path, state: &mut UpdateState, message: String) -> CheckU
     }
 }
 
-/// Shell-side updater init: schedule the deferred boot check.
+/// Shell-side updater init: record a loud misconfigured source into state
+/// (the About section shows the reason before any check runs) and schedule
+/// the deferred boot check.
 pub fn init(app: &AppHandle) {
+    let home = crate::setup::dsh_home();
+    if let Err(err) = read_update_source_at(&home) {
+        let mut state = read_state_at(&home);
+        state.last_error = Some(err);
+        let _ = write_state_at(&home, &state);
+    }
     let handle = app.clone();
     tauri::async_runtime::spawn(async move {
         tokio::time::sleep(BOOT_CHECK_DELAY).await;
@@ -461,8 +485,25 @@ pub fn easel_update_state(app: AppHandle) -> UpdateStateSnapshot {
     }
 }
 
+/// One install chain at a time: a second 立即更新 while a download runs would
+/// race two installers into the same install directory. The Started path
+/// leaves the flag set until the download finishes (success exits the
+/// process; failure clears it) or the shell restarts.
+static INSTALL_RUNNING: AtomicBool = AtomicBool::new(false);
+
 #[tauri::command]
 pub async fn easel_install_update(app: AppHandle) -> Result<InstallStart, String> {
+    if INSTALL_RUNNING.swap(true, AtomicOrdering::SeqCst) {
+        return Err("已有一次更新安装在进行".into());
+    }
+    let outcome = install_update_inner(app).await;
+    if !matches!(outcome, Ok(InstallStart::Started)) {
+        INSTALL_RUNNING.store(false, AtomicOrdering::SeqCst);
+    }
+    outcome
+}
+
+async fn install_update_inner(app: AppHandle) -> Result<InstallStart, String> {
     // Stop the bundled dsh process first: the updater exits the shell process
     // (std::process::exit on Windows) without RunEvent::Exit, so the runtime
     // node would otherwise be orphaned behind the installer. The NSIS hook
@@ -492,22 +533,19 @@ pub async fn easel_install_update(app: AppHandle) -> Result<InstallStart, String
     let progress_app = emitter.clone();
     let downloaded = Arc::new(AtomicU64::new(0));
     let total_len = Arc::new(AtomicU64::new(0));
-    let last_percent = Arc::new(AtomicU64::new(u64::MAX));
+    let last_percent_key = Arc::new(AtomicU64::new(0));
     let closure_version = version.clone();
     let on_chunk = move |chunk: usize, total: Option<u64>| {
         let now = downloaded.fetch_add(chunk as u64, AtomicOrdering::SeqCst) + chunk as u64;
         if let Some(total) = total {
             total_len.store(total, AtomicOrdering::SeqCst);
         }
-        let total = total_len.load(AtomicOrdering::SeqCst);
-        let percent = if total > 0 {
-            Some(((now * 100 / total) as u8).min(100))
-        } else {
-            None
-        };
-        // Only a percent change is worth an event: chunks arrive thousands of times.
-        let previous = last_percent.swap(percent.map(u64::from).unwrap_or(u64::MAX), AtomicOrdering::SeqCst);
-        if percent.map(u64::from) == Some(previous) && previous != u64::MAX {
+        let percent = percent_of(now, total_len.load(AtomicOrdering::SeqCst));
+        // Only a change is worth an event: chunks arrive thousands of times,
+        // and an unknown total still announces "downloading" exactly once.
+        let key = percent.map_or(0, |p| u64::from(p) + 1);
+        let previous = last_percent_key.swap(key, AtomicOrdering::SeqCst);
+        if key == previous {
             return;
         }
         let _ = progress_app.emit(
@@ -541,6 +579,8 @@ pub async fn easel_install_update(app: AppHandle) -> Result<InstallStart, String
                 std::process::exit(0);
             }
             Err(err) => {
+                INSTALL_RUNNING.store(false, AtomicOrdering::SeqCst);
+                let _guard = CHECK_LOCK.lock().await;
                 let mut state = read_state_at(&crate::setup::dsh_home());
                 state.last_error = Some(format!("安装更新失败：{err}"));
                 let _ = write_state_at(&crate::setup::dsh_home(), &state);
@@ -672,10 +712,10 @@ mod tests {
     }
 
     #[test]
-    fn progress_throttling_helper_is_pure() {
-        // The percent gate lives in the install task's closure; the arithmetic
-        // itself is covered here so a division change fails loudly.
-        let (downloaded, total) = (50u64, 200u64);
-        assert_eq!(((downloaded * 100 / total) as u8), 25);
+    fn percent_of_is_clamped_and_unknown_without_total() {
+        assert_eq!(percent_of(50, 200), Some(25));
+        assert_eq!(percent_of(200, 200), Some(100));
+        assert_eq!(percent_of(300, 200), Some(100));
+        assert_eq!(percent_of(50, 0), None);
     }
 }
