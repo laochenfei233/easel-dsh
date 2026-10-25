@@ -1,16 +1,25 @@
 ---
 feature: easel-website
-status: designed
+status: delivered
 updated: 2026-10-25
-branch: （实现对话立项时定）
-commits: （未开工）
+branch: feat/easel-app-update
+commits: e712bd73a5..72d56894c1
 ---
 
 # Easel 应用官网（产品页 · 下载 · 更新日志 · 更新源分发）
 
 ## Report
 
-（交付时填写）
+**What was built** — `site/` 纯静态产品站与分发链：①页面（`index.template.html` + `assets/`）：Hero 左侧定位文案、右侧画架线稿托起的下载画布卡（最新版本、本次重点、Windows x64/arm64 按钮、未签名提示）、校验和条（直链、大小、sha256、复制）、更新日志（最新版展开、更早版本 details、三分类 + 重点 + 发布注记）、更新源说明（端点复制、发布→镜像→更新三步、内网 `update-source.json` 覆盖）、页脚（仓库链接 + 已知限制）。系统字体、零外链资源、全相对路径可部署子路径；仅两段内联 JS（UA 选默认架构、复制）。②构建（`tools/build-releases.mjs` / `build-site.mjs`）：CHANGELOG 严格解析（格式错带行号失败、日期须从新到旧、重复版本拦截、分类稳定 id）、占位符必须全部替换、反引号渲染为行内 `<code>`；有镜像 `downloads.json` 时输出同域直链与校验和，缺省降级 GitHub Release 链接（Pages 形态）。③同步（`server/sync-releases.mjs`）：只取已发布 release（draft/prerelease 跳过，按 semver 取最高而非列表顺序）、安装包与 `.sig` 必须成对、下载重试 ×3、sha256、先制品后 `downloads.json` 最后 `latest.json`（write-then-rename）、只前移不降级、保留窗口默认 3、任一步失败指针不动。④运维：systemd 15 分钟 timer（同步成功后重建页面）、nginx 缓存分层与限速示例、`site/DEPLOY.md` 部署指南（备案/证书/Pages workflow/内网/回滚/验收）。
+
+**Verification** — `node --test "site/**/*.test.mjs"` 29/29（解析 9、渲染与构建 10、同步 10：semver、release 选择、资产映射、成功镜像、断网不换指针、降级保护、坏指针重建、空签名拦截、清理窗口、payload 形状）；真实 CHANGELOG 集成断言（每个版本标题与每条正文都能在源文件中找到）；构建产出 index.html + assets + data/releases.json（8 版本、50 条目）；1440/390 两档截图自检（本地 `gui-test-screenshots/`）；页面外链审计仅 GitHub 锚点、无资源请求；doc 门（md-links / repository-references / translation-pairing / doc-budgets / md-wrap）对新增文件零命中，其余失败项为基线预存在。真实域名部署与 GitHub Pages 上线未执行（无服务器/无部署凭证），属验收边界。
+
+**Journey log** —
+- GitHub Pages 不能承载安装包（单文件 100MB、站点 1GB）：更新源必须指向真正的镜像域名，Pages 只做产品页兜底；上线前需替换 `tauri.conf.json` 默认 endpoint——已写进 DEPLOY.md 前置条件。
+- 站点说明文档若叫 README.md 会撞双语配对门（任何 README 都在语料内）：按角色改名为 `site/DEPLOY.md`。
+- 设计自检修三处：画布卡中部空（补「本次重点」）、托盘被卡片盖住（移到画布底边）、外部陶土笔触成孤立色块（删除，一处只留一个强调）。
+- 更新日志的反引号行内代码最初按纯文本渲染（显示 `.env` 字面反引号）：补受转义保护的行内 code 渲染并以测试锁定。
+- 同步器的「最新」不能信 release 列表顺序（补发旧 draft 会顶到最前）：改为在已发布集合中按 semver 取最高。
 
 ## [S1] Problem
 
@@ -60,14 +69,14 @@ commits: （未开工）
 
 ## Tasks（实现对话拆）
 
-- [ ] T1: 静态站骨架 + 设计令牌（frontend-design 流程）
-- [ ] T2: `releases.json` 生成脚本 + 更新日志渲染
-- [ ] T3: `sync-releases.mjs` + systemd timer + 部署文档（含 nginx 片段）
+- [x] T1: 静态站骨架 + 设计令牌（frontend-design 流程）
+- [x] T2: `releases.json` 生成脚本 + 更新日志渲染
+- [x] T3: `sync-releases.mjs` + systemd timer + 部署文档（含 nginx 片段）
 
 ## [S4] Acceptance
 
-- [ ] 构建产物为纯静态文件，页面运行时不发起任何境外请求（releases 数据内嵌）
-- [ ] `releases.json` 由 CHANGELOG.md 解析生成，版本/日期/分类与源文件一致
-- [ ] `latest.json` 与安装包在站点同域可取；latest.json 更新前后指针原子切换
-- [ ] 同步器在断网/校验失败场景不破坏现有指针（单测或本地夹具证据）
-- [ ] 部署文档完整覆盖备案、证书、nginx 配置、systemd timer 四步
+- [x] 构建产物为纯静态文件，页面运行时不发起任何境外请求（releases 数据内嵌；外链仅 GitHub 锚点）
+- [x] `releases.json` 由 CHANGELOG.md 解析生成，版本/日期/分类与源文件一致（集成测试逐条对照源文件）
+- [x] `latest.json` 与安装包在站点同域可取；latest.json 更新前后指针原子切换（同步器单测覆盖；真实域名待部署）
+- [x] 同步器在断网/校验失败场景不破坏现有指针（注入失败的单测证据）
+- [x] 部署文档完整覆盖备案、证书、nginx 配置、systemd timer 四步
