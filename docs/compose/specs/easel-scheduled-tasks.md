@@ -3,7 +3,7 @@ feature: easel-scheduled-tasks
 status: delivered
 updated: 2026-10-25
 branch: feat/easel-scheduled-tasks
-commits: 4f8191023b..d70b9eb77f
+commits: 4f8191023b..5c92cc3c85
 ---
 
 # easel 定时任务
@@ -12,7 +12,7 @@ commits: 4f8191023b..d70b9eb77f
 
 **What was built** — easel rail 新增「定时任务」视图（order 34，面板键 `easel.schedules`）：easel 风格的列表页（状态/搜索/筛选、下次触发相对时间倒计、最近投递），新建弹窗（四种时机形状 + 目标会话选择器），详情弹窗（规则摘要、编辑时机、删除、运行记录分页）。数据面全部复用 Host schedule 引擎：目录/编辑/删除/运行记录走 `remote.schedule` 并由 `schedule/changed` 驱动刷新；只有引擎的 host-only `create()` 经新增的 `POST /easel/api/automation/tasks` 中继（四种时机在宿主侧映射为 ScheduleCreateRequest，引擎错误码映射为可读中文；创建前用 `sessionController.list` 的只读投影确认目标会话存在）。cron 任务在 easel 页面只读展示，深度编辑指向 dsh 自带的自动化任务页（rail 保持隐藏）。插件版本 0.2.25 → 0.2.26。
 
-**Verification** — `node --test`（easel/dsh-plugin-easel）：232 tests，232 pass，0 fail（新增 11 项：时机映射/表单校验/错误码映射/会话存在性）。`node build.mjs`：exit 0，client.js 重新生成（含新页面与 `.sch-*` 样式）。两轮独立评审：首轮 FIX-FIRST（history 游标字段错、失败信封当成功、stale entries 三处 major），修复后复审判定 SHIP，无新 critical/major。**未验证**：桌面实机的 rail 渲染与端到端触发链路（GUI 冒烟待用户验收）。
+**Verification** — `node --test`（easel/dsh-plugin-easel）：232 tests，232 pass，0 fail（新增 11 项：时机映射/表单校验/错误码映射/会话存在性）。`node build.mjs`：exit 0，client.js 重新生成（含新页面与 `.sch-*` 样式）。两轮独立评审：首轮 FIX-FIRST（history 游标字段错、失败信封当成功、stale entries 三处 major），修复后复审判定 SHIP，无新 critical/major。**实机（装包 alpha.32 + 热替换插件负载）经 CDP 端到端验证**：建任务 → 卡片（会话标题、相对时间、时机摘要）→ 删除，零 console 异常；到点触发链路走引擎（用户自测）。
 
 **Journey log** —
 
@@ -21,6 +21,7 @@ commits: 4f8191023b..d70b9eb77f
 3. worktree 无 node_modules 导致 build.mjs 找不到 esbuild；用 PowerShell Junction 复用主检出依赖（easel 插件按设计零 workspace import，安全）。
 4. 首轮评审纠正三处 major：history 分页游标字段（引擎是 `before`/`nextBefore`，不是 `cursor`）、remote 错误信封与 tool-error 值被当成保存成功、保存后详情用 render 捕获的旧 entries 刷新；同时补上 D3 要求的目标会话存在性守卫。
 5. 引擎码 → 中文文案表在宿主与客户端各留一份（两半边不能互相 import），表内容锁定同一组稳定 code，评审已核对逐项一致。
+6. 实机冒出两个渲染级 bug：页面把 `remote` 当 `remote.schedule` 用；更关键的是 dsh 的 `ctx.remote` 是按 fiber 注入的代理，访问 `remote.schedule` 未在 inject 列表声明会抛 "cannot get property without inject"，main 槽兜底后整片空白。正解 = feature 插件声明 `remote.schedule` 并把绑定方法经 slot inject 面传给页面（ui-schedule 同款）；CDP 探针（WebView2 远程调试端口）当场定位。
 
 ## [S1] Problem
 
