@@ -28,13 +28,6 @@ export interface ScheduleEntry {
 /** Typert remote 方法的返回信封。 */
 interface RemoteEnvelope<T> { ok?: boolean; value?: T; error?: { message?: string } }
 
-interface ScheduleRemoteFace {
-  catalog?: () => Promise<RemoteEnvelope<ScheduleEntry[]>>;
-  update?: (req: { sessionId: string; id: string; expected: ScheduleEntry; title?: string; prompt?: string; change?: Record<string, unknown> }) => Promise<RemoteEnvelope<Record<string, unknown>>>;
-  delete?: (req: { sessionId: string; id: string }) => Promise<RemoteEnvelope<Record<string, unknown>>>;
-  history?: (req: { sessionId: string; id: string; limit: number; before?: string }) => Promise<RemoteEnvelope<ScheduleHistoryResult>>;
-}
-
 interface ScheduleHistoryResult {
   records?: { scheduledAt: string; deliveredAt: string }[];
   nextBefore?: string;
@@ -50,6 +43,11 @@ export interface SchedulesPageProps extends PageProps {
   workspaces?: WorkspaceSource;
   /** 订阅引擎目录变更；返回退订函数。 */
   subscribeChanged?: (listener: () => void) => () => void;
+  /** 引擎目录（feature 插件注入的绑定回调；页面不直接碰 remote 代理）。 */
+  catalog?: () => Promise<RemoteEnvelope<ScheduleEntry[]>>;
+  updateTask?: (req: { sessionId: string; id: string; expected: ScheduleEntry; change?: Record<string, unknown> }) => Promise<RemoteEnvelope<Record<string, unknown>>>;
+  deleteTask?: (req: { sessionId: string; id: string }) => Promise<RemoteEnvelope<Record<string, unknown>>>;
+  history?: (req: { sessionId: string; id: string; limit: number; before?: string }) => Promise<RemoteEnvelope<ScheduleHistoryResult>>;
 }
 
 interface TimingDraft {
@@ -212,8 +210,10 @@ const TOOL_ERROR_ZH: Record<string, string> = {
   subagent_session: '子 agent 会话不能承载定时任务',
 };
 
-export default function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }: SchedulesPageProps) {
-  const face = (remote ?? undefined) as ScheduleRemoteFace | undefined;
+/** PageProps.remote 上的 `schedule` 命名空间由 feature 插件注入为绑定回调。 */
+export default function SchedulesPage({
+  sessions, workspaces, subscribeChanged, catalog, updateTask, deleteTask, history,
+}: SchedulesPageProps) {
   const [entries, setEntries] = useState<ScheduleEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -237,8 +237,8 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
   const load = useCallback(async (): Promise<ScheduleEntry[] | undefined> => {
     setLoading(true);
     try {
-      const read = face?.catalog;
-      if (read === undefined) throw new Error('任务数据不可达（远端平面未连接）');
+      const read = catalog;
+      if (read === undefined) throw new Error('任务数据不可达（调度远端未连接）');
       const res = await read();
       if (res?.ok === true && Array.isArray(res.value)) {
         setEntries(res.value);
@@ -337,7 +337,7 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
     setRecordsDone(true);
     void (async () => {
       try {
-        const res = await face?.history?.({ sessionId: e.sessionId, id: e.id, limit: 20 });
+        const res = await history?.({ sessionId: e.sessionId, id: e.id, limit: 20 });
         if (res?.ok !== true) throw new Error(res?.error?.message ?? '');
         const value = res.value;
         setRecords(value?.records ?? []);
@@ -357,7 +357,7 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
     setDetailBusy(true);
     try {
       // 引擎的游标字段是 before（返回侧是 nextBefore）。
-      const res = await face?.history?.({ sessionId: e.sessionId, id: e.id, limit: 20, before: recordsCursor });
+      const res = await history?.({ sessionId: e.sessionId, id: e.id, limit: 20, before: recordsCursor });
       if (res?.ok !== true) throw new Error(res?.error?.message ?? '');
       const value = res.value;
       setRecords(cur => [...cur, ...(value?.records ?? [])]);
@@ -382,7 +382,7 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
     }
     setDetailBusy(true);
     try {
-      const call = face?.update;
+      const call = updateTask;
       if (call === undefined) throw new Error('更新通道不可用（远端平面未连接）');
       const res = await call({
         sessionId: e.sessionId, id: e.id, expected: e,
@@ -416,7 +416,7 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
     if (detailBusy) return;
     setDetailBusy(true);
     try {
-      const call = face?.delete;
+      const call = deleteTask;
       if (call === undefined) throw new Error('删除通道不可用（远端平面未连接）');
       const res = await call({ sessionId: e.sessionId, id: e.id });
       if (res?.ok !== true) throw new Error(res?.error?.message ?? '无法确认删除');

@@ -2,8 +2,10 @@
 // The core plugin owns the shell bridge (persona state, navigation, topic
 // hand-off, task adapters); this module contributes its page slot and rail
 // entry, plus the faces the page needs beyond it: the session/workspace list
-// projection for the target-session picker and the engine's schedule/changed
-// catalog events. So one failing feature cannot take the workbench down.
+// projection for the target-session picker and the engine's schedule remote
+// namespace. The remote plane is fiber-injected — `remote.schedule` throws
+// unless declared here — so the page receives bound callbacks through the
+// slot's inject face and never touches the proxy itself.
 import type { PageProps } from '../lib/shell'
 import { IconClock } from '../components/icons'
 import SchedulesPage from '../components/SchedulesPage'
@@ -17,7 +19,7 @@ export const Component = SchedulesPage
 
 export const plugin = {
   name: 'easel-view-schedules',
-  inject: ['slots', 'easelShell', 'sessions', 'workspaces', 'remote'],
+  inject: ['slots', 'easelShell', 'sessions', 'workspaces', 'remote', 'remote.schedule'],
   apply(ctx: any) {
     const { useShellProps, t } = ctx.easelShell
     ctx.slots.inject('main', () => ctx.slots.register({
@@ -27,6 +29,10 @@ export const plugin = {
         sessions: ctx.sessions,
         workspaces: ctx.workspaces,
         subscribeChanged: (listener: () => void) => ctx.remote.$on('schedule/changed', listener),
+        catalog: () => ctx.remote.schedule.catalog(),
+        updateTask: (request: Record<string, unknown>) => ctx.remote.schedule.update(request),
+        deleteTask: (request: Record<string, unknown>) => ctx.remote.schedule.delete(request),
+        history: (request: Record<string, unknown>) => ctx.remote.schedule.history(request),
       }),
     }, function EaselPage(injected: Record<string, unknown>) {
       const props: PageProps = useShellProps()
