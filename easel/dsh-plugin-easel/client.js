@@ -2504,7 +2504,7 @@ __export(ideas_exports, {
 // src/components/IdeasPage.tsx
 var import_react4 = require("react");
 
-// ../../../master/node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3661,7 +3661,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../../master/node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -12842,6 +12842,140 @@ var FEATURES = views.map((module2) => ({
 }));
 var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12, plugin13, plugin14];
 
+// src/lib/hostUpdate.js
+var EVENT_PROGRESS = "easel://update-progress";
+var EVENT_AVAILABLE = "easel://update-available";
+function detectHostUpdateBridge(win) {
+  if (win === void 0) {
+    if (typeof window === "undefined") return void 0;
+    win = window;
+  }
+  const host = win.__easelHostUpdate;
+  return host !== void 0 && typeof host.rpc === "function" ? host : void 0;
+}
+function createUpdateStore(bridge) {
+  let seq = 0;
+  let state = {
+    supported: bridge !== void 0,
+    /** The shell snapshot has been read at least once. */
+    ready: false,
+    /** Running shell version; desktop only. */
+    version: void 0,
+    endpoints: [],
+    /** `default` | `override` | `error` — the update-source seam state. */
+    source: "default",
+    lastCheckMs: void 0,
+    /** `up-to-date` | `available` | `error` — outcome of the last check. */
+    lastCheckStatus: void 0,
+    /** The newest found release `{version, notes?, pubDateMs?}`, when the last check saw one. */
+    latest: void 0,
+    lastError: void 0,
+    /** The live notice payload `{version, notes?, pubDateMs?, seq}`; drives the dialog. */
+    announce: void 0,
+    /** Latest install progress `{phase, percent?, version?}`, cleared on failure. */
+    progress: void 0,
+    checking: false
+  };
+  const readers = /* @__PURE__ */ new Set();
+  const notify = () => {
+    for (const read of readers) read();
+  };
+  const set = (patch) => {
+    state = { ...state, ...patch };
+    notify();
+  };
+  const applyStatePayload = (payload) => {
+    if (payload === void 0 || typeof payload !== "object") return;
+    set({
+      ready: true,
+      version: payload.version,
+      endpoints: Array.isArray(payload.endpoints) ? payload.endpoints : [],
+      source: payload.source ?? "default",
+      lastCheckMs: payload.lastCheckMs,
+      lastCheckStatus: payload.lastCheckStatus,
+      latest: payload.latest,
+      lastError: payload.lastError
+    });
+  };
+  const refresh = async () => {
+    if (bridge === void 0) return;
+    try {
+      const res = await bridge.rpc("update-state");
+      if (res.ok) applyStatePayload(res.data);
+      else set({ ready: true, lastError: res.error });
+    } catch {
+    }
+  };
+  const check = async () => {
+    if (bridge === void 0) return { status: "error", detail: "unsupported" };
+    set({ checking: true, lastError: void 0 });
+    try {
+      const res = await bridge.rpc("update-check");
+      if (res.ok) {
+        const data = res.data ?? {};
+        set({
+          checking: false,
+          lastCheckStatus: data.status,
+          latest: data.status === "available" ? { version: data.version, notes: data.notes, pubDateMs: data.pubDateMs } : void 0,
+          lastError: data.status === "error" ? data.detail : void 0
+        });
+        return data;
+      }
+      set({ checking: false, lastError: res.error });
+      return { status: "error", detail: res.error };
+    } catch (err) {
+      set({ checking: false, lastError: String(err) });
+      return { status: "error", detail: String(err) };
+    }
+  };
+  const install = async () => {
+    if (bridge === void 0) return { status: "error", detail: "unsupported" };
+    set({ progress: { phase: "downloading", percent: 0, version: state.latest?.version } });
+    try {
+      const res = await bridge.rpc("update-install");
+      if (res.ok && res.data === "started") return { status: "started" };
+      if (res.ok && res.data === "up-to-date") {
+        set({ progress: void 0 });
+        return { status: "up-to-date" };
+      }
+      set({ progress: void 0, lastError: res.error ?? "install failed" });
+      return { status: "error", detail: res.error };
+    } catch (err) {
+      set({ progress: void 0, lastError: String(err) });
+      return { status: "error", detail: String(err) };
+    }
+  };
+  const offProgress = bridge?.onEvent?.(EVENT_PROGRESS, (payload) => {
+    if (payload?.phase === "failed") {
+      set({ progress: void 0 });
+      void refresh();
+    } else {
+      set({ progress: payload });
+    }
+  });
+  const offAvailable = bridge?.onEvent?.(EVENT_AVAILABLE, (payload) => {
+    if (payload?.version === void 0) return;
+    seq += 1;
+    set({ announce: { ...payload, seq } });
+  });
+  return {
+    subscribe: (read) => {
+      readers.add(read);
+      return () => readers.delete(read);
+    },
+    snapshot: () => state,
+    refresh,
+    check,
+    install,
+    dismiss: () => set({ announce: void 0 }),
+    dispose: () => {
+      offProgress?.();
+      offAvailable?.();
+      readers.clear();
+    }
+  };
+}
+
 // src/components/DataRootSection.tsx
 var import_react18 = require("react");
 var import_jsx_runtime28 = require("react/jsx-runtime");
@@ -13081,10 +13215,193 @@ var DATA_ROOT_COPY = {
   }
 };
 
+// src/components/AboutSection.tsx
+var import_react19 = require("react");
+var import_jsx_runtime29 = require("react/jsx-runtime");
+var ABOUT_STYLES = `
+.eau-root { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
+.eau-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
+.eau-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 22px; font-weight: 500; }
+.eau-badge { flex: none; padding: 1px 8px; border-radius: 999px; font-size: 11px; line-height: 16px; font-weight: 400; background: var(--dsw-alias-fill-secondary); color: var(--dsw-alias-label-secondary); }
+.eau-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.eau-muted { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; word-break: break-all; }
+.eau-error { margin: 0; color: var(--dsw-alias-state-danger-primary, #d4453f); font-size: 12px; line-height: 18px; word-break: break-all; }
+.eau-btn {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-family: inherit;
+  height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md);
+  font-size: 14px; line-height: 22px; color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-fill-secondary);
+  transition: transform 100ms ease-out, background-color 120ms ease-out;
+}
+.eau-btn:disabled { opacity: 0.5; cursor: default; }
+.eau-btn-primary { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-business-primary); }
+.eau-link { border: none; background: none; padding: 0; cursor: pointer; font-family: inherit; font-size: 12px; line-height: 18px; color: var(--dsw-alias-state-business-primary); text-decoration: none; }
+.eau-progress { display: flex; align-items: center; gap: 10px; }
+.eau-progress-track { flex: 1; min-width: 120px; height: 4px; border-radius: 999px; background: var(--dsw-alias-fill-secondary); overflow: hidden; }
+.eau-progress-fill { height: 100%; border-radius: 999px; background: var(--dsw-alias-state-business-primary); transition: width 200ms ease-out; }
+.eau-note { margin: 0; padding: 8px 10px; border-radius: var(--dsw-radius-md, 8px); font-size: 12px; line-height: 18px; background: var(--dsw-alias-fill-secondary); }
+
+.eau-overlay { position: fixed; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center; }
+.eau-overlay-mask { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4); }
+.eau-dialog {
+  position: relative; box-sizing: border-box; width: 440px; max-width: calc(100vw - 48px);
+  display: flex; flex-direction: column; gap: 12px; padding: 20px 24px;
+  border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl);
+  background: var(--dsw-alias-fill-primary); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+.eau-dialog h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--dsw-alias-label-primary); }
+.eau-dialog-actions { justify-content: flex-end; margin-top: 4px; }
+`;
+var WEBSITE_URL = "https://laochenfei233.github.io/easel-dsh/";
+var CHANGELOG_URL = `${WEBSITE_URL}#changelog`;
+function AboutSection({ t, update }) {
+  const state = (0, import_react19.useSyncExternalStore)(update.subscribe, update.snapshot);
+  (0, import_react19.useEffect)(() => {
+    void update.refresh();
+  }, [update]);
+  if (!state.supported) {
+    return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "eau-root", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: t("desktopOnly") }) });
+  }
+  const installing = state.progress?.phase === "installing";
+  const downloading = state.progress?.phase === "downloading";
+  const buttonLabel = state.checking ? t("checking") : state.lastCheckStatus === "error" ? t("retry") : state.lastCheckStatus === "available" ? t("install") : t("checkUpdate");
+  const buttonBusy = state.checking || downloading || installing;
+  const checkOrInstall = () => {
+    void (state.lastCheckStatus === "available" ? update.install() : update.check());
+  };
+  const statusText = state.lastCheckStatus === "error" ? null : state.lastCheckStatus === "up-to-date" ? t("upToDate") : state.lastCheckStatus === "available" && state.latest ? t("availableFound").replace("{version}", state.latest.version) : null;
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "eau-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("appName") }),
+        state.version ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "eau-badge", children: [
+          "v",
+          state.version
+        ] }) : null
+      ] }),
+      downloading || installing ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : installing ? t("installing") : t("downloading") })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+          "button",
+          {
+            type: "button",
+            className: state.lastCheckStatus === "available" ? "eau-btn eau-btn-primary" : "eau-btn",
+            disabled: buttonBusy,
+            onClick: checkOrInstall,
+            children: buttonLabel
+          }
+        ),
+        statusText ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: state.lastCheckStatus === "available" ? "eau-error" : "eau-muted", role: "status", children: statusText }) : null
+      ] }),
+      state.lastError ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-error", role: "alert", children: state.lastError }) : null,
+      state.lastCheckMs ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: t("lastChecked").replace("{time}", new Date(state.lastCheckMs).toLocaleString()) }) : null
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "eau-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("sourceLabel") }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "eau-badge", children: state.source === "override" ? t("sourceOverride") : state.source === "error" ? t("sourceUnavailable") : t("sourceDefault") })
+      ] }),
+      state.endpoints.length > 0 ? state.endpoints.map((endpoint) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: endpoint }, endpoint)) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: t("sourceUnavailable") })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-row", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "eau-link", href: WEBSITE_URL, target: "_blank", rel: "noreferrer", children: t("websiteLink") }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("changelogLink") })
+    ] })
+  ] });
+}
+
+// src/components/UpdateNotice.tsx
+var import_react20 = require("react");
+var import_jsx_runtime30 = require("react/jsx-runtime");
+function UpdateNotice({ t, update }) {
+  const state = (0, import_react20.useSyncExternalStore)(update.subscribe, update.snapshot);
+  if (!state.supported || state.announce === void 0) return null;
+  const notes = (state.announce.notes ?? "").trim();
+  const summary = notes.slice(0, notes.indexOf("\n") === -1 ? notes.length : notes.indexOf("\n")).trim();
+  const busy = state.progress?.phase === "downloading" || state.progress?.phase === "installing";
+  const downloading = state.progress?.phase === "downloading";
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "eau-overlay", role: "dialog", "aria-modal": "true", "aria-labelledby": "eau-notice-title", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "eau-overlay-mask", "aria-hidden": "true", onClick: update.dismiss }),
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "eau-dialog", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h2", { id: "eau-notice-title", children: t("noticeTitle").replace("{version}", state.announce.version) }),
+      summary ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "eau-muted", children: summary }) : null,
+      busy ? /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "eau-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : state.progress?.phase === "installing" ? t("installing") : t("downloading") })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "eau-row eau-dialog-actions", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { type: "button", className: "eau-btn", onClick: update.dismiss, children: t("noticeLater") }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { type: "button", className: "eau-btn eau-btn-primary", onClick: () => {
+          void update.install();
+        }, children: t("noticeInstallNow") })
+      ] }),
+      state.progress?.phase === "failed" && state.lastError ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "eau-error", role: "alert", children: state.lastError }) : null,
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "eau-row", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("noticeFullChangelog") }) })
+    ] })
+  ] });
+}
+
+// src/locales/easelAbout.ts
+var EASEL_ABOUT_COPY = {
+  zh: {
+    nav: "\u5173\u4E8E",
+    appName: "Easel-dsh",
+    checkUpdate: "\u68C0\u67E5\u66F4\u65B0",
+    checking: "\u6B63\u5728\u68C0\u67E5\u2026",
+    retry: "\u91CD\u8BD5",
+    upToDate: "\u5DF2\u662F\u6700\u65B0\u7248\u672C",
+    availableFound: "\u53D1\u73B0\u65B0\u7248\u672C {version}",
+    install: "\u7ACB\u5373\u66F4\u65B0",
+    downloadProgress: "\u6B63\u5728\u4E0B\u8F7D\u2026 {percent}%",
+    downloading: "\u6B63\u5728\u4E0B\u8F7D\u2026",
+    installing: "\u6B63\u5728\u5B89\u88C5\uFF0C\u5E94\u7528\u5373\u5C06\u9000\u51FA\u2026",
+    lastChecked: "\u4E0A\u6B21\u68C0\u67E5\uFF1A{time}",
+    sourceLabel: "\u66F4\u65B0\u6E90",
+    sourceDefault: "\u9ED8\u8BA4",
+    sourceOverride: "\u81EA\u5B9A\u4E49",
+    sourceUnavailable: "\u4E0D\u53EF\u7528",
+    websiteLink: "\u5B98\u7F51",
+    changelogLink: "\u66F4\u65B0\u65E5\u5FD7",
+    desktopOnly: "\u5E94\u7528\u7248\u672C\u4E0E\u66F4\u65B0\u68C0\u67E5\u4EC5\u5728\u684C\u9762\u7248\u63D0\u4F9B\u3002",
+    noticeTitle: "\u53D1\u73B0\u65B0\u7248\u672C {version}",
+    noticeInstallNow: "\u7ACB\u5373\u66F4\u65B0",
+    noticeLater: "\u6682\u4E0D",
+    noticeFullChangelog: "\u67E5\u770B\u5B8C\u6574\u66F4\u65B0\u65E5\u5FD7"
+  },
+  en: {
+    nav: "About",
+    appName: "Easel-dsh",
+    checkUpdate: "Check for updates",
+    checking: "Checking\u2026",
+    retry: "Retry",
+    upToDate: "You are up to date",
+    availableFound: "New version {version} available",
+    install: "Install update",
+    downloadProgress: "Downloading\u2026 {percent}%",
+    downloading: "Downloading\u2026",
+    installing: "Installing; the app will exit shortly\u2026",
+    lastChecked: "Last checked: {time}",
+    sourceLabel: "Update source",
+    sourceDefault: "Default",
+    sourceOverride: "Custom",
+    sourceUnavailable: "Unavailable",
+    websiteLink: "Website",
+    changelogLink: "Changelog",
+    desktopOnly: "The app version and update check are available in the desktop app only.",
+    noticeTitle: "New version {version} available",
+    noticeInstallNow: "Install update",
+    noticeLater: "Not now",
+    noticeFullChangelog: "View the full changelog"
+  }
+};
+
 // src/client.tsx
 var NS3 = "easel.panel";
 var STYLE_ID4 = "dsh-plugin-easel-style";
 var DATA_ROOT_STYLE_ID = "easel-data-root-settings-styles";
+var ABOUT_STYLE_ID = "easel-about-settings-styles";
 var STYLES = EASEL_CSS;
 var COPY2 = {
   zh: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.zh])),
@@ -13121,6 +13438,35 @@ var client_default = {
       locale: "settings.dataRoot",
       inject: () => ({})
     }, DataRootSection));
+    const update = createUpdateStore(detectHostUpdateBridge());
+    ctx.effect(() => () => {
+      update.dispose();
+    }, "easel: host update store lifecycle");
+    ctx.effect(
+      () => ctx.locale.register("settings.easelAbout", EASEL_ABOUT_COPY),
+      "easel: about dictionaries"
+    );
+    ctx.effect(() => {
+      const style = document.createElement("style");
+      style.id = ABOUT_STYLE_ID;
+      style.textContent = ABOUT_STYLES;
+      document.head.append(style);
+      return () => style.remove();
+    }, "easel: about styles");
+    ctx.slots.inject("settings.section", () => ctx.slots.register({
+      name: "settings.section",
+      id: "easel.about",
+      order: 90,
+      label: () => ctx.locale.bind("settings.easelAbout")("nav"),
+      locale: "settings.easelAbout",
+      inject: () => ({ update })
+    }, AboutSection));
+    ctx.slots.inject("shell.overlay", () => ctx.slots.register({
+      name: "shell.overlay",
+      id: "easel.update-notice",
+      locale: "settings.easelAbout",
+      inject: () => ({ update })
+    }, UpdateNotice));
     const t = ctx.locale.bind(NS3);
     ctx.provide("easelShell", createShellBridge(ctx, t));
     for (const plugin15 of CLIENT_PLUGINS) ctx.plugin(plugin15);

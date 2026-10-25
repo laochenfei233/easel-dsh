@@ -13,12 +13,17 @@
 import { EASEL_CSS } from './generated/easel-css'
 import { createShellBridge } from './lib/shell'
 import { CLIENT_PLUGINS, FEATURES } from './features'
+import { detectHostUpdateBridge, createUpdateStore } from './lib/hostUpdate'
 import { DataRootSection, DATA_ROOT_STYLES } from './components/DataRootSection'
 import { DATA_ROOT_COPY } from './locales/dataRoot'
+import { AboutSection, ABOUT_STYLES } from './components/AboutSection'
+import { UpdateNotice } from './components/UpdateNotice'
+import { EASEL_ABOUT_COPY } from './locales/easelAbout'
 
 const NS = 'easel.panel'
 const STYLE_ID = 'dsh-plugin-easel-style'
 const DATA_ROOT_STYLE_ID = 'easel-data-root-settings-styles'
+const ABOUT_STYLE_ID = 'easel-about-settings-styles'
 
 // The ported pages style themselves with Easel's global classes. The build
 // scopes those sheets under .easel-scope and rewrites the dark palette to key
@@ -73,6 +78,38 @@ export default {
       locale: 'settings.dataRoot',
       inject: () => ({}),
     }, DataRootSection))
+
+    // EASEL-DIVERGENCE(easel-app-update): the About section reads the shell
+    // updater through the desktop relay store; browsers and WebKit app
+    // windows lack the bridge and get the desktop-only line. The same store
+    // drives the update notice overlay entry.
+    const update = createUpdateStore(detectHostUpdateBridge())
+    ctx.effect(() => () => { update.dispose() }, 'easel: host update store lifecycle')
+    ctx.effect(
+      () => ctx.locale.register('settings.easelAbout', EASEL_ABOUT_COPY),
+      'easel: about dictionaries',
+    )
+    ctx.effect(() => {
+      const style = document.createElement('style')
+      style.id = ABOUT_STYLE_ID
+      style.textContent = ABOUT_STYLES
+      document.head.append(style)
+      return () => style.remove()
+    }, 'easel: about styles')
+    ctx.slots.inject('settings.section', () => ctx.slots.register({
+      name: 'settings.section',
+      id: 'easel.about',
+      order: 90,
+      label: () => ctx.locale.bind('settings.easelAbout')('nav'),
+      locale: 'settings.easelAbout',
+      inject: () => ({ update }),
+    }, AboutSection))
+    ctx.slots.inject('shell.overlay', () => ctx.slots.register({
+      name: 'shell.overlay',
+      id: 'easel.update-notice',
+      locale: 'settings.easelAbout',
+      inject: () => ({ update }),
+    }, UpdateNotice))
 
     const t = ctx.locale.bind(NS)
     // The bridge is the one service feature plugins depend on. It owns the
