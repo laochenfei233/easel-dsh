@@ -132,6 +132,7 @@ pub struct CheckUpdateResult {
 /// `easel_install_update`'s immediate answer; the download itself is a
 /// background task reporting through `easel://update-progress`.
 #[derive(Serialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum InstallStart {
     Started,
     UpToDate,
@@ -491,6 +492,15 @@ pub fn easel_update_state(app: AppHandle) -> UpdateStateSnapshot {
 /// process; failure clears it) or the shell restarts.
 static INSTALL_RUNNING: AtomicBool = AtomicBool::new(false);
 
+/// Clears `INSTALL_RUNNING` when the install task leaves without success —
+/// including a panic inside the download future.
+struct InstallRunningGuard;
+impl Drop for InstallRunningGuard {
+    fn drop(&mut self) {
+        INSTALL_RUNNING.store(false, AtomicOrdering::SeqCst);
+    }
+}
+
 #[tauri::command]
 pub async fn easel_install_update(app: AppHandle) -> Result<InstallStart, String> {
     if INSTALL_RUNNING.swap(true, AtomicOrdering::SeqCst) {
@@ -533,7 +543,9 @@ async fn install_update_inner(app: AppHandle) -> Result<InstallStart, String> {
     let progress_app = emitter.clone();
     let downloaded = Arc::new(AtomicU64::new(0));
     let total_len = Arc::new(AtomicU64::new(0));
-    let last_percent_key = Arc::new(AtomicU64::new(0));
+    // u64::MAX differs from every key (None → 0, percent p → p + 1), so the
+    // first chunk always emits and an unknown total announces exactly once.
+    let last_percent_key = Arc::new(AtomicU64::new(u64::MAX));
     let closure_version = version.clone();
     let on_chunk = move |chunk: usize, total: Option<u64>| {
         let now = downloaded.fetch_add(chunk as u64, AtomicOrdering::SeqCst) + chunk as u64;
@@ -541,8 +553,7 @@ async fn install_update_inner(app: AppHandle) -> Result<InstallStart, String> {
             total_len.store(total, AtomicOrdering::SeqCst);
         }
         let percent = percent_of(now, total_len.load(AtomicOrdering::SeqCst));
-        // Only a change is worth an event: chunks arrive thousands of times,
-        // and an unknown total still announces "downloading" exactly once.
+        // Only a change is worth an event: chunks arrive thousands of times.
         let key = percent.map_or(0, |p| u64::from(p) + 1);
         let previous = last_percent_key.swap(key, AtomicOrdering::SeqCst);
         if key == previous {
@@ -571,6 +582,9 @@ async fn install_update_inner(app: AppHandle) -> Result<InstallStart, String> {
     let error_app = emitter.clone();
     let error_version = version.clone();
     tauri::async_runtime::spawn(async move {
+        // Success exits the process before this drops; failure and panic
+        // both release the install lock here.
+        let _guard = InstallRunningGuard;
         match update.download_and_install(on_chunk, on_finish).await {
             Ok(()) => {
                 // The installer has been launched; the plugin exits the
@@ -579,7 +593,6 @@ async fn install_update_inner(app: AppHandle) -> Result<InstallStart, String> {
                 std::process::exit(0);
             }
             Err(err) => {
-                INSTALL_RUNNING.store(false, AtomicOrdering::SeqCst);
                 let _guard = CHECK_LOCK.lock().await;
                 let mut state = read_state_at(&crate::setup::dsh_home());
                 state.last_error = Some(format!("安装更新失败：{err}"));
@@ -717,5 +730,85 @@ mod tests {
         assert_eq!(percent_of(200, 200), Some(100));
         assert_eq!(percent_of(300, 200), Some(100));
         assert_eq!(percent_of(50, 0), None);
+    }
+
+    #[test]
+    fn payload_wire_keys_match_the_client_contract() {
+        // The relayed payloads cross the host bridge as plain JSON keys the
+        // client reads verbatim (hostUpdate.js); a rename-all slip surfaces
+        // here instead of as a dead install button or an empty About row.
+        assert_eq!(
+            serde_json::to_value(InstallStart::Started).unwrap(),
+            serde_json::json!("started"),
+        );
+        assert_eq!(
+            serde_json::to_value(InstallStart::UpToDate).unwrap(),
+            serde_json::json!("up-to-date"),
+        );
+        assert_eq!(
+            serde_json::to_value(CheckStatus::Available).unwrap(),
+            serde_json::json!("available"),
+        );
+        assert_eq!(
+            serde_json::to_value(CheckUpdateResult {
+                status: CheckStatus::Available,
+                version: Some("0.3.0".into()),
+                notes: Some("release notes".into()),
+                pub_date_ms: Some(1_000),
+                detail: None,
+            })
+            .unwrap(),
+            serde_json::json!({
+                "status": "available",
+                "version": "0.3.0",
+                "notes": "release notes",
+                "pubDateMs": 1_000,
+            }),
+        );
+        assert_eq!(
+            serde_json::to_value(ProgressPayload {
+                phase: "downloading",
+                percent: Some(25),
+                version: Some("0.3.0".into()),
+            })
+            .unwrap(),
+            serde_json::json!({"phase": "downloading", "percent": 25, "version": "0.3.0"}),
+        );
+        assert_eq!(
+            serde_json::to_value(AvailablePayload {
+                version: "0.3.0".into(),
+                notes: None,
+                pub_date_ms: Some(1_000),
+            })
+            .unwrap(),
+            serde_json::json!({"version": "0.3.0", "pubDateMs": 1_000}),
+        );
+        assert_eq!(
+            serde_json::to_value(LatestRelease {
+                version: "0.3.0".into(),
+                notes: None,
+                pub_date_ms: Some(1_000),
+            })
+            .unwrap(),
+            serde_json::json!({"version": "0.3.0", "pubDateMs": 1_000}),
+        );
+        assert_eq!(
+            serde_json::to_value(UpdateStateSnapshot {
+                version: "0.2.1-alpha.32".into(),
+                endpoints: vec!["https://example.invalid/latest.json".into()],
+                source: SourceState::Default,
+                last_check_ms: None,
+                last_check_status: None,
+                latest: None,
+                last_error: None,
+                noted_version: None,
+            })
+            .unwrap(),
+            serde_json::json!({
+                "version": "0.2.1-alpha.32",
+                "endpoints": ["https://example.invalid/latest.json"],
+                "source": "default",
+            }),
+        );
     }
 }
