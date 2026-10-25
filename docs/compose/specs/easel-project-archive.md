@@ -1,16 +1,20 @@
 ---
 feature: easel-project-archive
-status: designed
+status: in-progress
 updated: 2026-10-25
 branch: feat/easel-project-archive
-commits: # filled at delivery
+commits: e4a2c7e804..02c70a5715
 ---
 
 # 项目压缩包导入 / 导出（Easel Project Archive）
 
 ## Report
 
-设计阶段。实现完成后回填行为、验证命令与过程记录。
+**What was built** — 一个宿主归档引擎（`lib/project-archive.js`）加三个入口：设置 · 数据位置新增「项目」卡片（列表、导入、行右键/图标导出）、工作区侧边栏标题栏的导入按钮（核心新增通用 slot `sidebar.workspaces.header.action`）、工作区行右键导出。压缩包是标准 zip，根为项目内容，首个条目 `.easel-project.json` 只带 format/version/title/exportedAt；v1 不含会话。导入先解析中央目录并逐条校验 CRC/大小，再暂存解压、垃圾过滤、根推断、同名自动 `(2)`、原子 rename 发布，最后由客户端 `ctx.workspaces.create` 登记。导出走系统另存为，扫描时跳过并分别计数符号链接/不可读/系统元数据，写 `<dest>.part` 后原子替换；目标在源内、主项目根/非 `projects/` 直接子目录、单文件 ≥4 GiB 都在宿主拒绝。任务单并发，进度经共享 toast 轮询展示，弹窗打开时 toast 挂在最上层 dialog 内。
+
+**Verification** — `node --test`（插件）：270 项，269 pass、1 skip（Windows 上跳过 chmod 0 不可读文件用例）、0 fail；覆盖往返、外部 flat/单顶层目录、同名后缀、大小写折叠重名、祖先冲突两种顺序、CRC 损坏、截断中央目录、冒号 ADS、清单版本、垃圾计数、链接跳过、4 GiB 守卫、覆盖已有目标、路由/任务/409/取消/unsupported。`pnpm vitest run packages/client/ui-workspace`：467 pass。`pnpm run typecheck`：5/5 gates；`pnpm exec tsc -p tsconfig.client.json`、`pnpm exec tsdown --config-loader native --env.DSH_BUILD_FACE client` 均通过；插件 `node build.mjs` 产出 `client.js` 811.0kb。`pnpm run build` 的 Desktop bundle 在本工作树因 node_modules 为 junction 报 `ERR_PNPM_UNSAFE_TASK_RUN_STATE_PATH`（环境限制，其余 gate 被跳过）；`pnpm run test:docs` 的 5 个失败是仓库既有的双语配对/类型等价/链接/wrap 漂移（含所有既有 Easel spec），不属于本分支引入的代码失败。**桌面实机冒烟（原生选择器、右键菜单、设置弹窗内 toast、macOS/Windows 真实路径）尚未执行。**
+
+**Journey log** — ①工作树复用主检出的 node_modules junction 让 `pnpm run build` 的 Desktop bundle 直接拒绝，改用 client aggregate + tsdown 验证，并把完整 build 留给 CI/主检出。②两路独立复审：客户端一路抓到 context-menu 调用不存在的 `supported()`（右键完全失效）与 toast 被替换后进度永久消失；宿主一路抓到大小写/Unicode 折叠重名静默覆盖、NTFS 冒号 ADS、fflate 流式解压不校验 CRC。全部 critical/major 已修并复验。③fflate 的 `Unzip` 不暴露 CRC，改为自解析 EOCD/ZIP64 中央目录 + 逐条 CRC32 比对；stored 媒体被篡改现在会失败。④设置页原本没有项目列表，右键导出在设置里无处可落，因此新增只读项目卡片；导入成功后靠 workspace feed 自动出现分组，不另做刷新协议。⑤剩余 minor：POSIX 空目录的 check-then-rename 理论竞态、statfs 在 UNC 不可用时跳过磁盘守卫、插件客户端服务/菜单行缺少独立测试（无 TS/React 测试 harness）；均记录在交付说明。
 
 ## [S1] Problem
 
@@ -196,13 +200,13 @@ Easel 把每个立项项目放在 `<数据位置>/workspace/projects/<名称>/`�
 
 ## Tasks
 
-- [ ] T1 宿主压缩包引擎：清单、扫描、fflate 写入、中央目录 CRC 校验、安全解压、垃圾过滤、根推断、命名冲突、暂存/发布、空间与条目上限；单测覆盖 `../`、绝对路径、反斜杠、冒号 ADS、重复条目（含大小写/Unicode 折叠）、祖先冲突两种顺序、清单版本、CRC 损坏、截断中央目录、垃圾目录、单顶层目录、打平根、同名后缀、链接跳过、不可读文件、目标在源内、4 GiB 守卫、残留清扫规则。（depends: none）
-- [ ] T2 原生选择器与路由/任务：`lib/native-picker.js`、`createProjectArchiveFeature`、四个路由、单任务状态机、`resolveSettings.archiveEnabled`、`index.js` 挂载；用注入的假选择器测导入/导出全流程、取消、409、400、unsupported、job 轮询与错误码。（depends: T1）
-- [ ] T3 客户端服务与反馈：`src/lib/project-archive.ts`（API、轮询、`ctx.workspaces.create`、任务订阅、能力缓存、`supported()`）、`src/lib/ui-toast.ts`（进度浮层 + 从 context-menu 抽出的 toast，弹窗内挂载）、`easel.archive` 字典；纯函数（项目路径判定、错误码映射）单测。（depends: T2）
-- [ ] T4 设置项目卡片：`DataRootSection` 增加项目卡片、加载/空态/列表/行右键属性/导出图标、随任务完成刷新；`DATA_ROOT_STYLES` 与 `settings.dataRoot` 文案；中英文案与焦点态。（depends: T3）
-- [ ] T5 侧边栏导入按钮：核心 `sidebar.workspaces.header.action` 合约 + `WorkspaceBrowser` 渲染 + 合约测试；插件注册按钮（图标、tooltip、busy、unsupported/rail 隐藏）。（depends: T3）
-- [ ] T6 右键扩展：context-menu model 增加 `project`/`workspace` surface，菜单项与导出动作，`ctx.workspaces` 查表，项目路径判定；context-menu 单测覆盖命中/未命中/未分组/合成组/主项目。（depends: T3）
-- [ ] T7 打包与文档：插件版本 patch、`node build.mjs`、确认 `stageEasel` 读取的就是 `easel/dsh-plugin-easel`（不跑旧的 `sync-easel-bundle.mjs`）、README 路由/行为说明；确认 fflate 在桌面闭包与 dev 根 `node_modules` 都可解析。（depends: T4,T5,T6）
+- [x] T1 宿主压缩包引擎：清单、扫描、fflate 写入、中央目录 CRC 校验、安全解压、垃圾过滤、根推断、命名冲突、暂存/发布、空间与条目上限；单测覆盖 `../`、绝对路径、反斜杠、冒号 ADS、重复条目（含大小写/Unicode 折叠）、祖先冲突两种顺序、清单版本、CRC 损坏、截断中央目录、垃圾目录、单顶层目录、打平根、同名后缀、链接跳过、不可读文件、目标在源内、4 GiB 守卫、残留清扫规则。（depends: none）
+- [x] T2 原生选择器与路由/任务：`lib/native-picker.js`、`createProjectArchiveFeature`、四个路由、单任务状态机、`resolveSettings.archiveEnabled`、`index.js` 挂载；用注入的假选择器测导入/导出全流程、取消、409、400、unsupported、job 轮询与错误码。（depends: T1）
+- [x] T3 客户端服务与反馈：`src/lib/project-archive.ts`（API、轮询、`ctx.workspaces.create`、任务订阅、能力缓存、`supported()`）、`src/lib/ui-toast.ts`（进度浮层 + 从 context-menu 抽出的 toast，弹窗内挂载）、`easel.archive` 字典；纯函数（项目路径判定、错误码映射）单测。（depends: T2）
+- [x] T4 设置项目卡片：`DataRootSection` 增加项目卡片、加载/空态/列表/行右键属性/导出图标、随任务完成刷新；`DATA_ROOT_STYLES` 与 `settings.dataRoot` 文案；中英文案与焦点态。（depends: T3）
+- [x] T5 侧边栏导入按钮：核心 `sidebar.workspaces.header.action` 合约 + `WorkspaceBrowser` 渲染 + 合约测试；插件注册按钮（图标、tooltip、busy、unsupported/rail 隐藏）。（depends: T3）
+- [x] T6 右键扩展：context-menu model 增加 `project`/`workspace` surface，菜单项与导出动作，`ctx.workspaces` 查表，项目路径判定；context-menu 单测覆盖命中/未命中/未分组/合成组/主项目。（depends: T3）
+- [x] T7 打包与文档：插件版本 patch、`node build.mjs`、确认 `stageEasel` 读取的就是 `easel/dsh-plugin-easel`（不跑旧的 `sync-easel-bundle.mjs`）、README 路由/行为说明；确认 fflate 在桌面闭包与 dev 根 `node_modules` 都可解析。（depends: T4,T5,T6）
 - [ ] T8 验证与复审：按 [S4] 跑命令并记录证据；按 compose 流程派独立复审 agent 检查规格符合性、正确性、代码一致性；修复后复验。（depends: T7）
 
 ## [S4] Acceptance
