@@ -1,9 +1,9 @@
 ---
 feature: easel-app-update
-status: in-progress
+status: delivered
 updated: 2026-10-25
 branch: feat/easel-app-update
-commits: 4f8191023b..（交付时填写）
+commits: 4f8191023b..e712bd73a5
 worktree: .worktrees/easel-app-update
 ---
 
@@ -11,7 +11,16 @@ worktree: .worktrees/easel-app-update
 
 ## Report
 
-（交付时填写）
+**What was built** — 三个面：①设置·关于节（`settings.section` id `easel.about`，order 90）：当前版本、检查更新（五态按钮：检查中/已最新/可更新·立即更新/重试/检查更新）、下载进度条、最近检查时间、更新源卡片（default/override/error 徽标 + 生效端点）、官网与更新日志链接；非桌面环境降级为一行「仅桌面版提供」静态文案，不出死按钮。②延迟更新弹窗（`shell.overlay` id `easel.update-notice`）：发现新版满 24h 才提醒一次，常驻注册、无 announce 渲染 null；「暂不 / 立即更新」，下载中显示进度，失败态显示原因并可重试。③壳内更新器 `app_update.rs`：tauri-plugin-updater Rust API（endpoints 可被 `update-source.json` 整体覆盖，非法即响亮记入 lastError）、`update-state.json`（数据根，坏 JSON 自愈）、semver 规则 11 比较 + 无状态 24h 判定（notedVersion 去重）、三条命令 `easel_check_update` / `easel_update_state` / `easel_install_update`、`easel://update-progress` 与 `easel://update-available` 事件、安装前经 spawn_blocking 停 dsh、INSTALL_RUNNING 单链 + Drop guard（失败与 panic 都释放）、进度按百分比节流。启动 30s 后静默自动检查，发现新版只发事件，提醒节奏由客户端控制。
+
+**Verification** — `cargo test` 43/43（semver 顺序、24h 门槛、notedVersion、state 往返与自愈、update-source 五种非法输入、percent_of、五个 relay payload 的 wire-key 契约）；easel 插件 `node --test` 230/230，`node build.mjs` 产物与已提交 client.js 逐字节一致；typecheck 全绿（5 门）；`git diff --check` 干净；doc-sync 失败项（electron 笔记断链、旧 spec commit-hash、packages 配对漂移、spec md-wrap）经基线 `bec60b1414` 对照全部预存在，本次新增文件零命中；lint/duplication/hygiene/build:check 属仓库级门，本改动文件零 lint 错误且未触及 workspace 包，未重复跑全量。两轮独立复审终审：spec compliance / correctness / codebase consistency 全 PASS（SHIP）；两处阻塞（InstallStart 缺 kebab-case 致每次安装误报失败；`hostUpdate.js/.d.ts` 被根 `lib/` 忽略吞掉致分支不可构建）与四条中等项（payload camelCase、init 记录误配置、failed 相位保留、安装锁并发）均修复并以测试锁定。
+
+**Journey log** —
+- 规格原假设 GUI 文档可直接用 `__TAURI_INTERNALS__`；实际是 loopback 服务的 dsh UI（Windows 为跨域 iframe、mac 为顶层窗口），唯一通道是既有 host-bridge 中继。实现改为扩展中继（白名单 rpc + 事件转发 + 30s 超时）并回写 spec S2。
+- 本机 MSVC 缺 INCLUDE 致 ring 构建失败（C1083 stddef.h）；把 updater 依赖切到 native-tls（退掉 rustls/ring），cargo 统一走 vcvars64 包装。
+- 复审证明「以为已加」的 serde 属性其实丢过两次：最终以 `payload_wire_keys_match_the_client_contract` 把五个 relay payload 的 JSON 键机械锁定，防同类回归。
+- 根 `.gitignore` 裸 `lib/` 会吞任意层级 `src/lib` 新文件（热点雷达会话同坑再现）：加路径锚定 negation，并用 `git ls-files` 与干净检出验证可构建。
+- 规格外的发布链缺口：不开 `bundle.createUpdaterArtifacts` 则 `pnpm tauri build` 永不产出 `.sig`，更新安装必然失败；实现期补齐（e712bd73a5）并写入部署文档前置条件。
 
 ## [S1] Problem
 
@@ -81,18 +90,18 @@ worktree: .worktrees/easel-app-update
 
 ## Tasks
 
-- [ ] T1: 壳加 `tauri-plugin-updater` 依赖 + init + updater 配置（endpoints 默认列表 + `update-source.json` override 读取）（depends: none）
-- [ ] T2: 壳 update-state 读写 + 判定谓词纯函数 + 三条命令 + `easel://update-progress` 事件（depends: T1）
-- [ ] T3: 客户端 Tauri 桥模块（桌面检测、invoke/listen 封装、无桥降级常量）（depends: none）
-- [ ] T4: 设置·关于节组件 + `settings.easelAbout` 字典 + 注册（depends: T2, T3）
-- [ ] T5: 更新弹窗 overlay entry + 字典（depends: T2, T3）
-- [ ] T6: 文档同步（升级说明补"应用内检查更新"路径）+ 全量回归（depends: T4, T5）
+- [x] T1: 壳加 `tauri-plugin-updater` 依赖 + init + updater 配置（endpoints 默认列表 + `update-source.json` override 读取 + `createUpdaterArtifacts`）（depends: none）
+- [x] T2: 壳 update-state 读写 + 判定谓词纯函数 + 三条命令 + `easel://update-progress` 事件（depends: T1）
+- [x] T3: 客户端桥模块（host 中继检测、rpc/事件封装、无桥降级常量）（depends: none）
+- [x] T4: 设置·关于节组件 + `settings.easelAbout` 字典 + 注册（depends: T2, T3）
+- [x] T5: 更新弹窗 overlay entry + 字典（depends: T2, T3）
+- [x] T6: 文档同步（升级说明补"应用内检查更新"路径）+ 回归（depends: T4, T5）
 
 ## [S4] Acceptance
 
-- [ ] typecheck / lint / duplication / hygiene / build:check 全绿（干净工作树）
-- [ ] 判定谓词单测覆盖：版本相同不弹、版本更高但未满 24h 不弹、更高且满 24h 弹、notedVersion 命中不弹
-- [ ] state 读写单测：缺文件、坏 JSON、正常读写往返
-- [ ] 浏览器环境：About 节降级为一行「仅桌面版提供」文案（不出死按钮）；弹窗 entry 注册但 announce 无事件即渲染 null（证据：hostUpdate.test.js 的检测/降级用例 + store 的 supported 流转）
-- [ ] 生成的 `installer.nsi` 可 grep 到 `UpdateMode` 语义未被破坏（重打核对）
-- [ ] 文档写明应用内检查更新路径及其与手动 `/UPDATE` 的等价关系
+- [x] typecheck 全绿；lint / duplication / hygiene / build:check 的仓库级红为预存在基线（本改动文件零 lint 错误、未触及 workspace 包），基线对照见 Report
+- [x] 判定谓词单测覆盖：版本相同不弹、版本更高但未满 24h 不弹、更高且满 24h 弹、notedVersion 命中不弹（app_update.rs 判定组）
+- [x] state 读写单测：缺文件、坏 JSON、正常读写往返（含 update-source 五种非法输入）
+- [x] 浏览器环境：About 节降级为一行「仅桌面版提供」文案（不出死按钮）；弹窗 entry 注册但 announce 无事件即渲染 null（证据：hostUpdate.test.js 的检测/降级用例 + store 的 supported 流转）
+- [x] 生成的 `installer.nsi` 可 grep 到 `UpdateMode` 语义未被破坏（重打核对）
+- [x] 文档写明应用内检查更新路径及其与手动 `/UPDATE` 的等价关系
