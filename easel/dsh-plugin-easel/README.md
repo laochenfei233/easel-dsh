@@ -95,6 +95,15 @@ CalDAV 为单向只读订阅（协议实现见 `caldav.js`，零依赖）：
 排期条目新增可选 `repeat: 'yearly'`（仅此值合法），客户端按月/日展开进渲染窗口；更新时
 不带该字段保留原值，显式空串清除。
 
+### 定时任务（Host schedule 引擎）
+
+「定时任务」视图（rail order 34）是 Host schedule 引擎的产品入口：创建走
+`POST /easel/api/automation/tasks`（引擎 `create()` 是 host 进程 API，remote 面没有
+create 方法），表单的四种时机形状（仅一次/每天/每周/每 N 小时或分钟）在宿主侧映射为
+ScheduleCreateRequest，引擎校验错误映射为可读中文。目录、编辑时机、删除与运行记录走
+dsh 的 `remote.schedule`，变更事件 `schedule/changed` 驱动刷新。cron 任务在 easel 页面
+只读展示，深度编辑走 dsh 自带的自动化任务页（设置 → 自动化任务；其 rail 行本包保持隐藏）。
+
 ## 未验证 / 已知缺口
 
 1. **客户端面板没在浏览器里看到。** dsh 引导成功、宿主路由返回真实数据，但侧边栏入口是否
