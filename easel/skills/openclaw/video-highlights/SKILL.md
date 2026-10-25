@@ -46,7 +46,8 @@ python skills/shared/scripts/highlight_cut.py cut -i <长视频> \
 1. 先转录（复用 auto-subtitle 的本地路由，带时间轴）：
    ```bash
    BASE=$(node -e "const j=require('./outputs/_easel_api.json');process.stdout.write(j.base+j.basePath)")
-   curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" \
+   TOKEN=$(node -e "const j=require('./outputs/_easel_api.json');process.stdout.write(j.runnerToken)")
+   curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" -H "X-Easel-Runner: $TOKEN" \
      -d '{"path":"<长视频>","format":"json"}' > /tmp/hl.json
    # segments: [{start, end, text}, ...]
    ```

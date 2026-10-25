@@ -32,6 +32,9 @@ layer: produce
 
 - dsh 壳在跑（提供本地路由），且已配置 `MIMO_API_KEY`（项目 `.env` 或环境变量；
   可选 `MIMO_BASE_URL`/`MIMO_ASR_MODEL`）。无本地模型下载、无代理要求。
+- `/easel/api/*` 只认 workbench 的登录态；技能用 `outputs/_easel_api.json` 里的
+  `runnerToken` 发 `X-Easel-Runner` 头，且只对 `POST /easel/api/asr` 有效。token 每次
+  dsh 启动都会换新，别缓存。
 
 ## 执行步骤
 
@@ -42,18 +45,19 @@ layer: produce
 
 ```bash
 BASE=$(node -e "const j=require('./outputs/_easel_api.json');process.stdout.write(j.base+j.basePath)")
+TOKEN=$(node -e "const j=require('./outputs/_easel_api.json');process.stdout.write(j.runnerToken)")
 
 # 视频 → SRT（自动提取音轨；format 缺省即 srt）
-curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" \
+curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" -H "X-Easel-Runner: $TOKEN" \
   -d '{"path":"input.mp4","format":"srt"}'
 # → {"file":"outputs/input/input.srt","segments":[…],"seconds":…}
 
 # 视频 → ASS（带样式，**字号/边距按视频横竖屏自适应**）：视频输入自动探测宽高
-curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" \
+curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" -H "X-Easel-Runner: $TOKEN" \
   -d '{"path":"input.mp4","format":"ass"}'
 
 # 纯音频 → ASS：默认竖屏 1080x1920；要横屏，生成后改 ASS 头的 PlayResX/PlayResY 为 1920x1080
-curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" \
+curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" -H "X-Easel-Runner: $TOKEN" \
   -d '{"path":"voice.mp3","format":"ass"}'
 ```
 

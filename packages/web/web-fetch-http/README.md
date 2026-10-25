@@ -61,7 +61,7 @@ const page = await ctx.web.fetch({ url: 'https://example.com' })
 
 ### Transport behavior
 
-The provider keeps requests anonymous and bounded: it accepts only `http:` and `https:` URLs without embedded credentials and rejects URLs over 2,048 characters. It resolves each hostname once, rejects the complete result if any IPv4 or IPv6 address is not public unicast, and pins the connection to that validated set. IPv6 checks discover the active DNS64 prefix and reject translations to non-public IPv4. Each same-origin redirect repeats resolution and pinning; cross-origin redirects fail and require a fresh call. The provider also enforces byte, character, hop, and time caps, rejects unsupported content types, and sends an explicit product `User-Agent`.
+The provider keeps requests anonymous and bounded: it accepts only `http:` and `https:` URLs without embedded credentials and rejects URLs over 2,048 characters. It resolves each hostname once, rejects the complete result if any IPv4 or IPv6 address is not public unicast, and pins the connection to that validated set. IPv6 checks discover the active DNS64 prefix and reject translations to non-public IPv4. Each same-origin redirect repeats resolution and pinning; cross-origin redirects fail and require a fresh call. A hop the proxy policy routes is resolved here first and refused when the local answer is non-public; the proxy resolves independently, so no address is pinned on that path. The provider also enforces byte, character, hop, and time caps, rejects unsupported content types, and sends an explicit product `User-Agent`.
 
 ### Failures and recovery
 

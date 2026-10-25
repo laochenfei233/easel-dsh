@@ -19,7 +19,7 @@
  * MIMO_BASE_URL / MIMO_API_KEY / MIMO_ASR_MODEL (env, or the project `.env`
  * registry) and passes them in via `credentials`.
  */
-import { open, readFile, rm, mkdir, writeFile } from 'node:fs/promises'
+import { open, readFile, rename, rm, mkdir, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 import { spawn } from 'node:child_process'
@@ -626,18 +626,32 @@ export async function transcribeToSubtitle({
  * base without knowing the dsh web port (`_` prefix stays out of the content
  * library). Refreshed at plugin activation and on every /asr call, so the port
  * is correct even when activation ran before the server bound its port.
+ *
+ * `runnerToken` is the per-process capability the ASR route accepts in place of
+ * the dsh cookie (`x-easel-runner`). The file carries it because a skill runs as
+ * the same user and has no other channel; it never leaves the data root.
  * @param projectRoot - Easel project root (outputs/ lives under it).
  * @param port - the dsh webServer port (`ctx.webServer.port`).
  * @param basePath - this plugin's route base, e.g. `/easel`.
+ * @param runnerToken - the easel plugin's runner capability, when it has one.
  */
-export async function writeApiDiscovery(projectRoot, port, basePath = '/easel') {
+export async function writeApiDiscovery(projectRoot, port, basePath = '/easel', runnerToken = '') {
   if (!Number.isInteger(port) || port <= 0) return false
   const payload = JSON.stringify({
     base: `http://127.0.0.1:${port}`,
     basePath,
+    ...(runnerToken ? { runnerToken } : {}),
     updatedAt: new Date().toISOString(),
   }, null, 2) + '\n'
-  await mkdir(join(projectRoot, 'outputs'), { recursive: true })
-  await writeFile(join(projectRoot, 'outputs', '_easel_api.json'), payload, 'utf8')
+  const outputs = join(projectRoot, 'outputs')
+  await mkdir(outputs, { recursive: true })
+  const file = join(outputs, '_easel_api.json')
+  // Atomic and owner-only: a skill may read the capability, another local
+  // account may not, and a crash must not leave a half-written JSON file.
+  const scratch = join(outputs, `.${basename(file)}.${process.pid}.${Date.now()}.tmp`)
+  // Dot-prefixed: a leftover sidecar is not content and the read routes refuse
+  // dot segments, so a crashed write can never serve the capability.
+  await writeFile(scratch, payload, { encoding: 'utf8', mode: 0o600 })
+  await rename(scratch, file)
   return true
 }

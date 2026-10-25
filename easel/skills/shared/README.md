@@ -16,7 +16,7 @@
 - `image_ops.py` — 通用图像处理确定性封装（纯 Pillow）：resize/crop/pad/convert/compress/watermark/round/collage/thumbnail/info 子命令。处理「已有图片」的加工类 SKILL（image-editing）统一用它，区别于 render_card 的「HTML 设计→渲染」
 - `audio_ops.py` — 纯命令子命令已硬写进 SKILL（ffmpeg 模板）；含踩坑逻辑的 speed/denoise 走 `audio_ops.mjs`（Node，零依赖）。audio-editing / audio-denoise 用
 - `video_ops.py` — 纯命令子命令已硬写进 SKILL（ffmpeg 模板）；含踩坑逻辑的 text/speed/silence-cut 走 `video_ops.mjs`（Node，零依赖）。video-editing 用
-- 语音转字幕已迁移到宿主半本地路由 `POST /easel/api/asr`（mimo-v2.5-asr + ffmpeg 分段；发现文件 `outputs/_easel_api.json`）。auto-subtitle / video-chapters / video-highlights / video-to-article / skill-viral-deconstruction 用它；`asr.py` 为过渡期残留
+- 语音转字幕已迁移到宿主半本地路由 `POST /easel/api/asr`（mimo-v2.5-asr + ffmpeg 分段；发现文件 `outputs/_easel_api.json`，其中 `runnerToken` 走 `X-Easel-Runner` 头——`/easel/api/*` 其余路由只认 workbench 登录态）。auto-subtitle / video-chapters / video-highlights / video-to-article / skill-viral-deconstruction 用它；`asr.py` 为过渡期残留
 - `tts.py` — 文字转语音配音（edge-tts）：speak（多音色/语速/字幕）/voices。tts-voiceover 用它
 - `ai_image.py` — AI 文生图/图生图/变体（OpenAI 兼容 + apimart 异步，用户自备 key）。ai-image-gen 用它
 - `ai_video.py` — AI 文/图生视频（provider: 通义万相/火山Seedance/可灵/OpenAI兼容，异步轮询，用户自备 key）。ai-video-gen 用它

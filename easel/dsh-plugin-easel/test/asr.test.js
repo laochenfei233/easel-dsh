@@ -308,14 +308,15 @@ test('real mimo ASR on the sample wav produces a timed SRT', {
 })
 
 // ── 技能侧发现：outputs/_easel_api.json ──────────────────────────────
-test('writeApiDiscovery writes base/basePath and ignores invalid ports', async () => {
+test('writeApiDiscovery writes base/basePath, the runner token, and ignores invalid ports', async () => {
   const { writeApiDiscovery } = await import('../lib/asr.js')
   const root = mkdtempSync(join(tmpdir(), 'easel-discovery-'))
   try {
-    assert.equal(await writeApiDiscovery(root, 3081, '/easel'), true)
+    assert.equal(await writeApiDiscovery(root, 3081, '/easel', 'a'.repeat(64)), true)
     const written = JSON.parse(readFileSync(join(root, 'outputs', '_easel_api.json'), 'utf8'))
     assert.equal(written.base, 'http://127.0.0.1:3081')
     assert.equal(written.basePath, '/easel')
+    assert.equal(written.runnerToken, 'a'.repeat(64))
     assert.ok(written.updatedAt)
     assert.equal(await writeApiDiscovery(root, 0, '/easel'), false)
     assert.equal(await writeApiDiscovery(root, undefined, '/easel'), false)

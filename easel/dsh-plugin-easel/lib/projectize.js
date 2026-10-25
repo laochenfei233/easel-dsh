@@ -20,8 +20,12 @@ export function sanitizeProjectTitle(title, fallback) {
   return sanitizeProjectTitle(fallback) || '未命名项目'
 }
 
-/** 拆解批次 id 只允许文件名安全字符，挡住借它做路径穿越。 */
-const validBatchId = id => typeof id === 'string' && /^[A-Za-z0-9_-]+$/.test(id)
+/**
+ * 拆解批次 id 只允许文件名安全字符，挡住借它做路径穿越。
+ * @param id - URL 参数或 job 里的批次号。
+ * @returns 是否是可拼接进路径的 id。
+ */
+export const validBatchId = id => typeof id === 'string' && /^[A-Za-z0-9_-]+$/.test(id)
 
 /** 画像目录名规则与宿主 validPersonaName 一致（这里只挡穿越，不挡 _ 前缀）。 */
 const validPersona = name => typeof name === 'string' && name.length > 0

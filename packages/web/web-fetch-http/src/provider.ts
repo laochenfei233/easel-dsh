@@ -120,10 +120,14 @@ export class HttpFetchProvider implements WebFetchProvider {
       'accept': 'text/html,application/xhtml+xml,text/*;q=0.9,application/json;q=0.8',
     }
     try {
-      // A proxied hop skips public-address resolution and pinning: the proxy performs the origin's
-      // DNS, so there is no local address to validate, and pinning one would connect directly and
-      // bypass the proxy. A hop the policy bypasses — every loopback and every `NO_PROXY` entry —
-      // still takes the resolved-and-pinned path unchanged.
+      // A proxied hop cannot pin an address — the proxy performs the origin's DNS, and a connector
+      // pinned to a locally resolved address would reach the origin directly and defeat the proxy.
+      // It still resolves the name here first: a name this host maps to a non-public destination is
+      // refused before any proxy request exists. The proxy resolves independently, so a
+      // split-horizon name can still differ from this answer; that residual is the proxy's to own.
+      //
+      // Every hop the policy bypasses — loopback and every `NO_PROXY` entry — takes the
+      // resolved-and-pinned path unchanged.
       //
       // One route decides both the branch and the dispatcher, so a mount or disposal between two
       // reads cannot return a direct, unpinned agent for a URL this branch cleared as proxied.
@@ -133,6 +137,7 @@ export class HttpFetchProvider implements WebFetchProvider {
       // nothing and let a proxy on this machine reach the very service they keep out of reach.
       const route = proxyRouteFor(url)
       if (route.proxied && !isNonPublicIpLiteral(url.hostname)) {
+        await this.assertProxyDestination(url.hostname, signal)
         return await publicHttpNetwork.requestVia(route.dispatcher, url, headers, signal)
       }
       const addresses = await this.resolveAddresses(url.hostname, signal)
@@ -140,6 +145,30 @@ export class HttpFetchProvider implements WebFetchProvider {
     } catch (error: unknown) {
       if (error instanceof WebError) throw error
       throw translateAbortOrNetwork(error, signal)
+    }
+  }
+
+  /**
+   * Refuse a proxied hop whose name this host itself resolves to a non-public
+   * address. The proxy resolves independently, so this narrows the destination
+   * set rather than pinning it; a name that does not resolve locally is left to
+   * the proxy, which is the split-horizon case a proxy exists for.
+   */
+  private async assertProxyDestination(hostname: string, signal: AbortSignal): Promise<void> {
+    try {
+      await this.resolveAddresses(hostname, signal)
+    } catch (error: unknown) {
+      if (signal.aborted) throw error
+      if (error instanceof WebError) {
+        // The veto is the point; the resolver's own failures are the only
+        // answers that may fall through to the proxy.
+        if (error.code !== 'WEB_PROVIDER_ERROR') throw error
+        return
+      }
+      // `resolvePublicAddresses` rethrows the OS lookup error verbatim.
+      const code = (error as NodeJS.ErrnoException).code
+      if (code === 'ENOTFOUND' || code === 'EAI_AGAIN' || code === 'ENODATA') return
+      throw error
     }
   }
 

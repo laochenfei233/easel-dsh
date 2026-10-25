@@ -55,8 +55,8 @@ agent（视觉模型用户选）。
 
 ### 宿主半新增路由（index.js）
 
-复用既有 B1 模式（local-first 局部路由，`sameOriginAllowed` 守卫，AI 沙箱下的
-node --test 可测），新增：
+复用既有 B1 模式（local-first 局部路由，`ctx.connection.requestRejection` 准入守卫，
+AI 沙箱下的 node --test 可测），新增：
 
 1. `POST /easel/api/deconstruct` — 收 {url, asrModel?, visionModel?}，创建任务 id，
    后台顺序执行 video_fetch → ffmpeg 抽帧 → ASR 路由 → meta.json 落盘；

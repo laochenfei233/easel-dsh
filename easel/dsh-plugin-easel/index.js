@@ -29,10 +29,11 @@ import { request as httpsRequest } from 'node:https'
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { homedir } from 'node:os'
 import { lookup as dnsLookup } from 'node:dns/promises'
-import { randomBytes } from 'node:crypto'
+import { randomBytes, timingSafeEqual } from 'node:crypto'
 import net from 'node:net'
 import tls from 'node:tls'
 import { seedProjectWorkspace } from './lib/projectize.js'
+import { writeApiDiscovery } from './lib/asr.js'
 import {
   applyWatch, buildWatchGroups, clusterTrends, decorateFetched, normalizeKeywords,
   pruneSnapshot, readRadarHistory, staleItemsFromHistory,
@@ -53,8 +54,12 @@ import { discoverCalendars, syncCalendarEvents } from './caldav.js'
 /** Cordis plugin name; also the `name` of this plugin's loader row. */
 export const name = 'easel'
 
-/** The route table is the one service this host half requires. */
-export const inject = ['webServer']
+/**
+ * The route table plus the connection fence. `/easel/api/*` answers filesystem
+ * state, so it admits requests exactly like `/api`: a live authenticated Peer,
+ * or the runner capability minted for the ASR skill (see `runnerAuthorized`).
+ */
+export const inject = ['webServer', 'connection']
 
 const DEFAULT_BASE_PATH = '/easel'
 const SKILL_FILE = 'SKILL.md'
@@ -196,30 +201,6 @@ function requireGet(req, res) {
   return false
 }
 
-/**
- * Decide whether a proxied request's browser-supplied `Origin` is one this
- * workbench itself serves. The proxy stamps the backend's own origin onto
- * forwarded writes (Easel's local_write_guard judges that header), so a
- * cross-site page must not be able to ride the proxy: only origins identical
- * to dsh's own (`http://<Host>` of the incoming request) pass. Requests
- * without an Origin — dsh's server-side callers, curl, the tests — are not
- * browser cross-site traffic and pass.
- *
- * Known residuals, deliberate: the scheme is hardcoded to `http://` (dsh's
- * webserver is plain HTTP; behind an HTTPS-terminating proxy same-origin
- * writes would be refused — extend here first), and a DNS-rebound hostname
- * passes (its Origin equals its Host after rebinding; add a host allowlist
- * if dsh is ever exposed beyond loopback — Chromium's Private Network Access
- * blocks the public-web route today).
- * @param origin - the request's `Origin` header, or undefined.
- * @param host - the request's `Host` header (dsh's own host:port).
- * @returns whether the request may be forwarded.
- */
-export function sameOriginAllowed(origin, host) {
-  if (origin === undefined) return true
-  return host !== undefined && origin === `http://${host}`
-}
-
 // ═══════════════════════════════════════════════════════════════════════
 // Local API — absorption batch B1 of the Easel backend retirement.
 //
@@ -249,6 +230,22 @@ const PROFILE_FILE_ORDER = ['identity.md', 'style.md', 'audience.md', 'platforms
 const PROTECTED_OUTPUTS = new Set(['_login', '_analytics', '_schedule.json', '_ideas.json',
   '_publish', '_publish.log', '_sessions', '_profile_build', '_debug', '_inbox',
   '_caldav_config.json', '_caldav_cache.json'])
+// outputs/ holds two kinds of data: the content library the workbench browses,
+// and host-owned state (stored cookies, login/SMS state, runner capability,
+// store files). The read routes must not turn the second kind into downloads.
+// This is not the delete rule above: `_adapt/` and the login QR PNG are
+// legitimate reads, and the breakdown page reads `_deconstruct/<id>/*` files.
+const PROTECTED_READ_FILES = new Set([
+  '_easel_api.json', '_ideas.json', '_schedule.json', '_radar_config.json', '_publish.log',
+  '_caldav_config.json', '_caldav_cache.json',
+  '_deconstruct/cookies.json',
+])
+const PROTECTED_READ_DIRS = new Set([
+  '_login', '_publish', '_analytics', '_sessions', '_profile_build', '_debug', '_inbox',
+  // 无下划线但仍然只由宿主写入：账号数据（analytics/wechat）与内容库同目录。
+  'analytics', 'wechat',
+])
+const LOGIN_QR_FILE = /^_login\/[^/]+\.png$/
 
 const TEXT_EXTS = new Set(['.txt', '.md', '.json', '.csv', '.log', '.py', '.js', '.ts', '.html', '.htm', '.css', '.xml', '.yaml', '.yml', '.srt', '.vtt'])
 export const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'])
@@ -951,10 +948,51 @@ async function getOutputTree(settings) {
   return items.sort((a, b) => (b.mtime ?? 0) - (a.mtime ?? 0))
 }
 
-async function safeOutputPath(settings, rel) {
+/**
+ * Whether a resolved path is host-owned state the read routes must not serve.
+ *
+ * Two spellings reach this check: the request's lexical one and, when the file
+ * exists, its real path. Both are compared case-insensitively — Windows and
+ * APFS resolve `_DECONSTRUCT/COOKIES.JSON` to the same file — and a real path
+ * outside `outputs/` (a symlink planted in the library) counts as protected.
+ * Dot-prefixed segments are internal (atomic-write sidecars, `.easel.json`),
+ * and `<protected>.tmp` is the same store mid-write.
+ * @param root - the `outputs/` root.
+ * @param full - the resolved candidate path.
+ * @param loginQr - whether the login QR PNG is allowed at this call site.
+ * @returns true when the read must be refused.
+ */
+async function isProtectedOutput(root, full, loginQr) {
+  const realRoot = await realpath(root).catch(() => root)
+  const realFull = await realpath(full).catch(() => null)
+  const candidates = [relative(root, full).split(sep).join('/')]
+  if (realFull !== null) {
+    if (realFull !== realRoot && !realFull.startsWith(realRoot + sep)) return true
+    candidates.push(relative(realRoot, realFull).split(sep).join('/'))
+  }
+  return candidates.some((candidate) => {
+    const normalized = candidate.toLowerCase()
+    if (loginQr && LOGIN_QR_FILE.test(normalized)) return false
+    const segments = normalized.split('/')
+    return PROTECTED_READ_FILES.has(normalized)
+      || PROTECTED_READ_FILES.has(normalized.replace(/\.tmp$/, ''))
+      || PROTECTED_READ_DIRS.has(segments[0])
+      || segments.some(segment => segment.startsWith('.'))
+  })
+}
+
+/**
+ * Resolve a content-library path under `outputs/` and refuse host-owned state.
+ * @param settings - resolved deployment settings (project root).
+ * @param rel - the caller's relative path.
+ * @param options.loginQr - allow the login QR PNG (the one image under `_login`).
+ * @returns the absolute, existing file path.
+ */
+async function safeOutputPath(settings, rel, { loginQr = false } = {}) {
   const root = resolve(settings.projectRoot, 'outputs')
   const full = resolve(root, rel)
   if (full !== root && !full.startsWith(root + sep)) throw new ApiError(403, '非法路径')
+  if (await isProtectedOutput(root, full, loginQr)) throw new ApiError(403, '系统数据受保护，不可读取')
   if (!(await isFile(full))) throw new ApiError(404, '文件不存在')
   return full
 }
@@ -972,16 +1010,26 @@ async function apiOutputContent(c) {
 }
 
 async function apiMedia(c) {
-  const full = await safeOutputPath(c.settings, c.params.path)
+  // The QR reader is the only route entry that may pass `_login`.
+  const full = await safeOutputPath(c.settings, c.params.path, { loginQr: true })
   const ext = extname(full).toLowerCase()
   const headers = {}
   const type = MEDIA_TYPES[ext]
   if (type !== undefined) headers['content-type'] = type
+  const html = ext === '.html' || ext === '.htm'
   // HTML 预览会被就地重生成（gzh-design 重排/内联），必须禁缓存，否则 iframe 开到过期版本。
-  if (ext === '.html' || ext === '.htm') {
+  if (html) {
     headers['cache-control'] = 'no-cache, no-store, must-revalidate'
     headers.pragma = 'no-cache'
   }
+  // 生成物是 agent 写出的任意 HTML/SVG/XML：图钉在 opaque origin，脚本照跑，但拿不到
+  // workbench 的 cookie，`/easel/api/*` 也就不是它够得着的同源接口了。
+  if (html || ext === '.svg' || ext === '.xml') {
+    headers['content-security-policy'] = 'sandbox allow-scripts'
+  }
+  // 未登记扩展名的文件按字节原样发送；没有 nosniff，浏览器可能把它嗅探成 HTML
+  // 并以 workbench 身份渲染，绕过上面的 CSP。
+  headers['x-content-type-options'] = 'nosniff'
   return { file: full, headers, range: c.headers?.range }
 }
 
@@ -1070,6 +1118,8 @@ async function apiRadarConfigSet(c) {
   const proxyUrl = String(body?.proxyUrl ?? '').trim()
   const cdp = typeof body?.cdpEndpoint === 'string' && body.cdpEndpoint.trim() ? body.cdpEndpoint.trim() : 'http://127.0.0.1:9222'
   const keywords = normalizeKeywords(body?.keywords)
+  if (proxyUrl !== '') radarHttpUrl(proxyUrl, '代理地址')
+  radarHttpUrl(cdp, 'CDP 地址')
   const sources = (Array.isArray(body?.sources) ? body.sources : []).map(item => ({
     name: String(item?.name ?? ''),
     url: String(item?.url ?? ''),
@@ -1077,6 +1127,10 @@ async function apiRadarConfigSet(c) {
     category: String(item?.category ?? '自定义'),
     enabled: item?.enabled !== false,
   }))
+  for (const source of sources) {
+    if (source.url.trim() === '') continue
+    radarHttpUrl(source.url.trim(), `源「${source.name.trim() || '未命名'}」`)
+  }
   await writeJsonFile(join(c.settings.projectRoot, 'outputs', RADAR_CONFIG_FILE), {
     proxyUrl,
     proxyEnabled: body?.proxyEnabled === true && proxyUrl.length > 0,
@@ -1238,6 +1292,63 @@ function trendWebUrl(url) {
   return match !== null ? `https://www.zhihu.com/question/${match[1]}` : url
 }
 
+/**
+ * A trend item's link is rendered straight into `<a href>`, and RSS/JSON
+ * sources are third-party text. Anything but http(s) becomes no link at all,
+ * so `javascript:` and friends never reach the DOM.
+ * @param raw - the source-provided link.
+ * @returns the link when it is http(s), else the empty string.
+ */
+export function safeLinkUrl(raw) {
+  if (typeof raw !== 'string' || raw === '') return ''
+  try {
+    const url = new URL(raw)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : ''
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * Apply {@link safeLinkUrl} to every `url` field of a trends payload: the
+ * list, watch and cluster groups all render their items as links.
+ * @param value - the JSON payload about to be sent.
+ * @returns the same structure with unsafe links blanked.
+ */
+function safeTrendUrls(value) {
+  if (Array.isArray(value)) return value.map(safeTrendUrls)
+  if (value === null || typeof value !== 'object') return value
+  const out = {}
+  for (const [key, child] of Object.entries(value)) {
+    out[key] = key === 'url' && typeof child === 'string' ? safeLinkUrl(child) : safeTrendUrls(child)
+  }
+  return out
+}
+
+/**
+ * Validate one radar HTTP target (built-in or configured): http(s) only, no
+ * embedded credentials, so neither a file: read nor a credentialed dial can be
+ * stored through the settings route.
+ * @param raw - the configured URL text.
+ * @param label - the field name used in the rejection message.
+ * @returns the parsed URL.
+ */
+function radarHttpUrl(raw, label) {
+  let url
+  try {
+    url = new URL(String(raw))
+  } catch {
+    throw new ApiError(400, `${label} 不是合法 URL`)
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new ApiError(400, `${label} 仅支持 http/https`)
+  }
+  if (url.username !== '' || url.password !== '') {
+    throw new ApiError(400, `${label} 不允许携带用户名密码`)
+  }
+  return url
+}
+
 export function parseHotJson(payload) {
   let data = payload !== null && typeof payload === 'object' ? payload.data : null
   if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
@@ -1304,7 +1415,7 @@ export function parseRssItems(text) {
  */
 function rawRequest(urlStr, { timeout = 8000, headers = {}, proxyUrl = '' } = {}) {
   return new Promise((resolveRequest, rejectRequest) => {
-    const target = new URL(urlStr)
+    const target = radarHttpUrl(urlStr, '请求地址')
     const send = (overrides = {}, extra = {}) => {
       const options = {
         protocol: target.protocol,
@@ -1340,7 +1451,7 @@ function rawRequest(urlStr, { timeout = 8000, headers = {}, proxyUrl = '' } = {}
       send()
       return
     }
-    const proxy = new URL(proxyUrl)
+    const proxy = radarHttpUrl(proxyUrl, '代理地址')
     if (target.protocol === 'http:') {
       // 正向代理取 http 目标：请求行直接写绝对 URI（RFC 7230 §5.3.2）。
       send({
@@ -1629,12 +1740,12 @@ async function apiTrends(c) {
   }
   const ats = result.map(group => group.at).filter(at => typeof at === 'number')
   return {
-    json: {
+    json: safeTrendUrls({
       trends: result,
       updated: ats.length > 0 ? Math.max(...ats) : Math.floor(now),
       watch: buildWatchGroups(decoratedGroups),
       ...(view === 'cluster' ? { clusters: clusterTrends(decoratedGroups) } : {}),
-    },
+    }),
   }
 }
 
@@ -1989,6 +2100,9 @@ function dataRootConfigFile() {
   return process.env.EASEL_DATA_ROOT_CONFIG || null
 }
 
+/** How long a queued relocation stays meaningful; the shell applies it at once. */
+const DATA_ROOT_PENDING_TTL_SECONDS = 600
+
 /** GET /easel/api/data-root — current/default root, pending request, last error. */
 async function apiDataRoot() {
   const current = process.env.EASEL_DATA_ROOT || null
@@ -1998,6 +2112,11 @@ async function apiDataRoot() {
   const pending = dir ? await readJsonFile(join(dir, DATA_ROOT_PENDING_FILE), null) : null
   const result = dir ? await readJsonFile(join(dir, DATA_ROOT_RESULT_FILE), null) : null
   const fallback = process.env.EASEL_DATA_ROOT_DEFAULT || null
+  // The shell drops a stale request on its next launch; until then this route
+  // must not report it as pending, or the settings page waits forever.
+  const requestedAt = pending !== null && typeof pending === 'object' ? pending.requestedAt : undefined
+  const queued = typeof requestedAt === 'number'
+    && Math.floor(Date.now() / 1000) - requestedAt <= DATA_ROOT_PENDING_TTL_SECONDS
   return {
     json: {
       supported: true,
@@ -2006,7 +2125,7 @@ async function apiDataRoot() {
       isDefault: samePath(current, fallback),
       configPath: config,
       cloudSynced: cloudSynced(current),
-      pending: pending !== null && typeof pending === 'object' ? pending.target ?? null : null,
+      pending: queued ? pending.target ?? null : null,
       lastError: result !== null && typeof result === 'object' && result.ok === false ? result.error ?? null : null,
     },
   }
@@ -2081,7 +2200,9 @@ async function apiDataRootSet(c) {
   }
 
   await mkdir(dir, { recursive: true })
-  await writeJsonFile(pendingFile, { version: 1, target, requestedAt: Date.now() })
+  // Seconds, matching the shell's `unix_now()`: a millisecond stamp reads as
+  // "far in the future" to the consumer's freshness check.
+  await writeJsonFile(pendingFile, { version: 1, target, requestedAt: Math.floor(Date.now() / 1000) })
   await rm(resultFile, { force: true }).catch(() => {})
   requestDataRootRestart()
   return { json: { ok: true, target }, status: 202 }
@@ -2192,12 +2313,21 @@ export const CORE_ROUTES = [
 /**
  * Route registry shared with feature plugins (the `easelApi` service).
  * @param settings - resolved deployment settings, handed to every handler.
+ * @param connection - the host connection service this plane admits through.
+ * @param port - reads the webserver port once it is bound (it may be unbound at activation).
  */
-export function createRouteRegistry(settings) {
+export function createRouteRegistry(settings, connection, port) {
+  // Per process, not persisted: a restarted server invalidates every token and
+  // the activation-time `writeApiDiscovery` publishes the replacement.
+  const runnerToken = randomBytes(32).toString('hex')
   let tables = []
   let snapshot = []
   return {
-    settings,
+    settings: { ...settings, runnerToken },
+    connection,
+    port,
+    runnerToken,
+    discoveryPublished: false,
     /** @returns the merged table, in registration order. */
     snapshot: () => snapshot,
     /**
@@ -2286,15 +2416,32 @@ async function streamFile(res, { file, status = 200, headers = {}, range }) {
 }
 
 /**
+ * Answer a request the connection fence refuses; false when it may continue.
+ * A missing service fails closed: nothing here can authenticate anyone.
+ * @param api - the route registry (holds the connection service).
+ * @param req - the incoming request.
+ * @param res - the response this route owns.
+ * @returns true when a rejection was written.
+ */
+function rejected(api, req, res) {
+  if (api.connection === undefined) {
+    sendJson(res, 503, { detail: '本地 API 未接入连接鉴权' })
+    return true
+  }
+  const rejection = api.connection.requestRejection(req)
+  if (rejection === undefined) return false
+  sendJson(res, rejection, { ok: false, error: rejection === 401 ? 'unauthorized' : 'cross-origin api use is not allowed' })
+  return true
+}
+
+/**
  * Serve `/easel/api/*` from the mounted route registry: absorbed routes answer
  * off the project directory, and a request no plugin claims is a plain 404.
+ * Admission is the connection service's: this plane answers filesystem state,
+ * so it takes the same Host/Origin fence and live-Peer check as `/api`.
  */
 async function serveApi(api, req, res) {
   const settings = api.settings
-  if (!sameOriginAllowed(req.headers.origin, req.headers.host)) {
-    sendJson(res, 403, { ok: false, error: 'cross-origin api use is not allowed' })
-    return
-  }
   let segments
   let query
   try {
@@ -2304,6 +2451,23 @@ async function serveApi(api, req, res) {
     query = url.searchParams
   } catch {
     sendJson(res, 400, { detail: '非法路径编码' })
+    return
+  }
+  // Publish the runner capability before the first authenticated call: the
+  // workbench page loads this plane, the skills only read the file.
+  const port = api.port?.()
+  if (api.discoveryPublished !== true && Number.isInteger(port) && port > 0) {
+    // Only a completed write counts: a failed one retries on the next request.
+    api.discoveryPublished = (await writeApiDiscovery(settings.projectRoot, port, settings.basePath, api.runnerToken)
+      .catch(() => false)) === true
+  }
+  if (api.connection === undefined) {
+    sendJson(res, 503, { detail: '本地 API 未接入连接鉴权' })
+    return
+  }
+  const rejection = api.connection.requestRejection(req)
+  if (rejection !== undefined && !(rejection === 401 && runnerAuthorized(api, req, segments))) {
+    sendJson(res, rejection, { ok: false, error: rejection === 401 ? 'unauthorized' : 'cross-origin api use is not allowed' })
     return
   }
   let cachedBody
@@ -2330,6 +2494,28 @@ async function serveApi(api, req, res) {
     return
   }
   sendJson(res, result.status ?? 200, result.json)
+}
+
+/**
+ * The ASR runner skills call the API with `curl`, which carries no dsh cookie.
+ * They get one route (`POST /easel/api/asr`) and a per-process capability that
+ * `writeApiDiscovery` publishes beside the API base. A routing mistake must not
+ * widen it: the route is matched from the decoded segments, not the raw URL.
+ * @param api - the route registry holding this process's capability.
+ * @param req - the incoming request.
+ * @param segments - decoded path segments under the prefix.
+ * @returns whether this request may use the capability instead of a Peer.
+ */
+function runnerAuthorized(api, req, segments) {
+  if (req.method !== 'POST') return false
+  if (segments.length !== 1 || segments[0] !== 'asr') return false
+  const presented = req.headers['x-easel-runner']
+  if (typeof presented !== 'string') return false
+  // Compare bytes, not string lengths: a multi-byte value must become a
+  // mismatch, not a RangeError out of timingSafeEqual.
+  const offered = Buffer.from(presented)
+  const expected = Buffer.from(api.runnerToken)
+  return offered.length === expected.length && timingSafeEqual(offered, expected)
 }
 
 /**
@@ -2588,7 +2774,7 @@ export function apply(ctx, config = {}) {
   const settings = resolveSettings(config)
   // Feature plugins (automation, deconstruct) mount their own routes into this
   // registry; clicking a row off in the profile turns one feature off cleanly.
-  const api = createRouteRegistry(settings)
+  const api = createRouteRegistry(settings, ctx.connection, () => ctx.webServer?.port)
   ctx.provide('easelApi', api)
   ctx.effect(() => api.register(CORE_ROUTES), 'easel: core routes')
   ctx.effect(() => api.register(createHandoffRoutes(ctx)), 'easel: handoff routes')
@@ -2596,6 +2782,7 @@ export function apply(ctx, config = {}) {
     kind: 'exact',
     path: `${settings.basePath}/status`,
     handler: async (req, res) => {
+      if (rejected(api, req, res)) return
       if (!requireGet(req, res)) return
       const catalog = await readSkillCatalog(settings.skillsDir)
       sendJson(res, 200, {
@@ -2612,6 +2799,7 @@ export function apply(ctx, config = {}) {
     kind: 'exact',
     path: `${settings.basePath}/skills`,
     handler: async (req, res) => {
+      if (rejected(api, req, res)) return
       if (!requireGet(req, res)) return
       sendJson(res, 200, await readSkillCatalog(settings.skillsDir))
     },

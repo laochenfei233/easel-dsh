@@ -1,0 +1,42 @@
+{
+  "$comment": "Pinned provenance for everything bundle-runtime.mjs fetches and stages. The script refuses any artifact without a matching entry here, and verifies skipped/reused artifacts too, so a stale runtime cannot ride into an installer. Bump a version only together with its digests. node: sha256 from https://nodejs.org/dist/<version>/SHASUMS256.txt; an already-staged node is checked by its stamp (or `--version` once). winTerminalInspector: codeload tarball at the pinned commit; treeSha256 is sha256 over '<relative path>\\0<bytes>' for every file in path order; a reused installed copy is hashed the same way before use. dreamina: the CDN publishes no digest for the main CLI, so these were recorded from the pinned 1.4.21 release. Its version.json is advisory (mutable URL, checked by parsed version, recorded as the pin) and the canvas CDN's payload.sha256 is a second, same-origin check. Staged/reused trees are verified for both binaries, the main SKILL.md and the canvas skill (the canvas skill directory is copied, not hashed as a tree).",
+  "node": {
+    "version": "v22.23.4",
+    "sha256": {
+      "win-x64": "cbc74b5e0982c9dbb41525fd8fb5dcd32fbee237863f7829072f4639a1ce5f20",
+      "darwin-arm64": "037650d0839f457747396f052073fb48333d31bf5abd3c98b74da20d89ebb1ad",
+      "darwin-x64": "f42abca7aaac61efc57d49fb42ea84fc53bbeba9a749cb03a291ce6e4e7a69c1",
+      "linux-x64": "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce"
+    }
+  },
+  "winTerminalInspector": {
+    "commit": "c8c5e5afb50a7fd04aa0db8c313eb150cb7bc5b6",
+    "tarballSha256": "b8cd666867e520457170a040a647c85ce40b3bc6e86d21edc5cd324323592717",
+    "treeSha256": "12cd6cc2eb939e8790af86690854e5b47ba0fd0c13d80ed88f8b0f244cc60f8f"
+  },
+  "dreamina": {
+    "version": "1.4.21",
+    "skillSha256": "10942dfce4ba3e79c6794cf7502c4e8ea7c4178d28387567064726876a3392fd",
+    "canvasVersion": "1.1.1",
+    "canvasPayloadSha256": "776fc2753db50a75c22fff99753c011d87452d25b07ea976f01e1ca680e5ed15",
+    "canvasSkillSha256": "573bccdf0b7f180bab41c035e35c61ea3cd0b55b9f2d32b65fb71dcbb1d20dd6",
+    "files": {
+      "windows-amd64": {
+        "cliSha256": "039bc7a47258179f4a378db2d201c36f2db6b1ddd61ae2e600d1b18c197ff02d",
+        "canvasSha256": "b4aa93f859a31d4d51c25214bb68314b03cee2b447151ee2e0549c7b4d9065dd"
+      },
+      "darwin-arm64": {
+        "cliSha256": "24919089efc807b229cce9e577ba1b84c1be54a0265d9eef1e2ab3aed56b6fe8",
+        "canvasSha256": "4ecb02a6a08e56e2d0a0bcacff56b039407a99a71df810fd1811af21ffaf40b8"
+      },
+      "darwin-amd64": {
+        "cliSha256": "4cbd5b9f2f1328217848f1f10ce9fcb71b80d6b622b4e99ea80465daf8682f03",
+        "canvasSha256": "b273a7e941c555585845f86479a3a3215f5eae78af85406fdb0aec0e8bf48deb"
+      },
+      "linux-amd64": {
+        "cliSha256": "0a5fdc262ab44669e7db4ce67e6543ece6daf405804aca3d1d17d1345c146f69",
+        "canvasSha256": "feb265ef5057b2d11ff03aafb3a42bf61aa535cc6f35df69711bc2c2a423a9c6"
+      }
+    }
+  }
+}

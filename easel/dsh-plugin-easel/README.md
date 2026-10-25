@@ -68,13 +68,24 @@ patch 文件」——所以本包不带自己的启动器，只作为一个 bund
 
 | 路由 | 作用 |
 |---|---|
-| `GET /easel/status` | 项目根、后端可达性、技能数。后端挂掉也照样回答，面板因此能说出「为什么是空的」 |
-| `GET /easel/skills` | 只读浏览目录，直接读盘。**不是**技能 provider |
+| `GET /easel/status` | 项目根、后端可达性、技能数（需登录态）。后端挂掉也照样回答，面板因此能说出「为什么是空的」 |
+| `GET /easel/skills` | 只读浏览目录，直接读盘（需登录态）。**不是**技能 provider |
 | `/easel/api/*` | 本地数据面（排期/选题/热点雷达/CalDAV 等），全部由 `index.js` 的 `CORE_ROUTES` 本地应答；Easel 的 Python 后端与反向代理已退役，无路由认领的请求 404 |
 
 `/easel/skills` 与 `easel-skills` 行刻意分开：前者是给 UI 看的投影（多带一个 `layer` 字段，
 dsh 的技能加载器不用它），后者才是真正的加载路径，复用随附 provider 做 frontmatter 解析、
 kebab-case 校验与调用策略。**同一个后端不该有两套解析逻辑**，所以本包不自己写 provider。
+
+`/easel/api/*` 回答的是文件系统状态（内容库、cookie、登录/发布状态），所以和 dsh 的 `/api`
+同一道门：Host/Origin 栅栏 + 已认证 Peer；`/easel/status` 与 `/easel/skills` 同样在门内（它们
+会回显项目根与技能绝对路径）。**没有 cookie 的 Origin-less 请求不再放行**。唯一的例外是转写
+技能：它们用 `curl` 调 `POST /easel/api/asr`，凭 `outputs/_easel_api.json` 里的 `runnerToken`
+（每次启动换新，只对这一条路由有效，文件 0600 原子写）通过。读侧另有保护集：`outputs/` 下的
+`_deconstruct/cookies.json`、`_easel_api.json`、`_login`（除二维码 PNG）、选题/排期/雷达 store
+与系统目录（含 `analytics/`、`wechat/`），一律 403；匹配按真实路径 + 大小写不敏感，符号链接
+指向 `outputs/` 之外同样拒绝。生成的 HTML/SVG/XML 经 `/easel/api/media` 返回时带
+`content-security-policy: sandbox allow-scripts` 与 `x-content-type-options: nosniff`，新标签页
+打开也拿不到 workbench 身份。
 
 ### 内容日历：节假日底图与 CalDAV 订阅
 

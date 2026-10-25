@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { CORE_ROUTES, createRouteRegistry, dispatchLocalApi, parseHotJson, parseRssItems, resolveSettings } from '../index.js'
+import { CORE_ROUTES, createRouteRegistry, dispatchLocalApi, parseHotJson, parseRssItems, resolveSettings, safeLinkUrl } from '../index.js'
 import { AUTOMATION_ROUTES } from '../lib/plugins/automation.js'
 import { DECONSTRUCT_ROUTES } from '../lib/plugins/deconstruct.js'
 
@@ -387,6 +387,73 @@ test('settings canonicalize a junction projectRoot so status and media agree wit
     'the host serves the same canonical path the client derived')
   if (process.platform === 'win32') rmdirSync(alias)
   else unlinkSync(alias)
+})
+
+test('output and media reads refuse host-owned state but keep legit previews', async () => {
+  mkdirSync(join(root, 'outputs', '_deconstruct', 'batch1'), { recursive: true })
+  writeFileSync(join(root, 'outputs', '_deconstruct', 'cookies.json'),
+    JSON.stringify({ xhs: 'session=DUMMY' }), 'utf8')
+  writeFileSync(join(root, 'outputs', '_deconstruct', 'batch1', 'report.md'), '# 报告', 'utf8')
+  writeFileSync(join(root, 'outputs', '_easel_api.json'), '{"runnerToken":"x"}', 'utf8')
+  writeFileSync(join(root, 'outputs', '_login', 'xhs.png'), Buffer.from([0x89, 0x50]), 'utf8')
+  writeFileSync(join(root, 'outputs', '_login', 'xhs.code'), '123456', 'utf8')
+  writeFileSync(join(root, 'outputs', '_login', 'xhs.json'), '{"state":"success"}', 'utf8')
+  mkdirSync(join(root, 'outputs', '_adapt'), { recursive: true })
+  writeFileSync(join(root, 'outputs', '_adapt', 'card.html'), '<html></html>', 'utf8')
+  mkdirSync(join(root, 'outputs', 'analytics'), { recursive: true })
+  writeFileSync(join(root, 'outputs', 'analytics', 'accounts.json'), '{"followers":1}', 'utf8')
+  // Atomic-write sidecars: a crash can leave them behind, and the runner token
+  // sidecar holds a live capability.
+  writeFileSync(join(root, 'outputs', '_ideas.json.tmp'), '[]', 'utf8')
+  writeFileSync(join(root, 'outputs', '.easel-api.json.123.456.tmp'), '{"runnerToken":"x"}', 'utf8')
+
+  const forbidden = [
+    ['GET', 'output/_deconstruct/cookies.json'],
+    ['GET', 'media/_deconstruct/cookies.json'],
+    ['GET', 'output/_easel_api.json'],
+    ['GET', 'media/_easel_api.json'],
+    ['GET', 'media/_login/xhs.code'],
+    ['GET', 'media/_login/xhs.json'],
+    ['GET', 'output/analytics/accounts.json'],
+    ['GET', 'output/_ideas.json.tmp'],
+    ['GET', 'media/.easel-api.json.123.456.tmp'],
+    // Windows and APFS resolve this to the same file; the guard compares case-insensitively.
+    ['GET', 'output/_DECONSTRUCT/COOKIES.JSON'],
+    ['GET', 'media/_EASEL_API.JSON'],
+    ['GET', 'media/_LOGIN/XHS.CODE'],
+  ]
+  for (const [method, path] of forbidden) {
+    await assert.rejects(call(method, path), error => error.status === 403, `${method} ${path} is refused`)
+  }
+
+  const report = await call('GET', 'output/_deconstruct/batch1/report.md')
+  assert.equal(report.json.content, '# 报告')
+  const qr = await call('GET', 'media/_login/xhs.png')
+  assert.equal(qr.file, join(root, 'outputs', '_login', 'xhs.png'))
+
+  const card = await call('GET', 'media/_adapt/card.html')
+  assert.equal(card.headers['content-security-policy'], 'sandbox allow-scripts',
+    'generated HTML is pinned to an opaque origin')
+  assert.equal(card.headers['x-content-type-options'], 'nosniff')
+})
+
+test('a deconstruct id that escapes the batch directory is a 404', async () => {
+  // The route decodes before dispatch; the handler must not resolve `..` segments.
+  const escaped = ['deconstruct', decodeURIComponent('..%2F..%2F..%2Foutside')]
+  await assert.rejects(
+    dispatchLocalApi(settings, 'GET', escaped, new URLSearchParams(), async () => ({}), {}, ALL_ROUTES),
+    error => error.status === 404,
+  )
+})
+
+test('trend links are reduced to http(s) before they reach an href', () => {
+  assert.equal(safeLinkUrl('https://weibo.com/1'), 'https://weibo.com/1')
+  assert.equal(safeLinkUrl('http://example.com/a'), 'http://example.com/a')
+  assert.equal(safeLinkUrl('javascript:document.title=1'), '')
+  assert.equal(safeLinkUrl('data:text/html,<script>'), '')
+  assert.equal(safeLinkUrl('//evil.example/x'), '')
+  assert.equal(safeLinkUrl(''), '')
+  assert.equal(safeLinkUrl(undefined), '')
 })
 
 test('route registry: feature plugins extend the table and withdraw it on unmount', async () => {

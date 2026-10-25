@@ -70,7 +70,8 @@ N 按时长取：≤60s 取 5、≤180s 取 10、更长取 15。帧总数控制�
 
 ```bash
 BASE=$(node -e "const j=require('./outputs/_easel_api.json');process.stdout.write(j.base+j.basePath)")
-curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" \
+TOKEN=$(node -e "const j=require('./outputs/_easel_api.json');process.stdout.write(j.runnerToken)")
+curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" -H "X-Easel-Runner: $TOKEN" \
   -d '{"path":"outputs/_deconstruct/<batch>/video.mp4","format":"json"}' \
   && mv outputs/_deconstruct/<batch>/video/video.json outputs/_deconstruct/<batch>/asr.json
 ```

@@ -35,7 +35,7 @@ async function apiAsr(c) {
   const input = resolve(c.settings.projectRoot, rawPath)
   if (!(await isFile(input))) throw new ApiError(404, `文件不存在：${rawPath}`)
   // 刷新技能侧发现文件（apply 时服务可能尚未绑定端口，调用时补写最准）。
-  await writeApiDiscovery(c.settings.projectRoot, webServerPort, c.settings.basePath).catch(() => {})
+  await writeApiDiscovery(c.settings.projectRoot, webServerPort, c.settings.basePath, c.settings.runnerToken).catch(() => {})
   // 凭据：dsh 模型管理凭据插件侧读不到（本插件只注入 webServer）→ 环境变量 / 项目 .env（进程环境优先）。
   const env = await readEnvFile(join(c.settings.projectRoot, '.env'))
   for (const key of ['MIMO_API_KEY', 'MIMO_BASE_URL', 'MIMO_ASR_MODEL']) {
@@ -181,7 +181,8 @@ export const inject = ['easelApi', 'webServer']
  */
 export function apply(ctx) {
   webServerPort = ctx.webServer?.port ?? null
-  void writeApiDiscovery(ctx.easelApi.settings.projectRoot, webServerPort, ctx.easelApi.settings.basePath)
+  void writeApiDiscovery(ctx.easelApi.settings.projectRoot, webServerPort, ctx.easelApi.settings.basePath,
+    ctx.easelApi.runnerToken)
     .catch(() => {})
   ctx.effect(() => ctx.easelApi.register(DECONSTRUCT_ROUTES), 'easel-deconstruct: routes')
   ctx.logger?.info?.('easel-deconstruct: breakdown pipeline mounted')

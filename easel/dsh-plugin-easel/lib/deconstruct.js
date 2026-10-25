@@ -10,6 +10,7 @@ import { spawn } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join, relative, resolve } from 'node:path'
+import { validBatchId } from './projectize.js'
 
 /** 同一项目根同时只允许一个采集任务（409 语义由路由层给）。 */
 const running = new Set()
@@ -40,8 +41,15 @@ export function cleanVideoTitle(raw) {
   return Array.from(cleaned).slice(0, 60).join('').trim() || undefined
 }
 
-/** 采集产物目录：outputs/_deconstruct/<id>/。 */
+/**
+ * 采集产物目录：outputs/_deconstruct/<id>/。id 读到的是 URL 解码后的文本，
+ * 只接受本模块生成的字符集——否则 `..%2F…` 这类段会解析到 outputs 之外。
+ * @param projectRoot - Easel 项目根。
+ * @param id - 批次 id（路由参数或本模块生成的 id）。
+ * @returns 绝对目录，id 不合法时为 null。
+ */
 export function deconstructDir(projectRoot, id) {
+  if (!validBatchId(id)) return null
   return resolve(projectRoot, 'outputs', '_deconstruct', id)
 }
 
@@ -112,6 +120,7 @@ function run(cmd, args, cwd, timeout) {
 export function createDeconstruct({ projectRoot, url, asrModel, transcribe }) {
   const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
   const dir = deconstructDir(projectRoot, id)
+  if (dir === null) throw new Error(`invalid deconstruct id: ${id}`)
   const job = {
     id,
     url,
@@ -197,7 +206,9 @@ async function jobStage(dir, job, stage) {
 
 /** 读取任务状态；不存在或恰逢写入半截（非原子读）返回 undefined，轮询方自然重试。 */
 export async function readDeconstruct(projectRoot, id) {
-  const file = join(deconstructDir(projectRoot, id), 'job.json')
+  const dir = deconstructDir(projectRoot, id)
+  if (dir === null) return undefined
+  const file = join(dir, 'job.json')
   if (!existsSync(file)) return undefined
   try {
     return JSON.parse(await readFile(file, 'utf8'))

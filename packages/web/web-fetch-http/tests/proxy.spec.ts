@@ -2,6 +2,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import type { AddressInfo } from 'node:net'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { installProxyFromEnvironment } from '@deepseek-ai/dsh-http-proxy'
+import { WebError } from '@deepseek-ai/dsh-web'
 import { HttpFetchProvider } from '@deepseek-ai/dsh-web-fetch-http'
 import type { HttpFetchLimits } from '@deepseek-ai/dsh-web-fetch-http'
 import { isNonPublicIpLiteral, publicHttpNetwork } from '../src/network.ts'
@@ -72,17 +73,50 @@ async function installProxy(): Promise<() => Promise<void>> {
 }
 
 describe('fetching through a proxy', () => {
-  it('tunnels the request and never resolves a public address for it', async () => {
+  it('tunnels the request after resolving the name locally', async () => {
     const resolve = vi.spyOn(publicHttpNetwork, 'resolve')
+      .mockResolvedValue([{ address: '8.8.8.8', family: 4 }])
     disposeProxy = await installProxy()
 
     const result = await new HttpFetchProvider(limits).fetch({ url: proxyTarget })
 
     expect(result.body.content).toBe('via-proxy')
     expect(proxied).toEqual([proxyTarget])
-    // Through a proxy the origin's DNS happens proxy-side, so the resolver that rejects non-public
-    // destinations is not consulted at all.
-    expect(resolve).not.toHaveBeenCalled()
+    // The proxy performs the origin's DNS and no address is pinned, but the name is resolved here
+    // first so a destination the local resolver already maps to a private address is refused
+    // before any proxy request exists.
+    expect(resolve).toHaveBeenCalledOnce()
+  })
+
+  it('refuses a proxied hop whose local answer is non-public', async () => {
+    vi.spyOn(publicHttpNetwork, 'resolve')
+      .mockRejectedValue(new WebError('URL hostname resolves to a non-public IP address', 'WEB_BLOCKED_URL'))
+    disposeProxy = await installProxy()
+
+    await expect(new HttpFetchProvider(limits).fetch({ url: proxyTarget }))
+      .rejects.toThrow(expect.objectContaining({ code: 'WEB_BLOCKED_URL' }))
+    expect(proxied).toEqual([])
+  })
+
+  it('leaves a name this host cannot resolve to the proxy', async () => {
+    // Split horizon: the proxy's DNS knows the origin, the local one does not. The pre-flight
+    // resolution is a veto, not a requirement.
+    vi.spyOn(publicHttpNetwork, 'resolve')
+      .mockRejectedValue(new WebError('hostname resolved to no addresses', 'WEB_PROVIDER_ERROR'))
+    disposeProxy = await installProxy()
+
+    const result = await new HttpFetchProvider(limits).fetch({ url: proxyTarget })
+
+    expect(result.body.content).toBe('via-proxy')
+    expect(proxied).toEqual([proxyTarget])
+  })
+
+  it('does not hide an unexpected resolver failure behind a proxy request', async () => {
+    vi.spyOn(publicHttpNetwork, 'resolve').mockRejectedValue(new TypeError('resolver contract broken'))
+    disposeProxy = await installProxy()
+
+    await expect(new HttpFetchProvider(limits).fetch({ url: proxyTarget })).rejects.toThrow()
+    expect(proxied).toEqual([])
   })
 
   it('keeps resolving and pinning a hop the policy does not proxy', async () => {

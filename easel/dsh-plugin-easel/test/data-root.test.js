@@ -104,6 +104,9 @@ test('a valid empty target writes the pending request and asks for a restart', a
     assert.equal(restarted, true)
     const pending = JSON.parse(readFileSync(join(root, 'config', 'data-root.pending.json'), 'utf8'))
     assert.equal(pending.target, empty)
+    // The shell compares this against Unix seconds; a millisecond stamp reads
+    // as "far in the future" and defeats the freshness window.
+    assert.ok(Math.abs(pending.requestedAt - Math.floor(Date.now() / 1000)) < 60, 'requestedAt is in seconds')
   } finally {
     setDataRootRestart(() => {})
   }

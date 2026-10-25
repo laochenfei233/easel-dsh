@@ -28,6 +28,10 @@ const DATA_MIGRATING: &str = ".easel-migrating";
 const DATA_ROOT_CONFIG: &str = "data-root.json";
 const DATA_ROOT_PENDING: &str = "data-root.pending.json";
 const DATA_ROOT_RESULT: &str = "data-root.result.json";
+/// A relocation request is honoured only this long after it was written. The
+/// settings route writes it and immediately exits the server, so anything older
+/// is a leftover that must not move data on a later launch.
+const DATA_ROOT_PENDING_TTL_SECS: u64 = 600;
 
 /// `%LOCALAPPDATA%\Easel-dsh`, or `None` in a dev launch (the exe has no
 /// bundled runtime beside it). Every path helper falls back to the pre-layout
@@ -658,6 +662,59 @@ fn ensure_links_at(
     Ok(())
 }
 
+/// Collapse `.` and `..` segments without touching the filesystem. The
+/// settings route accepts any absolute spelling, so `C:\Windows\Temp\..\Temp`
+/// must not slip past the shared-directory check.
+fn normalize_lexically(path: &Path) -> PathBuf {
+    let mut out = PathBuf::new();
+    for component in path.components() {
+        match component {
+            std::path::Component::ParentDir => {
+                out.pop();
+            }
+            std::path::Component::CurDir => {}
+            other => out.push(other.as_os_str()),
+        }
+    }
+    out
+}
+
+/// Refuse data roots on network shares and in shared all-users-writable
+/// directories. A relocation moves credentials and session state to the target,
+/// so a root any other principal can write is not a destination this app may
+/// choose. Per-user temp stays allowed: the check names shared roots, not path
+/// families.
+fn shared_destination(target: &Path) -> Option<&'static str> {
+    let text = target.to_string_lossy();
+    // Verbatim (`\\?\C:\...`) and UNC (`\\server\share`) spellings both start
+    // with two separators; the directory picker produces neither.
+    if text.starts_with(r"\\") || text.starts_with("//") {
+        return Some("a network or verbatim path cannot be the data root");
+    }
+    let normalized = normalize_lexically(target)
+        .to_string_lossy()
+        .trim_end_matches(['\\', '/'])
+        .to_lowercase();
+    #[cfg(windows)]
+    {
+        if normalized == "c:" || normalized == "c:\\windows" || normalized == "c:\\windows\\temp"
+            || normalized.starts_with("c:\\windows\\temp\\")
+        {
+            return Some("a shared system directory cannot be the data root");
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        if ["/tmp", "/private/tmp", "/var/tmp", "/private/var/tmp", "/dev/shm"]
+            .iter()
+            .any(|root| normalized == *root || normalized.starts_with(&format!("{root}/")))
+        {
+            return Some("a shared temporary directory cannot be the data root");
+        }
+    }
+    None
+}
+
 fn validate_target_at(
     current: &Path,
     target: &Path,
@@ -665,6 +722,9 @@ fn validate_target_at(
 ) -> Result<(), String> {
     if !target.is_absolute() {
         return Err("data root must be an absolute path".into());
+    }
+    if let Some(reason) = shared_destination(target) {
+        return Err(reason.into());
     }
     // Selecting an old-root link is a move back: the link resolves to the
     // current root, and apply_pending removes it before relocating.
@@ -732,6 +792,19 @@ fn read_pending_at(path: &Path) -> Result<Option<PathBuf>, String> {
     };
     let value: serde_json::Value =
         serde_json::from_str(&raw).map_err(|err| format!("parse {}: {err}", path.display()))?;
+    // Fail closed on a missing timestamp: only the settings route writes this
+    // file, and it always stamps the request it is about to apply. Accept a
+    // millisecond stamp too — an older build wrote `Date.now()` — because the
+    // comparison below is in seconds.
+    let requested_at = value.get("requestedAt").and_then(|value| value.as_u64())
+        .map(|at| if at > 1_000_000_000_000 { at / 1000 } else { at });
+    let fresh = requested_at
+        .map(|at| unix_now().saturating_sub(at) <= DATA_ROOT_PENDING_TTL_SECS)
+        .unwrap_or(false);
+    if !fresh {
+        let _ = fs::remove_file(path);
+        return Ok(None);
+    }
     let target = value
         .get("target")
         .and_then(|value| value.as_str())
@@ -1167,10 +1240,51 @@ mod tests {
         let target = root.join("target");
         write_json_atomic(
             &file,
-            &serde_json::json!({ "version": 1, "target": target, "requestedAt": 0 }),
+            &serde_json::json!({ "version": 1, "target": target, "requestedAt": unix_now() }),
         )
         .unwrap();
         assert_eq!(read_pending_at(&file).unwrap(), Some(target));
+
+        remove_test_dir(&root);
+    }
+
+    #[test]
+    fn stale_or_untimestamped_pending_requests_are_discarded() {
+        let root = temp_dir("pending-stale");
+        let file = root.join(DATA_ROOT_PENDING);
+        let target = root.join("target");
+        write_json_atomic(
+            &file,
+            &serde_json::json!({ "version": 1, "target": target, "requestedAt": 0 }),
+        )
+        .unwrap();
+        assert_eq!(read_pending_at(&file).unwrap(), None);
+        assert!(!file.exists(), "a stale request must not be retried later");
+
+        write_json_atomic(&file, &serde_json::json!({ "version": 1, "target": target })).unwrap();
+        assert_eq!(read_pending_at(&file).unwrap(), None);
+
+        remove_test_dir(&root);
+    }
+
+    #[test]
+    fn a_millisecond_stamp_from_an_older_producer_is_normalized() {
+        let root = temp_dir("pending-ms");
+        let file = root.join(DATA_ROOT_PENDING);
+        let target = root.join("target");
+        write_json_atomic(
+            &file,
+            &serde_json::json!({ "version": 1, "target": target, "requestedAt": unix_now() * 1000 + 500 }),
+        )
+        .unwrap();
+        assert_eq!(read_pending_at(&file).unwrap(), Some(target.clone()));
+
+        write_json_atomic(
+            &file,
+            &serde_json::json!({ "version": 1, "target": target, "requestedAt": (unix_now() - 3600) * 1000 }),
+        )
+        .unwrap();
+        assert_eq!(read_pending_at(&file).unwrap(), None);
 
         remove_test_dir(&root);
     }
@@ -1194,6 +1308,34 @@ mod tests {
         let existing = root.join("existing");
         write(&existing.join("workspace").join("idea.json"), "idea");
         assert!(validate_target_at(&current, &existing, None).is_err());
+
+        remove_test_dir(&root);
+    }
+
+    #[test]
+    fn validate_target_refuses_shared_destinations() {
+        let root = temp_dir("validate-shared");
+        let current = root.join("current");
+        fs::create_dir_all(&current).unwrap();
+
+        assert!(validate_target_at(&current, Path::new(r"\\server\share\Easel"), None).is_err());
+
+        #[cfg(windows)]
+        {
+            assert!(validate_target_at(&current, Path::new(r"C:\Windows\Temp\Easel"), None).is_err());
+            assert!(validate_target_at(&current, Path::new(r"C:\Windows"), None).is_err());
+            assert!(validate_target_at(&current, Path::new(r"C:\Windows\Temp\..\Temp\Easel"), None).is_err());
+        }
+        #[cfg(not(windows))]
+        {
+            assert!(validate_target_at(&current, Path::new("/tmp/easel-data"), None).is_err());
+            assert!(validate_target_at(&current, Path::new("/private/tmp/easel-data"), None).is_err());
+        }
+
+        // A per-user writable destination is still a legitimate target.
+        let per_user = root.join("Documents").join("Easel-dsh");
+        fs::create_dir_all(&per_user).unwrap();
+        assert!(validate_target_at(&current, &per_user, None).is_ok());
 
         remove_test_dir(&root);
     }

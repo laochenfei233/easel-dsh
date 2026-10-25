@@ -5,19 +5,24 @@
 //     dsh/                          pnpm-deploy closure of @deepseek-ai/dsh
 //                                   (+ @deepseek-ai/dsh-web-frontend/dist, pnpm)
 //     plugins/dsh-win-terminal-inspector/   local Windows-only plugin
+//     dreamina/                     Jimeng (Dreamina) CLI binaries + their
+//                                   published agent skills (all platforms)
 //
 // The shell resolves these paths in src-tauri/src/dsh_runner.rs
 // (resolve_runtime). Run from apps/desktop-tauri:
 //
-//   node scripts/bundle-runtime.mjs [--platform win|mac|linux] [--node-version v22.20.0]
+//   node scripts/bundle-runtime.mjs [--platform win|mac|linux] [--arch x64|arm64] [--node-version v22.23.4]
 //
-// --platform defaults to the host platform. In CI the workflow passes the
-// runner platform so each matrix job bundles its own runtime.
+// --platform defaults to the host platform. Versions, URLs and digests come
+// from runtime-inputs.json; --node-version may only restate the pinned release.
+// In CI the workflow passes the runner platform so each matrix job bundles its
+// own runtime.
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, cpSync, readdirSync, renameSync, rmSync, symlinkSync, writeFileSync, openSync, readSync, closeSync } from 'node:fs';
+import { existsSync, mkdirSync, cpSync, readdirSync, renameSync, rmSync, symlinkSync, writeFileSync, openSync, readSync, closeSync, chmodSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
-import { delimiter, dirname, join, resolve } from 'node:path';
+import { basename, delimiter, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readFileSync, statSync, realpathSync } from 'node:fs';
 
@@ -27,6 +32,20 @@ const NODE_DIR = join(RUNTIME, 'node');
 const DSH_DIR = join(RUNTIME, 'dsh');
 const PLUGINS_DIR = join(RUNTIME, 'plugins');
 const EASEL_DIR = join(RUNTIME, 'easel');
+const DREAMINA_DIR = join(RUNTIME, 'dreamina');
+
+// Every artifact this script downloads and executes-at-runtime is pinned here
+// by version and digest. A floating version, branch tarball, or unverified
+// download is what the audit found: the staged bytes run with the user's
+// authority, so the build must refuse anything the file does not name.
+const INPUTS = JSON.parse(readFileSync(join(ROOT, 'runtime-inputs.json'), 'utf8'));
+
+/**
+ * Which staged trees were checked against the pins in this run. A skipped
+ * stage (`--only`) or a leftover runtime keeps its bytes; the manifest says so
+ * instead of claiming a pin that nothing verified.
+ */
+const verified = { node: false, plugins: false, dreamina: false };
 
 const args = process.argv.slice(2);
 
@@ -43,7 +62,17 @@ const PLATFORM = argValue('--platform') ?? hostPlatform();
 // macOS ships both arm64 and Intel; CI builds one runtime per arch. Other
 // platforms are x64 only.
 const ARCH = argValue('--arch') ?? (PLATFORM === 'mac' ? 'arm64' : 'x64');
+// Re-stage one step instead of the whole runtime (--only dreamina): a CDN
+// refresh must not pay for the node download or the pnpm deploy again.
+const ONLY = argValue('--only');
+const ONLY_STEPS = new Set(['node', 'dsh', 'plugins', 'easel', 'dreamina']);
+if (ONLY !== undefined && !ONLY_STEPS.has(ONLY)) {
+  throw new Error(`--only must be one of ${[...ONLY_STEPS].join(', ')}; got ${ONLY}`);
+}
 const nodeArg = argValue('--node-version');
+if (nodeArg !== undefined && nodeArg !== INPUTS.node?.version) {
+  throw new Error(`--node-version ${nodeArg} does not match the pinned ${INPUTS.node?.version}; update runtime-inputs.json with its digests`);
+}
 const DSH = '@deepseek-ai/dsh';
 
 function hostPlatform() {
@@ -101,15 +130,6 @@ exec "$basedir/../../node" "$basedir/../pnpm/bin/${name}.cjs" "$@"
   step('wrote pnpm/pnpx .bin shims');
 }
 
-async function latestLtsV22() {
-  const res = await fetch('https://nodejs.org/dist/index.json');
-  if (!res.ok) throw new Error(`nodejs.org index: HTTP ${res.status}`);
-  const releases = await res.json();
-  const v22 = releases.find((r) => r.lts !== false && r.version.startsWith('v22.'));
-  if (!v22) throw new Error('no LTS v22 release found');
-  return v22.version;
-}
-
 function nodeArchive(version, platform, arch) {
   const base = `node-${version}-${platform}-${arch}`;
   const url = `https://nodejs.org/dist/${version}/${base}`;
@@ -117,7 +137,20 @@ function nodeArchive(version, platform, arch) {
   return { name: `${base}.tar.xz`, url: `${url}.tar.xz` };
 }
 
-async function download(url, dest) {
+/**
+ * Download one artifact and verify its pinned digest before anything reads it.
+ * @param url - the artifact URL.
+ * @param dest - the scratch file to write.
+ * @param expectedSha256 - the digest from runtime-inputs.json; a missing pin
+ *   aborts the build instead of staging unverified bytes.
+ * @param options.metadata - the artifact is advisory metadata (a version
+ *   record), not bytes that execute: its content is validated by the caller
+ *   and a CDN edge may serve a differently-formatted record.
+ */
+async function download(url, dest, expectedSha256, { metadata = false } = {}) {
+  if (!metadata && (typeof expectedSha256 !== 'string' || !/^[0-9a-f]{64}$/.test(expectedSha256))) {
+    throw new Error(`refusing ${url}: runtime-inputs.json pins no sha256 for it`);
+  }
   step(`download ${url}`);
   const res = await fetch(url);
   if (!res.ok) throw new Error(`download ${url}: HTTP ${res.status}`);
@@ -132,6 +165,48 @@ async function download(url, dest) {
     out.on('error', reject);
     out.end();
   });
+  const actual = sha256File(dest);
+  if (!metadata && actual !== expectedSha256) {
+    rmSync(dest, { force: true });
+    throw new Error(`${url}: sha256 ${actual} does not match the pinned ${expectedSha256}`);
+  }
+}
+
+/**
+ * Deterministic digest of a directory tree: sha256 over `path\0bytes` for each
+ * file in path order. Used where an archive's own bytes are not stable (a
+ * codeload tarball) but its extracted content is fixed by the commit.
+ * @param dir - the extracted tree root.
+ * @returns the tree digest as lowercase hex.
+ */
+function treeSha256(dir) {
+  const walk = (current) => readdirSync(current, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(current, entry.name);
+    return entry.isDirectory() ? walk(path) : [path];
+  });
+  const files = walk(dir)
+    .map((path) => [relative(dir, path).split('\\').join('/'), path])
+    .sort(([left], [right]) => (left < right ? -1 : 1));
+  const hash = createHash('sha256');
+  for (const [relativePath, path] of files) {
+    hash.update(relativePath);
+    hash.update('\0');
+    hash.update(readFileSync(path));
+  }
+  return hash.digest('hex');
+}
+
+// GNU tar (often first on a Git Bash PATH) reads a `C:\...` path as a remote
+// host:file pair, and cmd.exe inherits that PATH order. Windows' own bsdtar
+// (System32, since 10 1803) accepts drive paths natively, so resolve it by
+// absolute path and never depend on which tar the caller's PATH picks.
+function extractTar(args) {
+  if (process.platform === 'win32') {
+    const systemTar = join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'tar.exe');
+    execFileSync(systemTar, args, { stdio: 'inherit' });
+  } else {
+    execFileSync('tar', args, { stdio: 'inherit' });
+  }
 }
 
 function extract(archive, dest) {
@@ -140,9 +215,9 @@ function extract(archive, dest) {
   if (archive.endsWith('.zip')) {
     // Windows ships bsdtar which reads zip archives; PowerShell's
     // Expand-Archive is not available in every environment.
-    execFileSync('tar', ['-xf', archive, '-C', dest], { stdio: 'inherit' });
+    extractTar(['-xf', archive, '-C', dest]);
   } else {
-    execFileSync('tar', ['-xJf', archive, '-C', dest], { stdio: 'inherit' });
+    extractTar(['-xJf', archive, '-C', dest]);
   }
 }
 
@@ -159,13 +234,20 @@ function findNodeDir(dir) {
 
 async function installNode() {
   const arch = ARCH;
-  const version = nodeArg ?? (await latestLtsV22());
   const os = PLATFORM === 'win' ? 'win' : PLATFORM === 'mac' ? 'darwin' : 'linux';
+  // The pin is the only source of the version: `--node-version` may restate it
+  // (a rebuild of the same release) but never move the build to another one
+  // without the digests that go with it.
+  const version = INPUTS.node?.version;
+  if (typeof version !== 'string' || version === '') {
+    throw new Error('runtime-inputs.json pins no node version');
+  }
+  const expected = INPUTS.node.sha256?.[`${os}-${arch}`];
   const archiveInfo = nodeArchive(version, os, arch);
   const tmp = join(RUNTIME, '.tmp');
   mkdirSync(tmp, { recursive: true });
   const archive = join(tmp, archiveInfo.name);
-  await download(archiveInfo.url, archive);
+  await download(archiveInfo.url, archive, expected);
   extract(archive, tmp);
   rmSync(NODE_DIR, { recursive: true, force: true });
   mkdirSync(NODE_DIR, { recursive: true });
@@ -190,7 +272,44 @@ async function installNode() {
     symlinkSync(join(NODE_DIR, 'node'), join(NODE_DIR, 'bin', 'node'));
   }
   rmSync(tmp, { recursive: true, force: true });
+  writeFileSync(join(NODE_DIR, '.dsh-node-version'), `${version}\n`);
+  verified.node = true;
   step(`node ${version} installed`);
+}
+
+/**
+ * Assert an already-staged node tree is the pinned release. The incremental
+ * path used to skip this entirely, so a runtime staged months ago rode into a
+ * new installer while `runtime-inputs.json` said otherwise.
+ *
+ * The install writes a version stamp; a tree without one (an older runtime) is
+ * checked by running the binary. A stamp avoids executing a binary staged for
+ * another architecture, which a cross-arch build cannot do.
+ */
+function verifyStagedNode() {
+  const pinned = INPUTS.node.version;
+  const stamp = join(NODE_DIR, '.dsh-node-version');
+  if (existsSync(stamp)) {
+    const recorded = readFileSync(stamp, 'utf8').trim();
+    if (recorded !== pinned) {
+      throw new Error(`staged node is ${recorded}, the pin is ${pinned}; delete ${NODE_DIR} and re-run`);
+    }
+  } else {
+    const exe = join(NODE_DIR, PLATFORM === 'win' ? 'node.exe' : 'node');
+    if (!existsSync(exe)) throw new Error(`staged node binary missing at ${exe}`);
+    let actual;
+    try {
+      actual = execFileSync(exe, ['--version'], { encoding: 'utf8' }).trim();
+    } catch (error) {
+      throw new Error(`cannot verify the staged node at ${exe} (stale or foreign arch): ${error.message}; delete ${NODE_DIR} and re-run`);
+    }
+    if (actual !== pinned) {
+      throw new Error(`staged node ${actual} does not match the pinned ${pinned}; delete ${NODE_DIR} and re-run`);
+    }
+    writeFileSync(stamp, `${pinned}\n`);
+  }
+  verified.node = true;
+  step(`node ${pinned} already staged, pin verified`);
 }
 
 async function deployDsh() {
@@ -262,7 +381,10 @@ async function deployDsh() {
     const scratch = join(RUNTIME, '.tmp', 'pnpm-prefix');
     rmSync(scratch, { recursive: true, force: true });
     mkdirSync(scratch, { recursive: true });
-    execFileSync(nodeExe, [npmCli, 'install', '--no-save', '--no-audit', '--no-fund', '--prefix', scratch, `pnpm@${pnpmVersion}`], { stdio: 'inherit' });
+    // The scratch-local cache keeps staging hermetic: the host's global
+    // npm-cache can be unwritable to npm (shared caches collect stale ACLs
+    // and lock files) while staging must not depend on it.
+    execFileSync(nodeExe, [npmCli, 'install', '--no-save', '--no-audit', '--no-fund', '--cache', join(RUNTIME, '.tmp', 'npm-cache'), '--prefix', scratch, `pnpm@${pnpmVersion}`], { stdio: 'inherit' });
     const pnpmPkg = join(scratch, 'node_modules', 'pnpm');
     if (!existsSync(pnpmPkg)) {
       throw new Error('pnpm did not install into scratch prefix');
@@ -742,47 +864,336 @@ function reusePluginDir(name) {
  * Stage one bundled plugin into runtime/plugins, reusing a previously
  * installed runtime's copy when available so offline or GitHub-blocked
  * hosts never hit the network. Returns true when the reuse path ran.
+ * `verify` inspects the reuse source before it is copied: reuse is a source of
+ * bytes like any download, and a stale installed copy is exactly what the pin
+ * exists to catch.
+ * @param name - the plugin directory name.
+ * @param verify - digest check run on the source tree (and on an in-place dest).
  */
-function stageReusablePlugin(name) {
+function stageReusablePlugin(name, verify) {
   const dest = join(PLUGINS_DIR, name);
   const reusable = reusePluginDir(name);
   if (reusable === undefined) return false;
-  if (resolve(reusable) === resolve(dest)) return true; // already in place
+  if (resolve(reusable) === resolve(dest)) {
+    verify(dest); // already in place
+    return true;
+  }
+  verify(reusable);
   rmSync(dest, { recursive: true, force: true });
   cpSync(reusable, dest, { recursive: true });
   step(`${name} reused from ${reusable}`);
   return true;
 }
 
+/**
+ * Assert one staged inspector tree matches the pinned commit content.
+ * @param dir - the staged (or reuse-source) plugin directory.
+ */
+function verifyInspectorTree(dir) {
+  const pin = INPUTS.winTerminalInspector;
+  if (typeof pin?.treeSha256 !== 'string') {
+    throw new Error('runtime-inputs.json pins no winTerminalInspector tree');
+  }
+  const actual = treeSha256(dir);
+  if (actual !== pin.treeSha256) {
+    throw new Error(`dsh-win-terminal-inspector at ${dir} hashes to ${actual}, not the pinned ${pin.treeSha256}`);
+  }
+}
+
 async function installWinTerminalInspector() {
-  if (PLATFORM !== 'win') return;
-  if (stageReusablePlugin('dsh-win-terminal-inspector')) return;
+  if (PLATFORM !== 'win') return; // nothing staged, so nothing verified
+  const pin = INPUTS.winTerminalInspector;
+  if (typeof pin?.commit !== 'string' || !/^[0-9a-f]{40}$/.test(pin.commit)) {
+    throw new Error('runtime-inputs.json pins no winTerminalInspector commit');
+  }
   const dest = join(PLUGINS_DIR, 'dsh-win-terminal-inspector');
+  if (stageReusablePlugin('dsh-win-terminal-inspector', verifyInspectorTree)) {
+    verified.plugins = true;
+    step('dsh-win-terminal-inspector reuse verified against the pin');
+    return;
+  }
   rmSync(dest, { recursive: true, force: true });
   // codeload.github.com is reachable from build sandboxes where github.com's
-  // git port is not; a tarball also avoids shipping a nested .git.
-  const url = 'https://codeload.github.com/clearkurt/dsh-win-terminal-inspector/tar.gz/refs/heads/main';
+  // git port is not; a tarball also avoids shipping a nested .git. The commit,
+  // not a branch, so the code cannot change under the same URL.
+  const url = `https://codeload.github.com/clearkurt/dsh-win-terminal-inspector/tar.gz/${pin.commit}`;
   const archive = join(RUNTIME, '.wti.tar.gz');
-  await download(url, archive);
+  await download(url, archive, pin.tarballSha256);
   const tmp = join(PLUGINS_DIR, '.wti-tmp');
   rmSync(tmp, { recursive: true, force: true });
   mkdirSync(tmp, { recursive: true });
-  execFileSync('tar', ['-xzf', archive, '-C', tmp], { stdio: 'inherit' });
+  extractTar(['-xzf', archive, '-C', tmp]);
   const top = readdirSync(tmp).find((name) => name.startsWith('dsh-win-terminal-inspector-'));
   if (!top) throw new Error(`unexpected tarball layout in ${tmp}`);
+  verifyInspectorTree(join(tmp, top));
   cpSync(join(tmp, top), dest, { recursive: true });
   rmSync(tmp, { recursive: true, force: true });
   rmSync(archive, { force: true });
+  verified.plugins = true;
   step('dsh-win-terminal-inspector installed');
+}
+
+// The Jimeng (Dreamina) CLIs are single binaries published by 即梦 for agent
+// workflows: `dreamina` drives image/video generation, `dreamina-canvas` drives
+// the collaborative canvas. They are bundled so the agent can drive them
+// without a per-machine install; the agent-side usage contract is the skills
+// the CLIs publish themselves, staged verbatim under skills/. The shell puts
+// bin/ on the agent PATH after the inherited PATH, so a per-user install made
+// through the CLIs' own installers keeps precedence over the bundled copy.
+// The main CLI's CDN publishes binaries and its agent skill under
+// dreamina_cli_beta/ while version.json lives one level up; the installer
+// writes that version.json as the record for what it staged, so the pairing
+// is the CDN's own.
+const DREAMINA_CDN_ROOT =
+  process.env.DREAMINA_CLI_DOWNLOAD_ROOT
+  ?? 'https://lf3-static.bytednsdoc.com/obj/eden-cn/psj_hupthlyk/ljhwZthlaukjlkulzlp';
+const DREAMINA_CDN_BASE = `${DREAMINA_CDN_ROOT}/dreamina_cli_beta`;
+const DREAMINA_CANVAS_CDN_BASE =
+  process.env.DREAMINA_CANVAS_DOWNLOAD_BASE
+  ?? 'https://jimeng.jianying.com/canvas-cli/install/1_0_0_50';
+
+function dreaminaTarget() {
+  if (PLATFORM === 'win') return { os: 'windows', arch: 'amd64', ext: '.exe' };
+  const os = PLATFORM === 'mac' ? 'darwin' : 'linux';
+  const arch = ARCH === 'x64' ? 'amd64' : ARCH;
+  return { os, arch, ext: '' };
+}
+
+function sha256File(path) {
+  return createHash('sha256').update(readFileSync(path)).digest('hex');
+}
+
+function dreaminaStagedComplete(exe, canvasExe) {
+  return existsSync(join(DREAMINA_DIR, 'VERSION'))
+    && existsSync(join(DREAMINA_DIR, 'bin', exe))
+    && existsSync(join(DREAMINA_DIR, 'bin', canvasExe))
+    && existsSync(join(DREAMINA_DIR, 'skills', 'dreamina-cli', 'SKILL.md'))
+    && existsSync(join(DREAMINA_DIR, 'skills', 'dreamina-canvas-cli', 'SKILL.md'));
+}
+
+// A previously installed desktop runtime keeps the same dreamina tree.
+// Offline or CDN-blocked build hosts reuse that copy instead of
+// re-downloading; DSH_DESKTOP_DREAMINA_REUSE overrides the probe.
+function reuseDreaminaDir(exe, canvasExe) {
+  const candidates = [];
+  if (process.env.DSH_DESKTOP_DREAMINA_REUSE) {
+    candidates.push(process.env.DSH_DESKTOP_DREAMINA_REUSE);
+  }
+  if (process.env.LOCALAPPDATA) {
+    candidates.push(join(process.env.LOCALAPPDATA, 'Easel-dsh', 'app', 'runtime', 'dreamina'));
+  }
+  if (process.platform === 'darwin') {
+    candidates.push('/Applications/Easel-dsh.app/Contents/Resources/runtime/dreamina');
+  }
+  return candidates.find((dir) =>
+    existsSync(join(dir, 'VERSION'))
+    && existsSync(join(dir, 'bin', exe))
+    && existsSync(join(dir, 'bin', canvasExe))
+    && existsSync(join(dir, 'skills', 'dreamina-cli', 'SKILL.md'))
+    && existsSync(join(dir, 'skills', 'dreamina-canvas-cli', 'SKILL.md')));
+}
+
+/**
+ * Assert one staged Dreamina tree matches the pins (version record + both
+ * executable bytes + the published skill). The skip and reuse paths used to
+ * carry whatever the previous build left behind.
+ * @param dir - runtime/dreamina (or a reuse source to be copied from).
+ * @param exe - the staged main CLI file name.
+ * @param canvasExe - the staged canvas CLI file name.
+ * @param pin - INPUTS.dreamina.
+ * @param pinned - the per-target entry from pin.files.
+ */
+function verifyStagedDreamina(dir, exe, canvasExe, pin, pinned) {
+  let recorded;
+  try {
+    recorded = JSON.parse(readFileSync(join(dir, 'VERSION'), 'utf8'));
+  } catch {
+    throw new Error(`staged dreamina at ${dir} has no readable VERSION`);
+  }
+  if (recorded.dreamina !== pin.version || recorded.canvas !== pin.canvasVersion) {
+    throw new Error(`staged dreamina ${recorded.dreamina}/${recorded.canvas} does not match the pinned ${pin.version}/${pin.canvasVersion}`);
+  }
+  for (const [name, expected] of [[exe, pinned.cliSha256], [canvasExe, pinned.canvasSha256]]) {
+    const file = join(dir, 'bin', name);
+    const actual = sha256File(file);
+    if (actual !== expected) {
+      throw new Error(`${name} at ${file} hashes to ${actual}, not the pinned ${expected}`);
+    }
+  }
+  const skill = join(dir, 'skills', 'dreamina-cli', 'SKILL.md');
+  const actual = sha256File(skill);
+  if (actual !== pin.skillSha256) {
+    throw new Error(`${skill} hashes to ${actual}, not the pinned ${pin.skillSha256}`);
+  }
+}
+
+/**
+ * Write the staged Dreamina tree from already-verified sources: exactly the
+ * two binaries, the two published skills, and the version record — nothing the
+ * source tree happens to carry as well.
+ * @param parts.binary - the main CLI to stage.
+ * @param parts.canvas - the canvas CLI to stage.
+ * @param parts.skill - the main CLI's published SKILL.md.
+ * @param parts.canvasSkill - the canvas CLI's published skill directory.
+ * @param version - the pinned main CLI version to record.
+ * @param canvasVersion - the pinned canvas version to record.
+ */
+function writeDreaminaTree({ binary, canvas, skill, canvasSkill }, version, canvasVersion) {
+  rmSync(DREAMINA_DIR, { recursive: true, force: true });
+  mkdirSync(join(DREAMINA_DIR, 'bin'), { recursive: true });
+  cpSync(binary, join(DREAMINA_DIR, 'bin', basename(binary)));
+  cpSync(canvas, join(DREAMINA_DIR, 'bin', basename(canvas)));
+  if (PLATFORM !== 'win') {
+    chmodSync(join(DREAMINA_DIR, 'bin', basename(binary)), 0o755);
+    chmodSync(join(DREAMINA_DIR, 'bin', basename(canvas)), 0o755);
+  }
+  const skills = join(DREAMINA_DIR, 'skills');
+  mkdirSync(join(skills, 'dreamina-cli'), { recursive: true });
+  cpSync(skill, join(skills, 'dreamina-cli', 'SKILL.md'));
+  cpSync(canvasSkill, join(skills, 'dreamina-canvas-cli'), { recursive: true });
+  writeFileSync(
+    join(DREAMINA_DIR, 'VERSION'),
+    `${JSON.stringify({ dreamina: version, canvas: canvasVersion }, null, 2)}\n`,
+  );
+}
+
+/**
+ * Stage the bundled Jimeng CLIs and their published agent skills into
+ * runtime/dreamina. Downloads land in a scratch dir and the staged tree is
+ * replaced only after every artifact verifies, so a failed run never leaves a
+ * half-staged bundle. The canvas CDN publishes per-artifact checksums; the
+ * main CLI's CDN does not, so its version.json is the version record.
+ */
+async function stageDreamina() {
+  const { os, arch, ext } = dreaminaTarget();
+  const exe = `dreamina${ext}`;
+  const canvasExe = `dreamina-canvas${ext}`;
+  const pin = INPUTS.dreamina;
+  const target = `${os}-${arch}`;
+  const pinned = pin?.files?.[target];
+  if (pinned === undefined) {
+    throw new Error(`runtime-inputs.json pins no dreamina build for ${target}`);
+  }
+  if (dreaminaStagedComplete(exe, canvasExe)) {
+    verifyStagedDreamina(DREAMINA_DIR, exe, canvasExe, pin, pinned);
+    verified.dreamina = true;
+    step('dreamina CLIs already staged, pins verified');
+    return;
+  }
+  const reusable = reuseDreaminaDir(exe, canvasExe);
+  if (reusable !== undefined) {
+    verifyStagedDreamina(reusable, exe, canvasExe, pin, pinned);
+    writeDreaminaTree({
+      binary: join(reusable, 'bin', exe),
+      canvas: join(reusable, 'bin', canvasExe),
+      skill: join(reusable, 'skills', 'dreamina-cli', 'SKILL.md'),
+      canvasSkill: join(reusable, 'skills', 'dreamina-canvas-cli'),
+    }, pin.version, pin.canvasVersion);
+    verified.dreamina = true;
+    step(`dreamina CLIs reused from ${reusable} (pins verified)`);
+    return;
+  }
+
+  const tmp = join(RUNTIME, '.dreamina-tmp');
+  rmSync(tmp, { recursive: true, force: true });
+  mkdirSync(tmp, { recursive: true });
+  try {
+    // The main CDN serves one mutable version.json; edges have answered with
+    // different records for the same URL. The parsed version is pinned, and
+    // the bytes that execute below are pinned individually.
+    await download(`${DREAMINA_CDN_ROOT}/version.json`, join(tmp, 'dreamina-version.json'), undefined, { metadata: true });
+    const servedVersion = JSON.parse(readFileSync(join(tmp, 'dreamina-version.json'), 'utf8')).version;
+    if (servedVersion !== pin.version) {
+      // Edges serve different records for this mutable URL. The binaries are
+      // digest-pinned, so a stale record is only a version-label drift; record
+      // the pinned version and say so.
+      step(`warning: dreamina version.json served ${servedVersion}, pinned ${pin.version}; binaries decide`);
+    }
+    await download(
+      `${DREAMINA_CDN_BASE}/dreamina_cli_${os}_${arch}${ext}`,
+      join(tmp, exe),
+      pinned.cliSha256,
+    );
+    await download(`${DREAMINA_CDN_BASE}/SKILL.md`, join(tmp, 'dreamina-SKILL.md'), pin.skillSha256);
+
+    const canvasBinary = `dreamina-canvas_${os}_${arch}${ext}`;
+    await download(`${DREAMINA_CANVAS_CDN_BASE}/payload.sha256`, join(tmp, 'payload.sha256'), pin.canvasPayloadSha256);
+    const checksums = new Map(
+      readFileSync(join(tmp, 'payload.sha256'), 'utf8')
+        .split('\n')
+        .filter((line) => line.trim() !== '')
+        .map((line) => {
+          const [hash, name] = line.trim().split(/\s+/);
+          return [name, hash];
+        }),
+    );
+    // The CDN's own payload.sha256 is same-origin with the artifacts, so it
+    // only catches corruption. The executable and the skill tarball are pinned
+    // here; version.json/skill.tar.gz keep the CDN list as a second check.
+    const canvasArtifacts = [
+      [canvasBinary, pinned.canvasSha256],
+      ['skill.tar.gz', pin.canvasSkillSha256],
+      ['version.json', undefined],
+    ];
+    for (const [name, expected] of canvasArtifacts) {
+      if (!checksums.has(name)) {
+        throw new Error(`canvas payload.sha256 does not list ${name}`);
+      }
+      await download(`${DREAMINA_CANVAS_CDN_BASE}/${name}`, join(tmp, name), expected ?? checksums.get(name));
+      const actual = sha256File(join(tmp, name));
+      if (actual !== checksums.get(name)) {
+        throw new Error(`${name}: sha256 ${actual} does not match the CDN list ${checksums.get(name)}`);
+      }
+    }
+    const canvasVersion = JSON.parse(readFileSync(join(tmp, 'version.json'), 'utf8')).version;
+    if (canvasVersion !== pin.canvasVersion) {
+      throw new Error(`canvas CDN now serves ${canvasVersion}, runtime-inputs.json pins ${pin.canvasVersion}`);
+    }
+
+    const skillSrc = join(tmp, 'dreamina-canvas-cli');
+    mkdirSync(skillSrc, { recursive: true });
+    extractTar(['-xzf', join(tmp, 'skill.tar.gz'), '-C', skillSrc]);
+    if (!existsSync(join(skillSrc, 'dreamina-canvas-cli', 'SKILL.md'))) {
+      throw new Error('canvas skill.tar.gz is missing dreamina-canvas-cli/SKILL.md');
+    }
+
+    writeDreaminaTree({
+      binary: join(tmp, exe),
+      canvas: join(tmp, canvasBinary),
+      skill: join(tmp, 'dreamina-SKILL.md'),
+      canvasSkill: join(skillSrc, 'dreamina-canvas-cli'),
+    }, pin.version, pin.canvasVersion);
+    step(`dreamina ${pin.version} + dreamina-canvas ${pin.canvasVersion} staged into runtime/dreamina`);
+    verified.dreamina = true;
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+function dreaminaVersions() {
+  try {
+    return JSON.parse(readFileSync(join(DREAMINA_DIR, 'VERSION'), 'utf8'));
+  } catch {
+    return undefined;
+  }
 }
 
 function writeManifest() {
   const manifest = {
     platform: PLATFORM,
-    node: readdirSync(NODE_DIR).join(','),
+    node: existsSync(NODE_DIR) ? readdirSync(NODE_DIR).join(',') : null,
     dshCli: existsSync(join(DSH_DIR, 'lib', 'bin.js')),
     plugins: existsSync(PLUGINS_DIR) ? readdirSync(PLUGINS_DIR) : [],
     easel: existsSync(join(EASEL_DIR, 'VERSION')),
+    dreamina: dreaminaVersions(),
+    pinned: {
+      node: INPUTS.node.version,
+      winTerminalInspector: INPUTS.winTerminalInspector?.commit,
+      dreamina: INPUTS.dreamina?.version,
+      dreaminaCanvas: INPUTS.dreamina?.canvasVersion,
+    },
+    // Only stages the pins were actually compared against in this run.
+    verified: { ...verified },
   };
   writeFileSync(join(RUNTIME, 'manifest.json'), JSON.stringify(manifest, null, 2));
   step(`manifest: ${JSON.stringify(manifest)}`);
@@ -855,14 +1266,25 @@ async function main() {
   mkdirSync(RUNTIME, { recursive: true });
   rmSync(join(RUNTIME, '.tmp'), { recursive: true, force: true });
 
+  const wants = (stepName) => ONLY === undefined || ONLY === stepName;
   const nodeComplete = existsSync(join(NODE_DIR, 'node_modules', 'npm', 'bin', 'npm-cli.js'));
-  if (nodeComplete) {
-    step('node already present, skipping download');
+  if (!wants('node')) {
+    step(`node step skipped (--only ${ONLY})`);
+  } else if (nodeComplete) {
+    verifyStagedNode();
   } else {
     await installNode();
   }
-  await deployDsh();
-  await installWinTerminalInspector();
+  if (!wants('plugins')) {
+    step(`plugins step skipped (--only ${ONLY})`);
+  } else {
+    await installWinTerminalInspector();
+  }
+  if (wants('dsh')) {
+    await deployDsh();
+  } else {
+    step(`dsh step skipped (--only ${ONLY})`);
+  }
   // EASEL-DIVERGENCE: the DSH plugin market (`dsh-plugin`) is not part of
   // Easel-dsh. Purge a payload an earlier staging run left behind so it
   // cannot ride into the installer.
@@ -870,7 +1292,14 @@ async function main() {
     rmSync(join(PLUGINS_DIR, 'dsh-plugin'), { recursive: true, force: true });
     step('purged the retired dsh-plugin market payload');
   }
-  await stageEasel();
+  if (wants('easel')) {
+    await stageEasel();
+  }
+  if (!wants('dreamina')) {
+    step(`dreamina step skipped (--only ${ONLY})`);
+  } else {
+    await stageDreamina();
+  }
   writeManifest();
 }
 

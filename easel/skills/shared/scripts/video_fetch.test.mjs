@@ -6,7 +6,8 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { splitUrls, detectPlatform, cookiesFile } from './video_fetch.mjs'
+import { splitUrls, detectPlatform, cookiesFile, parseHttpUrl, fetchFollowing, isPrivateAddress } from './video_fetch.mjs'
+import { createServer } from 'node:http'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
@@ -20,8 +21,25 @@ test('splitUrls extracts links from noisy share text and strips tail punctuation
 test('detectPlatform routes douyin/xhs and everything else to generic', () => {
   assert.equal(detectPlatform('https://v.douyin.com/iRNBho6/'), 'douyin')
   assert.equal(detectPlatform('https://www.iesdouyin.com/share/video/123'), 'douyin')
-  assert.equal(detectPlatform('http://xhslink.com，快看'), 'xhs')
+  assert.equal(detectPlatform('http://xhslink.com/a2bC，快看'), 'xhs')
   assert.equal(detectPlatform('https://www.bilibili.com/video/BV1GJ411x7h7/'), 'generic')
+})
+
+test('the platform decision reads the parsed host, not the share text', () => {
+  // The payload from audit run-1: the substring matched, the request host did not.
+  assert.equal(detectPlatform('https://attacker.example?xiaohongshu.com'), 'generic')
+  assert.equal(detectPlatform('https://evil-xiaohongshu.com/note'), 'generic')
+  assert.equal(detectPlatform('https://xiaohongshu.com.evil.example/'), 'generic')
+  assert.equal(detectPlatform('javascript:alert(1)'), 'generic')
+  assert.equal(detectPlatform('file:///etc/passwd'), 'generic')
+})
+
+test('parseHttpUrl refuses non-http(s) and credentialed links', () => {
+  assert.equal(parseHttpUrl('https://www.xiaohongshu.com/explore/abc').hostname, 'www.xiaohongshu.com')
+  assert.throws(() => parseHttpUrl('file:///etc/passwd'), /http/)
+  assert.throws(() => parseHttpUrl('javascript:alert(1)'), /http/)
+  assert.throws(() => parseHttpUrl('https://user:pass@example.com/'), /用户名\/密码/)
+  assert.throws(() => parseHttpUrl('not a url'), /不是合法链接/)
 })
 
 test('cookiesFile maps dict/string values and tolerates missing file', async () => {
@@ -42,9 +60,72 @@ test('cookiesFile maps dict/string values and tolerates missing file', async () 
   }
 })
 
+test('isPrivateAddress refuses loopback/private in every spelling', () => {
+  for (const address of ['127.0.0.1', '10.1.2.3', '192.168.0.1', '169.254.169.254', '0.0.0.0', '::1', '::']) {
+    assert.equal(isPrivateAddress(address), true, address)
+  }
+  // WHATWG normalizes [::ffff:127.0.0.1] to this hex form.
+  assert.equal(isPrivateAddress('::ffff:7f00:1'), true)
+  assert.equal(isPrivateAddress('::ffff:127.0.0.1'), true)
+  assert.equal(isPrivateAddress('::ffff:808:808'), false, 'the mapped public form stays allowed')
+  for (const address of ['fd12::1', 'fe80::1', 'fec0::1', 'fed0::1', '2002:c000:204::1', '64:ff9b::7f00:1', '2001:0:1::1']) {
+    assert.equal(isPrivateAddress(address), true, address)
+  }
+  assert.equal(isPrivateAddress('2606:4700:4700::1111'), false)
+  assert.equal(isPrivateAddress('8.8.8.8'), false)
+})
+
 test('--selftest passes', () => {
   const proc = spawnSync(process.execPath, [join(HERE, 'video_fetch.mjs'), '--selftest'],
     { encoding: 'utf8', windowsHide: true })
   assert.equal(proc.status, 0, proc.stderr)
   assert.match(proc.stdout, /selftest ok/)
+})
+
+/** Start one loopback server on an ephemeral port; resolves with {port, close, seen}. */
+async function serve(handler) {
+  const seen = []
+  const server = createServer((req, res) => {
+    seen.push({ url: req.url, cookie: req.headers.cookie ?? null })
+    handler(req, res)
+  })
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  return {
+    port: server.address().port,
+    seen,
+    close: () => new Promise(resolve => server.close(resolve)),
+  }
+}
+
+test('fetchFollowing attaches the cookie only on allowed hosts, across redirect hops', async () => {
+  const outside = await serve((req, res) => res.end('outside'))
+  const inside = await serve((req, res) => {
+    if (req.url === '/jump') {
+      // A different hostname on the same machine: the cookie must not follow.
+      res.writeHead(302, { location: `http://localhost:${outside.port}/` })
+      res.end()
+      return
+    }
+    res.end('inside')
+  })
+  try {
+    const cookie = { value: 'session=DUMMY', hosts: ['127.0.0.1'] }
+    const [firstUrl, firstBody] = await fetchFollowing(`http://127.0.0.1:${inside.port}/ok`, { cookie })
+    assert.equal(firstUrl, `http://127.0.0.1:${inside.port}/ok`)
+    assert.equal(firstBody, 'inside')
+    assert.equal(inside.seen[0].cookie, 'session=DUMMY')
+
+    const [, finalBody] = await fetchFollowing(`http://127.0.0.1:${inside.port}/jump`, { cookie })
+    assert.equal(finalBody, 'outside')
+    assert.equal(inside.seen[1].cookie, 'session=DUMMY', 'the platform hop carries the cookie')
+    assert.equal(outside.seen[0].cookie ?? null, null, 'the foreign hop must not')
+
+    await assert.rejects(
+      fetchFollowing(`http://127.0.0.1:${inside.port}/jump`, { cookie, allowHosts: ['127.0.0.1'] }),
+      /跳出了平台域/,
+    )
+  } finally {
+    await inside.close()
+    await outside.close()
+  }
 })
