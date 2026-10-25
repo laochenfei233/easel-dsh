@@ -1896,13 +1896,14 @@ var import_jsx_runtime4 = require("react/jsx-runtime");
 var ALL_PLATFORMS = [
   { key: "weibo", label: "\u5FAE\u535A" },
   { key: "douyin", label: "\u6296\u97F3" },
+  { key: "douyin_rule", label: "\u6296\u97F3\u89C4\u5219" },
   { key: "zhihu", label: "\u77E5\u4E4E" },
   { key: "bilibili", label: "B\u7AD9" },
   { key: "baidu", label: "\u767E\u5EA6" },
   { key: "toutiao", label: "\u5934\u6761" }
 ];
 function sourceOf(label) {
-  return `${label}\u70ED\u641C`;
+  return label === "\u6296\u97F3\u89C4\u5219" ? "\u6296\u97F3\u89C4\u5219\u4E2D\u5FC3" : `${label}\u70ED\u641C`;
 }
 var fmtClock = (seconds) => seconds === void 0 ? "" : new Date(seconds * 1e3).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
 function sortItems(items, rising) {
@@ -2282,7 +2283,7 @@ function RadarSettings({ cfg, onSaved, onClose }) {
   ] }) });
 }
 function TrendsPage({ onUseTopic }) {
-  const [selected, setSelected] = (0, import_react3.useState)(["weibo", "douyin", "zhihu"]);
+  const [selected, setSelected] = (0, import_react3.useState)(["weibo", "douyin", "zhihu", "douyin_rule"]);
   const [groups, setGroups] = (0, import_react3.useState)([]);
   const [clusters, setClusters] = (0, import_react3.useState)(null);
   const [watch, setWatch] = (0, import_react3.useState)([]);
@@ -2500,7 +2501,7 @@ __export(ideas_exports, {
 // src/components/IdeasPage.tsx
 var import_react4 = require("react");
 
-// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../../master/node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3657,7 +3658,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../../master/node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }

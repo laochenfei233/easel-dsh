@@ -38,6 +38,10 @@ import {
   pruneSnapshot, readRadarHistory, staleItemsFromHistory,
 } from './lib/trends.js'
 import { RadarArticleError, createCaptureHandler } from './lib/trends-article.js'
+import {
+  DOUYIN_RULE_URLS, mergeDouyinRuleItems, parseDouyinAnnouncements,
+  parseDouyinPolicyDocs, parseDouyinPolicyExplain,
+} from './lib/trends-douyin.js'
 import { discoverCalendars, syncCalendarEvents } from './caldav.js'
 
 /** Cordis plugin name; also the `name` of this plugin's loader row. */
@@ -1206,7 +1210,7 @@ const TREND_SOURCES = {
   baidu: ['https://v2.xxapi.cn/api/baiduhot', 'https://60s.viki.moe/v2/baidu/hot'],
   toutiao: ['https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc', 'https://60s.viki.moe/v2/toutiao'],
 }
-const TREND_LABELS = { weibo: '微博', douyin: '抖音', zhihu: '知乎', bilibili: 'B站', baidu: '百度', toutiao: '头条' }
+const TREND_LABELS = { weibo: '微博', douyin: '抖音', zhihu: '知乎', bilibili: 'B站', baidu: '百度', toutiao: '头条', douyin_rule: '抖音规则' }
 const TREND_CACHE = new Map()
 const HOT_TITLE_KEYS = ['title', 'Title', 'word', 'name', 'keyword']
 const HOT_HOT_KEYS = ['hot', 'hot_value', 'HotValue', 'hotValue', 'num', 'detail_text']
@@ -1396,6 +1400,33 @@ async function fetchCustomSource(src, proxyUrl) {
   return parseRssItems(await fetchText(src.url, proxyUrl, 10000, 'application/rss+xml, application/xml, text/xml, */*'))
 }
 
+/**
+ * 抖音官方规则源（douyin_rule）：三份免登录数据拼一份榜单——公约文档、治理
+ * 公告（带日期）、规则解读库。各数据面独立降级（部分失败给部分数据），全部
+ * 失败才抛错，由 loadTrendSource 走快照链。
+ * @param {string} proxyUrl - 应用内代理（空串直连）。
+ * @returns {Promise<Array<{title: string, hot: string, url: string}>>}
+ */
+async function fetchDouyinRules(proxyUrl) {
+  const grab = async (url, parse) => {
+    const { status, body } = await rawRequest(url, { timeout: 8000, proxyUrl,
+      headers: { accept: 'application/json, text/plain, */*', referer: 'https://www.douyin.com/rule' } })
+    if (!(status >= 200 && status < 300)) throw new Error(`HTTP ${status}`)
+    return parse(JSON.parse(body.toString('utf8')))
+  }
+  const parts = await Promise.allSettled([
+    grab(DOUYIN_RULE_URLS.docs, parseDouyinPolicyDocs),
+    grab(DOUYIN_RULE_URLS.notices, parseDouyinAnnouncements),
+    grab(DOUYIN_RULE_URLS.explain, parseDouyinPolicyExplain),
+  ])
+  const items = mergeDouyinRuleItems(parts.map(part => (part.status === 'fulfilled' ? part.value : [])))
+  if (items.length === 0) throw new Error('抖音规则三份数据面全部不可用')
+  return items
+}
+
+/** 自带专用取数器的内置源（key → 取数器）；未列出的内置平台走聚合 API 热榜。 */
+const TREND_FETCHERS = { douyin_rule: fetchDouyinRules }
+
 // 离线兜底的快照年龄上限：更旧的热榜宁可空着，不冒充实时数据。
 const TREND_STALE_MAX_AGE_SECONDS = 24 * 60 * 60
 
@@ -1444,8 +1475,14 @@ async function apiTrends(c) {
   const decoratedGroups = []
   let historyDirty = false
   const sources = [
-    ...platforms.split(',').map(p => p.trim()).filter(p => p in TREND_SOURCES)
-      .map(platform => ({ key: platform, label: TREND_LABELS[platform] ?? platform, fetcher: () => fetchPlatformTrend(platform, proxyUrl) })),
+    ...platforms.split(',').map(p => p.trim()).filter(p => p in TREND_SOURCES || p in TREND_FETCHERS)
+      .map(platform => ({
+        key: platform,
+        label: TREND_LABELS[platform] ?? platform,
+        fetcher: TREND_FETCHERS[platform] !== undefined
+          ? () => TREND_FETCHERS[platform](proxyUrl)
+          : () => fetchPlatformTrend(platform, proxyUrl),
+      })),
     // 自定义源与内置源同缓存同出口；失败降级 ok:false，绝不因一条源炸掉整页。
     ...cfg.sources.filter(src => src.enabled).map(src => ({
       key: `custom:${src.name}`, label: src.name, category: src.category,
