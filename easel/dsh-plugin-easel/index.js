@@ -42,6 +42,12 @@ import {
   DOUYIN_RULE_URLS, mergeDouyinRuleItems, parseDouyinAnnouncements,
   parseDouyinPolicyDocs, parseDouyinPolicyExplain,
 } from './lib/trends-douyin.js'
+import {
+  DOUYIN_ACTIVITY_COOKIE_FILE, DOUYIN_ACTIVITY_URLS,
+  douyinActivityWindow, douyinAuthFailed, mergeDouyinActivityItems,
+  parseDouyinActivityInspiration, parseDouyinActivityPc,
+  readDouyinCookieCache, serializeDouyinCookieCache,
+} from './lib/trends-douyin-activity.js'
 import { discoverCalendars, syncCalendarEvents } from './caldav.js'
 
 /** Cordis plugin name; also the `name` of this plugin's loader row. */
@@ -1210,7 +1216,7 @@ const TREND_SOURCES = {
   baidu: ['https://v2.xxapi.cn/api/baiduhot', 'https://60s.viki.moe/v2/baidu/hot'],
   toutiao: ['https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc', 'https://60s.viki.moe/v2/toutiao'],
 }
-const TREND_LABELS = { weibo: '微博', douyin: '抖音', zhihu: '知乎', bilibili: 'B站', baidu: '百度', toutiao: '头条', douyin_rule: '抖音规则' }
+const TREND_LABELS = { weibo: '微博', douyin: '抖音', zhihu: '知乎', bilibili: 'B站', baidu: '百度', toutiao: '头条', douyin_rule: '抖音规则', douyin_activity: '抖音活动' }
 const TREND_CACHE = new Map()
 const HOT_TITLE_KEYS = ['title', 'Title', 'word', 'name', 'keyword']
 const HOT_HOT_KEYS = ['hot', 'hot_value', 'HotValue', 'hotValue', 'num', 'detail_text']
@@ -1425,7 +1431,112 @@ async function fetchDouyinRules(proxyUrl) {
 }
 
 /** 自带专用取数器的内置源（key → 取数器）；未列出的内置平台走聚合 API 热榜。 */
-const TREND_FETCHERS = { douyin_rule: fetchDouyinRules }
+const TREND_FETCHERS = { douyin_rule: fetchDouyinRules, douyin_activity: fetchDouyinActivities }
+
+// ---- 抖音创作者活动（douyin_activity，需登录态；接口免签名，cookie 必需）----
+
+// 从发布自动化的 DouyinProfile（Playwright 持久 context）提取 creator.douyin.com
+// 的 cookie。profile 被占用（正在发布/登录）或未装 playwright 时会失败——由
+// DOUYIN_COOKIE_FAIL 冷却兜住，不刷屏起无头浏览器。
+const DOUYIN_COOKIE_EXTRACT_PY = [
+  'import json',
+  'from pathlib import Path',
+  'from playwright.sync_api import sync_playwright',
+  'profile = str(Path.home() / ".easel-browser-profiles" / "DouyinProfile")',
+  'with sync_playwright() as p:',
+  '    ctx = p.chromium.launch_persistent_context(profile, headless=True)',
+  '    cookies = ctx.cookies("https://creator.douyin.com")',
+  '    ctx.close()',
+  'header = "; ".join(c["name"] + "=" + c["value"] for c in cookies)',
+  'print(json.dumps({"ok": header != "", "cookie": header}))',
+].join('\n')
+
+/** python 提取失败冷却（projectRoot → 最近失败时刻，秒），10 分钟内不再重试。 */
+const DOUYIN_COOKIE_FAIL = new Map()
+const DOUYIN_COOKIE_FAIL_COOLDOWN = 10 * 60
+
+/** 跑一段 python 收 stdout（超时杀进程，失败回 null 不抛）。 */
+function runPythonCapture(python, code, timeoutMs) {
+  return new Promise(resolvePromise => {
+    let out = ''
+    const child = spawn(python, ['-c', code], { windowsHide: true, env: { ...process.env, PYTHONUTF8: '1' } })
+    const timer = setTimeout(() => child.kill(), timeoutMs)
+    child.stdout.on('data', chunk => { out += chunk })
+    child.stderr.on('data', () => {})
+    child.on('error', () => { clearTimeout(timer); resolvePromise(null) })
+    child.on('close', () => { clearTimeout(timer); resolvePromise(out) })
+  })
+}
+
+/**
+ * 提取 cookie 并落缓存；失败记入冷却表回 null。`force` 旁路冷却（cookie 失效
+ * 重取时用）。
+ * @returns {Promise<string|null>} cookie 请求头，失败为 null。
+ */
+async function extractDouyinCookies(settings, now, { force = false } = {}) {
+  if (!force && now - (DOUYIN_COOKIE_FAIL.get(settings.projectRoot) ?? 0) < DOUYIN_COOKIE_FAIL_COOLDOWN) return null
+  const out = await runPythonCapture(settings.python, DOUYIN_COOKIE_EXTRACT_PY, 45_000)
+  try {
+    const parsed = JSON.parse((out ?? '').trim())
+    const cache = readDouyinCookieCache(serializeDouyinCookieCache(String(parsed?.cookie ?? ''), Math.floor(now)))
+    if (parsed?.ok !== true || cache === null) throw new Error('bad cookie payload')
+    await writeJsonFile(join(settings.projectRoot, 'outputs', DOUYIN_ACTIVITY_COOKIE_FILE), cache)
+    DOUYIN_COOKIE_FAIL.delete(settings.projectRoot)
+    return cache.cookie
+  } catch {
+    DOUYIN_COOKIE_FAIL.set(settings.projectRoot, Math.floor(now))
+    return null
+  }
+}
+
+async function loadDouyinActivityCookie(settings, now) {
+  const cached = readDouyinCookieCache(
+    await readJsonFile(join(settings.projectRoot, 'outputs', DOUYIN_ACTIVITY_COOKIE_FILE), null))
+  if (cached !== null) return cached.cookie
+  return extractDouyinCookies(settings, now)
+}
+
+/**
+ * 抖音创作者活动源（douyin_activity）：活动广场（主）+ 创作灵感（辅），登录
+ * cookie 直调免签名接口。cookie 失效（网关码 8）时作废缓存、强制重提一次并
+ * 重试；仍失败或本就取不到登录态则抛错，由 loadTrendSource 走快照链。
+ * @param {string} proxyUrl - 应用内代理（空串直连）。
+ * @param {{projectRoot: string, python: string}} settings - Easel 设置。
+ * @returns {Promise<Array<{title: string, hot: string, url: string}>>}
+ */
+async function fetchDouyinActivities(proxyUrl, settings) {
+  const now = Date.now() / 1000
+  let cookie = await loadDouyinActivityCookie(settings, now)
+  if (cookie === null) throw new Error('抖音登录态不可用：到账号页扫码登录抖音后自动恢复')
+  const grab = async url => {
+    const { status, body } = await rawRequest(url, { timeout: 8000, proxyUrl, headers: {
+      accept: 'application/json, text/plain, */*',
+      referer: 'https://creator.douyin.com/creator-micro/home',
+      cookie,
+    } })
+    if (!(status >= 200 && status < 300)) throw new Error(`HTTP ${status}`)
+    return JSON.parse(body.toString('utf8'))
+  }
+  const win = douyinActivityWindow(now)
+  const pcUrl = `${DOUYIN_ACTIVITY_URLS.pcList}?start_time=${win.start_time}&end_time=${win.end_time}&page=1&page_size=50`
+  let pc
+  for (let attempt = 0; ; attempt += 1) {
+    pc = await grab(pcUrl)
+    if (!douyinAuthFailed(pc)) break
+    if (attempt > 0) throw new Error('抖音登录态已失效：请到账号页重新扫码')
+    await writeJsonFile(join(settings.projectRoot, 'outputs', DOUYIN_ACTIVITY_COOKIE_FILE), { cookie: '', at: 0 })
+    cookie = await extractDouyinCookies(settings, now, { force: true })
+    if (cookie === null) throw new Error('抖音登录态不可用：请到账号页重新扫码')
+  }
+  let inspiration = []
+  try {
+    inspiration = parseDouyinActivityInspiration(
+      await grab(`${DOUYIN_ACTIVITY_URLS.inspiration}?aid=1128&cursor=0&count=50`), now)
+  } catch { /* 灵感面失败不拖垮活动广场 */ }
+  const items = mergeDouyinActivityItems([parseDouyinActivityPc(pc, now), inspiration])
+  if (items.length === 0) throw new Error('抖音活动广场返回空')
+  return items
+}
 
 // 离线兜底的快照年龄上限：更旧的热榜宁可空着，不冒充实时数据。
 const TREND_STALE_MAX_AGE_SECONDS = 24 * 60 * 60
@@ -1480,7 +1591,7 @@ async function apiTrends(c) {
         key: platform,
         label: TREND_LABELS[platform] ?? platform,
         fetcher: TREND_FETCHERS[platform] !== undefined
-          ? () => TREND_FETCHERS[platform](proxyUrl)
+          ? () => TREND_FETCHERS[platform](proxyUrl, c.settings)
           : () => fetchPlatformTrend(platform, proxyUrl),
       })),
     // 自定义源与内置源同缓存同出口；失败降级 ok:false，绝不因一条源炸掉整页。

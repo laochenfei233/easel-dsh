@@ -1,7 +1,7 @@
 ---
 feature: easel-radar-douyin-sources
 status: delivered
-updated: 2026-10-25
+updated: 2026-10-26
 branch: feat/easel-radar-douyin
 ---
 
@@ -26,26 +26,37 @@ branch: feat/easel-radar-douyin
   数据，全失败才落 `loadTrendSource` 的 24h 快照链；走应用内代理。
 - **客户端**：平台选择器加「抖音规则」chip，默认选中；选题来源文案「抖音规则
   中心」。插件 bump 0.2.24。
-- **明确不做（本期）**：创作者活动列表。creator.douyin.com 的活动数据全部在登录
-  态后（网页端 SPA 网关对未知路径回 `url doesn't match`，活动广场无免登录索引；
-  开源界亦无公开接口）。v2 方向：复用发布自动化（douyin_publish.py）的已登录
-  Playwright 会话抓创作服务中心活动页，做成「需要账号的雷达源」通用机制。
+- **创作者活动（同日增量，登录态源）**：`douyin_activity`（label 抖音活动）挂
+  同一 `TREND_FETCHERS` 挂点。活动广场 `/web/api/v2/creator/activity/pc/list`
+  （主，窗口 now-90d~now+180d，已结束过滤）+ 创作灵感
+  `/web/api/creator/inspiration/activities`（辅，失败不拖垮广场），接口免签名、
+  cookie 直调；条目 hot=`至 MM-DD` 截止文案，url 从 `aweme://webview?url=` 解
+  内嵌 https。cookie 来自发布自动化的 DouyinProfile（Playwright 持久 context）：
+  `outputs/_login/douyin_activity_cookies.json` 缓存，缺失/失效（网关码 8「用户
+  未登录」）时 spawn `settings.python` 无头提取一次（45s 上限，失败 10 分钟冷却，
+  失效重提走 force 旁路冷却并重试一次接口），提取/重试全失败抛错走 24h 快照链。
+  跨数据面重名在合并层按归一化标题去重（预算留给不同活动）。插件 bump 0.2.25。
 
 **Verification**
-- `easel/dsh-plugin-easel` `node --test`：211/211 PASS（基线 204，新增 7 项：文档
-  解析/公告排序与 url 门禁/解读库 status_code 拒收/合并顺序与预算/总量截断/
-  decorateFetched 衔接）。
+- `easel/dsh-plugin-easel` `node --test`：221/221 PASS（基线 204；规则源 7 项 +
+  活动源 10 项：窗口/失效判定/jump 解码/广场与灵感解析/截止文案/合并去重与截断/
+  decorateFetched 衔接/cookie 缓存形态）。
 - 实网端到端（本机直连，临时脚本走 `dispatchLocalApi` 真路由）：`douyin_rule`
   ok:true，公约 4 条置顶、公告按日期倒序（《营销行为》规则更新公告 2024/08/29
   等在列）、cluster 视图正常。
-- `node build.mjs` 成功；client.js 指纹核对（`douyin_rule`×2、`抖音规则` 的
-  esbuild 大写转义序列）。
+- 活动源三步实证（2026-10-25，登录态「老晨飞233」）：Playwright 持久 context
+  打开 creator-micro/home 自动发现两接口 → 页面内无 msToken 裸调 200 → 浏览器
+  外 urllib+cookie 直调 200（活动广场 13 条 + 创作灵感 11 条）；无效 cookie 回
+  `status_code=8 用户未登录` 即失效信号。
+- `node build.mjs` 成功；client.js 指纹核对（`douyin_rule`×2、`douyin_activity`×2、
+  两处中文的 esbuild 大写转义序列）。
 
 ## Problem
 
-用户要「抖音的最新规则 + 创作者可参与的活动」。调研结论：规则侧有免登录公开数据，
-活动侧没有——创作者服务平台的活动列表全部在登录态后，且无公开接口文档。本期先把
-免登录可得的规则数据面接进雷达，活动侧留待登录态方案。
+用户要「抖音的最新规则 + 创作者可参与的活动」。调研结论：规则侧有免登录公开数据；
+活动侧匿名不可得，但用发布自动化的已登录 DouyinProfile 实测出两个免签名接口，
+cookie 直调即可——规则源与活动源同分支落地，活动是 Easel 第一个「需要账号登录态」
+的雷达内置源。
 
 ## Solution
 
@@ -60,7 +71,13 @@ branch: feat/easel-radar-douyin
   发布物换 id 时本源整源失败→走 24h 快照降级（不白屏、不冒充实时）。这是接受
   的代价；若发生，重新抓包规则中心首页即可修。
 - **TREND_FETCHERS 而非改 TREND_SOURCES**：内置源从此分两种——聚合热榜（URL 列
-  表）与专用取数器（函数）。后者为后续平台官方源（含登录态源）留了挂点。
+  表）与专用取数器（函数，签名 `(proxyUrl, settings)`）。后者为后续平台官方源
+  （含登录态源）留了挂点——douyin_activity 即第一个用户。
+- **活动源的登录态归置**：cookie 不新开账号体系，直接复用发布自动化的
+  DouyinProfile（`~/.easel-browser-profiles/`），提取走一次性无头 Playwright
+  （python 由 `settings.python` 提供，automation 同款），缓存/失效/冷却全部在
+  插件内闭环；登录入口仍是账号页现有扫码流。风险接受：雷达刷新在 cookie 失效时
+  会无头起一次该 profile（只读），profile 被发布占用时活动源降级不阻塞其他源。
 
 ## Journey log
 
@@ -68,7 +85,10 @@ branch: feat/easel-radar-douyin
   库（含规则更新公告）——比预期价值高得多，随即从「全量截断」改为「公告预算 30 +
   解读补满」。教训：解析层先按最小假设写，真实载荷一跑就要回头核对容量设计。
 - 根 `.gitignore` 的 `lib/` 再一次吞掉插件源码新文件（`git status` 直接不可见），
-  `git add -f easel/dsh-plugin-easel/lib/trends-douyin.js`，勿目录整加。
-- 创作者活动侧的死路是实证出来的，不是猜的：网页端 SPA 全量 bundle 只有登录/用户
-  接口；活动管理页有 feature flag 门控；`/aweme/v1/creator/activity/list` 等候选
-  路径匿名全回 `url doesn't match`。别在这条路上再花时间，直接做登录态方案。
+  `git add -f` 单文件，勿目录整加。
+- 活动侧的「死路」只对匿名成立：登录态下打开 creator-micro/home 首页自动请求
+  就带出了活动广场/创作灵感两个免签名接口，此前盲探的 `/aweme/v1/creator/...`
+  路径不对而已。教训：平台接口探测要分「匿名面」与「登录面」两轮下结论，登录面
+  用真实会话开一次页面比翻 bundle 快得多。
+- 活动条目的 jump_link 是 `aweme://webview?url=<编码https>` / `sslocal://`，web
+  落点要解内嵌 url；直给 scheme 链接浏览器点不开。
