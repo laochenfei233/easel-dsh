@@ -1,4 +1,4 @@
-/** Account and Session menus share material and keep macOS backings aligned and scoped. */
+/** Settings Language and Session menus share material and keep macOS backings aligned and scoped. */
 import { readFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
@@ -28,8 +28,8 @@ it('shares menu transparency and blur across palettes and follows native menu bo
     Object.defineProperty(globalThis, 'dshDesktop', { value: { protocolVersion: 1 } })
   })
   await page.goto(scaffold.authenticatedUrl, { waitUntil: 'load' })
-  const account = page.getByRole('button', { name: 'Account menu', exact: true })
-  await account.waitFor()
+  const sidebarSettings = page.getByRole('button', { name: 'Settings', exact: true })
+  await sidebarSettings.waitFor()
 
   const results: Record<string, Awaited<ReturnType<typeof material>>> = {}
   const masks: Record<string, { fill: string; blur: string }> = {}
@@ -49,8 +49,12 @@ it('shares menu transparency and blur across palettes and follows native menu bo
       expect(overlayFill).toBe(platform === 'darwin'
         ? dark ? 'rgba(48, 49, 54, 0.94)' : 'rgba(248, 249, 250, 0.94)'
         : dark ? 'rgba(67, 69, 74, 0.45)' : 'rgba(248, 249, 250, 0.58)')
-      await account.click()
-      const menu = page.getByRole('menu').filter({ has: page.getByRole('menuitem', { name: 'Settings', exact: true }) })
+      // The General section's Language selector opens the shared Menu surface.
+      await sidebarSettings.click()
+      const settings = page.getByRole('dialog', { name: 'Settings', exact: true })
+      await settings.waitFor()
+      await settings.getByRole('button', { name: 'English', exact: true }).click()
+      const menu = page.getByRole('menu').filter({ has: page.getByRole('menuitem', { name: '中文', exact: true }) })
       await menu.waitFor()
       const appearance = await material(menu)
       expect(appearance).toMatchObject({
@@ -78,10 +82,7 @@ it('shares menu transparency and blur across palettes and follows native menu bo
       }
       await page.keyboard.press('Escape')
       await expect.poll(() => backing.count()).toBe(0)
-      await account.click()
-      await page.getByRole('menuitem', { name: 'Settings', exact: true }).click()
-      const settings = page.getByRole('dialog', { name: 'Settings', exact: true })
-      await settings.waitFor()
+      // The Language menu closed on Escape; the settings dialog stayed open for its mask.
       const mask = await settings.locator('..').locator(':scope > [aria-hidden="true"]').evaluate((node) => {
         const style = getComputedStyle(node)
         return { fill: style.backgroundColor, blur: style.backdropFilter }

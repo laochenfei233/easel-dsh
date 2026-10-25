@@ -560,8 +560,8 @@ export interface Config {
 - `source`: [`packages/client/ui-settings-account/src/index.ts:9`](../packages/client/ui-settings-account/src/index.ts)
 
 ```ts config-catalog
-/** Public contact options and live device-local onboarding progress. */
-export interface Config extends ContactConfig {
+/** Public bonus-notice options and live device-local onboarding progress. */
+export interface Config extends NoticeConfig {
   /** Onboarding progress format version. */
   version: Volatile<1>
   /** Last accepted onboarding page. */
@@ -578,12 +578,8 @@ export interface Config extends ContactConfig {
   developerTools: Volatile<boolean>
 }
 
-/** Questionnaire destination and bonus notice timings shared by Host and Client. */
-export interface ContactConfig {
-  /** HTTPS questionnaire URL; override for a test form. */
-  contactFormUrl: string
-  /** Questionnaire source option; empty until Harness is supported by the form. */
-  contactSource: string
+/** Bonus notice acknowledgement timings shared by Host and Client. */
+export interface NoticeConfig {
   /** First delay before retrying a failed bonus acknowledgement. */
   bonusAckRetryDelayMs: number
   /** Ceiling for the acknowledgement retry backoff. */

@@ -329,11 +329,22 @@ export function conversationContextKey(kind: string, id: string): string {
   return `${kind.length}:${kind}${id}`
 }
 
-/** Open Settings through the sidebar account menu.
+/** Open Settings from the sidebar foot: the plain Settings trigger before sign-in, the account menu after.
  * @param page - browser page with the mounted sidebar.
  * @param locale - current UI language.
  */
 export async function openSettings(page: Page, locale: 'en' | 'zh'): Promise<void> {
-  await page.getByRole('button', { name: locale === 'zh' ? '账号菜单' : 'Account menu', exact: true }).click()
-  await page.getByRole('menuitem', { name: locale === 'zh' ? '设置' : 'Settings', exact: true }).click()
+  const settings = locale === 'zh' ? '设置' : 'Settings'
+  const menu = page.getByRole('button', { name: locale === 'zh' ? '账号菜单' : 'Account menu', exact: true })
+  const direct = page.getByRole('button', { name: settings, exact: true })
+  const entry = await Promise.race([
+    menu.waitFor().then(() => 'menu' as const),
+    direct.waitFor().then(() => 'direct' as const),
+  ])
+  if (entry === 'direct') {
+    await direct.click()
+    return
+  }
+  await menu.click()
+  await page.getByRole('menuitem', { name: settings, exact: true }).click()
 }

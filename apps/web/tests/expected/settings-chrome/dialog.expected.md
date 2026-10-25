@@ -4,6 +4,7 @@
     - button "通用设置"
     - button "模型"
     - button "内置插件"
+    - button "自动化任务"
     - button "Agent 预设"
   - button "打开配置文件"
   - button "关闭"
@@ -36,3 +37,5 @@
   - text: 在使用官方模型 API 时上传 Session Log 帮助改进 DeepSeek 模型与产品
   - switch "在使用官方模型 API 时上传 Session Log"
   - text: 当前版本：{{version}}
+  - link "意见反馈":
+    - /url: https://github.com/laochenfei233/easel-dsh/issues

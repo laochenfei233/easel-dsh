@@ -4,6 +4,7 @@
     - button "General"
     - button "Models"
     - button "Built-in plugins"
+    - button "Automation tasks"
     - button "Agent presets"
   - button "Open configuration file"
   - button "Close"
@@ -36,3 +37,5 @@
   - text: Upload Session Log when using the official model API Help improve DeepSeek models and products.
   - switch "Upload Session Log when using the official model API"
   - text: "Current version: {{version}}"
+  - link "Feedback":
+    - /url: https://github.com/laochenfei233/easel-dsh/issues
