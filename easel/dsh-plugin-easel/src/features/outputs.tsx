@@ -8,7 +8,7 @@ import OutputsPage from '../components/OutputsPage'
 import { pageKey } from '../lib/shell'
 
 export const view = 'outputs'
-export const order = 35
+export const order = 37
 export const labels = { zh: '内容库', en: 'Outputs' }
 export const Icon = IconOutputs
 export const Component = OutputsPage

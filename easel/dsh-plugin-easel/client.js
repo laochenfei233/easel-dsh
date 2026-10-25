@@ -2530,7 +2530,7 @@ __export(ideas_exports, {
 // src/components/IdeasPage.tsx
 var import_react4 = require("react");
 
-// ../../../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3687,7 +3687,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -7271,7 +7271,7 @@ function CalendarPage() {
 // src/features/calendar.tsx
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var view4 = "calendar";
-var order4 = 33;
+var order4 = 34;
 var labels4 = { zh: "\u5185\u5BB9\u65E5\u5386", en: "Calendar" };
 var Icon4 = IconCalendar;
 var Component4 = CalendarPage;
@@ -7474,8 +7474,15 @@ var TOOL_ERROR_ZH = {
   frequency_too_high: "\u89E6\u53D1\u9891\u7387\u8FC7\u9AD8\uFF08\u6700\u5C0F\u95F4\u9694 1 \u5206\u949F\uFF09",
   subagent_session: "\u5B50 agent \u4F1A\u8BDD\u4E0D\u80FD\u627F\u8F7D\u5B9A\u65F6\u4EFB\u52A1"
 };
-function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
-  const face = remote ?? void 0;
+function SchedulesPage({
+  sessions,
+  workspaces,
+  subscribeChanged,
+  catalog,
+  updateTask,
+  deleteTask,
+  history
+}) {
   const [entries2, setEntries] = (0, import_react6.useState)([]);
   const [loading, setLoading] = (0, import_react6.useState)(true);
   const [error, setError] = (0, import_react6.useState)("");
@@ -7500,8 +7507,8 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
   const load = (0, import_react6.useCallback)(async () => {
     setLoading(true);
     try {
-      const read = face?.catalog;
-      if (read === void 0) throw new Error("\u4EFB\u52A1\u6570\u636E\u4E0D\u53EF\u8FBE\uFF08\u8FDC\u7AEF\u5E73\u9762\u672A\u8FDE\u63A5\uFF09");
+      const read = catalog;
+      if (read === void 0) throw new Error("\u4EFB\u52A1\u6570\u636E\u4E0D\u53EF\u8FBE\uFF08\u8C03\u5EA6\u8FDC\u7AEF\u672A\u8FDE\u63A5\uFF09");
       const res = await read();
       if (res?.ok === true && Array.isArray(res.value)) {
         setEntries(res.value);
@@ -7606,7 +7613,7 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
     setRecordsDone(true);
     void (async () => {
       try {
-        const res = await face?.history?.({ sessionId: e.sessionId, id: e.id, limit: 20 });
+        const res = await history?.({ sessionId: e.sessionId, id: e.id, limit: 20 });
         if (res?.ok !== true) throw new Error(res?.error?.message ?? "");
         const value = res.value;
         setRecords(value?.records ?? []);
@@ -7624,7 +7631,7 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
     if (e === null || recordsCursor === void 0 || detailBusy) return;
     setDetailBusy(true);
     try {
-      const res = await face?.history?.({ sessionId: e.sessionId, id: e.id, limit: 20, before: recordsCursor });
+      const res = await history?.({ sessionId: e.sessionId, id: e.id, limit: 20, before: recordsCursor });
       if (res?.ok !== true) throw new Error(res?.error?.message ?? "");
       const value = res.value;
       setRecords((cur) => [...cur, ...value?.records ?? []]);
@@ -7654,7 +7661,7 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
     }
     setDetailBusy(true);
     try {
-      const call = face?.update;
+      const call = updateTask;
       if (call === void 0) throw new Error("\u66F4\u65B0\u901A\u9053\u4E0D\u53EF\u7528\uFF08\u8FDC\u7AEF\u5E73\u9762\u672A\u8FDE\u63A5\uFF09");
       const res = await call({
         sessionId: e.sessionId,
@@ -7688,7 +7695,7 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
     if (detailBusy) return;
     setDetailBusy(true);
     try {
-      const call = face?.delete;
+      const call = deleteTask;
       if (call === void 0) throw new Error("\u5220\u9664\u901A\u9053\u4E0D\u53EF\u7528\uFF08\u8FDC\u7AEF\u5E73\u9762\u672A\u8FDE\u63A5\uFF09");
       const res = await call({ sessionId: e.sessionId, id: e.id });
       if (res?.ok !== true) throw new Error(res?.error?.message ?? "\u65E0\u6CD5\u786E\u8BA4\u5220\u9664");
@@ -7906,13 +7913,13 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
 // src/features/schedules.tsx
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var view5 = "schedules";
-var order5 = 34;
+var order5 = 36;
 var labels5 = { zh: "\u5B9A\u65F6\u4EFB\u52A1", en: "Schedule" };
 var Icon5 = IconClock;
 var Component5 = SchedulesPage;
 var plugin5 = {
   name: "easel-view-schedules",
-  inject: ["slots", "easelShell", "sessions", "workspaces", "remote"],
+  inject: ["slots", "easelShell", "sessions", "workspaces", "remote", "remote.schedule"],
   apply(ctx) {
     const { useShellProps, t } = ctx.easelShell;
     ctx.slots.inject("main", () => ctx.slots.register({
@@ -7921,7 +7928,11 @@ var plugin5 = {
       inject: () => ({
         sessions: ctx.sessions,
         workspaces: ctx.workspaces,
-        subscribeChanged: (listener) => ctx.remote.$on("schedule/changed", listener)
+        subscribeChanged: (listener) => ctx.remote.$on("schedule/changed", listener),
+        catalog: () => ctx.remote.schedule.catalog(),
+        updateTask: (request5) => ctx.remote.schedule.update(request5),
+        deleteTask: (request5) => ctx.remote.schedule.delete(request5),
+        history: (request5) => ctx.remote.schedule.history(request5)
       })
     }, function EaselPage(injected) {
       const props = useShellProps();
@@ -8446,7 +8457,7 @@ function SkillPage({ persona, onNavigate }) {
 // src/features/skills.tsx
 var import_jsx_runtime14 = require("react/jsx-runtime");
 var view6 = "skills";
-var order6 = 34;
+var order6 = 35;
 var labels6 = { zh: "\u6280\u80FD\u5E93", en: "Skills" };
 var Icon6 = IconSkills;
 var Component6 = SkillPage;
@@ -8795,7 +8806,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
 // src/features/outputs.tsx
 var import_jsx_runtime16 = require("react/jsx-runtime");
 var view7 = "outputs";
-var order7 = 35;
+var order7 = 37;
 var labels7 = { zh: "\u5185\u5BB9\u5E93", en: "Outputs" };
 var Icon7 = IconOutputs;
 var Component7 = OutputsPage;
@@ -9427,7 +9438,7 @@ function PublishPage({ persona }) {
 // src/features/publish.tsx
 var import_jsx_runtime18 = require("react/jsx-runtime");
 var view8 = "publish";
-var order8 = 36;
+var order8 = 38;
 var labels8 = { zh: "\u53D1\u5E03\u4E2D\u5FC3", en: "Publish" };
 var Icon8 = IconPublish;
 var Component8 = PublishPage;
@@ -10127,7 +10138,7 @@ function AccountsPage() {
 // src/features/accounts.tsx
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var view9 = "accounts";
-var order9 = 37;
+var order9 = 39;
 var labels9 = { zh: "\u8D26\u53F7", en: "Accounts" };
 var Icon9 = IconAccounts;
 var Component9 = AccountsPage;
@@ -11074,7 +11085,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
 // src/features/breakdown.tsx
 var import_jsx_runtime26 = require("react/jsx-runtime");
 var view11 = "breakdown";
-var order11 = 39;
+var order11 = 33;
 var labels11 = { zh: "\u7206\u6B3E\u62C6\u89E3", en: "Breakdown" };
 var Icon11 = IconSkills;
 var Component11 = BreakdownPage;
@@ -13881,8 +13892,8 @@ var DATA_ROOT_COPY = {
 };
 
 // src/components/AboutSection.tsx
-var import_react19 = require("react");
-var import_jsx_runtime29 = require("react/jsx-runtime");
+var import_react20 = require("react");
+var import_jsx_runtime31 = require("react/jsx-runtime");
 var ABOUT_STYLES = `
 .eau-root { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
 .eau-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
@@ -13922,18 +13933,18 @@ var WEBSITE_URL = "https://laochenfei233.github.io/easel-dsh/";
 var CHANGELOG_URL = `${WEBSITE_URL}#changelog`;
 var ISSUES_URL = "https://github.com/laochenfei233/easel-dsh/issues";
 function AboutSection({ t, update }) {
-  const state = (0, import_react19.useSyncExternalStore)(update.subscribe, update.snapshot);
-  (0, import_react19.useEffect)(() => {
+  const state = (0, import_react20.useSyncExternalStore)(update.subscribe, update.snapshot);
+  (0, import_react20.useEffect)(() => {
     void update.refresh();
   }, [update]);
-  const links = /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-row", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "eau-link", href: WEBSITE_URL, target: "_blank", rel: "noreferrer", children: t("websiteLink") }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("changelogLink") }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("a", { className: "eau-link", href: ISSUES_URL, target: "_blank", rel: "noreferrer", children: t("feedbackLink") })
+  const links = /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-row", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("a", { className: "eau-link", href: WEBSITE_URL, target: "_blank", rel: "noreferrer", children: t("websiteLink") }),
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("changelogLink") }),
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("a", { className: "eau-link", href: ISSUES_URL, target: "_blank", rel: "noreferrer", children: t("feedbackLink") })
   ] });
   if (!state.supported) {
-    return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-root", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: t("desktopOnly") }),
+    return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-root", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("desktopOnly") }),
       links
     ] });
   }
@@ -13945,20 +13956,20 @@ function AboutSection({ t, update }) {
     void (state.lastCheckStatus === "available" ? update.install() : update.check());
   };
   const statusText = state.lastCheckStatus === "error" ? null : state.lastCheckStatus === "up-to-date" ? t("upToDate") : state.lastCheckStatus === "available" && state.latest ? t("availableFound").replace("{version}", state.latest.version) : null;
-  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-root", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "eau-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-card-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("appName") }),
-        state.version ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "eau-badge", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "eau-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { children: t("appName") }),
+        state.version ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "eau-badge", children: [
           "v",
           state.version
         ] }) : null
       ] }),
-      downloading || installing ? /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-progress", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : installing ? t("installing") : t("downloading") })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-row", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+      downloading || installing ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : installing ? t("installing") : t("downloading") })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
           "button",
           {
             type: "button",
@@ -13968,48 +13979,48 @@ function AboutSection({ t, update }) {
             children: buttonLabel
           }
         ),
-        statusText ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: state.lastCheckStatus === "available" ? "eau-error" : "eau-muted", role: "status", children: statusText }) : null
+        statusText ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: state.lastCheckStatus === "available" ? "eau-error" : "eau-muted", role: "status", children: statusText }) : null
       ] }),
-      state.lastError ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-error", role: "alert", children: state.lastError }) : null,
-      state.lastCheckMs ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: t("lastChecked").replace("{time}", new Date(state.lastCheckMs).toLocaleString()) }) : null
+      state.lastError ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-error", role: "alert", children: state.lastError }) : null,
+      state.lastCheckMs ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("lastChecked").replace("{time}", new Date(state.lastCheckMs).toLocaleString()) }) : null
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "eau-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "eau-card-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("sourceLabel") }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "eau-badge", children: state.source === "override" ? t("sourceOverride") : state.source === "error" ? t("sourceUnavailable") : t("sourceDefault") })
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "eau-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { children: t("sourceLabel") }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-badge", children: state.source === "override" ? t("sourceOverride") : state.source === "error" ? t("sourceUnavailable") : t("sourceDefault") })
       ] }),
-      state.endpoints.length > 0 ? state.endpoints.map((endpoint) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: endpoint }, endpoint)) : /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "eau-muted", children: t("sourceUnavailable") })
+      state.endpoints.length > 0 ? state.endpoints.map((endpoint) => /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: endpoint }, endpoint)) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("sourceUnavailable") })
     ] }),
     links
   ] });
 }
 
 // src/components/UpdateNotice.tsx
-var import_react20 = require("react");
-var import_jsx_runtime30 = require("react/jsx-runtime");
+var import_react21 = require("react");
+var import_jsx_runtime32 = require("react/jsx-runtime");
 function UpdateNotice({ t, update }) {
-  const state = (0, import_react20.useSyncExternalStore)(update.subscribe, update.snapshot);
+  const state = (0, import_react21.useSyncExternalStore)(update.subscribe, update.snapshot);
   if (!state.supported || state.announce === void 0) return null;
   const notes = (state.announce.notes ?? "").trim();
   const summary = notes.slice(0, notes.indexOf("\n") === -1 ? notes.length : notes.indexOf("\n")).trim();
   const busy = state.progress?.phase === "downloading" || state.progress?.phase === "installing";
   const downloading = state.progress?.phase === "downloading";
-  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "eau-overlay", role: "dialog", "aria-modal": "true", "aria-labelledby": "eau-notice-title", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "eau-overlay-mask", "aria-hidden": "true", onClick: update.dismiss }),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "eau-dialog", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("h2", { id: "eau-notice-title", children: t("noticeTitle").replace("{version}", state.announce.version) }),
-      summary ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "eau-muted", children: summary }) : null,
-      busy ? /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "eau-progress", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : state.progress?.phase === "installing" ? t("installing") : t("downloading") })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "eau-row eau-dialog-actions", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { type: "button", className: "eau-btn", onClick: update.dismiss, children: t("noticeLater") }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { type: "button", className: "eau-btn eau-btn-primary", onClick: () => {
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-overlay", role: "dialog", "aria-modal": "true", "aria-labelledby": "eau-notice-title", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-overlay-mask", "aria-hidden": "true", onClick: update.dismiss }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-dialog", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h2", { id: "eau-notice-title", children: t("noticeTitle").replace("{version}", state.announce.version) }),
+      summary ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "eau-muted", children: summary }) : null,
+      busy ? /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : state.progress?.phase === "installing" ? t("installing") : t("downloading") })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-row eau-dialog-actions", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "eau-btn", onClick: update.dismiss, children: t("noticeLater") }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "eau-btn eau-btn-primary", onClick: () => {
           void update.install();
         }, children: t("noticeInstallNow") })
       ] }),
-      state.progress?.phase === "failed" && state.lastError ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "eau-error", role: "alert", children: state.lastError }) : null,
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "eau-row", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("noticeFullChangelog") }) })
+      state.progress?.phase === "failed" && state.lastError ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "eau-error", role: "alert", children: state.lastError }) : null,
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-row", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("noticeFullChangelog") }) })
     ] })
   ] });
 }

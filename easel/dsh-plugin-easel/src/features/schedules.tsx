@@ -12,7 +12,7 @@ import SchedulesPage from '../components/SchedulesPage'
 import { pageKey } from '../lib/shell'
 
 export const view = 'schedules'
-export const order = 34
+export const order = 36
 export const labels = { zh: '定时任务', en: 'Schedule' }
 export const Icon = IconClock
 export const Component = SchedulesPage

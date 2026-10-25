@@ -8,7 +8,7 @@ import AccountsPage from '../components/AccountsPage'
 import { pageKey } from '../lib/shell'
 
 export const view = 'accounts'
-export const order = 37
+export const order = 39
 export const labels = { zh: '账号', en: 'Accounts' }
 export const Icon = IconAccounts
 export const Component = AccountsPage
