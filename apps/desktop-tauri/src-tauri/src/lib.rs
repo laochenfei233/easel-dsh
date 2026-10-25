@@ -6,6 +6,7 @@
 //! keeps the app resident when the window closes, and the first-run wizard
 //! that picks an agent preset and installs plugins.
 
+mod app_update;
 mod dsh_runner;
 mod layout;
 mod setup;
@@ -197,6 +198,7 @@ pub fn run() {
     builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             // EASEL-DIVERGENCE(easel-dsh-layout): relocate user data before the
             // first-run state or the dsh home is read. Installed-only; this runs
@@ -207,6 +209,8 @@ pub fn run() {
             let handle = DshHandle::spawn(app.handle())?;
             app.manage(handle);
             tray::build(app.handle())?;
+            // EASEL-DIVERGENCE(easel-app-update): deferred boot check, 30s in.
+            app_update::init(app.handle());
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -228,6 +232,9 @@ pub fn run() {
             dsh_runner::navigate_main,
             dsh_runner::restart_dsh,
             dsh_runner::open_ui,
+            app_update::easel_check_update,
+            app_update::easel_update_state,
+            app_update::easel_install_update,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

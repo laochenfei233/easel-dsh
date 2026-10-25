@@ -24,7 +24,6 @@ function derivedDocumentStore(remote: object) {
 }
 import { en, zh } from '../src/client/locales.ts'
 import { CurrentVersionRow } from '../src/client/CurrentVersionRow.tsx'
-import { FeedbackRow } from '../src/client/FeedbackRow.tsx'
 import { DesktopUpdateBadge } from '../src/client/DesktopUpdateIndicator.tsx'
 import { HostReleasePrompt, type HostReleasePromptProps } from '../src/client/HostReleasePrompt.tsx'
 import type { DesktopUpdateView } from '../src/types.ts'
@@ -247,21 +246,6 @@ describe('current version', () => {
     vi.stubEnv('DSH_CLIENT_VERSION', undefined)
     const view = render(<CurrentVersionRow {...kit} t={t} />)
     expect(view.container.textContent).toBe('')
-  })
-})
-
-describe('feedback row', () => {
-  it.each([
-    ['Feedback', en],
-    ['意见反馈', zh],
-  ])('renders the localized %s entry opening the repository issue tracker', (label, dictionary) => {
-    const translate: TriggerContentProps['t'] = key => (dictionary as Record<string, string>)[key] ?? key
-    render(<FeedbackRow {...kit} t={translate} />)
-    const link = screen.getByRole('link', { name: label })
-    expect(link.getAttribute('href')).toBe('https://github.com/laochenfei233/easel-dsh/issues')
-    expect(link.getAttribute('target')).toBe('_blank')
-    expect(link.getAttribute('rel')).toBe('noopener noreferrer')
-    expect(link.querySelector('svg')).not.toBeNull()
   })
 })
 

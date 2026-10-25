@@ -42,7 +42,17 @@ node scripts/bundle-runtime.mjs --platform win   # win|mac|linux; generates runt
 pnpm tauri build            # package installers (runtime/ is bundled as resources)
 ```
 
-CI (`.github/workflows/desktop-release.yml`) runs the same flow on a three-platform matrix and uploads to GitHub Release; trigger with a `v*` tag or manual dispatch.
+CI (`.github/workflows/desktop-release.yml`) runs the same flow on a platform matrix and uploads the installers to a GitHub Release; trigger with a `v*` tag or manual dispatch (`.github/workflows/easel-package.yml` is the hosted trial-build variant; it stages artifacts only).
+
+## In-app updater (Windows)
+
+The shell integrates `tauri-plugin-updater`; Settings → About in the GUI shows the current version, runs a manual check, and installs a found release. The release manifest is the Tauri updater's standard `{version, notes, pub_date, platforms}` JSON; the signed `.sig` and the manifest are produced and distributed by the release pipeline (spec `easel-website.md`).
+
+- **Update source**: the manifest endpoint defaults to the product site's `updates/latest.json` (`tauri.conf.json` `plugins.updater.endpoints`). A `<data_root>/home/update-source.json` of `{"endpoints": ["https://…"]}` replaces the list wholesale — that is how intranet deployments point the updater at an internal mirror. A malformed file is a loud misconfiguration: the About section shows the reason and the deferred boot check skips the round.
+- **Deferred boot check**: one GET 30 seconds after launch; failures are recorded in `<data_root>/home/update-state.json` and stay silent. A reminder only fires when the found version is newer than the running shell AND at least 24 hours past the release's `pub_date`, so every user sees the notice on the same schedule; `notedVersion` in the same file deduplicates the boot dialog. After that, the About section keeps the persistent "new version available" hint until the update lands.
+- **Install**: the command stops the bundled dsh process first (the updater exits the shell process itself, without `RunEvent::Exit`, so the runtime node would otherwise be orphaned behind the installer), then downloads and launches the NSIS installer with the plugin's `basicUi` mode — the installer always receives `/UPDATE`, the same flag the installer hooks already handle, so the in-app path and a manual `/UPDATE` run end in the identical overwrite install with no uninstall step.
+- **Signing**: updates are minisign-signed; the public key is embedded in `tauri.conf.json` (`plugins.updater.pubkey`), and the private key is a GitHub Actions secret (`TAURI_SIGNING_PRIVATE_KEY`).
+- **Platform scope**: the updater and its GUI live only where the host bridge relay exists — the WebView2 iframe (Windows). Browsers, CLI `dsh web`, and the WebKit app window degrade to the About section's desktop-only line; macOS auto-update is a separate future feature.
 
 ## First launch
 

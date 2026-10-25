@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 540" fill="none" aria-hidden="true">
+  <!-- Floor shadow. -->
+  <ellipse cx="320" cy="505" rx="196" ry="9" fill="#e9e4da"/>
+  <!-- Rear leg, read as depth behind the canvas. -->
+  <line x1="320" y1="56" x2="320" y2="482" stroke="#d6d0c4" stroke-width="4" stroke-linecap="round"/>
+  <!-- Front legs splay from under the top clamp, outside the canvas. -->
+  <line x1="112" y1="55" x2="52" y2="492" stroke="#1c1917" stroke-width="5" stroke-linecap="round"/>
+  <line x1="528" y1="55" x2="588" y2="492" stroke="#1c1917" stroke-width="5" stroke-linecap="round"/>
+  <!-- Top clamp the canvas leans against. -->
+  <line x1="92" y1="52" x2="548" y2="52" stroke="#1c1917" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="320" cy="36" r="9" fill="#fffdf9" stroke="#1c1917" stroke-width="4"/>
+  <!-- Tray under the canvas; the card's bottom edge rests on it. -->
+  <line x1="96" y1="404" x2="544" y2="404" stroke="#d6d0c4" stroke-width="4" stroke-linecap="round"/>
+</svg>

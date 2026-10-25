@@ -418,9 +418,10 @@ async function deployDsh() {
 // path does), so web notification plugins never fire and left-clicks on
 // external links die in the desktop. Patch the served entry document with a
 // host bridge that, inside the dsh iframe, routes both to the shell — native
-// toasts through tauri-plugin-notification, and external links through the
-// opener plugin. Plain-browser `dsh web` users stay untouched: the bridge
-// activates only when a parent frame exists.
+// toasts through tauri-plugin-notification, external links through the
+// opener plugin, and app-updater RPCs relayed by app.js to the Rust
+// commands (easel_update_*; see app_update.rs). Plain-browser `dsh web`
+// users stay untouched: the bridge activates only when a parent frame exists.
 function injectNotificationBridge(distDest) {
   const entry = join(distDest, 'index.html');
   if (!existsSync(entry)) return;
@@ -430,6 +431,36 @@ function injectNotificationBridge(distDest) {
 (() => {
   if (window === window.parent) return
   const post = (payload) => window.parent.postMessage({ source: "dsh-desktop-host", ...payload }, "*")
+
+  // Promise RPC into the shell page (app.js relays to the Rust updater
+  // commands) plus event subscription for updater progress/notices. Results
+  // and forwarded events arrive as postMessage with the same source and a
+  // distinguishing kind, so only traffic the shell initiated matches here.
+  let rpcSeq = 0
+  const waiters = new Map()
+  const eventSubs = {}
+  window.addEventListener("message", (event) => {
+    const data = event.data
+    if (!data || data.source !== "dsh-desktop-host") return
+    if (data.kind === "rpc-result" && data.id !== undefined) {
+      const waiter = waiters.get(data.id)
+      if (waiter) { waiters.delete(data.id); waiter(data) }
+    } else if (data.kind === "rpc-event" && data.event) {
+      for (const cb of eventSubs[data.event] ?? []) cb(data.payload)
+    }
+  })
+  window.__easelHostUpdate = {
+    rpc: (action, args) => new Promise((resolve) => {
+      const id = ++rpcSeq
+      waiters.set(id, resolve)
+      post({ kind: "rpc", action, id, args: args ?? {} })
+      setTimeout(() => { if (waiters.has(id)) { waiters.delete(id); resolve({ ok: false, error: "rpc timeout" }) } }, 30000)
+    }),
+    onEvent: (name, cb) => {
+      (eventSubs[name] ??= []).push(cb)
+      return () => { eventSubs[name] = eventSubs[name].filter((x) => x !== cb) }
+    },
+  }
 
   class DshNotification {
     constructor(title, options = {}) {

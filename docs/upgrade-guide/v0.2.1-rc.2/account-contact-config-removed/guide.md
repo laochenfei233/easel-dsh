@@ -9,7 +9,7 @@ English | [中文](guide.zh.md)
 
 ## Change
 
-The `@deepseek-ai/dsh-client-ui-settings-account` plugin no longer offers the `contactFormUrl` and `contactSource` cordis.yml keys, and the sidebar account menu no longer opens the external Feishu questionnaire: its Feedback entry is gone, together with the Sign in entry and the signed-out More menu. Before sign-in the sidebar launcher is the plain Settings trigger, and feedback lives in the General settings section as a link to the product repository's issue tracker. Deployments that set either key on the plugin are affected.
+The `@deepseek-ai/dsh-client-ui-settings-account` plugin no longer offers the `contactFormUrl` and `contactSource` cordis.yml keys, and the sidebar account menu no longer opens the external Feishu questionnaire: its Feedback entry is gone, together with the Sign in entry and the signed-out More menu. Before sign-in the sidebar launcher is the plain Settings trigger, and feedback lives on the About settings page as a link to the product repository's issue tracker. Deployments that set either key on the plugin are affected.
 
 ## Migration
 
@@ -22,4 +22,4 @@ The `@deepseek-ai/dsh-client-ui-settings-account` plugin no longer offers the `c
        contactSource: harness                       # delete
    ```
 
-2. Point users who relied on the questionnaire at the repository issue tracker that the new General settings Feedback row opens. Confirm the plugin still boots and that Settings → General shows the Feedback row at the bottom.
+2. Point users who relied on the questionnaire at the repository issue tracker that the About page's Feedback link opens. Confirm the plugin still boots and that Settings → About shows the Feedback link.
