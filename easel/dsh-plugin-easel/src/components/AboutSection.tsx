@@ -16,7 +16,7 @@ export const ABOUT_STYLES = `
 .eau-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
 .eau-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 22px; font-weight: 500; }
 .eau-badge { flex: none; padding: 1px 8px; border-radius: 999px; font-size: 11px; line-height: 16px; font-weight: 400; background: var(--dsw-alias-fill-secondary); color: var(--dsw-alias-label-secondary); }
-.eau-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.eau-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .eau-muted { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; word-break: break-all; }
 .eau-error { margin: 0; color: var(--dsw-alias-state-danger-primary, #d4453f); font-size: 12px; line-height: 18px; word-break: break-all; }
 .eau-btn {
