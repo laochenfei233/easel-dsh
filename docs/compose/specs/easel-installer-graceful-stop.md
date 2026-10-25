@@ -1,10 +1,12 @@
 ---
 feature: easel-installer-graceful-stop
 status: in-progress
-updated: 2026-10-25
+updated: 2026-10-26
 branch: feat/easel-installer-graceful-stop（base master e4a2c7e804）
-commits: pending
+commits: e4a2c7e804..b4d4ebb083（code；spec 更正另提交）
 ---
+
+> **交付阻塞（2026-10-25 23:44）**：验证 harness 误删了真实数据根 `C:\Users\chenfei\Documents\Easel-dsh`。钩子的运行时验证作废；数据恢复完成前不得合并或安装本分支。详见 Report 的 INCIDENT 段。
 
 # 安装/卸载时优雅停壳（消除死托盘图标）
 
@@ -21,16 +23,23 @@ commits: pending
 - `cargo test --lib`：49 passed，含新增 `quit_flag_from_the_installer_is_recognized`。
 - `cargo check --release`：通过（真正编译 release-only 的 `--quit` 分支）。
 - `makensis` 用最小 NSIS 脚本插入新宏编译通过（转义与宏展开合法）。
-- 从宏里解出生成的 `stop-easel.ps1`，用假 `dsh-desktop.exe` 跑两条路径：
-  - 忽略 `--quit` 的顽固进程：日志出现 `args=--quit`，轮询超时后两个进程都被强杀，剩余 0；
-  - 处理 `--quit` 的进程：第二条进程杀掉首进程并退出，轮询提前结束，剩余 0；真实已装 Easel 进程未被误杀。
-- 未做真机安装 E2E（会替换用户当前安装）；安装器首次带新钩子的升级即为实测点，失败时兜底强杀保持现状。
+- **钩子的运行时验证作废（见下 INCIDENT），不能作为通过证据。** 原计划从宏里解出 `stop-easel.ps1` 配假 `dsh-desktop.exe` 跑优雅/兜底两条路径；提取时把 `installer-hooks.nsh` 里 **POSTUNINSTALL 的数据删除段**也拼进去执行，且只隔离了 `LOCALAPPDATA`，没有隔离 `USERPROFILE` / Documents 已知文件夹。
+- 未做真机安装 E2E；安装器首次带新钩子的升级才是运行时实测点，失败时兜底强杀保持现状。
+
+**INCIDENT — 2026-10-25 23:44（阻塞交付）**
+
+- 被删目录：`C:\Users\chenfei\Documents\Easel-dsh`（workspace + home：项目/素材/outputs、会话、profile、凭据、插件数据）。
+- 原因：验证脚本把 `installer-hooks.nsh` 中**所有** `FileWrite $0 '...'` 行解出并执行。`$env:LOCALAPPDATA` 指向临时目录，但 `[Environment]::GetFolderPath("MyDocuments")` 仍是真实 Documents；`data-root.json` 把 `$dataRoot` 指向真实数据根；`Test-EaselRoot` 通过后执行 `Remove-Item -Recurse -Force`。
+- 已做：删除未安全 harness；把仍存的 `.dsh`（76.4MB，session 到 2026-10-15）与 WebView 配置/缓存（318MB）复制到 `\\chenfei-nas\Backup\chenfei_s_Legion_backup\Easel-recovery-2026-10-25`；桌面留 `Easel-数据丢失-请先阅读.txt`；检查 VSS/File History/OneDrive/回收站/NAS Document_Backup 均无副本（NAS 文档备份最后运行 2026-10-16，早于数据根创建）。
+- 恢复：需用户在场，用管理员权限的恢复工具扫描 C:，输出到外接盘（详见桌面说明）。恢复完成前不要启动 Easel、不要装新版本、不要跑文档备份。
+- 代码本身未被评审发现缺陷（reviewer 对 diff 判 SHIP），但**不得在事故处置前合并/安装**；`--quit` 的真实安装器 E2E 留到恢复之后。
 
 **Journey log**
 
 - 先按任务栏按钮排查：UIA 把 MangoDisk 桌面带误报成第二个 Easel 按钮，截图裁切证伪；真正的证据在托盘缓存 `IconStreams`（ROT13 混淆）里的两条 Easel 路径与隐藏图标弹层的两个同款图标。
 - 应用内 updater 不需要改：`tauri-plugin-updater` 的默认 `on_before_exit` 调 `cleanup_before_exit()`，先清托盘引用再 `std::process::exit(0)`。
 - 钩子脚本的轮询用 `Get-CimInstance`，本机每次查询较慢，顽固路径总耗时约 14s（原有运行时清扫已占约 9s）；优雅路径只多一次查询，正常升级无感。
+- **事故教训**：验证脚本不得从生产 NSIS 宏里全量提取再执行；必须只取目标宏，并把 `USERPROFILE`、Documents 已知文件夹、`LOCALAPPDATA` 一起重定向到沙箱。`Remove-Item -Recurse -Force` 不进回收站，事后没有系统级副本可退。
 
 ## [S1] Problem
 
@@ -63,11 +72,13 @@ commits: pending
 - [x] T1: `lib.rs` 增加 `--quit` 分派与 flag 单测（depends: none）
 - [x] T2: `installer-hooks.nsh` 增加优雅停壳轮询与强杀兜底（depends: T1）
 - [x] T3: `cargo test` + `cargo check --release`（depends: T1,T2）
-- [ ] T4: 独立 subagent 评审（depends: T3）
+- [x] T4: 独立 subagent 评审（diff 判 SHIP；critical 项是 harness 事故，不是代码缺陷）（depends: T3）
+- [ ] T5: 数据事故处置（恢复/确认损失、更正证据、用户决定是否继续交付）；恢复完成前不得合并/安装（depends: T4）
 
 ## [S4] Acceptance
 
-- [ ] release 壳对 `--quit` 调 `app.exit(0)` 而非强杀；`quit_flag_from_the_installer_is_recognized` 通过
-- [ ] 安装/卸载钩子在强杀前对运行中的壳执行 `--quit` 并轮询，超时才兜底强杀
-- [ ] `cargo test` 与 `cargo check --release` 全绿
-- [ ] 评审三项（spec 合规、正确性、代码库一致性）无 critical
+- [x] release 壳对 `--quit` 调 `app.exit(0)` 而非强杀；`quit_flag_from_the_installer_is_recognized` 通过（回调接线由 release 编译 + 源码核对）
+- [ ] 安装/卸载钩子在强杀前对运行中的壳执行 `--quit` 并轮询，超时才兜底强杀（NSIS 编译与源码核对通过；运行时验证因事故作废，真机 E2E 待恢复后）
+- [x] `cargo test` 与 `cargo check --release` 全绿
+- [x] 评审三项（spec 合规、正确性、代码库一致性）无 critical（reviewer 对 diff 判 SHIP）
+- [ ] 数据事故处置完成、恢复结果确认后，才可把本特性标为 delivered 并合并/安装
