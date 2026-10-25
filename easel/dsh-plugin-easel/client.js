@@ -23,14 +23,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// easel/dsh-plugin-easel/src/client.tsx
+// src/client.tsx
 var client_exports = {};
 __export(client_exports, {
   default: () => client_default
 });
 module.exports = __toCommonJS(client_exports);
 
-// easel/dsh-plugin-easel/src/generated/easel-css.js
+// src/generated/easel-css.js
 var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .easel-scope {
   color-scheme: dark;
   --bg: #14171e;
@@ -912,10 +912,10 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
     box-shadow: inset 0 0 0 1px var(--border-strong);
   }}`;
 
-// easel/dsh-plugin-easel/src/lib/shell.tsx
+// src/lib/shell.tsx
 var import_react = require("react");
 
-// easel/dsh-plugin-easel/src/lib/task.ts
+// src/lib/task.ts
 var getServices = null;
 var cwdResolver = null;
 function configureTasks(cfg) {
@@ -1019,7 +1019,7 @@ async function resolveHomeWorkspaceId(projectDir) {
   return root ? findWorkspaceByPath(root)?.workspaceId ?? null : null;
 }
 
-// easel/dsh-plugin-easel/src/lib/shell.tsx
+// src/lib/shell.tsx
 function pageKey(view12) {
   return `easel.${view12}`;
 }
@@ -1160,7 +1160,7 @@ function createShellBridge(ctx, t) {
   return { useShellProps, navigate, useTopic, t, refresh: shell.refresh, setPersona: shell.setPersona };
 }
 
-// easel/dsh-plugin-easel/src/features/dashboard.tsx
+// src/features/dashboard.tsx
 var dashboard_exports = {};
 __export(dashboard_exports, {
   Component: () => Component,
@@ -1171,7 +1171,7 @@ __export(dashboard_exports, {
   view: () => view
 });
 
-// easel/dsh-plugin-easel/src/components/icons.tsx
+// src/components/icons.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 var svg = (size = 18, sw = 1.8) => ({
   width: size,
@@ -1315,10 +1315,10 @@ var IconGithub = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, impor
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M9 18c-4.51 2-5-2-7-2" })
 ] });
 
-// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
+// src/components/DashboardPage.tsx
 var import_react2 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/api.ts
+// src/lib/api.ts
 var BASE = "/easel";
 async function request(url, options) {
   const res = await fetch(`${BASE}${url}`, { cache: "no-store", ...options });
@@ -1548,7 +1548,7 @@ function projectizeTopic(body) {
   return request("/api/projectize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 }
 
-// easel/dsh-plugin-easel/src/lib/whoami.ts
+// src/lib/whoami.ts
 var KEY = "easel_whoami";
 var WHOAMI_TTL_MS = 6e5;
 function getWhoamiCache() {
@@ -1594,7 +1594,7 @@ function verifyStale(platforms, opts = {}) {
   );
 }
 
-// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
+// src/components/DashboardPage.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
 function fmtNum(n) {
   if (n == null) return "\u2014";
@@ -1882,7 +1882,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/dashboard.tsx
+// src/features/dashboard.tsx
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var view = "dashboard";
 var order = 30;
@@ -1914,7 +1914,7 @@ var plugin = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/trends.tsx
+// src/features/trends.tsx
 var trends_exports = {};
 __export(trends_exports, {
   Component: () => Component2,
@@ -1925,7 +1925,7 @@ __export(trends_exports, {
   view: () => view2
 });
 
-// easel/dsh-plugin-easel/src/components/TrendsPage.tsx
+// src/components/TrendsPage.tsx
 var import_react3 = require("react");
 var import_jsx_runtime4 = require("react/jsx-runtime");
 var ALL_PLATFORMS = [
@@ -2493,7 +2493,7 @@ function builtinColumns(groups) {
   return groups.filter((g) => !g.platform.startsWith("custom:")).map((g) => ({ ...g, source: sourceOf(g.label) }));
 }
 
-// easel/dsh-plugin-easel/src/features/trends.tsx
+// src/features/trends.tsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
 var view2 = "trends";
 var order2 = 31;
@@ -2525,7 +2525,7 @@ var plugin2 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/ideas.tsx
+// src/features/ideas.tsx
 var ideas_exports = {};
 __export(ideas_exports, {
   Component: () => Component3,
@@ -2536,10 +2536,10 @@ __export(ideas_exports, {
   view: () => view3
 });
 
-// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
+// src/components/IdeasPage.tsx
 var import_react4 = require("react");
 
-// node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3696,7 +3696,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -5671,7 +5671,7 @@ function createDOMPurify() {
 }
 var purify_default = createDOMPurify();
 
-// easel/dsh-plugin-easel/src/lib/sanitize.ts
+// src/lib/sanitize.ts
 k.setOptions({ breaks: true, gfm: true });
 function renderMarkdown(md) {
   if (!md) return "";
@@ -5679,7 +5679,7 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
-// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
+// src/components/IdeasPage.tsx
 var import_jsx_runtime6 = require("react/jsx-runtime");
 var COLUMNS = [
   { key: "pending", label: "\u5F85\u505A", color: "var(--text-tertiary)" },
@@ -5942,7 +5942,7 @@ function IdeasPage({ onUseTopic }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/ideas.tsx
+// src/features/ideas.tsx
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var view3 = "ideas";
 var order3 = 32;
@@ -5974,7 +5974,7 @@ var plugin3 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/calendar.tsx
+// src/features/calendar.tsx
 var calendar_exports = {};
 __export(calendar_exports, {
   Component: () => Component4,
@@ -5985,10 +5985,10 @@ __export(calendar_exports, {
   view: () => view4
 });
 
-// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
+// src/components/CalendarPage.tsx
 var import_react5 = require("react");
 
-// easel/dsh-plugin-easel/src/data/holidays-cn.js
+// src/data/holidays-cn.js
 var HOLIDAYS_CN = {
   2025: {
     "2025-01-01": ["\u5143\u65E6", 1],
@@ -6068,7 +6068,7 @@ var HOLIDAYS_CN = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/lunar.js
+// src/lib/lunar.js
 var LUNAR_INFO = [
   19416,
   19168,
@@ -6387,7 +6387,7 @@ function lunarFestivalsFor(year, month) {
   return result;
 }
 
-// easel/dsh-plugin-easel/src/lib/festivals.js
+// src/lib/festivals.js
 var FIXED_FESTIVALS = [
   ["01-01", "\u5143\u65E6"],
   ["02-14", "\u60C5\u4EBA\u8282"],
@@ -6464,7 +6464,7 @@ function festivalsFor(year, month) {
   return result;
 }
 
-// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
+// src/components/CalendarPage.tsx
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var STATUS_META = {
   idea: { label: "\u9009\u9898", color: "var(--text-tertiary)" },
@@ -7277,7 +7277,7 @@ function CalendarPage() {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/calendar.tsx
+// src/features/calendar.tsx
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var view4 = "calendar";
 var order4 = 34;
@@ -7309,7 +7309,7 @@ var plugin4 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/schedules.tsx
+// src/features/schedules.tsx
 var schedules_exports = {};
 __export(schedules_exports, {
   Component: () => Component5,
@@ -7320,7 +7320,7 @@ __export(schedules_exports, {
   view: () => view5
 });
 
-// easel/dsh-plugin-easel/src/components/SchedulesPage.tsx
+// src/components/SchedulesPage.tsx
 var import_react6 = require("react");
 var import_jsx_runtime10 = require("react/jsx-runtime");
 var TIMING_KINDS = [
@@ -7919,7 +7919,7 @@ function SchedulesPage({
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/schedules.tsx
+// src/features/schedules.tsx
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var view5 = "schedules";
 var order5 = 36;
@@ -7959,7 +7959,7 @@ var plugin5 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/skills.tsx
+// src/features/skills.tsx
 var skills_exports = {};
 __export(skills_exports, {
   Component: () => Component6,
@@ -7970,13 +7970,13 @@ __export(skills_exports, {
   view: () => view6
 });
 
-// easel/dsh-plugin-easel/src/components/SkillPage.tsx
+// src/components/SkillPage.tsx
 var import_react8 = require("react");
 
-// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
+// src/components/SkillDrawer.tsx
 var import_react7 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/skillDisplayNames.ts
+// src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
   "ai-image-gen": "AI \u751F\u56FE",
   "ai-music": "BGM / \u97F3\u4E50\u751F\u6210",
@@ -8096,7 +8096,7 @@ function displayName(raw) {
   return SKILL_DISPLAY_NAMES[raw] || raw;
 }
 
-// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
+// src/components/SkillDrawer.tsx
 var import_jsx_runtime12 = require("react/jsx-runtime");
 function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) {
   const [detail, setDetail] = (0, import_react7.useState)(null);
@@ -8317,7 +8317,7 @@ ${input.trim()}
   ] }) });
 }
 
-// easel/dsh-plugin-easel/src/components/SkillPage.tsx
+// src/components/SkillPage.tsx
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var LAYERS = [
   { key: "discover", label: "\u53D1\u73B0", Icon: IconSearch, color: "var(--layer-discover)" },
@@ -8463,7 +8463,7 @@ function SkillPage({ persona, onNavigate }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/skills.tsx
+// src/features/skills.tsx
 var import_jsx_runtime14 = require("react/jsx-runtime");
 var view6 = "skills";
 var order6 = 35;
@@ -8495,7 +8495,7 @@ var plugin6 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/outputs.tsx
+// src/features/outputs.tsx
 var outputs_exports = {};
 __export(outputs_exports, {
   Component: () => Component7,
@@ -8506,7 +8506,7 @@ __export(outputs_exports, {
   view: () => view7
 });
 
-// easel/dsh-plugin-easel/src/components/OutputsPage.tsx
+// src/components/OutputsPage.tsx
 var import_react9 = require("react");
 var import_jsx_runtime15 = require("react/jsx-runtime");
 var FILTERS = [
@@ -8812,7 +8812,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/outputs.tsx
+// src/features/outputs.tsx
 var import_jsx_runtime16 = require("react/jsx-runtime");
 var view7 = "outputs";
 var order7 = 37;
@@ -8844,7 +8844,7 @@ var plugin7 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/publish.tsx
+// src/features/publish.tsx
 var publish_exports = {};
 __export(publish_exports, {
   Component: () => Component8,
@@ -8855,10 +8855,10 @@ __export(publish_exports, {
   view: () => view8
 });
 
-// easel/dsh-plugin-easel/src/components/PublishPage.tsx
+// src/components/PublishPage.tsx
 var import_react10 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/store.ts
+// src/lib/store.ts
 var PUBLISH_KEY = "easel_publish_draft";
 var PREVIOUS_BRAND = ["post", "craft"].join("");
 function readMigratedLocalValue(key, suffix) {
@@ -8895,7 +8895,7 @@ function savePublishDraft(d2) {
   }
 }
 
-// easel/dsh-plugin-easel/src/components/PublishPage.tsx
+// src/components/PublishPage.tsx
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var PLATFORMS2 = [
   { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", titleLimit: 20, bodyLimit: 1e3, hint: "\u6807\u9898\u226420\uFF0C\u6B63\u6587\u22641000\uFF0C\u91CD\u60C5\u7EEA+\u8BDD\u9898\u6807\u7B7E" },
@@ -9444,7 +9444,7 @@ function PublishPage({ persona }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/publish.tsx
+// src/features/publish.tsx
 var import_jsx_runtime18 = require("react/jsx-runtime");
 var view8 = "publish";
 var order8 = 38;
@@ -9476,7 +9476,7 @@ var plugin8 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/accounts.tsx
+// src/features/accounts.tsx
 var accounts_exports = {};
 __export(accounts_exports, {
   Component: () => Component9,
@@ -9487,7 +9487,7 @@ __export(accounts_exports, {
   view: () => view9
 });
 
-// easel/dsh-plugin-easel/src/components/AccountsPage.tsx
+// src/components/AccountsPage.tsx
 var import_react11 = require("react");
 var import_jsx_runtime19 = require("react/jsx-runtime");
 var STATE_LABEL = {
@@ -10144,7 +10144,7 @@ function AccountsPage() {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/accounts.tsx
+// src/features/accounts.tsx
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var view9 = "accounts";
 var order9 = 39;
@@ -10176,7 +10176,7 @@ var plugin9 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/profile.tsx
+// src/features/profile.tsx
 var profile_exports = {};
 __export(profile_exports, {
   Component: () => Component10,
@@ -10187,10 +10187,10 @@ __export(profile_exports, {
   view: () => view10
 });
 
-// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
+// src/components/PersonaBrowser.tsx
 var import_react14 = require("react");
 
-// easel/dsh-plugin-easel/src/components/ProfilePage.tsx
+// src/components/ProfilePage.tsx
 var import_react12 = require("react");
 var import_jsx_runtime21 = require("react/jsx-runtime");
 function fanTier(n) {
@@ -10418,7 +10418,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/components/OnboardingWizard.tsx
+// src/components/OnboardingWizard.tsx
 var import_react13 = require("react");
 var import_jsx_runtime22 = require("react/jsx-runtime");
 var PLATFORMS3 = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u89C6\u9891\u53F7", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
@@ -10650,7 +10650,7 @@ ${formToInstruction(name, form)}`;
   ] }) });
 }
 
-// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
+// src/components/PersonaBrowser.tsx
 var import_jsx_runtime23 = require("react/jsx-runtime");
 function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }) {
   const [wizardOpen, setWizardOpen] = (0, import_react14.useState)(false);
@@ -10720,7 +10720,7 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/profile.tsx
+// src/features/profile.tsx
 var import_jsx_runtime24 = require("react/jsx-runtime");
 var view10 = "profile";
 var order10 = 38;
@@ -10752,7 +10752,7 @@ var plugin10 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/breakdown.tsx
+// src/features/breakdown.tsx
 var breakdown_exports = {};
 __export(breakdown_exports, {
   Component: () => Component11,
@@ -10763,7 +10763,7 @@ __export(breakdown_exports, {
   view: () => view11
 });
 
-// easel/dsh-plugin-easel/src/components/BreakdownPage.tsx
+// src/components/BreakdownPage.tsx
 var import_react15 = require("react");
 var import_jsx_runtime25 = require("react/jsx-runtime");
 var FETCH_STAGES = [
@@ -11091,7 +11091,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/breakdown.tsx
+// src/features/breakdown.tsx
 var import_jsx_runtime26 = require("react/jsx-runtime");
 var view11 = "breakdown";
 var order11 = 33;
@@ -11123,10 +11123,10 @@ var plugin11 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/media-preview.tsx
+// src/lib/media-preview.tsx
 var import_react16 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/media-url.js
+// src/lib/media-url.js
 var VIDEO_EXTENSIONS = ["mp4", "m4v", "mov", "webm", "mkv"];
 var AUDIO_EXTENSIONS = ["mp3", "wav", "m4a", "aac", "flac", "ogg", "opus"];
 var MEDIA_EXTENSIONS = [...VIDEO_EXTENSIONS, ...AUDIO_EXTENSIONS];
@@ -11157,7 +11157,7 @@ function workspaceMediaPath(absolutePath, projectRoot2) {
   return rel;
 }
 
-// easel/dsh-plugin-easel/src/lib/media-preview.tsx
+// src/lib/media-preview.tsx
 var import_jsx_runtime27 = require("react/jsx-runtime");
 var MEDIA_BODY_ID = "easel-media-player";
 var MEDIA_COPY = {
@@ -11305,7 +11305,7 @@ function registerMediaPreview(ctx) {
   else if (ctx.get?.("documentPreviews") !== void 0) attach(ctx);
 }
 
-// easel/dsh-plugin-easel/src/features/media.ts
+// src/features/media.ts
 var plugin12 = {
   name: "easel-media",
   inject: ["slots", "locale"],
@@ -11318,10 +11318,10 @@ var plugin12 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/components/BackupSettings.tsx
+// src/components/BackupSettings.tsx
 var import_react17 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/backup-api.ts
+// src/lib/backup-api.ts
 var BASE2 = "/easel/api/backup";
 async function request2(url, options) {
   const res = await fetch(`${BASE2}${url}`, { cache: "no-store", ...options });
@@ -11361,7 +11361,7 @@ function connectSmb(root, username, password) {
   return request2("/connect-smb", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ root, username, password }) });
 }
 
-// easel/dsh-plugin-easel/src/components/BackupSettings.tsx
+// src/components/BackupSettings.tsx
 var import_jsx_runtime28 = require("react/jsx-runtime");
 var GROUPS = [
   { id: "config", title: "scopeConfig", hint: "scopeConfigHint" },
@@ -11943,7 +11943,7 @@ function BackupSettings({ t }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/locales/backup.ts
+// src/locales/backup.ts
 var BACKUP_COPY = {
   en: {
     nav: "Backup",
@@ -12111,7 +12111,7 @@ var BACKUP_COPY = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/backup.tsx
+// src/features/backup.tsx
 var NS = "easel.backup";
 var STYLE_ID = "easel-backup-settings-styles";
 var plugin13 = {
@@ -12140,7 +12140,7 @@ var plugin13 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/lib/context-menu-model.js
+// src/lib/context-menu-model.js
 var FILE_ROW_SELECTOR = "[data-files-entry]";
 var FILE_ROOT_SELECTOR = "[data-files-root]";
 var EDITABLE_SELECTOR = [
@@ -12284,7 +12284,7 @@ function fileNameOf(path) {
   return parts[parts.length - 1] ?? "";
 }
 
-// easel/dsh-plugin-easel/src/features/context-menu.js
+// src/features/context-menu.js
 var STYLE_ID2 = "easel-context-menu-style";
 var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
@@ -12969,10 +12969,10 @@ function reportError(ctx, error) {
   }
 }
 
-// easel/dsh-plugin-easel/src/components/HandoffSettings.tsx
+// src/components/HandoffSettings.tsx
 var import_react18 = require("react");
 
-// easel/dsh-plugin-easel/src/lib/handoff-api.ts
+// src/lib/handoff-api.ts
 var BASE3 = "/easel";
 async function request3(url, options) {
   const res = await fetch(`${BASE3}${url}`, { cache: "no-store", ...options });
@@ -13014,7 +13014,7 @@ function sendHandoff(peerId, workspacePath, payload) {
   });
 }
 
-// easel/dsh-plugin-easel/src/components/HandoffSettings.tsx
+// src/components/HandoffSettings.tsx
 var import_jsx_runtime29 = require("react/jsx-runtime");
 var COPY = {
   en: {
@@ -13488,7 +13488,7 @@ function HandoffSettings({ t }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/features/handoff.tsx
+// src/features/handoff.tsx
 var NS2 = "easel.handoff";
 var STYLE_ID3 = "easel-handoff-settings-styles";
 var plugin15 = {
@@ -13517,7 +13517,7 @@ var plugin15 = {
   }
 };
 
-// easel/dsh-plugin-easel/src/features/index.ts
+// src/features/index.ts
 var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, schedules_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
 var FEATURES = views.map((module2) => ({
   view: module2.view,
@@ -13527,7 +13527,7 @@ var FEATURES = views.map((module2) => ({
 }));
 var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin12, plugin13, plugin14, plugin15];
 
-// easel/dsh-plugin-easel/src/lib/hostUpdate.js
+// src/lib/hostUpdate.js
 var EVENT_PROGRESS = "easel://update-progress";
 var EVENT_AVAILABLE = "easel://update-available";
 function detectHostUpdateBridge(win) {
@@ -13679,7 +13679,7 @@ function createUpdateStore(bridge) {
   };
 }
 
-// easel/dsh-plugin-easel/src/components/DataRootSection.tsx
+// src/components/DataRootSection.tsx
 var import_react19 = require("react");
 var import_jsx_runtime30 = require("react/jsx-runtime");
 var DATA_ROOT_STYLES = `
@@ -13868,7 +13868,7 @@ function DataRootSection({ t }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/locales/dataRoot.ts
+// src/locales/dataRoot.ts
 var DATA_ROOT_COPY = {
   zh: {
     nav: "\u6570\u636E\u4F4D\u7F6E",
@@ -13918,13 +13918,13 @@ var DATA_ROOT_COPY = {
   }
 };
 
-// easel/dsh-plugin-easel/src/components/AboutSection.tsx
+// src/components/AboutSection.tsx
 var import_react20 = require("react");
 
-// easel/dsh-plugin-easel/src/assets/app-icon.png
+// src/assets/app-icon.png
 var app_icon_default = "data:image/png;base64,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";
 
-// easel/dsh-plugin-easel/src/components/AboutSection.tsx
+// src/components/AboutSection.tsx
 var import_jsx_runtime31 = require("react/jsx-runtime");
 var ABOUT_STYLES = `
 .eau-root { display: flex; flex-direction: column; gap: 14px; padding: 4px 0 8px; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
@@ -14147,7 +14147,7 @@ function AboutSection({ t, update }) {
           ),
           /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("button", { type: "button", className: "eau-btn", disabled: sourceBusy || installing, onClick: saveCustom, children: t("save") })
         ] }) : null,
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-hint", role: "status", children: sourceNote ?? (choice === "default" ? t("sourceHint") : state.endpoints.length > 0 ? state.endpoints.join(" \xB7 ") : t("sourceUnavailable")) })
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-hint", role: "status", children: sourceNote ?? (choice === "default" ? t("sourceHint") : choice === "custom" && state.sourceKey !== "custom" ? t("customUrlHint") : state.endpoints.length > 0 ? state.endpoints.join(" \xB7 ") : t("sourceUnavailable")) })
       ] }),
       state.lastCheckMs && !statusText ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("lastChecked").replace("{time}", new Date(state.lastCheckMs).toLocaleString()) }) : null
     ] }),
@@ -14155,7 +14155,7 @@ function AboutSection({ t, update }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/components/UpdateNotice.tsx
+// src/components/UpdateNotice.tsx
 var import_react21 = require("react");
 var import_jsx_runtime32 = require("react/jsx-runtime");
 function UpdateNotice({ t, update }) {
@@ -14185,7 +14185,7 @@ function UpdateNotice({ t, update }) {
   ] });
 }
 
-// easel/dsh-plugin-easel/src/locales/easelAbout.ts
+// src/locales/easelAbout.ts
 var EASEL_ABOUT_COPY = {
   zh: {
     nav: "\u5173\u4E8E",
@@ -14206,6 +14206,7 @@ var EASEL_ABOUT_COPY = {
     sourceGithub: "GitHub \u955C\u50CF",
     sourceCustom: "\u81EA\u5B9A\u4E49\u2026",
     sourceHint: "\u5B98\u65B9\u7AD9\u70B9\u4E0D\u53EF\u7528\u65F6\u81EA\u52A8\u56DE\u9000\u5230\u955C\u50CF\u3002",
+    customUrlHint: "\u586B\u5165 latest.json \u5730\u5740\u540E\u70B9\u300C\u4FDD\u5B58\u300D\u3002",
     sourceUnavailable: "\u4E0D\u53EF\u7528",
     customUrlLabel: "\u5730\u5740",
     save: "\u4FDD\u5B58",
@@ -14241,6 +14242,7 @@ var EASEL_ABOUT_COPY = {
     sourceGithub: "GitHub mirror",
     sourceCustom: "Custom\u2026",
     sourceHint: "Falls back to the mirror when the official site is unavailable.",
+    customUrlHint: "Enter a latest.json URL, then save.",
     sourceUnavailable: "Unavailable",
     customUrlLabel: "URL",
     save: "Save",
@@ -14259,7 +14261,7 @@ var EASEL_ABOUT_COPY = {
   }
 };
 
-// easel/dsh-plugin-easel/src/client.tsx
+// src/client.tsx
 var NS3 = "easel.panel";
 var STYLE_ID4 = "dsh-plugin-easel-style";
 var DATA_ROOT_STYLE_ID = "easel-data-root-settings-styles";

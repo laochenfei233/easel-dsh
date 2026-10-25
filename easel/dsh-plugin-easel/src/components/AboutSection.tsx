@@ -244,6 +244,7 @@ export function AboutSection({ t, update }: AboutSectionProps) {
         ) : null}
         <p className="eau-hint" role="status">
           {sourceNote ?? (choice === 'default' ? t('sourceHint')
+            : choice === 'custom' && state.sourceKey !== 'custom' ? t('customUrlHint')
             : state.endpoints.length > 0 ? state.endpoints.join(' · ') : t('sourceUnavailable'))}
         </p>
       </div>
