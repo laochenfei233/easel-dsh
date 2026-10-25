@@ -312,6 +312,8 @@ impl DshHandle {
         self.ensure_home_node_modules()?;
         crate::setup::ensure_easel_bundle(&app)?;
         append_startup_log("spawn_child: easel bundle ready");
+        crate::setup::ensure_dreamina_skills(&app)?;
+        append_startup_log("spawn_child: dreamina skills ready");
         crate::setup::ensure_default_plugins(&app)?;
         append_startup_log("spawn_child: default plugins ready");
         let port = match select_port() {
@@ -366,6 +368,13 @@ impl DshHandle {
             // string always does.
             path_parts
                 .extend(std::env::split_paths(&existing).map(|p| p.to_string_lossy().into_owned()));
+        }
+        // The bundled Jimeng CLIs come last: after the inherited PATH, so an
+        // install made through the CLIs' own installers keeps precedence and
+        // the bundle covers machines without one (setup.rs registers their
+        // skills from the same staged tree).
+        if let Some(dreamina_bin) = crate::setup::dreamina_bin_dir(&app) {
+            path_parts.push(dreamina_bin.to_string_lossy().into_owned());
         }
         // join_paths uses the platform separator (";" on Windows, ":" on
         // POSIX); a literal ";" join breaks every PATH lookup in the dsh web

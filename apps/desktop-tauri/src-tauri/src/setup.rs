@@ -93,19 +93,30 @@ fn sanitize_rows(rows: Vec<Yaml>) -> Vec<Yaml> {
     rows.into_iter().filter(|row| row.is_mapping()).collect()
 }
 
+/// Read a profile patch as sanitized rows: empty when the file is absent or
+/// unparseable, so the shell re-adds what it maintains.
+fn read_patch_rows(patch_path: &Path) -> Vec<Yaml> {
+    fs::read_to_string(patch_path)
+        .ok()
+        .and_then(|raw| serde_yaml::from_str(&raw).ok())
+        .map(sanitize_rows)
+        .unwrap_or_default()
+}
+
+/// Serialize rows back to a profile patch file.
+fn write_patch_rows(patch_path: &Path, rows: &[Yaml]) -> Result<(), String> {
+    fs::write(
+        patch_path,
+        serde_yaml::to_string(rows).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())
+}
+
 fn write_preset_patch(home: &Path, preset: &str) -> Result<(), String> {
     let patch_path = profile_web_dir(home).join("cordis.patch.yml");
     fs::create_dir_all(patch_path.parent().unwrap()).map_err(|e| e.to_string())?;
 
-    let mut rows: Vec<Yaml> = if patch_path.exists() {
-        fs::read_to_string(&patch_path)
-            .ok()
-            .and_then(|raw| serde_yaml::from_str(&raw).ok())
-            .map(sanitize_rows)
-            .unwrap_or_default()
-    } else {
-        Vec::new()
-    };
+    let mut rows: Vec<Yaml> = read_patch_rows(&patch_path);
 
     let mut found = false;
     for row in rows.iter_mut() {
@@ -127,11 +138,7 @@ fn write_preset_patch(home: &Path, preset: &str) -> Result<(), String> {
         );
     }
 
-    fs::write(
-        &patch_path,
-        serde_yaml::to_string(&rows).map_err(|e| e.to_string())?,
-    )
-    .map_err(|e| e.to_string())
+    write_patch_rows(&patch_path, &rows)
 }
 
 /// Installs one plugin. `spec` is either a package/Git spec passed to
@@ -211,11 +218,7 @@ fn install_local_plugin(app: &AppHandle, name: &str) -> Result<String, String> {
         rows.push(serde_yaml::from_str(
             "insert:\n  - id: win-terminal-inspector\n    name: ./plugins/dsh-win-terminal-inspector/index.js\n",
         ).map_err(|e| format!("build patch row: {e}"))?);
-        fs::write(
-            &patch_path,
-            serde_yaml::to_string(&rows).map_err(|e| e.to_string())?,
-        )
-        .map_err(|e| e.to_string())?;
+        write_patch_rows(&patch_path, &rows)?;
     }
     Ok(format!("installed {name}"))
 }
@@ -253,11 +256,7 @@ pub(crate) fn ensure_default_plugins(app: &AppHandle) -> Result<(), String> {
     }
 
     let patch_path = profile.join("cordis.patch.yml");
-    let mut rows: Vec<Yaml> = fs::read_to_string(&patch_path)
-        .ok()
-        .and_then(|raw| serde_yaml::from_str(&raw).ok())
-        .map(sanitize_rows)
-        .unwrap_or_default();
+    let mut rows: Vec<Yaml> = read_patch_rows(&patch_path);
     // EASEL-DIVERGENCE: the plugin market is not part of Easel-dsh; older
     // shells preinstalled and registered it. Heal every trace on each start.
     heal_market_removal(&home, &profile, &mut rows);
@@ -498,16 +497,12 @@ pub(crate) fn ensure_easel_bundle_at(
     remove_bundle_listing(&profile, EASEL_PLUGIN_NAME)?;
 
     let patch_path = profile.join("cordis.patch.yml");
-    let mut rows: Vec<Yaml> = fs::read_to_string(&patch_path)
-        .ok()
-        .and_then(|raw| serde_yaml::from_str(&raw).ok())
-        .map(sanitize_rows)
-        .unwrap_or_default();
+    let mut rows: Vec<Yaml> = read_patch_rows(&patch_path);
 
     // Paths go through the YAML serializer so backslashes and non-ASCII are
     // quoted by it, never hand-escaped.
     let project_root = yaml_scalar(easel_root.to_string_lossy().as_ref())?;
-    let converted_root = ensure_easel_row(
+    let converted_root = ensure_bundle_row(
         &mut rows,
         "easel",
         &format!(
@@ -523,7 +518,7 @@ pub(crate) fn ensure_easel_bundle_at(
             .join("openclaw")
             .to_string_lossy(),
     )?;
-    ensure_easel_row(
+    ensure_bundle_row(
         &mut rows,
         "easel-skills",
         &format!(
@@ -533,12 +528,12 @@ pub(crate) fn ensure_easel_bundle_at(
     // Feature plugins are thin mount packages (@easel-dsh/*) over the core
     // package's exports map: the implementation stays in dsh-plugin-easel and
     // shares its helpers, while the loader rows name Easel-owned packages.
-    ensure_easel_row(
+    ensure_bundle_row(
         &mut rows,
         "easel-automation",
         "insert:\n  - id: easel-automation\n    name: '@easel-dsh/easel-automation'\n",
     )?;
-    ensure_easel_row(
+    ensure_bundle_row(
         &mut rows,
         "easel-deconstruct",
         "insert:\n  - id: easel-deconstruct\n    name: '@easel-dsh/easel-deconstruct'\n",
@@ -549,7 +544,7 @@ pub(crate) fn ensure_easel_bundle_at(
     // files (.env / profiles / skills / outputs) land on the data root itself.
     let handoff_dir = yaml_scalar(&Path::new(&root_dir).join("projects").to_string_lossy())?;
     let data_dir = yaml_scalar(&root_dir)?;
-    ensure_easel_row(
+    ensure_bundle_row(
         &mut rows,
         "easel-lan-handoff",
         &format!(
@@ -587,7 +582,7 @@ pub(crate) fn ensure_easel_bundle_at(
             }
         }
     }
-    ensure_easel_row(
+    ensure_bundle_row(
         &mut rows,
         "easel-backup",
         "insert:\n  - id: easel-backup\n    name: dsh-plugin-easel/backup\n",
@@ -602,16 +597,11 @@ pub(crate) fn ensure_easel_bundle_at(
         );
     }
 
-    fs::write(
-        &patch_path,
-        serde_yaml::to_string(&rows).map_err(|e| e.to_string())?,
-    )
-    .map_err(|e| e.to_string())
+    write_patch_rows(&patch_path, &rows)
 }
 
 /// Serialize a string as a YAML scalar (quoted when the value requires it).
-fn yaml_scalar(value: &str) -> Result<String, String> {
-    serde_yaml::to_string(value)
+fn yaml_scalar(value: &str) -> Result<String, String> {    serde_yaml::to_string(value)
         .map(|text| text.trim().to_string())
         .map_err(|e| format!("yaml scalar: {e}"))
 }
@@ -635,7 +625,7 @@ fn row_has_id(row: &Yaml, id: &str) -> bool {
 /// bundle patch that provided its insert counterpart is gone, so convert in
 /// place, keeping the user's config and `disabled` flag. Returns the plain
 /// row's `projectRoot` when one was converted.
-fn ensure_easel_row(
+fn ensure_bundle_row(
     rows: &mut Vec<Yaml>,
     id: &str,
     row_yaml: &str,
@@ -702,6 +692,78 @@ fn remove_bundle_listing(profile: &Path, name: &str) -> Result<(), String> {
         serde_json::to_string_pretty(&manifest).map_err(|e| e.to_string())? + "\n",
     )
     .map_err(|e| e.to_string())
+}
+
+// ---------------------------------------------------------------------------
+// Bundled Jimeng (Dreamina) CLIs.
+//
+// runtime/dreamina ships the two AIGC CLI binaries the agent drives through
+// shell commands — `dreamina` (image/video generation) and `dreamina-canvas`
+// (collaborative canvas) — plus the skills the CLIs publish for agents. The
+// shell adds bin/ to the spawned PATH after the inherited PATH, so a CLI
+// installed through the vendor's own installer keeps precedence over the copy
+// pinned into the bundle.
+//
+// The skills mount through a dedicated skill-filesystem provider row whose
+// `bundledSkillDir` points at the staged tree: bundled roots read host-trusted
+// paths directly, which the install resource directory is and the fs service's
+// workspace roots are not. Registered at the deployment level like the easel
+// rows, so every preset's agent reads the merged catalog; a user's own
+// `~/.agents/skills/dreamina-canvas-cli` (preset layer) wins the same-name
+// merge, keeping their installed CLI's skill paired with their binary.
+
+/// Content root of the staged Dreamina CLI tree, `None` where absent (dev
+/// without staging). `EASEL_DREAMINA_DIR` overrides for dev, mirroring
+/// EASEL_BUNDLE_DIR.
+fn runtime_dreamina_dir(app: &AppHandle) -> Option<PathBuf> {
+    let skills_marker = |dir: &Path| {
+        dir.join("skills")
+            .join("dreamina-cli")
+            .join("SKILL.md")
+            .exists()
+    };
+    if let Ok(dir) = app.path().resource_dir() {
+        let bundled = dir.join("runtime").join("dreamina");
+        if skills_marker(&bundled) {
+            return Some(bundled);
+        }
+    }
+    std::env::var("EASEL_DREAMINA_DIR")
+        .ok()
+        .map(PathBuf::from)
+        .filter(|dir| skills_marker(dir))
+}
+
+/// Directory of the bundled CLI binaries for the spawned dsh PATH.
+pub(crate) fn dreamina_bin_dir(app: &AppHandle) -> Option<PathBuf> {
+    runtime_dreamina_dir(app).map(|dir| dir.join("bin")).filter(|dir| dir.exists())
+}
+
+/// Entry point on the spawn path. No-op wherever the staged tree is absent.
+pub(crate) fn ensure_dreamina_skills(app: &AppHandle) -> Result<(), String> {
+    let Some(dir) = runtime_dreamina_dir(app) else {
+        return Ok(());
+    };
+    ensure_dreamina_skills_at(&dir, &dsh_home())
+}
+
+/// Insert-if-absent registration row for the bundled Dreamina skills, the
+/// same patch row shape the easel rows use. A user-edited insert row (for
+/// example disabled) is left as-is.
+fn ensure_dreamina_skills_at(staged: &Path, home: &Path) -> Result<(), String> {
+    let profile = profile_web_dir(home);
+    fs::create_dir_all(&profile).map_err(|e| e.to_string())?;
+    let patch_path = profile.join("cordis.patch.yml");
+    let mut rows: Vec<Yaml> = read_patch_rows(&patch_path);
+    let skills_dir = yaml_scalar(staged.join("skills").to_string_lossy().as_ref())?;
+    ensure_bundle_row(
+        &mut rows,
+        "easel-dreamina-skills",
+        &format!(
+            "insert:\n  - id: easel-dreamina-skills\n    name: '@deepseek-ai/dsh-skill-filesystem'\n    config:\n      providerName: dreamina\n      includeDefaultRoots: false\n      bundledSkillDir: {skills_dir}\n"
+        ),
+    )?;
+    write_patch_rows(&patch_path, &rows)
 }
 
 #[cfg(test)]
@@ -989,6 +1051,34 @@ mod easel_tests {
         assert!(!patch.contains("dsh-plugin-easel/deconstruct"));
         eprintln!("PATCH:
 {patch}");
+    }
+
+    #[test]
+    fn dreamina_skills_row_registered_and_idempotent() {
+        let root = temp_dir("dreamina");
+        let staged = root.join("runtime").join("dreamina");
+        write(&staged.join("skills/dreamina-cli/SKILL.md"), "skill");
+        write(&staged.join("skills/dreamina-canvas-cli/SKILL.md"), "skill");
+        let home = root.join("home");
+
+        ensure_dreamina_skills_at(&staged, &home).unwrap();
+
+        let patch = patch_text(&home);
+        assert!(patch.contains("id: easel-dreamina-skills"));
+        assert!(patch.contains("providerName: dreamina"));
+        assert!(patch.contains("bundledSkillDir"));
+        assert!(patch.contains(staged.join("skills").to_string_lossy().as_ref()));
+        serde_yaml::from_str::<Vec<Yaml>>(&patch).unwrap();
+
+        // A user-edited row (disabled) survives the next start.
+        write(
+            &profile_web_dir(&home).join("cordis.patch.yml"),
+            "- insert:\n    - id: easel-dreamina-skills\n      name: '@deepseek-ai/dsh-skill-filesystem'\n      disabled: true\n",
+        );
+        ensure_dreamina_skills_at(&staged, &home).unwrap();
+        let patch = patch_text(&home);
+        assert!(patch.contains("disabled: true"));
+        assert_eq!(patch.matches("id: easel-dreamina-skills").count(), 1);
     }
 }
 

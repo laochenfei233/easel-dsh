@@ -32,7 +32,7 @@ pnpm tauri dev              # from apps/desktop-tauri; dev mode uses PATH node +
 ```
 
 dev 模式需要已构建的 CLI 产物（`pnpm run build`）；也可用环境变量覆盖运行时解析：
-`DSH_DESKTOP_NODE`（node 可执行）、`DSH_DESKTOP_DSH_BIN`（dsh CLI 入口）、`DSH_DESKTOP_PLUGINS_DIR`（本地插件目录）。
+`DSH_DESKTOP_NODE`（node 可执行）、`DSH_DESKTOP_DSH_BIN`（dsh CLI 入口）、`DSH_DESKTOP_PLUGINS_DIR`（本地插件目录）、`EASEL_BUNDLE_DIR` / `EASEL_DREAMINA_DIR`（staged 的 `runtime/easel` / `runtime/dreamina` 内容树）。
 
 ## 构建发行版
 
@@ -60,5 +60,6 @@ CI（`.github/workflows/desktop-release.yml`）在平台矩阵上执行同一流
 - 默认插件：`dsh-plugin`（插件中心/市场）、`dsh-win-terminal-inspector`（仅 Windows，本地复制 + patch insert）
 - 可选插件：`dsh-better-sidebar`、`dsh-notification`、`dsh-session-context-menu`、`@xmanrui/dsh-im`（企微/飞书/钉钉/微信/QQ 等 9 渠道）、`dsh-lark`、`dsh-qqbot`、`dsh-vision-router`、`graph-memory`、`aegis`
 - 数据位置：默认在系统「文档」目录下的 `Easel-dsh`（Windows 尊重 OneDrive 重定向）；设置 → 数据位置可以迁移。旧路径保留 junction/symlink，已有项目无需改写即可继续打开。
+- 内置即梦 CLI：`dreamina`（图/视频生成）与 `dreamina-canvas`（协同画布）在 `runtime/dreamina/bin`，排在 agent PATH 最后——用户经官方安装脚本自装的版本优先；两个 CLI 自带的 agent skill 在 `runtime/dreamina/skills`（经 `easel-dreamina-skills` 行注册）。staging（`scripts/bundle-runtime.mjs` 的 `stageDreamina`）在构建期拉取，画布 CLI 逐文件校验 sha256，可用 `--only dreamina` 单独重跑。
 
 插件安装/更新/卸载全部走 dsh 官方机制（`dsh plugin` / dsh-plugin 插件中心），运行时内置 pnpm 与其同版本族。
