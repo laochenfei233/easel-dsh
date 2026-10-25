@@ -20,6 +20,31 @@ let pendingUrl;
 const invoke = (cmd, args) => window.__TAURI__.core.invoke(cmd, args);
 const listen = (event, cb) => window.__TAURI__.event.listen(event, cb);
 
+// App-updater commands the GUI relays through this page: the dsh UI document
+// (cross-origin iframe or navigated app window) has no Tauri IPC of its own,
+// so update check/state/install ride the same postMessage host bridge as
+// notifications and external links.
+const UPDATE_RPC = {
+  'update-state': 'easel_update_state',
+  'update-check': 'easel_check_update',
+  'update-install': 'easel_install_update',
+};
+
+async function handleHostRpc(data) {
+  const command = UPDATE_RPC[data.action];
+  if (!command || data.id === undefined) return;
+  let payload;
+  try {
+    payload = { ok: true, data: await invoke(command, data.args ?? {}) };
+  } catch (err) {
+    payload = { ok: false, error: String(err ?? 'invoke failed') };
+  }
+  frame.contentWindow.postMessage(
+    { source: 'dsh-desktop-host', kind: 'rpc-result', id: data.id, ...payload },
+    '*',
+  );
+}
+
 // WebView2 keeps the embedded-iframe design; WebKit shells (macOS/Linux)
 // navigate the window itself to the dsh UI.
 const NATIVE_NAVIGATION = !/Windows/.test(navigator.userAgent);
@@ -82,6 +107,8 @@ function handleHostBridge(event) {
   } else if (event.data.kind === 'open') {
     invoke('plugin:opener|open_url', { url: event.data.url })
       .catch((err) => console.error('[desktop] open failed:', err));
+  } else if (event.data.kind === 'rpc') {
+    void handleHostRpc(event.data);
   }
 }
 
@@ -117,6 +144,16 @@ window.addEventListener('message', handleHostBridge);
   listen('dsh://failed', (e) => {
     showError(String(e.payload ?? 'dsh 服务启动失败'));
   });
+  // Updater events relay into the iframe the same way: progress phases for the
+  // About row and the update notice dialog, and the notice-opening payload.
+  for (const name of ['easel://update-progress', 'easel://update-available']) {
+    listen(name, (e) => {
+      frame.contentWindow.postMessage(
+        { source: 'dsh-desktop-host', kind: 'rpc-event', event: name, payload: e.payload },
+        '*',
+      );
+    });
+  }
 
   // Polling also recovers from a missed ready event and turns a hub that never
   // becomes authenticated into a visible error instead of a blank window.
