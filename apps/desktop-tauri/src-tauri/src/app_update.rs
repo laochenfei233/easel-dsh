@@ -810,5 +810,34 @@ mod tests {
                 "source": "default",
             }),
         );
+        // The populated snapshot pins the camelCase field names the About
+        // section reads; only the absent-Options case is covered above.
+        assert_eq!(
+            serde_json::to_value(UpdateStateSnapshot {
+                version: "0.2.1-alpha.32".into(),
+                endpoints: vec!["https://example.invalid/latest.json".into()],
+                source: SourceState::Override,
+                last_check_ms: Some(1_700_000_000_000),
+                last_check_status: Some(CheckStatus::Available),
+                latest: Some(LatestRelease {
+                    version: "0.3.0".into(),
+                    notes: Some("release notes".into()),
+                    pub_date_ms: Some(1_000),
+                }),
+                last_error: Some("镜像不可达".into()),
+                noted_version: Some("0.3.0".into()),
+            })
+            .unwrap(),
+            serde_json::json!({
+                "version": "0.2.1-alpha.32",
+                "endpoints": ["https://example.invalid/latest.json"],
+                "source": "override",
+                "lastCheckMs": 1_700_000_000_000u64,
+                "lastCheckStatus": "available",
+                "latest": {"version": "0.3.0", "notes": "release notes", "pubDateMs": 1_000},
+                "lastError": "镜像不可达",
+                "notedVersion": "0.3.0",
+            }),
+        );
     }
 }
