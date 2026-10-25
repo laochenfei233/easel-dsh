@@ -25,11 +25,11 @@ worktree: .worktrees/easel-app-update
 
 - 壳（Rust）集成 `tauri-plugin-updater` v2，注册期初始化。
 - 清单 = Tauri updater 标准格式：`{version, notes, pub_date, platforms: {<platform>: {signature, url}}}`；协议契约本 spec 定义，清单与签名的生成分发在 `easel-website.md` 的发布管道。
-- 签名：minisign 私钥为 CI secret（GitHub Actions），公钥内置 `tauri.conf.json`。
+- 签名：minisign 私钥为 CI secret（GitHub Actions），公钥内置 `tauri.conf.json`。密钥对已在实现时用 `tauri signer generate` 生成：公钥入库，私钥存于仓库外 `~/.easel-updater/easel-updater.key`（无口令），交付时提醒用户把它配成 GitHub secret。
 
 ### 更新源配置缝（显式 > 隐式）
 
-- 内置默认 endpoints 写在 `tauri.conf.json` 的 `plugins.updater.endpoints`，指向待部署的国内轻量服务器（官网域）上的 `latest.json`；服务器就绪前是占位值。
+- 内置默认 endpoints 写在 `tauri.conf.json` 的 `plugins.updater.endpoints`，指向产品站的 `updates/latest.json`；域名按 easel-website 的部署拍板先取 GitHub Pages（`https://laochenfei233.github.io/easel-dsh/`），境内轻量服务器就绪后换默认值。
 - override：壳启动时读数据根 `home` 下的 `update-source.json`：`{"endpoints": ["https://…"]}`；存在则整体替换内置列表。该文件坏形 = 误配置 fail loud：写入 `update-state.lastError`，About 展示原因，自动检查本轮跳过。
 - 失败呈现：启动延迟的自动检查失败 → 静默（记入 state，不打扰）；设置页手动检查 → 在 About 内报明"无法连接更新源 + 当前源 URL"。
 
@@ -41,8 +41,9 @@ worktree: .worktrees/easel-app-update
 
 ### 客户端缝
 
-- 桌面检测：`window.__TAURI_INTERNALS__` 存在才启用壳通道；浏览器环境优雅降级（About 节的检查按钮禁用并说明仅桌面可用，弹窗不注册）。
-- capabilities 增加最小权限条目：自有命令 + core event listen；不开放其余权限。
+- **通道现实（实现修正）**：GUI 文档是 loopback 源（Windows 为跨源 iframe，WebKit 为导航后的 app 窗口文档），Tauri 不会向它注入 `__TAURI_INTERNALS__`，唯一的 IPC 路径是既有宿主桥中继——iframe 内 postMessage 到壳页 `app.js`，由壳页 invoke 三条命令并回传结果，更新器事件同样由壳页转发回 iframe。注入脚本（`bundle-runtime.mjs` 的 `injectNotificationBridge`）扩展出 promise RPC（`window.__easelHostUpdate`）与事件订阅；打包时生效，dev 环境无桥（与通知桥同一限制）。
+- 降级：`window.__easelHostUpdate` 不存在 = 非桌面壳（浏览器、CLI `dsh web`、WebKit app 窗口）——About 节只渲染一行「仅桌面版提供」的静音文案（不出死按钮），弹窗 entry 虽注册但 `announce` 无事件即渲染 null；判定逻辑的证据在桥模块单测。
+- capabilities 无需新增条目：壳自有命令不走插件 ACL，事件监听在 `core:default` 内。
 
 ### Shell 命令面（薄封装 tauri-plugin-updater Rust API）
 
@@ -52,14 +53,14 @@ worktree: .worktrees/easel-app-update
 
 ### 设置·关于节（新建）
 
-- 注册 `settings.section`：id `easel.about`，order 置于末尾。
-- 内容：应用名 + 当前版本号；「检查更新」主按钮（idle / busy / 错误 / 已是最新 / 有新版 五态）；更新源一行（当前源 URL + 状态）；链接行：官网、更新日志（指向官网 release 锚点）。
+- 注册 `settings.section`：id `easel.about`，order 90 置于末尾。
+- 内容：应用名 + 当前版本号；「检查更新」主按钮（idle / busy / 错误 / 已是最新 / 有新版 五态，有新版态即变「立即更新」）；安装进行中按钮让位给进度条与阶段文案；更新源卡片（当前源 URL + 默认/自定义/不可用徽章）；链接行：官网、更新日志（指向官网 release 锚点）。
 - 设计语言复用设置页卡片语言（`DataRootSection` 同款：inline styles、13px 基准、灰描边按钮 + accent 主按钮），不另起炉灶。
 - 文案字典 `settings.easelAbout`（`locales/easelAbout.ts`，zh 主 + en），遵守 locale-owned copy 门。
 
 ### 更新弹窗（shell.overlay）
 
-- entry id `easel.update-notice`，仿 `chat.quota-notice` 的 chain 座模式注册到 `shell.overlay`。
+- entry id `easel.update-notice`，简单 entry 直挂 `shell.overlay`（同 `host-release-change` 的模式——弹窗自渲染 mask + 卡片，不设 chain 座）。
 - UI：标题"发现新版本 vX.Y.Z"、notes 首段摘要、主按钮「立即更新」、次按钮「暂不」。
 - 「立即更新」→ `easel_install_update` → 按钮进入进度态 → 安装器接管。
 - 「暂不」→ 仅关闭本次（该版本已 noted，本版本不再弹）；About 里常驻"有新版可用"提示直至升级完成。
