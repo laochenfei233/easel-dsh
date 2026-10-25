@@ -61,6 +61,7 @@ patch 文件」——所以本包不带自己的启动器，只作为一个 bund
 | `basePath` | `/easel` | 本插件路由此前缀下挂载 |
 | `probePath` | `/api/personas` | 探活路由。选它而不是 `/api/status`，因为后者会花一次 `check_gateway()` 网络往返 |
 | `probeTimeoutMs` | `1500` | 探活超时 |
+| `projectArchive` | `$EASEL_DATA_ROOT` 存在时为 `true` | 开启项目压缩包导入/导出。web/dev 默认关闭（原生选择器属于运行 dsh 的那台机器）；桌面壳由 `EASEL_DATA_ROOT` 自动开启，也可在 patch 行显式写布尔值 |
 
 `basePath` 与 `client.js` 里的 `BASE_PATH` 常量是一对：改一个要改两个。
 
@@ -71,6 +72,7 @@ patch 文件」——所以本包不带自己的启动器，只作为一个 bund
 | `GET /easel/status` | 项目根、后端可达性、技能数（需登录态）。后端挂掉也照样回答，面板因此能说出「为什么是空的」 |
 | `GET /easel/skills` | 只读浏览目录，直接读盘（需登录态）。**不是**技能 provider |
 | `/easel/api/*` | 本地数据面（排期/选题/热点雷达/CalDAV 等），全部由 `index.js` 的 `CORE_ROUTES` 本地应答；Easel 的 Python 后端与反向代理已退役，无路由认领的请求 404 |
+| `/easel/api/projects*` | 项目压缩包：列表、导入/导出任务、进度轮询（见下） |
 
 `/easel/skills` 与 `easel-skills` 行刻意分开：前者是给 UI 看的投影（多带一个 `layer` 字段，
 dsh 的技能加载器不用它），后者才是真正的加载路径，复用随附 provider 做 frontmatter 解析、
@@ -105,6 +107,32 @@ CalDAV 为单向只读订阅（协议实现见 `caldav.js`，零依赖）：
 
 排期条目新增可选 `repeat: 'yearly'`（仅此值合法），客户端按月/日展开进渲染窗口；更新时
 不带该字段保留原值，显式空串清除。
+
+### 项目压缩包（导入 / 导出）
+
+设置 · 数据位置的项目卡片与工作区侧边栏标题栏共用一个宿主归档引擎：
+
+| 路由 | 作用 |
+|---|---|
+| `GET /easel/api/projects` | `projects/` 的直接子目录（跳过链接与点目录）与部署是否支持 |
+| `POST /easel/api/projects/import` | 系统文件选择器 → 暂存解压 → 校验 → 自动命名 → 原子发布；返回 `jobId` |
+| `POST /easel/api/projects/export` | 校验项目 → 系统另存为 → 流式写 zip；`.part` 完成后替换目标 |
+| `GET /easel/api/projects/job` | 单任务进度：phase/文件数/字节数/结果/错误码 |
+
+- 只允许 `<projectRoot>/projects/` 的直接子目录。主项目根（含 `.env`、`profiles/`、`outputs/`）、
+  `outputs`、`skills` 都不在可导出范围。侧边栏只对 `projects/` 下的工作区显示导出项。
+- 压缩包 = 项目内容打平 + 首个 `.easel-project.json`（format/version/title/exportedAt）。
+  **v1 不包含会话记录**；完整迁移用隔空传送，整库用设置 · 备份。
+- 导入兼容无清单的普通 zip：唯一顶层目录会去壳，打平根直接导入；`__MACOSX/`、`.DS_Store`、
+  `Thumbs.db`、`desktop.ini` 丢弃；同名自动 `<名称> (2)`，**永不覆盖**；成功后客户端用
+  `workspaces.create` 登记工作区。
+- 安全：条目路径拒绝绝对路径、`..`、反斜杠、盘符与 UNC；重复条目和文件/目录祖先冲突拒绝；
+  200 000 条目上限；解压前与过程中检查磁盘空间；暂存目录失败即清，启动时清扫超过 24 小时的残留。
+  导出用 `lstat` + `readlink` 跳过符号链接/junction 与不可读项并计数，绝不跟随到项目外。
+- `fflate` 能写 ZIP64 的归档总量，但**单文件 ≥ 4 GiB 无法写入**：导出前明确报错并点出文件名，
+  不生成坏包。真实命中时再升级 `yazl`/`yauzl`。
+- 任务单并发、内存态；应用重启后回到 idle。web/dev 未启用时 `GET /projects` 返回
+  `supported:false`，侧边栏按钮与右键导出项都不渲染。
 
 ### 定时任务（Host schedule 引擎）
 

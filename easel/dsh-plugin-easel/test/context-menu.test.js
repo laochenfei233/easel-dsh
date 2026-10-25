@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   CHAT_FLOW_SELECTOR, CHAT_NODE_SELECTOR, EDITABLE_SELECTOR, FILE_LINK_SELECTOR, FILE_ROOT_SELECTOR,
-  FILE_ROW_SELECTOR, PRESENTED_FILE_SELECTOR, TREND_ROW_SELECTOR,
+  FILE_ROW_SELECTOR, PRESENTED_FILE_SELECTOR, PROJECT_ROW_SELECTOR, TREND_ROW_SELECTOR, WORKSPACE_ROW_SELECTOR,
   absolutePathFor, draftBlock, fileNameOf, isAbsolutePath, messageText, quoteBlock, relativePath, resolveSurface,
   trendPayloadOf,
 } from '../src/lib/context-menu-model.js'
@@ -47,6 +47,31 @@ test('resolveSurface: file row needs the tree root and a real path', () => {
     parent: root,
   })
   assert.equal(resolveSurface(other, null), null)
+})
+
+test('resolveSurface: project and workspace rows win over their child titles', () => {
+  const project = fakeNode({
+    selectors: [PROJECT_ROW_SELECTOR],
+    dataset: { easelProject: 'C:/data/workspace/projects/a', easelProjectName: 'a' },
+  })
+  assert.deepEqual(resolveSurface(project, null), {
+    kind: 'project', element: project, path: 'C:/data/workspace/projects/a', name: 'a',
+  })
+  const bare = fakeNode({ selectors: [PROJECT_ROW_SELECTOR], dataset: {} })
+  assert.equal(resolveSurface(bare, null), null)
+
+  const workspaceRow = fakeNode({
+    selectors: [WORKSPACE_ROW_SELECTOR, FILE_LINK_SELECTOR],
+    dataset: { rowKey: 'workspace:w1' },
+    title: 'Export as zip',
+  })
+  assert.deepEqual(resolveSurface(workspaceRow, null), {
+    kind: 'workspace', element: workspaceRow, workspaceId: 'w1',
+  })
+  const ungrouped = fakeNode({ selectors: [WORKSPACE_ROW_SELECTOR], dataset: { rowKey: 'workspace:' } })
+  assert.equal(resolveSurface(ungrouped, null), null)
+  const session = fakeNode({ selectors: [WORKSPACE_ROW_SELECTOR], dataset: { rowKey: 'session:s1' } })
+  assert.equal(resolveSurface(session, null), null)
 })
 
 test('resolveSurface: editables win over the surrounding chat flow', () => {
