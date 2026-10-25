@@ -1,9 +1,5 @@
 ---
-feature: easel-dreamina-clis
-status: delivered
-updated: 2026-10-25
-branch: feat/easel-mac-package
-commits: 交付落在本工作树（bundle-runtime.mjs / setup.rs / dsh_runner.rs / README 三件套 / 本 spec）；提交后回填哈希
+feature: easel-dreamina-clis status: delivered updated: 2026-10-25 branch: feat/easel-mac-package commits: 交付落在本工作树（bundle-runtime.mjs / setup.rs / dsh_runner.rs / README 三件套 / 本 spec）；提交后回填哈希
 ---
 
 # Easel 打包即梦 CLI（dreamina + dreamina-canvas）并暴露给 agent
