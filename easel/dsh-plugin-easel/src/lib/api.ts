@@ -559,6 +559,34 @@ export function submitLoginSms(platform: string, code: string): Promise<{ ok: bo
   });
 }
 
+// ---- 定时任务（Host schedule 引擎；spec easel-scheduled-tasks）----
+// 读/改/删/记录走 dsh 的 remote.schedule（页面经 PageProps.remote 直连），
+// 只有 create 是 host 进程 API，需要这条 easel 路由中转。
+/** 表单时机形状：恰一种，kind 之外的字段按 kind 取用。 */
+export interface ScheduledTiming {
+  kind: 'at' | 'daily' | 'weekly' | 'every';
+  date?: string;              // 仅一次：YYYY-MM-DD
+  time?: string;              // HH:mm（补秒由宿主完成）
+  weekdays?: number[];        // 每周：ISO 星期 1-7
+  value?: number;             // 每 N 个单位
+  unit?: 'hour' | 'minute';
+}
+export interface ScheduledTaskInput {
+  sessionId: string;
+  title: string;
+  prompt: string;
+  timeZone: string;
+  timing: ScheduledTiming;
+}
+/** 创建定时任务（引擎校验失败时错误信息已中文化）。 */
+export function createScheduledTask(input: ScheduledTaskInput): Promise<unknown> {
+  return request('/api/automation/tasks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+}
+
 /** 项目根与画像列表（/easel/api/status；立项建工作区与画像选择要用）。 */
 export async function fetchStatus(): Promise<{ projectRoot?: string; personas?: { name: string; description?: string }[] } | null> {
   return request<{ projectRoot?: string; personas?: { name: string; description?: string }[] }>('/api/status').catch(() => null);

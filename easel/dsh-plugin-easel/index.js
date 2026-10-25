@@ -2694,6 +2694,141 @@ async function collectPushFiles(dir, rel, files) {
   }
 }
 
+// ---- 定时任务（Host schedule 引擎的用户侧创建中继）----
+
+/** ScheduleInputError 的稳定 code → easel 可读错误文案；引擎英文 message 作后备。 */
+const SCHEDULE_ERROR_DETAILS = {
+  invalid_prompt: '任务内容为空、过长或含首尾空白',
+  invalid_selector: '时机设置不完整或有冲突',
+  invalid_rule: '规则参数无效',
+  invalid_time_zone: '时区无效',
+  not_future: '一次性任务必须选择未来的日期时刻',
+  time_out_of_range: '时间超出可设置的范围',
+  frequency_too_high: '触发频率过高（最小间隔 1 分钟）',
+  subagent_session: '子 agent 会话不能承载定时任务',
+}
+
+/**
+ * 把一种 easel 时机形状映射为 ScheduleCreateRequest 的选择器。
+ * 校验语义与引擎一致（时刻 HH:mm:ss、间隔 ≥60 秒、星期 ISO 1-7 去重升序），
+ * 表单错误在路由层就给出可读文案，而不是把引擎英文错误透传给用户。
+ * @param timing - 客户端表单的 `{kind, date?, time?, weekdays?, value?, unit?}`。
+ * @param timeZone - 客户端取的系统本地 IANA 时区。
+ * @returns ScheduleCreateRequest 里恰一个时机选择器。
+ */
+export function timingToSelector(timing, timeZone) {
+  const kind = timing?.kind
+  const time = normalizeClockTime(timing?.time)
+  if (kind === 'at') {
+    const date = String(timing?.date ?? '').trim()
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || time === undefined) {
+      throw new ApiError(400, '一次性任务需要有效的日期（YYYY-MM-DD）和时刻')
+    }
+    return { at: { date, time, time_zone: timeZone } }
+  }
+  if (kind === 'daily') {
+    if (time === undefined) throw new ApiError(400, '每天任务需要有效时刻')
+    return { daily: { time, time_zone: timeZone } }
+  }
+  if (kind === 'weekly') {
+    if (time === undefined) throw new ApiError(400, '每周任务需要有效时刻')
+    const weekdays = Array.isArray(timing?.weekdays)
+      ? [...new Set(timing.weekdays.map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= 7))].sort((a, b) => a - b)
+      : []
+    if (weekdays.length === 0) throw new ApiError(400, '每周任务至少选择一个星期')
+    return { weekly: { time, weekdays, time_zone: timeZone } }
+  }
+  if (kind === 'every') {
+    const value = Number(timing?.value)
+    if (!Number.isSafeInteger(value) || value < 1) throw new ApiError(400, '间隔必须是正整数')
+    const seconds = value * (timing?.unit === 'hour' ? 3600 : 60)
+    if (seconds < 60) throw new ApiError(400, '间隔至少 1 分钟')
+    return { every_seconds: seconds }
+  }
+  throw new ApiError(400, '未知的时机类型')
+}
+
+/**
+ * 'HH:mm[:ss]' → 引擎要求的 'HH:mm:ss'（补零、超界返回 undefined 交给调用方报错）。
+ * @param value - 表单时刻输入。
+ * @returns 规范化时刻，或 undefined（格式/数值无效）。
+ */
+export function normalizeClockTime(value) {
+  const match = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(String(value ?? '').trim())
+  if (match === null) return undefined
+  const [, hour, minute, second = '00'] = match
+  if (Number(hour) > 23 || Number(minute) > 59 || Number(second) > 59) return undefined
+  return `${hour.padStart(2, '0')}:${minute}:${second.padStart(2, '0')}`
+}
+
+/**
+ * 引擎错误 → easel 的 `{detail}` HTTP 错误；未知与 internal_error 一律 500，
+ * 不泄露内部异常，只带引擎消息。
+ * @param error - ScheduleService.create 抛出的错误。
+ * @returns easel 可读的 ApiError。
+ */
+export function scheduleApiError(error) {
+  if (error instanceof ApiError) return error
+  const code = typeof error?.code === 'string' ? error.code : undefined
+  const detail = code !== undefined ? SCHEDULE_ERROR_DETAILS[code] : undefined
+  if (detail !== undefined) return new ApiError(400, detail)
+  return new ApiError(500, `创建定时任务失败（${String(error?.message ?? error)}）`)
+}
+
+/**
+ * Route for creating one scheduled task on the Host schedule engine.
+ *
+ * `create()` is a host-process API (the schedule remote namespace has no create
+ * method), so the user-side creation form relays through this one route; reads,
+ * edits, and deletions go through the schedule remote namespace the browser
+ * already holds. Timing validation mirrors the engine's request schema so form
+ * mistakes surface as readable Chinese errors here.
+ * @param ctx - host context that may carry the `schedule` service.
+ * @returns route rows in the {@link CORE_ROUTES} shape.
+ */
+export function createAutomationRoutes(ctx) {
+  const requireSchedule = () => {
+    const service = ctx.get?.('schedule')
+    if (service === undefined) {
+      throw new ApiError(409, '定时任务引擎未启用：profile 未挂载 @deepseek-ai/dsh-schedule')
+    }
+    return service
+  }
+  return [
+    ['POST', ['automation', 'tasks'], async (c) => {
+      const body = await c.body()
+      const sessionId = String(body?.sessionId ?? '').trim()
+      if (sessionId === '') throw new ApiError(400, '必须选择目标会话')
+      const title = String(body?.title ?? '').trim()
+      if (title === '') throw new ApiError(400, '任务名称必填')
+      const prompt = String(body?.prompt ?? '').trim()
+      if (prompt === '') throw new ApiError(400, '任务内容必填')
+      const timeZone = String(body?.timeZone ?? '').trim()
+      if (timeZone === '') throw new ApiError(400, '缺少时区')
+      // 目标会话必须真实存在（list 是 Host 列表的只读投影，不激活会话）；
+      // 引擎只拒子 agent 目标，死 id 会被它收下并永久过期。
+      const controller = ctx.get?.('sessionController')
+      if (controller === null || controller === undefined || typeof controller.list !== 'function') {
+        throw new ApiError(409, '会话服务不可用，无法确认目标会话')
+      }
+      let known = false
+      try {
+        const state = await controller.list({}, new AbortController().signal)
+        known = Array.isArray(state?.items) && state.items.some(item => String(item?.sessionId ?? '') === sessionId)
+      } catch (error) {
+        throw new ApiError(502, `无法确认目标会话（${error instanceof Error ? error.message : String(error)}）`)
+      }
+      if (!known) throw new ApiError(400, '目标会话不存在或已不可用')
+      const request = { prompt, title, ...timingToSelector(body?.timing, timeZone) }
+      try {
+        return { json: await requireSchedule().create(sessionId, request) }
+      } catch (error) {
+        throw scheduleApiError(error)
+      }
+    }],
+  ]
+}
+
 /**
  * 内容库（outputs/）随「素材库」勾选上包的 data 条目。可见性与内容库页同规则：
  * 跳过 `.`/`_` 前缀条目与顶层 analytics/（登录态与分析数据不出设备）。
@@ -2778,6 +2913,7 @@ export function apply(ctx, config = {}) {
   ctx.provide('easelApi', api)
   ctx.effect(() => api.register(CORE_ROUTES), 'easel: core routes')
   ctx.effect(() => api.register(createHandoffRoutes(ctx)), 'easel: handoff routes')
+  ctx.effect(() => api.register(createAutomationRoutes(ctx)), 'easel: automation task route')
   ctx.effect(() => ctx.webServer.register({
     kind: 'exact',
     path: `${settings.basePath}/status`,

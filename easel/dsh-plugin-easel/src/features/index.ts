@@ -5,6 +5,7 @@ import * as dashboard from './dashboard'
 import * as trends from './trends'
 import * as ideas from './ideas'
 import * as calendar from './calendar'
+import * as schedules from './schedules'
 import * as skills from './skills'
 import * as outputs from './outputs'
 import * as publish from './publish'
@@ -16,7 +17,7 @@ import { plugin as backup } from './backup'
 import { plugin as contextMenu } from './context-menu.js'
 import { plugin as handoff } from './handoff'
 
-const views = [dashboard, trends, ideas, calendar, skills, outputs, publish, accounts, profile, breakdown]
+const views = [dashboard, trends, ideas, calendar, schedules, skills, outputs, publish, accounts, profile, breakdown]
 
 /** Rail/page descriptors, one per view (labels feed the shared dictionaries). */
 export const FEATURES = views.map(module => ({
