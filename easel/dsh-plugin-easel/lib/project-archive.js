@@ -12,8 +12,8 @@
 // Import is deliberately tolerant of archives produced elsewhere: a manifest
 // is optional, and a zip whose content sits under one top-level directory is
 // unwrapped. Nothing is ever overwritten: a name collision becomes "name (2)".
-import { createReadStream, createWriteStream, closeSync, mkdirSync, openSync, writeSync } from 'node:fs'
-import { lstat, mkdir, readdir, readFile, readlink, rename, rm, statfs } from 'node:fs/promises'
+import { constants, createReadStream, createWriteStream, closeSync, mkdirSync, openSync, writeSync } from 'node:fs'
+import { access, lstat, mkdir, open, readdir, readFile, readlink, rename, rm, statfs } from 'node:fs/promises'
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { randomBytes } from 'node:crypto'
 import { finished } from 'node:stream/promises'
@@ -75,6 +75,19 @@ function isWindows() { return process.platform === 'win32' }
 function compareKey(value) {
   const normalized = resolve(value).replace(/\\/g, '/').replace(/\/+$/, '')
   return isWindows() ? normalized.toLowerCase() : normalized
+}
+
+/**
+ * Collision key for archive entries. Windows and the default macOS
+ * filesystems treat case-equivalent names as one file; macOS also treats NFC
+ * and NFD spellings as equivalent, so both collapse before the duplicate and
+ * ancestor checks.
+ * @param {string} path - POSIX-style archive path.
+ * @returns {string} the comparison key.
+ */
+function collisionKey(path) {
+  const normalized = process.platform === 'darwin' ? String(path).normalize('NFC') : String(path)
+  return process.platform === 'win32' || process.platform === 'darwin' ? normalized.toLowerCase() : normalized
 }
 
 /**
@@ -141,6 +154,11 @@ export function assertSafeEntryPath(name) {
   if (trimmed.startsWith('/') || /^[A-Za-z]:/.test(trimmed)) {
     throw new ProjectArchiveError('unsafe-path', `压缩包里有绝对路径：${JSON.stringify(name)}`)
   }
+  // A colon inside a segment is an NTFS alternate data stream target; the
+  // visible file would be empty and the payload invisible in Explorer.
+  if (trimmed.includes(':')) {
+    throw new ProjectArchiveError('unsafe-path', `压缩包里有不安全的路径：${JSON.stringify(name)}`)
+  }
   if (Buffer.byteLength(trimmed, 'utf8') > MAX_ENTRY_PATH_BYTES) {
     throw new ProjectArchiveError('unsafe-path', '压缩包里有超长路径')
   }
@@ -169,6 +187,9 @@ async function freeBytes(dir) {
     const info = await statfs(dir)
     return Number(info.bavail) * Number(info.bsize)
   } catch {
+    // Some network/UNC data roots do not implement statfs. Skipping the guard
+    // keeps the feature usable there; an actual write failure still aborts the
+    // job and removes staging/`.part`.
     return Number.POSITIVE_INFINITY
   }
 }
@@ -220,6 +241,7 @@ async function scanProject(sourceDir) {
   let totalBytes = 0
   let skippedLinks = 0
   let skippedUnreadable = 0
+  let skippedJunk = 0
   const walk = async (dir) => {
     const items = await readdir(dir, { withFileTypes: true }).catch(() => {
       skippedUnreadable += 1
@@ -245,9 +267,17 @@ async function scanProject(sourceDir) {
         skippedLinks += 1
         continue
       }
+      const readable = await access(absolute, constants.R_OK).then(() => true, () => false)
+      if (!readable) {
+        skippedUnreadable += 1
+        continue
+      }
       const path = relative(sourceDir, absolute).split(sep).join('/')
-      if (path === MANIFEST_NAME || isJunkEntry(path)) continue
-      if (path.includes('\\') || path.includes('\0')) {
+      if (path === MANIFEST_NAME || isJunkEntry(path)) {
+        skippedJunk += 1
+        continue
+      }
+      if (path.includes('\\') || path.includes('\0') || path.includes(':')) {
         throw new ProjectArchiveError('bad-name', `文件名称无法写入压缩包：${JSON.stringify(path)}`)
       }
       if (info.size >= MAX_SINGLE_FILE_BYTES) {
@@ -261,7 +291,7 @@ async function scanProject(sourceDir) {
     }
   }
   await walk(sourceDir)
-  return { entries, totalBytes, skippedLinks, skippedUnreadable }
+  return { entries, totalBytes, skippedLinks, skippedUnreadable, skippedJunk }
 }
 
 /**
@@ -371,8 +401,25 @@ function fileSink(output) {
  * @param {string} destination - final destination.
  */
 async function replaceFile(part, destination) {
-  await rm(destination, { force: true })
-  await rename(part, destination)
+  try {
+    // POSIX rename replaces atomically. Windows may refuse while the target is
+    // open in another process; then move the old file aside and restore it if
+    // the replacement fails, so a failed export never destroys the original.
+    await rename(part, destination)
+    return
+  } catch (error) {
+    if (error.code !== 'EEXIST' && error.code !== 'EPERM' && error.code !== 'EACCES') throw error
+    if (await pathInfo(destination) === null) throw error
+  }
+  const backup = `${destination}.${randomBytes(4).toString('hex')}.old`
+  await rename(destination, backup)
+  try {
+    await rename(part, destination)
+  } catch (error) {
+    await rename(backup, destination).catch(() => {})
+    throw error
+  }
+  await rm(backup, { force: true }).catch(() => {})
 }
 
 /**
@@ -427,6 +474,16 @@ export async function exportProjectArchive({ sourceDir, destination, onProgress 
     let bytes = 0
     let files = 0
     for (const entry of scan.entries) {
+      // The scan happened earlier; re-check that the path is still a regular
+      // file (an agent may have swapped in a link) and that it did not grow
+      // past the writer's single-entry ceiling.
+      const current = await pathInfo(entry.absolute)
+      if (current === null || !current.isFile() || await isLink(entry.absolute)) {
+        throw new ProjectArchiveError('file-changed', `「${entry.path}」在打包过程中被替换，已停止导出`)
+      }
+      if (current.size >= MAX_SINGLE_FILE_BYTES) {
+        throw new ProjectArchiveError('file-too-large', `「${entry.path}」超过 4 GB，无法打包`)
+      }
       await writer.addFile(entry.path, entry.absolute)
       bytes += entry.size
       files += 1
@@ -443,10 +500,15 @@ export async function exportProjectArchive({ sourceDir, destination, onProgress 
       bytes,
       skippedLinks: scan.skippedLinks,
       skippedUnreadable: scan.skippedUnreadable,
+      skippedJunk: scan.skippedJunk,
     }
   } catch (error) {
     output.destroy()
     writer.terminate()
+    await finished(output).catch(() => {})
+    await rm(part, { force: true }).catch(() => {})
+    // Windows can report EBUSY for a moment after the handle closes.
+    await new Promise(resolvePromise => setTimeout(resolvePromise, 50))
     await rm(part, { force: true }).catch(() => {})
     throw asArchiveError(error)
   }
@@ -473,6 +535,184 @@ function asArchiveError(error) {
   if (error instanceof ProjectArchiveError) return error
   const detail = error instanceof Error ? error.message : String(error)
   return new ProjectArchiveError('io', detail, { cause: error })
+}
+
+/** CRC32 table used to verify every extracted file against the central directory. */
+const CRC_TABLE = (() => {
+  const table = new Uint32Array(256)
+  for (let index = 0; index < 256; index += 1) {
+    let value = index
+    for (let bit = 0; bit < 8; bit += 1) {
+      value = (value & 1) !== 0 ? (0xEDB88320 ^ (value >>> 1)) : (value >>> 1)
+    }
+    table[index] = value >>> 0
+  }
+  return table
+})()
+
+const CRC_SEED = 0xFFFFFFFF
+
+/**
+ * @param {number} state - running CRC register.
+ * @param {Uint8Array} data - next bytes.
+ * @returns {number} updated register.
+ */
+function crc32Update(state, data) {
+  let value = state
+  for (let index = 0; index < data.length; index += 1) {
+    value = CRC_TABLE[(value ^ data[index]) & 0xFF] ^ (value >>> 8)
+  }
+  return value >>> 0
+}
+
+/**
+ * @param {number} state - running CRC register.
+ * @returns {number} the finalized CRC32.
+ */
+function crc32Final(state) {
+  return (state ^ 0xFFFFFFFF) >>> 0
+}
+
+/**
+ * @param {Buffer} buffer - at least 8 bytes at offset.
+ * @param {number} offset - little-endian uint64 offset.
+ * @returns {number} the value when it fits a safe JS integer.
+ */
+function readUInt64(buffer, offset) {
+  const value = buffer.readBigUInt64LE(offset)
+  if (value > BigInt(Number.MAX_SAFE_INTEGER)) {
+    throw new ProjectArchiveError('invalid-archive', '压缩包过大')
+  }
+  return Number(value)
+}
+
+/**
+ * Read exactly one range from an open file.
+ * @param {import('node:fs/promises').FileHandle} handle - open archive.
+ * @param {number} offset - absolute byte offset.
+ * @param {number} length - bytes to read.
+ * @returns {Promise<Buffer>} the range.
+ */
+async function readRange(handle, offset, length) {
+  const buffer = Buffer.alloc(length)
+  let read = 0
+  while (read < length) {
+    const { bytesRead } = await handle.read(buffer, read, length - read, offset + read)
+    if (bytesRead === 0) throw new ProjectArchiveError('invalid-archive', '压缩包不完整')
+    read += bytesRead
+  }
+  return buffer
+}
+
+/**
+ * Find the End Of Central Directory record, honoring the comment length.
+ * @param {Buffer} tail - last bytes of the archive.
+ * @returns {number} offset within the tail, or -1.
+ */
+function findEndOfCentralDirectory(tail) {
+  for (let index = tail.length - 22; index >= 0; index -= 1) {
+    if (tail.readUInt32LE(index) !== 0x06054B50) continue
+    const commentLength = tail.readUInt16LE(index + 20)
+    if (index + 22 + commentLength > tail.length) continue
+    return index
+  }
+  return -1
+}
+
+/**
+ * Read the central directory's entry CRC and uncompressed size. fflate's
+ * streaming unzip does not verify CRCs, and stored media would otherwise
+ * import corrupted bytes silently.
+ * @param {string} archivePath - local zip.
+ * @returns {Promise<Map<string, {crc: number, size: number}>>} entries keyed by the raw archive name.
+ */
+async function readCentralDirectory(archivePath) {
+  const handle = await open(archivePath, 'r')
+  try {
+    const info = await handle.stat()
+    if (info.size < 22) throw new ProjectArchiveError('invalid-archive', '压缩包不完整')
+    const tailLength = Math.min(info.size, 66_000)
+    const tail = await readRange(handle, info.size - tailLength, tailLength)
+    const eocd = findEndOfCentralDirectory(tail)
+    if (eocd < 0) throw new ProjectArchiveError('invalid-archive', '压缩包缺少中央目录')
+    let total = tail.readUInt16LE(eocd + 10)
+    let directorySize = tail.readUInt32LE(eocd + 12)
+    let directoryOffset = tail.readUInt32LE(eocd + 16)
+    const eocdAbsolute = info.size - tailLength + eocd
+    if (total === 0xFFFF || directorySize === 0xFFFFFFFF || directoryOffset === 0xFFFFFFFF) {
+      if (eocdAbsolute < 20) throw new ProjectArchiveError('invalid-archive', '压缩包缺少 ZIP64 目录')
+      const locator = await readRange(handle, eocdAbsolute - 20, 20)
+      if (locator.readUInt32LE(0) !== 0x07064B50) {
+        throw new ProjectArchiveError('invalid-archive', '压缩包缺少 ZIP64 定位记录')
+      }
+      const zip64Offset = readUInt64(locator, 8)
+      const zip64 = await readRange(handle, zip64Offset, 56)
+      if (zip64.readUInt32LE(0) !== 0x06064B50) {
+        throw new ProjectArchiveError('invalid-archive', '压缩包缺少 ZIP64 目录')
+      }
+      total = readUInt64(zip64, 32)
+      directorySize = readUInt64(zip64, 40)
+      directoryOffset = readUInt64(zip64, 48)
+    }
+    if (total > MAX_ARCHIVE_ENTRIES) throw new ProjectArchiveError('too-many-entries', '压缩包里的文件数量过多')
+    if (directorySize > 128 * 1024 * 1024 || directoryOffset + directorySize > info.size) {
+      throw new ProjectArchiveError('invalid-archive', '压缩包中央目录超出文件范围')
+    }
+    const directory = directorySize === 0 ? Buffer.alloc(0) : await readRange(handle, directoryOffset, directorySize)
+    /** @type {Map<string, {crc: number, size: number}>} */
+    const entries = new Map()
+    let offset = 0
+    for (let index = 0; index < total; index += 1) {
+      if (offset + 46 > directory.length || directory.readUInt32LE(offset) !== 0x02014B50) {
+        throw new ProjectArchiveError('invalid-archive', '压缩包中央目录损坏')
+      }
+      const flags = directory.readUInt16LE(offset + 8)
+      const crc = directory.readUInt32LE(offset + 16)
+      let compressed = directory.readUInt32LE(offset + 20)
+      let size = directory.readUInt32LE(offset + 24)
+      const nameLength = directory.readUInt16LE(offset + 28)
+      const extraLength = directory.readUInt16LE(offset + 30)
+      const commentLength = directory.readUInt16LE(offset + 32)
+      const entryEnd = offset + 46 + nameLength + extraLength + commentLength
+      if (entryEnd > directory.length) {
+        throw new ProjectArchiveError('invalid-archive', '压缩包中央目录损坏')
+      }
+      const name = directory
+        .subarray(offset + 46, offset + 46 + nameLength)
+        .toString((flags & 0x800) !== 0 ? 'utf8' : 'latin1')
+      const extra = directory.subarray(offset + 46 + nameLength, offset + 46 + nameLength + extraLength)
+      if (size === 0xFFFFFFFF || compressed === 0xFFFFFFFF) {
+        let pointer = 0
+        let found = false
+        while (pointer + 4 <= extra.length) {
+          const id = extra.readUInt16LE(pointer)
+          const length = extra.readUInt16LE(pointer + 2)
+          if (pointer + 4 + length > extra.length) break
+          if (id === 1) {
+            let dataPointer = pointer + 4
+            if (size === 0xFFFFFFFF) {
+              size = readUInt64(extra, dataPointer)
+              dataPointer += 8
+            }
+            if (compressed === 0xFFFFFFFF) compressed = readUInt64(extra, dataPointer)
+            found = true
+            break
+          }
+          pointer += 4 + length
+        }
+        if (!found || size === 0xFFFFFFFF) {
+          throw new ProjectArchiveError('invalid-archive', '压缩包 ZIP64 目录损坏')
+        }
+      }
+      assertSafeEntryPath(name)
+      if (entries.has(name)) throw new ProjectArchiveError('path-conflict', `压缩包里有重复路径：${name}`)
+      entries.set(name, { crc, size })
+      offset = entryEnd
+    }
+    return entries
+  } finally {
+    await handle.close()
+  }
 }
 
 /**
@@ -512,9 +752,10 @@ async function readManifest(staging) {
  * @param {string} staging - empty staging directory under projects/.
  * @param {number} byteLimit - maximum uncompressed bytes this extraction may write.
  * @param {(progress: object) => void} onProgress - progress sink.
+ * @param {Map<string, {crc: number, size: number}>} expected - central-directory entries keyed by raw name.
  * @returns {Promise<{files: Array<{path: string, size: number}>, skippedJunk: number}>} extracted files.
  */
-async function extractEntries(source, staging, byteLimit, onProgress) {
+async function extractEntries(source, staging, byteLimit, onProgress, expected) {
   const fflate = await loadFflate()
   const unzip = new fflate.Unzip()
   unzip.register(fflate.UnzipInflate)
@@ -526,6 +767,7 @@ async function extractEntries(source, staging, byteLimit, onProgress) {
   let bytes = 0
   let skippedJunk = 0
   const seen = new Set()
+  const seenRaw = new Set()
   const filePaths = new Set()
   const dirPaths = new Set()
   const files = []
@@ -539,11 +781,14 @@ async function extractEntries(source, staging, byteLimit, onProgress) {
   }
   const addImplicitDirs = (path) => {
     const parts = path.split('/')
-    for (let index = 1; index < parts.length; index += 1) dirPaths.add(parts.slice(0, index).join('/'))
+    for (let index = 1; index < parts.length; index += 1) {
+      dirPaths.add(collisionKey(parts.slice(0, index).join('/')))
+    }
   }
 
   unzip.onfile = (file) => {
     entries += 1
+    seenRaw.add(file.name)
     if (entries > MAX_ARCHIVE_ENTRIES) {
       fail('too-many-entries', '压缩包里的文件数量过多')
       startIgnored(file)
@@ -562,20 +807,21 @@ async function extractEntries(source, staging, byteLimit, onProgress) {
       startIgnored(file)
       return
     }
-    if (seen.has(path)) {
+    const key = collisionKey(path)
+    if (seen.has(key)) {
       fail('path-conflict', `压缩包里有重复路径：${path}`)
       startIgnored(file)
       return
     }
-    seen.add(path)
+    seen.add(key)
     const isDirectory = file.name.endsWith('/')
     if (isDirectory) {
-      if (filePaths.has(path)) {
+      if (filePaths.has(key)) {
         fail('path-conflict', `压缩包里的文件与目录同名：${path}`)
         startIgnored(file)
         return
       }
-      dirPaths.add(path)
+      dirPaths.add(key)
       addImplicitDirs(path)
       try {
         mkdirSync(join(staging, ...path.split('/')), { recursive: true })
@@ -587,13 +833,13 @@ async function extractEntries(source, staging, byteLimit, onProgress) {
     }
     const parts = path.split('/')
     for (let index = 1; index < parts.length; index += 1) {
-      if (filePaths.has(parts.slice(0, index).join('/'))) {
+      if (filePaths.has(collisionKey(parts.slice(0, index).join('/')))) {
         fail('path-conflict', `压缩包里的文件与目录冲突：${path}`)
         startIgnored(file)
         return
       }
     }
-    if (dirPaths.has(path)) {
+    if (dirPaths.has(key)) {
       fail('path-conflict', `压缩包里的文件与目录同名：${path}`)
       startIgnored(file)
       return
@@ -608,7 +854,7 @@ async function extractEntries(source, staging, byteLimit, onProgress) {
       startIgnored(file)
       return
     }
-    const current = { fd, path, size: 0 }
+    const current = { fd, path, rawName: file.name, size: 0, crc: CRC_SEED }
     open = current
     file.ondata = (error, data, final) => {
       if (failure !== undefined) {
@@ -627,6 +873,7 @@ async function extractEntries(source, staging, byteLimit, onProgress) {
       try {
         if (data.length > 0) {
           writeSync(current.fd, data)
+          current.crc = crc32Update(current.crc, data)
           current.size += data.byteLength
           bytes += data.byteLength
           if (bytes > byteLimit) {
@@ -636,8 +883,15 @@ async function extractEntries(source, staging, byteLimit, onProgress) {
         if (final) {
           closeSync(current.fd)
           if (open === current) open = null
+          const expectedEntry = expected.get(current.rawName)
+          if (expectedEntry === undefined
+            || expectedEntry.crc !== crc32Final(current.crc)
+            || expectedEntry.size !== current.size) {
+            fail('invalid-archive', `CRC 校验失败：${current.path}`)
+            return
+          }
           files.push({ path: current.path, size: current.size })
-          filePaths.add(current.path)
+          filePaths.add(collisionKey(current.path))
           addImplicitDirs(current.path)
           onProgress({ phase: 'extracting', files: files.length, bytes })
         }
@@ -666,6 +920,12 @@ async function extractEntries(source, staging, byteLimit, onProgress) {
     }
   }
   if (failure !== undefined) throw failure
+  if (seenRaw.size !== expected.size) {
+    throw new ProjectArchiveError('invalid-archive', '压缩包中央目录与内容不一致')
+  }
+  for (const name of expected.keys()) {
+    if (!seenRaw.has(name)) throw new ProjectArchiveError('invalid-archive', '压缩包中央目录与内容不一致')
+  }
   if (files.length === 0) throw new ProjectArchiveError('no-files', '压缩包里没有可导入的文件')
   return { files, skippedJunk }
 }
@@ -681,6 +941,10 @@ export async function importProjectArchive({ archivePath, projectsDir, onProgres
   const info = await pathInfo(source)
   if (info === null || !info.isFile()) throw new ProjectArchiveError('invalid-archive', '找不到这个压缩包')
   await mkdir(projectsDir, { recursive: true })
+  // Read the authoritative central directory before writing anything. This
+  // validates every entry name and gives the per-entry CRC the streaming
+  // unzip cannot check.
+  const expected = await readCentralDirectory(source)
   const staging = join(projectsDir, `.easel-import-${randomBytes(8).toString('hex')}`)
   await mkdir(staging, { recursive: true })
   try {
@@ -689,7 +953,7 @@ export async function importProjectArchive({ archivePath, projectsDir, onProgres
     const byteLimit = free - FREE_SPACE_RESERVE
     if (byteLimit <= 0) throw new ProjectArchiveError('disk-space', '磁盘空间不足，无法解压项目')
     onProgress({ phase: 'extracting', files: 0, bytes: 0 })
-    const extracted = await extractEntries(source, staging, byteLimit, onProgress)
+    const extracted = await extractEntries(source, staging, byteLimit, onProgress, expected)
     const manifest = await readManifest(staging)
     if (manifest !== null) {
       await rm(join(staging, MANIFEST_NAME), { force: true })
@@ -698,10 +962,16 @@ export async function importProjectArchive({ archivePath, projectsDir, onProgres
     if (remaining.length === 0) throw new ProjectArchiveError('no-files', '压缩包里没有可导入的文件')
 
     let rootRel = ''
-    if (manifest === null) {
-      const firstSegments = new Set(remaining.map(file => file.path.split('/')[0]))
-      const allNested = remaining.every(file => file.path.includes('/'))
-      if (allNested && firstSegments.size === 1) rootRel = [...firstSegments][0]
+    const firstSegments = new Set(remaining.map(file => file.path.split('/')[0]))
+    const allNested = remaining.every(file => file.path.includes('/'))
+    if (allNested && firstSegments.size === 1) {
+      const folder = [...firstSegments][0]
+      // Without a manifest the single top folder is always the wrapper. With
+      // our manifest it is a wrapper only when it repeats the project title
+      // (the unzip-and-rezip-the-folder workflow); otherwise it is project
+      // content that happens to be the only top-level directory.
+      const sanitizedTitle = manifest === null ? '' : sanitizeProjectTitle(manifest.title, '')
+      if (manifest === null || folder === manifest.title || folder === sanitizedTitle) rootRel = folder
     }
     const root = rootRel === '' ? staging : join(staging, ...rootRel.split('/'))
     const rootInfo = await pathInfo(root)

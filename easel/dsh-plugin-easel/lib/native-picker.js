@@ -75,6 +75,7 @@ function isEnglish(locale) { return locale === 'en' }
 export async function pickDirectory() {
   if (isWindows()) {
     const script = [
+      '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8',
       'Add-Type -AssemblyName System.Windows.Forms',
       '$dialog = New-Object System.Windows.Forms.FolderBrowserDialog',
       "$dialog.Description = '选择 Easel 数据目录'",
@@ -108,6 +109,7 @@ export async function pickZipFile(locale = 'zh') {
   if (isWindows()) {
     const title = english ? 'Choose a project archive' : '选择项目压缩包'
     const script = [
+      '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8',
       'Add-Type -AssemblyName System.Windows.Forms',
       '$dialog = New-Object System.Windows.Forms.OpenFileDialog',
       `$dialog.Title = '${title}'`,
@@ -148,6 +150,7 @@ export async function pickSaveZip(locale = 'zh', defaultName = 'project.zip') {
   if (isWindows()) {
     const title = english ? 'Export project archive' : '导出项目压缩包'
     const script = [
+      '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8',
       'Add-Type -AssemblyName System.Windows.Forms',
       '$dialog = New-Object System.Windows.Forms.SaveFileDialog',
       `$dialog.Title = '${title}'`,

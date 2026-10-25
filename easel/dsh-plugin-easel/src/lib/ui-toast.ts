@@ -98,33 +98,8 @@ function ensureStyle(): void {
  */
 export function showToast(options: ToastOptions): ToastHandle {
   ensureStyle()
-  const previous = document.querySelector(`.${TOAST_CLASS}`)
-  previous?.remove()
-
-  const root = document.createElement('div')
-  root.className = `${TOAST_CLASS} ${TOAST_CLASS}--${options.kind ?? 'info'}`
-  const row = document.createElement('div')
-  row.className = `${TOAST_CLASS}__row`
-  const text = document.createElement('span')
-  text.className = `${TOAST_CLASS}__text`
-  row.append(text)
-  const close = document.createElement('button')
-  close.type = 'button'
-  close.className = `${TOAST_CLASS}__close`
-  close.setAttribute('aria-label', options.closeLabel ?? '关闭')
-  close.textContent = '×'
-  row.append(close)
-  const detail = document.createElement('span')
-  detail.className = `${TOAST_CLASS}__detail`
-  const bar = document.createElement('div')
-  bar.className = `${TOAST_CLASS}__bar`
-  const fill = document.createElement('div')
-  fill.className = `${TOAST_CLASS}__fill`
-  bar.append(fill)
-  root.append(row, detail, bar)
-  document.body.append(root)
-
   let current = { ...options }
+  let root: HTMLDivElement | null = null
   let timer: ReturnType<typeof setTimeout> | undefined
   let dismissed = false
 
@@ -132,7 +107,8 @@ export function showToast(options: ToastOptions): ToastHandle {
     if (dismissed) return
     dismissed = true
     if (timer !== undefined) clearTimeout(timer)
-    root.remove()
+    root?.remove()
+    root = null
   }
   const schedule = (): void => {
     if (timer !== undefined) clearTimeout(timer)
@@ -140,31 +116,69 @@ export function showToast(options: ToastOptions): ToastHandle {
     if (duration > 0) timer = setTimeout(dismiss, duration)
   }
   const render = (): void => {
-    if (dismissed) return
+    if (root === null) return
     root.className = `${TOAST_CLASS} ${TOAST_CLASS}--${current.kind ?? 'info'}`
       + (current.dismissible === true ? ` ${TOAST_CLASS}--dismissible` : '')
     root.setAttribute('role', current.kind === 'error' ? 'alert' : 'status')
+    root.replaceChildren()
+    const row = document.createElement('div')
+    row.className = `${TOAST_CLASS}__row`
+    const text = document.createElement('span')
+    text.className = `${TOAST_CLASS}__text`
     text.textContent = current.message
+    row.append(text)
+    const close = document.createElement('button')
+    close.type = 'button'
+    close.className = `${TOAST_CLASS}__close`
+    close.setAttribute('aria-label', current.closeLabel ?? '关闭')
+    close.textContent = '×'
+    close.style.display = current.dismissible === true ? '' : 'none'
+    close.addEventListener('click', dismiss)
+    row.append(close)
+    const detail = document.createElement('span')
+    detail.className = `${TOAST_CLASS}__detail`
     detail.textContent = current.detail ?? ''
     detail.style.display = current.detail === undefined || current.detail === '' ? 'none' : ''
-    close.style.display = current.dismissible === true ? '' : 'none'
+    const bar = document.createElement('div')
+    bar.className = `${TOAST_CLASS}__bar`
+    const fill = document.createElement('div')
+    fill.className = `${TOAST_CLASS}__fill`
+    bar.append(fill)
     if (current.progress === undefined) {
       bar.style.display = 'none'
     } else {
-      bar.style.display = ''
       const clamped = Math.max(0, Math.min(1, current.progress))
       fill.style.width = `${Math.round(clamped * 100)}%`
     }
+    root.append(row, detail, bar)
   }
-  close.addEventListener('click', dismiss)
-  render()
-  schedule()
+  const mount = (): void => {
+    if (dismissed) return
+    document.querySelector(`.${TOAST_CLASS}`)?.remove()
+    root = document.createElement('div')
+    // A toast shown while a modal is open must live inside that dialog: an
+    // aria-modal ancestor suppresses outside content for assistive technology,
+    // and the dialog's focus trap would exclude the close button.
+    const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]')
+    const host = dialogs.length > 0 ? dialogs[dialogs.length - 1] : document.body
+    host.append(root)
+    render()
+    if (timer !== undefined) clearTimeout(timer)
+    schedule()
+  }
+  mount()
 
   return {
     update(next) {
+      if (dismissed) return
       current = { ...current, ...next }
-      render()
-      schedule()
+      // Another toast may have taken the single visible slot while this job
+      // kept polling; remount this handle instead of updating detached DOM.
+      if (root === null || !root.isConnected) mount()
+      else {
+        render()
+        schedule()
+      }
     },
     dismiss,
   }

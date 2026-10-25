@@ -625,6 +625,7 @@ export interface ArchiveJobResult {
   renamed?: boolean;
   skippedLinks?: number;
   skippedUnreadable?: number;
+  skippedJunk?: number;
 }
 
 /** GET /api/projects/job. */

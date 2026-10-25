@@ -49,7 +49,7 @@ Easel 把每个立项项目放在 `<数据位置>/workspace/projects/<名称>/`�
 { "format": "easel-project", "version": 1, "title": "项目名", "exportedAt": "2026-10-25T..." }
 ```
 
-- **不写 fileCount/totalBytes**：导出期间文件可能被 agent 改写，先写清单再写内容会让计数与实际不一致；zip 自身逐条 CRC 已经保证完整性。文件数/字节数只出现在任务结果和 toast 里。
+- **不写 fileCount/totalBytes**：导出期间文件可能被 agent 改写，先写清单再写内容会让计数与实际不一致；导入时从 zip 中央目录读取逐条 CRC32 与解压字节比对（fflate 的流式解压本身不校验 CRC，stored 媒体必须自己验）。文件数/字节数只出现在任务结果和 toast 里。
 - **标准 zip**：用户可以在资源管理器/Finder 里直接打开，不需要 Easel 专有工具；未带清单的普通项目 zip 也能导入。
 - **v1 不包含会话记录**。会话属于 dsh 的版本化格式，跨版本导入必须走 `session-log-import` 的版本校验；完整迁移已有「隔空传送」，整库备份已有「设置 · 备份」。清单里的 `version` 为将来加入 `sessions/` 预留升级点。
 - **不使用新依赖**：`fflate` 已随 dsh 运行时闭包存在（`@deepseek-ai/dsh-easel-backup` 依赖，桌面壳把闭包 junction 到 `$DSH_HOME/node_modules`），插件按需 `await import('fflate')`；缺失时只让本功能报 `archive-engine-unavailable`，不拖垮整个工作台。`fflate` 能读写 ZIP64 的**归档总量**，但**单个条目上限 4 GiB**；导出扫描时对单文件 ≥ 4 GiB 直接给出可操作错误（提示压缩/拆分该视频），不静默生成坏包。真实用户频繁撞到该上限时再升级到 `yazl`/`yauzl`（届时再加包与新工作量的决策）。
@@ -82,7 +82,7 @@ Easel 把每个立项项目放在 `<数据位置>/workspace/projects/<名称>/`�
    - `scanning`：递归扫描，按相对路径排序；跳过符号链接/junction/特殊文件并计数；不可读文件跳过并计数；拒绝名称里含反斜杠或 NUL 的条目（zip 内路径必须无歧义）；单文件 ≥ 4 GiB 直接失败并点出文件名；统计总字节，检查目标卷剩余空间 ≥ 总量 + 64 MiB。
    - `writing`：写 `<目标>.part`，清单第一个条目，然后逐文件；进度按文件数/字节数上报。
    - 发布：`rename(part, 目标)`（Windows/POSIX 都覆盖已确认的目标）；失败保留原目标文件。
-   - 结果：`{ path, files, bytes, skippedLinks, skippedUnreadable }`；有跳过时 toast 用 warn 级说明数量。
+   - 结果：`{ path, files, bytes, skippedLinks, skippedUnreadable, skippedJunk }`；有跳过时 toast 用 warn 级说明数量（链接、不可读文件、系统元数据分开计数）。
 4. 目标位于源项目内部时拒绝（避免把 `.part` 打进自己）；目标父目录必须存在且可写。
 5. 导出期间文件被改写不会破坏归档（逐条 CRC）；不写全局文件计数，因此不需要重扫。
 
@@ -93,7 +93,8 @@ Easel 把每个立项项目放在 `<数据位置>/workspace/projects/<名称>/`�
 | 风险 | 处理 |
 | --- | --- |
 | Zip-slip / 绝对路径 | 条目名拒绝 `\`、NUL、前导 `/`、盘符 `:`、UNC、空段、`.`/`..` 段；完整路径 ≤ 1024 UTF-8 字节。 |
-| 覆盖/路径冲突 | 拒绝重复条目；拒绝「文件 `a` 之后又出现 `a/b`」的祖先冲突；暂存目录新建且为空。 |
+| 覆盖/路径冲突 | 拒绝重复条目——Windows/macOS 按大小写折叠（macOS 另做 NFC 归一）后比较，避免 `A.txt`/`a.txt` 静默覆盖；拒绝段内冒号（NTFS ADS）；拒绝「文件 `a` 之后又出现 `a/b`」的祖先冲突；暂存目录新建且为空。 |
+| 损坏 zip | 解析 EOCD/ZIP64 中央目录，逐条比对 CRC32 与解压字节；缺中央目录、截断、CRC 不符都拒绝。 |
 | Zip 炸弹 / 磁盘耗尽 | 最多 200 000 条目；解压前 `statfs` 要求剩余 > 1 GiB；解压中已写字节超过「起始可用空间 − 512 MiB」即中止；失败必清暂存。 |
 | 符号链接逃逸 | 导入只往新建暂存目录写普通文件（fflate 不还原 Unix mode，链接条目落成普通文件，无害）；导出用 `lstat`/Dirent 跳过符号链接与 junction，绝不跟随到项目外。 |
 | 任意目录导出 | 仅 `projects/` 直接子目录；主项目、outputs、profiles、skills、`.env` 不在可导出范围。 |
@@ -127,14 +128,14 @@ Easel 把每个立项项目放在 `<数据位置>/workspace/projects/<名称>/`�
   bytes: number
   totalBytes?: number          // 导出扫描后可得；导入时缺省
   destination?: string         // 导出完成后的目标
-  result?: { name, path, files, bytes, renamed?, skippedLinks?, skippedUnreadable? }
+  result?: { name, path, files, bytes, renamed?, skippedLinks?, skippedUnreadable?, skippedJunk? }
   error?: { code: string, detail: string }
   startedAt: number
   finishedAt?: number
 }
 ```
 
-错误码（客户端映射 `zh`/`en` 文案，未知码落回 `detail`）：`unsupported`、`picker-unavailable`、`busy`、`not-a-project`、`destination-inside-source`、`invalid-archive`、`unsafe-path`、`path-conflict`、`too-many-entries`、`manifest-version`、`no-files`、`file-too-large`、`disk-space`、`archive-engine-unavailable`、`io`。
+错误码（客户端映射 `zh`/`en` 文案，未知码落回 `detail`）：`unsupported`、`picker-unavailable`、`busy`、`not-a-project`、`destination-inside-source`、`invalid-archive`、`unsafe-path`、`path-conflict`、`too-many-entries`、`manifest-version`、`no-files`、`file-too-large`、`file-changed`、`disk-space`、`archive-engine-unavailable`、`io`、`bad-destination`、`bad-name`、`name-conflict`。
 
 能力开关：`resolveSettings()` 新增 `archiveEnabled = config.projectArchive ?? Boolean(process.env.EASEL_DATA_ROOT)`；`projectArchive` 只接受布尔值，其他类型在加载时直接报配置错误。桌面发布版由壳注入 `EASEL_DATA_ROOT` 自动开启，web/dev 默认关闭（与「数据位置」一致），开发/测试可在 loader row 写 `projectArchive: true`。`GET /projects` 用 `supported` 表达，客户端据此隐藏侧边栏按钮和右键项。
 
@@ -153,7 +154,7 @@ Easel 把每个立项项目放在 `<数据位置>/workspace/projects/<名称>/`�
 
 **工作区侧边栏**
 
-- 新增标题栏导入按钮：放在现有视图选项按钮之前，36px 图标按钮，`title`/`aria-label` 为 `导入项目压缩包…`；任务进行中显示 spinner 并禁用；`supported=false` 或窄栏（rail）时渲染 null。导入成功后 toast，新工作区分组由既有 feed 自动出现。
+- 新增标题栏导入按钮：放在现有视图选项按钮之前，28px 图标按钮（与标题栏其它控件一致），`title`/`aria-label` 为 `导入项目压缩包…`；任务进行中显示 spinner 并禁用，`aria-busy` 只对本类导入任务为真；`supported=false` 或窄栏（rail）时渲染 null。导入成功后 toast，新工作区分组由既有 feed 自动出现。
 - 工作区行右键：`在文件管理器中显示`、`复制项目路径`；若路径是 `projects/` 直接子目录，再加分隔符和 `导出为压缩包…`。未分组桶、workspace-tree 的合成父组、主项目不出现导出项（回退系统原生菜单或只给复制/显示）。
 - 导入/导出过程共用一个底部居中的轻量浮层（沿用现有 `easel-ctx-toast` 的位置与视觉，不是阻塞弹窗）：文件名/项目名、进度条、已处理字节；成功 4 秒后消失；失败保留 8 秒并带关闭按钮（只有失败态开启 `pointer-events`），`role="alert"`；进行中 `role="status"`。进度条与 hover 过渡尊重 `prefers-reduced-motion`。
 - 所有新增文案走字典：设置卡片放 `settings.dataRoot`，侧边栏/右键/toast 放新命名空间 `easel.archive`，均含 `zh`/`en`。动作名在全流程保持一致（`导入项目…` → `正在导入…` → `已导入…`）。
@@ -161,7 +162,7 @@ Easel 把每个立项项目放在 `<数据位置>/workspace/projects/<名称>/`�
 ### D7 复用与改动点
 
 - **宿主**：新增 `easel/dsh-plugin-easel/lib/project-archive.js`（压缩包引擎 + 任务 + 路由 + 系统选择器），在 `index.js` 的 apply 里通过 `ctx.easelApi.register()` 挂载；`resolveSettings` 增加 `archiveEnabled`。压缩器沿用 `packages/backup/easel-backup/src/archive.ts` 的流式写法与媒体/文本分级；暂存/校验思路对齐 `packages/transfer/lan-handoff/src/handoff.ts`，但不引入其协议。
-- **客户端服务**：新增 `src/lib/project-archive.ts`（路由调用、轮询、工作区登记、任务订阅）与 `src/lib/archive-feedback.ts`（进度浮层；把 `features/context-menu.js` 里的 toast 抽出复用）。在 `client.tsx` 里 `ctx.provide('easelProjectArchive', service)`，并作为 `settings.section` 的 inject 传给数据位置组件；客户端核心插件与 `easel-context-menu` 子插件的 inject 列表都补 `workspaces`。
+- **客户端服务**：新增 `src/lib/project-archive.ts`（路由调用、轮询、工作区登记、任务订阅）与 `src/lib/ui-toast.ts`（进度浮层；把 `features/context-menu.js` 里的 toast 抽出复用，弹窗打开时挂到最上层 dialog 内以保持 aria-modal 与焦点可达）。在 `client.tsx` 里 `ctx.provide('easelProjectArchive', service)`，并作为 `settings.section` 的 inject 传给数据位置组件；客户端核心插件与 `easel-context-menu` 子插件的 inject 列表都补 `workspaces`。
 - **右键**：`src/lib/context-menu-model.js` 增加 `project`（`[data-easel-project]`）与 `workspace`（`[data-row-key^="workspace:"]` + `ctx.workspaces` 查表）两种 surface；`src/features/context-menu.js` 增加对应菜单项与导出动作。设置卡片行只加 `data-easel-project` / `data-easel-project-name` 属性即可被同一监听器接管。`在文件管理器中显示` 直接复用既有的 `ctx.remote.session.openWorkspacePath({ path, action: 'reveal' })`（传绝对路径，不走 `workspaceFiles.stat`），因此设置页里尚未登记为工作区的项目目录也能定位；不新增宿主 reveal 路由。
 - **核心扩展点**：`packages/client/ui-workspace` 的 slot 合约新增 `sidebar.workspaces.header.action`（list，owner `{ wide: boolean }`），在 `WorkspaceBrowser` 标题栏 action 组内渲染；插件注册导入按钮。这是本次唯一的核心包改动，留通用扩展点而不是把 Easel 写进核心。备选的 `sidebar.footer.action`（零核心改动）放在设置按钮旁，发现性差，不采用。
 - **工作区登记**：复用 `packages/api/workspace-controller` 的 `create({ path })`（已存在时 `created:false`，不报重复）。
@@ -195,9 +196,9 @@ Easel 把每个立项项目放在 `<数据位置>/workspace/projects/<名称>/`�
 
 ## Tasks
 
-- [ ] T1 宿主压缩包引擎：清单、扫描、fflate 写入、安全解压、垃圾过滤、根推断、命名冲突、暂存/发布、空间与条目上限；单测覆盖 `../`、绝对路径、反斜杠、重复条目、祖先冲突、清单版本、损坏 zip、垃圾目录、单顶层目录、打平根、同名后缀、链接跳过、目标在源内、4 GiB 守卫、残留清扫规则。（depends: none）
+- [ ] T1 宿主压缩包引擎：清单、扫描、fflate 写入、中央目录 CRC 校验、安全解压、垃圾过滤、根推断、命名冲突、暂存/发布、空间与条目上限；单测覆盖 `../`、绝对路径、反斜杠、冒号 ADS、重复条目（含大小写/Unicode 折叠）、祖先冲突两种顺序、清单版本、CRC 损坏、截断中央目录、垃圾目录、单顶层目录、打平根、同名后缀、链接跳过、不可读文件、目标在源内、4 GiB 守卫、残留清扫规则。（depends: none）
 - [ ] T2 原生选择器与路由/任务：`lib/native-picker.js`、`createProjectArchiveFeature`、四个路由、单任务状态机、`resolveSettings.archiveEnabled`、`index.js` 挂载；用注入的假选择器测导入/导出全流程、取消、409、400、unsupported、job 轮询与错误码。（depends: T1）
-- [ ] T3 客户端服务与反馈：`src/lib/project-archive.ts`（API、轮询、`ctx.workspaces.create`、任务订阅、能力缓存）、`src/lib/archive-feedback.ts`（进度浮层 + 从 context-menu 抽出的 toast）、`easel.archive` 字典；纯函数（项目路径判定、错误码映射）单测。（depends: T2）
+- [ ] T3 客户端服务与反馈：`src/lib/project-archive.ts`（API、轮询、`ctx.workspaces.create`、任务订阅、能力缓存、`supported()`）、`src/lib/ui-toast.ts`（进度浮层 + 从 context-menu 抽出的 toast，弹窗内挂载）、`easel.archive` 字典；纯函数（项目路径判定、错误码映射）单测。（depends: T2）
 - [ ] T4 设置项目卡片：`DataRootSection` 增加项目卡片、加载/空态/列表/行右键属性/导出图标、随任务完成刷新；`DATA_ROOT_STYLES` 与 `settings.dataRoot` 文案；中英文案与焦点态。（depends: T3）
 - [ ] T5 侧边栏导入按钮：核心 `sidebar.workspaces.header.action` 合约 + `WorkspaceBrowser` 渲染 + 合约测试；插件注册按钮（图标、tooltip、busy、unsupported/rail 隐藏）。（depends: T3）
 - [ ] T6 右键扩展：context-menu model 增加 `project`/`workspace` surface，菜单项与导出动作，`ctx.workspaces` 查表，项目路径判定；context-menu 单测覆盖命中/未命中/未分组/合成组/主项目。（depends: T3）
@@ -212,8 +213,9 @@ Easel 把每个立项项目放在 `<数据位置>/workspace/projects/<名称>/`�
 - [ ] 同名项目导入为 `名称 (2)`，原目录字节不变；任何路径都不覆盖。
 - [ ] 设置项目行右键与侧边栏工作区行右键都能导出；导出的 zip 在系统文件管理器中可打开，重新导入后文件逐字节一致（测试用哈希对比）。
 - [ ] 主项目、outputs/profiles/skills、任意非 `projects/` 目录不能导出；侧边栏对应行不显示导出项，宿主直接调用也返回 `not-a-project`。
-- [ ] 恶意/损坏 zip（`../`、绝对路径、反斜杠、重复条目、祖先冲突、清单版本 2、截断文件、超条目/空间上限）全部失败并给出对应错误码；暂存目录被清理，`projects/` 不出现半成品。
-- [ ] 导出跳过符号链接/不可读文件时结果与 toast 报告数量；失败时 `.part` 清理，原目标文件不被破坏。
+- [ ] 恶意/损坏 zip（`../`、绝对路径、反斜杠、段内冒号 ADS、重复条目含大小写/Unicode 折叠、祖先冲突两种顺序、清单版本 2、CRC 损坏、截断中央目录、超条目/空间上限）全部失败并给出对应错误码；暂存目录被清理，`projects/` 不出现半成品。
+- [ ] 导出跳过符号链接/不可读文件/系统元数据时结果与 toast 分别报告数量；失败时 `.part` 清理，原目标文件不被破坏；覆盖已有目标成功且不残留 `.part`。
+- [ ] 中央目录 CRC 与解压字节逐条比对；stored 媒体被篡改时导入失败，不落损坏文件。
 - [ ] 任务并发返回 409；轮询只接受自己的 `jobId`；应用重启后 `GET /projects/job` 为 idle，陈旧暂存被清扫。
 - [ ] 所有新增图标按钮有 aria-label 与可见焦点；进行中/成功/失败分别有 `role=status`/`alert` 播报；reduced-motion 下无动画；中文/英文切换无硬编码新增文案。
 - [ ] web / 未启用部署中，侧边栏按钮与右键导出项不出现，设置卡片不渲染；`GET /projects` 返回 `supported:false`。
@@ -221,7 +223,7 @@ Easel 把每个立项项目放在 `<数据位置>/workspace/projects/<名称>/`�
   - `node --test`（`easel/dsh-plugin-easel`，含 project-archive / context-menu / 路由测试）
   - `pnpm vitest run packages/client/ui-workspace`
   - `pnpm run typecheck`
-  - `pnpm run build`（或 `build:artifacts` 后 `build:check`）
+  - `pnpm exec tsc -p tsconfig.client.json` + `pnpm exec tsdown --config-loader native --env.DSH_BUILD_FACE client`（本工作树的 `node_modules` 是 junction，`pnpm run build` 的 Desktop bundle 会以 `ERR_PNPM_UNSAFE_TASK_RUN_STATE_PATH` 失败；这是环境限制，完整 build 留给 CI/主检出）
   - 插件 `node build.mjs`；桌面运行时人工冒烟：外部 zip、导出再导入哈希一致、同名后缀、右键两处、进度/失败提示、重启后 idle
-  - `dsh-plugin-easel` 版本已升、`client.js` 已重建、`stageEasel` 打包路径已确认；README 更新
-- [ ] 独立复审通过：规格符合性、正确性（边界/错误处理/回归）、代码库一致性（命名、slot 合约、文案与样式语言）均无 critical。
+  - `dsh-plugin-easel` 版本已升、`client.js` 已重建、`stageEasel` 打包路径已确认、`slot-catalog.ts` 已重新生成；README 更新
+- [ ] 独立复审：宿主/安全与客户端/核心两路复审完成；critical（右键调用不存在的 `supported()`）与 major（大小写折叠重名静默覆盖、NTFS 冒号 ADS、CRC 未校验）已修复并复验；其余 minor 记录在交付报告。规格符合性、正确性、代码库一致性无未解决 critical。

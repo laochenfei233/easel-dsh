@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, truncateSync, writeFileSync,
+  chmodSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, truncateSync, writeFileSync,
 } from 'node:fs'
 import { utimes } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -112,7 +112,7 @@ async function waitJob(feature) {
 test('safe entry paths reject traversal, absolute, backslash, and dot segments', () => {
   assert.equal(assertSafeEntryPath('a/b.txt'), 'a/b.txt')
   assert.equal(assertSafeEntryPath('folder/'), 'folder')
-  for (const hostile of ['../evil.txt', '/abs.txt', 'C:/win.txt', 'a\\b.txt', 'a//b.txt', 'a/./b.txt', 'a/../b.txt', '', '/']) {
+  for (const hostile of ['../evil.txt', '/abs.txt', 'C:/win.txt', 'a\\b.txt', 'a//b.txt', 'a/./b.txt', 'a/../b.txt', 'a.txt:secret', '', '/']) {
     assert.throws(() => assertSafeEntryPath(hostile), /unsafe-path|不安全的路径|绝对路径|空路径/, hostile)
   }
 })
@@ -124,6 +124,102 @@ test('isDirectProjectPath accepts only kids of projects/', () => {
   assert.equal(isDirectProjectPath(root, join(root, 'projects', 'one', 'nested')), false)
   assert.equal(isDirectProjectPath(root, join(root, 'outputs', 'one')), false)
   assert.equal(isDirectProjectPath(root, 'relative/projects/one'), false)
+})
+
+test('case-equivalent entries are rejected where the filesystem folds case', async () => {
+  const root = tempRoot()
+  try {
+    const archive = join(root, 'case.zip')
+    writeZip(archive, { 'a.txt': 'lower', 'A.txt': 'upper' })
+    const projects = join(root, 'projects')
+    if (process.platform === 'win32' || process.platform === 'darwin') {
+      await assert.rejects(
+        importProjectArchive({ archivePath: archive, projectsDir: projects }),
+        /重复路径|冲突|path-conflict/,
+      )
+      assert.deepEqual(readdirSync(projects), [])
+    } else {
+      const imported = await importProjectArchive({ archivePath: archive, projectsDir: projects })
+      assert.equal(imported.files, 2)
+    }
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('a corrupted stored entry fails CRC verification', async () => {
+  const root = tempRoot()
+  try {
+    const payload = Buffer.from('secret-bytes')
+    const bytes = Buffer.from(zipSync({ 'a.txt': payload }, { level: 0 }))
+    const position = bytes.indexOf(payload)
+    assert.ok(position >= 0, 'stored payload is visible in the zip')
+    bytes[position] ^= 0xFF
+    const archive = join(root, 'corrupt.zip')
+    writeFileSync(archive, bytes)
+    await assert.rejects(
+      importProjectArchive({ archivePath: archive, projectsDir: join(root, 'projects') }),
+      /CRC 校验失败|invalid-archive/,
+    )
+    assert.deepEqual(readdirSync(join(root, 'projects')), [])
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('a truncated central directory is refused', async () => {
+  const root = tempRoot()
+  try {
+    const archive = join(root, 'truncated.zip')
+    writeZip(archive, { 'a.txt': 'a' })
+    const bytes = readFileSync(archive)
+    writeFileSync(archive, bytes.subarray(0, bytes.length - 22))
+    await assert.rejects(
+      importProjectArchive({ archivePath: archive, projectsDir: join(root, 'projects') }),
+      /中央目录|invalid-archive/,
+    )
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('manifest plus a matching wrapper folder unwraps without an extra level', async () => {
+  const root = tempRoot()
+  try {
+    const archive = join(root, 'wrapped.zip')
+    writeZip(archive, {
+      [MANIFEST_NAME]: JSON.stringify({
+        format: 'easel-project', version: 1, title: '演示项目', exportedAt: '2026-01-01T00:00:00.000Z',
+      }),
+      '演示项目/a.txt': 'a',
+    })
+    const projects = join(root, 'projects')
+    const imported = await importProjectArchive({ archivePath: archive, projectsDir: projects })
+    assert.equal(imported.name, '演示项目')
+    assert.equal(readFileSync(join(projects, '演示项目', 'a.txt'), 'utf8'), 'a')
+    assert.ok(!readdirSync(join(projects, '演示项目')).includes('演示项目'))
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('export counts OS junk instead of silently dropping it', async () => {
+  const root = tempRoot()
+  try {
+    const source = join(root, 'projects', 'junk')
+    seedProject(source)
+    write(join(source, 'desktop.ini'), 'junk')
+    write(join(source, '素材', '.DS_Store'), 'junk')
+    const archive = join(root, 'junk.zip')
+    const exported = await exportProjectArchive({ sourceDir: source, destination: archive })
+    assert.equal(exported.files, 3)
+    assert.equal(exported.skippedJunk, 2)
+    const entries = unzipSync(readFileSync(archive))
+    assert.ok(!Object.keys(entries).includes('desktop.ini'))
+    assert.ok(!Object.keys(entries).includes('素材/.DS_Store'))
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
 })
 
 test('export and import round-trip keeps project bytes and strips the manifest', async () => {
@@ -151,6 +247,23 @@ test('export and import round-trip keeps project bytes and strips the manifest',
     assert.deepEqual(readFileSync(join(target, '成品', 'cover.png')), Buffer.from([0x89, 0x50, 0x4e, 0x47]))
     assert.deepEqual(readdirSync(target).sort(), ['成品', '选题.md', '素材'].sort())
     assert.ok(!readdirSync(target).includes(MANIFEST_NAME))
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('export replaces an existing destination without leaving a partial file', async () => {
+  const root = tempRoot()
+  try {
+    const source = join(root, 'projects', 'overwrite')
+    seedProject(source)
+    const archive = join(root, 'overwrite.zip')
+    write(archive, 'old bytes')
+    const exported = await exportProjectArchive({ sourceDir: source, destination: archive })
+    assert.equal(exported.files, 3)
+    const entries = unzipSync(readFileSync(archive))
+    assert.ok(entries['选题.md'] !== undefined)
+    assert.ok(!readdirSync(root).includes('overwrite.zip.part'))
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
@@ -250,6 +363,16 @@ test('hostile and conflicting entry paths fail without publishing', async () => 
     const duplicateProjects = join(root, 'projects-duplicate')
     await assert.rejects(importProjectArchive({ archivePath: duplicate, projectsDir: duplicateProjects }), /重复路径|path-conflict/)
     assert.deepEqual(readdirSync(duplicateProjects), [])
+    for (const [name, entries] of [
+      ['ancestor-file-first.zip', [['a', 'file'], ['a/b', 'child']]],
+      ['ancestor-dir-first.zip', [['a/b', 'child'], ['a', 'file']]],
+    ]) {
+      const archive = join(root, name)
+      writeRawZip(archive, entries)
+      const projects = join(root, `projects-${name}`)
+      await assert.rejects(importProjectArchive({ archivePath: archive, projectsDir: projects }), /冲突|同名|path-conflict/)
+      assert.deepEqual(readdirSync(projects), [])
+    }
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
@@ -273,6 +396,27 @@ test('export skips symlinks and refuses a destination inside the project', async
       exportProjectArchive({ sourceDir: source, destination: join(source, 'inside.zip') }),
       /destination-inside-source|不能放在/,
     )
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('export skips an unreadable file and reports it', {
+  skip: process.platform === 'win32' || process.getuid?.() === 0,
+}, async () => {
+  const root = tempRoot()
+  try {
+    const source = join(root, 'projects', 'locked')
+    seedProject(source)
+    const locked = join(source, 'secret.txt')
+    write(locked, 'secret')
+    chmodSync(locked, 0o000)
+    const archive = join(root, 'locked.zip')
+    const exported = await exportProjectArchive({ sourceDir: source, destination: archive })
+    assert.equal(exported.skippedUnreadable, 1)
+    const entries = unzipSync(readFileSync(archive))
+    assert.ok(!Object.keys(entries).includes('secret.txt'))
+    chmodSync(locked, 0o600)
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
@@ -394,7 +538,7 @@ test('client archive copy helpers fill placeholders, sizes, and path keys', () =
   assert.equal(formatArchiveBytes(3 * 1024 * 1024), '3.0 MB')
   assert.equal(formatArchiveBytes(2 * 1024 * 1024 * 1024), '2.0 GB')
   assert.equal(archivePathKey('C:\\Data\\Projects\\A\\'), 'c:/data/projects/a')
-  assert.equal(archivePathKey('/data/projects/A'), '/data/projects/a')
+  assert.equal(archivePathKey('/data/projects/A'), '/data/projects/A')
   assert.equal(isProjectDirectory('C:\\data\\workspace', 'C:\\data\\workspace\\projects\\A\\'), true)
   assert.equal(isProjectDirectory('/data/workspace', '/data/workspace/projects/A'), true)
   assert.equal(isProjectDirectory('/data/workspace', '/data/workspace/projects'), false)

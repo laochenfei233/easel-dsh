@@ -34,7 +34,11 @@ export function formatArchiveBytes(bytes) {
  * @returns {string} a comparison key.
  */
 export function archivePathKey(path) {
-  return String(path).replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase()
+  const normalized = String(path).replace(/\\/g, '/').replace(/\/+$/, '')
+  // Fold case only for Windows-style paths; POSIX names are case-sensitive.
+  return /^[A-Za-z]:\//.test(normalized) || /^\/\/[^/]/.test(normalized)
+    ? normalized.toLowerCase()
+    : normalized
 }
 
 /**

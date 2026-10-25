@@ -12410,38 +12410,16 @@ function ensureStyle() {
 }
 function showToast(options) {
   ensureStyle();
-  const previous = document.querySelector(`.${TOAST_CLASS}`);
-  previous?.remove();
-  const root = document.createElement("div");
-  root.className = `${TOAST_CLASS} ${TOAST_CLASS}--${options.kind ?? "info"}`;
-  const row = document.createElement("div");
-  row.className = `${TOAST_CLASS}__row`;
-  const text2 = document.createElement("span");
-  text2.className = `${TOAST_CLASS}__text`;
-  row.append(text2);
-  const close = document.createElement("button");
-  close.type = "button";
-  close.className = `${TOAST_CLASS}__close`;
-  close.setAttribute("aria-label", options.closeLabel ?? "\u5173\u95ED");
-  close.textContent = "\xD7";
-  row.append(close);
-  const detail = document.createElement("span");
-  detail.className = `${TOAST_CLASS}__detail`;
-  const bar = document.createElement("div");
-  bar.className = `${TOAST_CLASS}__bar`;
-  const fill = document.createElement("div");
-  fill.className = `${TOAST_CLASS}__fill`;
-  bar.append(fill);
-  root.append(row, detail, bar);
-  document.body.append(root);
   let current = { ...options };
+  let root = null;
   let timer;
   let dismissed = false;
   const dismiss = () => {
     if (dismissed) return;
     dismissed = true;
     if (timer !== void 0) clearTimeout(timer);
-    root.remove();
+    root?.remove();
+    root = null;
   };
   const schedule = () => {
     if (timer !== void 0) clearTimeout(timer);
@@ -12449,29 +12427,62 @@ function showToast(options) {
     if (duration > 0) timer = setTimeout(dismiss, duration);
   };
   const render = () => {
-    if (dismissed) return;
+    if (root === null) return;
     root.className = `${TOAST_CLASS} ${TOAST_CLASS}--${current.kind ?? "info"}` + (current.dismissible === true ? ` ${TOAST_CLASS}--dismissible` : "");
     root.setAttribute("role", current.kind === "error" ? "alert" : "status");
+    root.replaceChildren();
+    const row = document.createElement("div");
+    row.className = `${TOAST_CLASS}__row`;
+    const text2 = document.createElement("span");
+    text2.className = `${TOAST_CLASS}__text`;
     text2.textContent = current.message;
+    row.append(text2);
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = `${TOAST_CLASS}__close`;
+    close.setAttribute("aria-label", current.closeLabel ?? "\u5173\u95ED");
+    close.textContent = "\xD7";
+    close.style.display = current.dismissible === true ? "" : "none";
+    close.addEventListener("click", dismiss);
+    row.append(close);
+    const detail = document.createElement("span");
+    detail.className = `${TOAST_CLASS}__detail`;
     detail.textContent = current.detail ?? "";
     detail.style.display = current.detail === void 0 || current.detail === "" ? "none" : "";
-    close.style.display = current.dismissible === true ? "" : "none";
+    const bar = document.createElement("div");
+    bar.className = `${TOAST_CLASS}__bar`;
+    const fill = document.createElement("div");
+    fill.className = `${TOAST_CLASS}__fill`;
+    bar.append(fill);
     if (current.progress === void 0) {
       bar.style.display = "none";
     } else {
-      bar.style.display = "";
       const clamped = Math.max(0, Math.min(1, current.progress));
       fill.style.width = `${Math.round(clamped * 100)}%`;
     }
+    root.append(row, detail, bar);
   };
-  close.addEventListener("click", dismiss);
-  render();
-  schedule();
+  const mount = () => {
+    if (dismissed) return;
+    document.querySelector(`.${TOAST_CLASS}`)?.remove();
+    root = document.createElement("div");
+    const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+    const host = dialogs.length > 0 ? dialogs[dialogs.length - 1] : document.body;
+    host.append(root);
+    render();
+    if (timer !== void 0) clearTimeout(timer);
+    schedule();
+  };
+  mount();
   return {
     update(next) {
+      if (dismissed) return;
       current = { ...current, ...next };
-      render();
-      schedule();
+      if (root === null || !root.isConnected) mount();
+      else {
+        render();
+        schedule();
+      }
     },
     dismiss
   };
@@ -13780,7 +13791,9 @@ function useArchiveSnapshot(archive) {
 function ImportButton({ wide, archive, t }) {
   const snapshot = useArchiveSnapshot(archive);
   if (!wide || snapshot.supported !== true) return null;
-  const busy = snapshot.picking || snapshot.job?.state === "running";
+  const jobRunning = snapshot.job?.state === "running";
+  const busy = snapshot.picking || jobRunning;
+  const importing = snapshot.picking || jobRunning && snapshot.job?.kind === "import";
   return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
     "button",
     {
@@ -13788,11 +13801,12 @@ function ImportButton({ wide, archive, t }) {
       className: "easel-header-import",
       "aria-label": t("import"),
       title: t("import"),
+      "aria-busy": importing,
       disabled: busy,
       onClick: () => {
         void archive.startImport();
       },
-      children: busy ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "easel-header-import__spinner", "aria-hidden": "true" }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(ImportIcon, {})
+      children: importing ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "easel-header-import__spinner", "aria-hidden": "true" }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(ImportIcon, {})
     }
   );
 }
@@ -14003,7 +14017,8 @@ function formatArchiveBytes(bytes) {
   return `${Math.round(bytes)} B`;
 }
 function archivePathKey(path) {
-  return String(path).replace(/\\/g, "/").replace(/\/+$/, "").toLowerCase();
+  const normalized = String(path).replace(/\\/g, "/").replace(/\/+$/, "");
+  return /^[A-Za-z]:\//.test(normalized) || /^\/\/[^/]/.test(normalized) ? normalized.toLowerCase() : normalized;
 }
 function isProjectDirectory(projectRoot2, candidate) {
   if (typeof projectRoot2 !== "string" || projectRoot2 === "") return false;
@@ -14029,6 +14044,7 @@ var KNOWN_ERROR_CODES = /* @__PURE__ */ new Set([
   "manifest-version",
   "no-files",
   "file-too-large",
+  "file-changed",
   "disk-space",
   "archive-engine-unavailable",
   "io",
@@ -14039,7 +14055,7 @@ var KNOWN_ERROR_CODES = /* @__PURE__ */ new Set([
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-function pickerLocale() {
+function browserLocale() {
   const language = typeof navigator === "undefined" ? "zh" : navigator.language;
   return language.toLowerCase().startsWith("zh") ? "zh" : "en";
 }
@@ -14051,6 +14067,10 @@ function createProjectArchiveService(ctx, t) {
   const publish = (patch) => {
     state = { ...state, ...patch };
     for (const listener of listeners) listener();
+  };
+  const currentLocale = () => {
+    const active = ctx.locale?.getSnapshot?.().active;
+    return active === "zh" || active === "en" ? active : browserLocale();
   };
   const setToast = (next) => {
     if (toast === null) toast = showToast({ closeLabel: t("close"), ...next });
@@ -14066,6 +14086,7 @@ function createProjectArchiveService(ctx, t) {
       kind: "error",
       message: known ? t(`error.${code}`) : `${t("error.generic")}\uFF1A${detail}`,
       detail,
+      progress: void 0,
       dismissible: true,
       duration: 8e3
     });
@@ -14102,6 +14123,8 @@ function createProjectArchiveService(ctx, t) {
       setToast({
         kind: "warn",
         message: fillArchiveText(t("workspaceFailed"), { message: error instanceof Error ? error.message : String(error) }),
+        detail: void 0,
+        progress: void 0,
         dismissible: true,
         duration: 8e3
       });
@@ -14110,6 +14133,8 @@ function createProjectArchiveService(ctx, t) {
       setToast({
         kind: "ok",
         message: result.renamed === true ? fillArchiveText(t("importedRenamed"), { name: result.name }) : fillArchiveText(t("imported"), { name: result.name }),
+        detail: void 0,
+        progress: void 0,
         duration: 4e3
       });
     }
@@ -14121,10 +14146,13 @@ function createProjectArchiveService(ctx, t) {
     const target = result?.path ?? job.destination ?? "";
     const links = result?.skippedLinks ?? 0;
     const unreadable = result?.skippedUnreadable ?? 0;
-    const skipped = links + unreadable;
+    const junk = result?.skippedJunk ?? 0;
+    const skipped = links + unreadable + junk;
     setToast({
       kind: skipped > 0 ? "warn" : "ok",
-      message: skipped > 0 ? fillArchiveText(t("exportedSkipped"), { path: target, links, unreadable }) : fillArchiveText(t("exported"), { path: target }),
+      message: skipped > 0 ? fillArchiveText(t("exportedSkipped"), { path: target, links, unreadable, junk }) : fillArchiveText(t("exported"), { path: target }),
+      detail: void 0,
+      progress: void 0,
       duration: 6e3
     });
   };
@@ -14180,6 +14208,11 @@ function createProjectArchiveService(ctx, t) {
     });
     try {
       const started = await start();
+      if (disposed) {
+        publish({ picking: false });
+        closeToast();
+        return;
+      }
       if (started.cancelled === true) {
         publish({ picking: false });
         closeToast();
@@ -14218,8 +14251,9 @@ function createProjectArchiveService(ctx, t) {
       };
     },
     loadProjects,
-    startImport: () => startJob("import", "", () => startArchiveImport(pickerLocale())),
-    startExport: (path, name) => startJob("export", name, () => startArchiveExport(path, pickerLocale())),
+    supported: () => state.supported === true,
+    startImport: () => startJob("import", "", () => startArchiveImport(currentLocale())),
+    startExport: (path, name) => startJob("export", name, () => startArchiveExport(path, currentLocale())),
     isProject(path) {
       if (state.supported !== true) return false;
       if (state.projectRoot !== void 0) return isProjectDirectory(state.projectRoot, path);
@@ -14282,7 +14316,9 @@ var DATA_ROOT_STYLES = `
 .dtr-project-list { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; }
 .dtr-project { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 4px; border-top: 0.5px solid var(--dsw-alias-border-l1); border-radius: var(--dsw-radius-md); }
 .dtr-project:first-child { border-top: 0; }
-.dtr-project:hover { background: var(--dsw-alias-interactive-bg-hover, rgba(15, 23, 42, .05)); }
+.dtr-project:hover { background: var(--dsw-alias-fill-secondary); }
+.dtr-project:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: -2px; }
+.dtr-project-icon { flex: none; display: inline-flex; color: var(--dsw-alias-label-secondary); }
 .dtr-project-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dtr-project-export {
   flex: none; display: inline-flex; align-items: center; justify-content: center;
@@ -14293,6 +14329,7 @@ var DATA_ROOT_STYLES = `
 .dtr-project-export:disabled { opacity: .3; cursor: default; }
 .dtr-project-export:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: -2px; }
 .dtr-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 0 4px; }
+.dtr-empty-icon { color: var(--dsw-alias-label-secondary); }
 .dtr-empty-title { font-size: 13px; line-height: 20px; }
 .dtr-spinner {
   width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent;
@@ -14339,6 +14376,17 @@ function DownloadIcon() {
     }
   ) });
 }
+function FolderIcon({ size = 16 }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("svg", { width: size, height: size, viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+    "path",
+    {
+      d: "M2.5 4.5c0-.55.45-1 1-1h3l1.5 1.5h4.5c.55 0 1 .45 1 1v6c0 .55-.45 1-1 1h-9c-.55 0-1-.45-1-1v-7.5Z",
+      stroke: "currentColor",
+      strokeWidth: "1.2",
+      strokeLinejoin: "round"
+    }
+  ) });
+}
 function useArchiveSnapshot2(archive) {
   const [snapshot, setSnapshot] = (0, import_react20.useState)(() => archive.snapshot());
   (0, import_react20.useEffect)(() => {
@@ -14358,6 +14406,7 @@ function DataRootSection({ t, archive }) {
   const archiveState = useArchiveSnapshot2(archive);
   const at = archive.t;
   const archiveBusy = archiveState.picking || archiveState.job?.state === "running";
+  const archiveImporting = archiveState.picking || archiveState.job?.state === "running" && archiveState.job?.kind === "import";
   (0, import_react20.useEffect)(() => {
     let active = true;
     request4("/data-root").then((next) => {
@@ -14425,7 +14474,8 @@ function DataRootSection({ t, archive }) {
   const current = (status.current ?? "").replace(/[\\/]+$/, "");
   const unchanged = trimmed.length === 0 || trimmed === current;
   const job = archiveState.job;
-  const jobLine = job?.state === "running" ? job.kind === "import" ? fillArchiveText(at("cardImporting"), { name: job.name ?? "" }) : fillArchiveText(at("cardExporting"), { name: job.name ?? "" }) : null;
+  const jobLine = job?.state === "running" ? job.kind === "import" ? fillArchiveText(t("projectsImporting"), { name: job.name ?? "" }) : fillArchiveText(t("projectsExporting"), { name: job.name ?? "" }) : null;
+  const archiveVisible = archiveState.supported === true || archiveState.supported === void 0 && archiveState.projectsReady;
   return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-root", children: [
     /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-intro", children: t("intro") }),
     /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "dtr-card", children: [
@@ -14439,11 +14489,11 @@ function DataRootSection({ t, archive }) {
       status.pending ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-note dtr-note-info", children: t("pending") }) : null,
       status.lastError ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-error", role: "alert", children: status.lastError }) : null
     ] }),
-    archiveState.supported === true ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "dtr-card", children: [
+    archiveVisible ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "dtr-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-card-head", children: [
         /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "dtr-card-title", children: [
-          at("projectsTitle"),
-          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-badge", children: fillArchiveText(at("count"), { count: archiveState.projects.length }) })
+          t("projectsTitle"),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-badge", children: fillArchiveText(t("projectsCount"), { count: archiveState.projects.length }) })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
           "button",
@@ -14455,15 +14505,16 @@ function DataRootSection({ t, archive }) {
               void archive.startImport();
             },
             children: [
-              archiveBusy ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-spinner", "aria-hidden": "true" }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(DownloadIcon, {}),
+              archiveImporting ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-spinner", "aria-hidden": "true" }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(DownloadIcon, {}),
               at("import")
             ]
           }
         )
       ] }),
       archiveState.projects.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-empty", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-empty-title", children: at("empty") }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-muted", children: at("emptyHint") }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-empty-icon", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(FolderIcon, { size: 20 }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-empty-title", children: t("projectsEmpty") }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-muted", children: t("projectsEmptyHint") }),
         /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
           "button",
           {
@@ -14481,9 +14532,22 @@ function DataRootSection({ t, archive }) {
         {
           className: "dtr-project",
           title: project.path,
+          tabIndex: 0,
           "data-easel-project": project.path,
           "data-easel-project-name": project.name,
+          onKeyDown: (event) => {
+            if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) return;
+            event.preventDefault();
+            const rect = event.currentTarget.getBoundingClientRect();
+            event.currentTarget.dispatchEvent(new MouseEvent("contextmenu", {
+              bubbles: true,
+              cancelable: true,
+              clientX: rect.left + 24,
+              clientY: rect.top + 20
+            }));
+          },
           children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-project-icon", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(FolderIcon, {}) }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-project-name", children: project.name }),
             /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
               "button",
@@ -14505,8 +14569,8 @@ function DataRootSection({ t, archive }) {
         project.path
       )) }),
       jobLine === null ? null : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-muted", children: jobLine }),
-      archiveError === null ? null : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-error", role: "alert", children: fillArchiveText(at("loadFailed"), { message: archiveError }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-muted", children: at("hint") })
+      archiveError === null ? null : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-error", role: "alert", children: fillArchiveText(t("projectsLoadFailed"), { message: archiveError }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-muted", children: t("projectsHint") })
     ] }) : null,
     /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "dtr-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-card-head", children: [
@@ -14593,6 +14657,14 @@ var DATA_ROOT_COPY = {
     confirmMigrate: "\u786E\u8BA4\u8FC1\u79FB\u5E76\u91CD\u542F",
     cancel: "\u53D6\u6D88",
     migrating: "\u6B63\u5728\u8FC1\u79FB\uFF0C\u5E94\u7528\u4F1A\u81EA\u52A8\u91CD\u542F\u2026",
+    projectsTitle: "\u9879\u76EE",
+    projectsCount: "{count} \u4E2A\u9879\u76EE",
+    projectsHint: "\u538B\u7F29\u5305\u53EA\u5305\u542B\u9879\u76EE\u6587\u4EF6\uFF0C\u4E0D\u542B\u4F1A\u8BDD\u8BB0\u5F55\uFF1B\u5BFC\u5165\u540E\u4F1A\u767B\u8BB0\u4E3A\u5DE5\u4F5C\u533A\u3002",
+    projectsEmpty: "\u8FD8\u6CA1\u6709\u9879\u76EE",
+    projectsEmptyHint: "\u628A\u9879\u76EE\u538B\u7F29\u5305\u5BFC\u5165\u8FD9\u91CC\uFF0C\u6216\u4ECE\u9009\u9898\u7ACB\u9879\u3002",
+    projectsLoadFailed: "\u9879\u76EE\u5217\u8868\u8BFB\u53D6\u5931\u8D25\uFF1A{message}",
+    projectsImporting: "\u6B63\u5728\u5BFC\u5165\u300C{name}\u300D\u2026",
+    projectsExporting: "\u6B63\u5728\u6253\u5305\u300C{name}\u300D\u2026",
     onlyDesktop: "\u4EC5\u684C\u9762\u7248\u652F\u6301\u4FEE\u6539\u6570\u636E\u4F4D\u7F6E\u3002",
     loading: "\u8BFB\u53D6\u4E2D\u2026",
     pickUnavailable: "\u7CFB\u7EDF\u6CA1\u6709\u53EF\u7528\u7684\u76EE\u5F55\u9009\u62E9\u5668\uFF0C\u8BF7\u76F4\u63A5\u8F93\u5165\u8DEF\u5F84\u3002"
@@ -14616,6 +14688,14 @@ var DATA_ROOT_COPY = {
     confirmMigrate: "Confirm move and restart",
     cancel: "Cancel",
     migrating: "Moving the data root; the app will restart automatically\u2026",
+    projectsTitle: "Projects",
+    projectsCount: "{count} projects",
+    projectsHint: "Archives contain project files only, not conversations; imports are registered as workspaces.",
+    projectsEmpty: "No projects yet",
+    projectsEmptyHint: "Import a project archive here, or start one from an idea.",
+    projectsLoadFailed: "Could not read the project list: {message}",
+    projectsImporting: "Importing \u201C{name}\u201D\u2026",
+    projectsExporting: "Packaging \u201C{name}\u201D\u2026",
     onlyDesktop: "Changing the data location is available in the desktop app only.",
     loading: "Loading\u2026",
     pickUnavailable: "No folder picker is available; type the path instead."
@@ -14630,22 +14710,14 @@ var ARCHIVE_COPY = {
     copyPath: "\u590D\u5236\u9879\u76EE\u8DEF\u5F84",
     reveal: "\u5728\u6587\u4EF6\u7BA1\u7406\u5668\u4E2D\u663E\u793A",
     close: "\u5173\u95ED",
-    projectsTitle: "\u9879\u76EE",
-    count: "{count} \u4E2A\u9879\u76EE",
-    hint: "\u538B\u7F29\u5305\u53EA\u5305\u542B\u9879\u76EE\u6587\u4EF6\uFF0C\u4E0D\u542B\u4F1A\u8BDD\u8BB0\u5F55\uFF1B\u5BFC\u5165\u540E\u4F1A\u767B\u8BB0\u4E3A\u5DE5\u4F5C\u533A\u3002",
-    empty: "\u8FD8\u6CA1\u6709\u9879\u76EE",
-    emptyHint: "\u628A\u9879\u76EE\u538B\u7F29\u5305\u5BFC\u5165\u8FD9\u91CC\uFF0C\u6216\u4ECE\u9009\u9898\u7ACB\u9879\u3002",
-    loadFailed: "\u9879\u76EE\u5217\u8868\u8BFB\u53D6\u5931\u8D25\uFF1A{message}",
     pickingImport: "\u9009\u62E9\u9879\u76EE\u538B\u7F29\u5305\u2026",
     pickingExport: "\u9009\u62E9\u5BFC\u51FA\u4F4D\u7F6E\u2026",
-    cardImporting: "\u6B63\u5728\u5BFC\u5165\u300C{name}\u300D\u2026",
-    cardExporting: "\u6B63\u5728\u6253\u5305\u300C{name}\u300D\u2026",
     importing: "\u6B63\u5728\u5BFC\u5165\u300C{name}\u300D\u2026",
     exporting: "\u6B63\u5728\u6253\u5305\u300C{name}\u300D\u2026",
     imported: "\u5DF2\u5BFC\u5165\u300C{name}\u300D",
     importedRenamed: "\u540C\u540D\u9879\u76EE\u5DF2\u5B58\u5728\uFF0C\u5DF2\u5BFC\u5165\u4E3A\u300C{name}\u300D",
     exported: "\u5DF2\u5BFC\u51FA\u5230 {path}",
-    exportedSkipped: "\u5DF2\u5BFC\u51FA\u5230 {path}\uFF08\u8DF3\u8FC7 {links} \u4E2A\u94FE\u63A5\u3001{unreadable} \u4E2A\u65E0\u6CD5\u8BFB\u53D6\u7684\u6587\u4EF6\uFF09",
+    exportedSkipped: "\u5DF2\u5BFC\u51FA\u5230 {path}\uFF08\u8DF3\u8FC7 {links} \u4E2A\u94FE\u63A5\u3001{unreadable} \u4E2A\u65E0\u6CD5\u8BFB\u53D6\u7684\u6587\u4EF6\u3001{junk} \u4E2A\u7CFB\u7EDF\u6587\u4EF6\uFF09",
     workspaceFailed: "\u5DF2\u5BFC\u5165\u6587\u4EF6\uFF0C\u4F46\u5DE5\u4F5C\u533A\u767B\u8BB0\u5931\u8D25\uFF1A{message}",
     progressImport: "{files} \u4E2A\u6587\u4EF6 \xB7 {size}",
     progressExport: "{percent}% \xB7 {size}",
@@ -14662,6 +14734,7 @@ var ARCHIVE_COPY = {
     "error.manifest-version": "\u8FD9\u4E2A\u538B\u7F29\u5305\u6765\u81EA\u66F4\u65B0\u7684 Easel\uFF0C\u8BF7\u5148\u5347\u7EA7\u5E94\u7528",
     "error.no-files": "\u538B\u7F29\u5305\u91CC\u6CA1\u6709\u53EF\u5BFC\u5165\u7684\u6587\u4EF6",
     "error.file-too-large": "\u5355\u4E2A\u6587\u4EF6\u8D85\u8FC7 4 GB\uFF0C\u65E0\u6CD5\u6253\u5305\uFF1B\u8BF7\u538B\u7F29\u6216\u62C6\u5206\u8BE5\u6587\u4EF6",
+    "error.file-changed": "\u6253\u5305\u8FC7\u7A0B\u4E2D\u6709\u6587\u4EF6\u88AB\u66FF\u6362\u6216\u5220\u9664\uFF0C\u5DF2\u505C\u6B62\u5BFC\u51FA",
     "error.disk-space": "\u78C1\u76D8\u7A7A\u95F4\u4E0D\u8DB3",
     "error.archive-engine-unavailable": "\u538B\u7F29\u5305\u5F15\u64CE\u4E0D\u53EF\u7528\uFF0C\u8BF7\u91CD\u65B0\u5B89\u88C5 Easel",
     "error.io": "\u8BFB\u5199\u6587\u4EF6\u5931\u8D25",
@@ -14675,22 +14748,14 @@ var ARCHIVE_COPY = {
     copyPath: "Copy project path",
     reveal: "Show in file manager",
     close: "Close",
-    projectsTitle: "Projects",
-    count: "{count} projects",
-    hint: "Archives contain project files only, not conversations; imports are registered as workspaces.",
-    empty: "No projects yet",
-    emptyHint: "Import a project archive here, or start one from an idea.",
-    loadFailed: "Could not read the project list: {message}",
     pickingImport: "Choose a project archive\u2026",
     pickingExport: "Choose where to export\u2026",
-    cardImporting: "Importing \u201C{name}\u201D\u2026",
-    cardExporting: "Packaging \u201C{name}\u201D\u2026",
     importing: "Importing \u201C{name}\u201D\u2026",
     exporting: "Packaging \u201C{name}\u201D\u2026",
     imported: "Imported \u201C{name}\u201D",
     importedRenamed: "A project with that name exists; imported as \u201C{name}\u201D",
     exported: "Exported to {path}",
-    exportedSkipped: "Exported to {path} (skipped {links} links and {unreadable} unreadable files)",
+    exportedSkipped: "Exported to {path} (skipped {links} links, {unreadable} unreadable files, and {junk} system files)",
     workspaceFailed: "Files were imported, but registering the workspace failed: {message}",
     progressImport: "{files} files \xB7 {size}",
     progressExport: "{percent}% \xB7 {size}",
@@ -14707,6 +14772,7 @@ var ARCHIVE_COPY = {
     "error.manifest-version": "This archive comes from a newer Easel; update the app first",
     "error.no-files": "The archive contains no importable files",
     "error.file-too-large": "A single file is 4 GB or larger and cannot be packaged; compress or split it",
+    "error.file-changed": "A file was replaced or deleted during packaging; export stopped",
     "error.disk-space": "Not enough disk space",
     "error.archive-engine-unavailable": "The archive engine is unavailable; reinstall Easel",
     "error.io": "Reading or writing files failed",

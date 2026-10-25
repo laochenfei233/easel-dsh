@@ -69,7 +69,9 @@ export const DATA_ROOT_STYLES = `
 .dtr-project-list { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; }
 .dtr-project { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 4px; border-top: 0.5px solid var(--dsw-alias-border-l1); border-radius: var(--dsw-radius-md); }
 .dtr-project:first-child { border-top: 0; }
-.dtr-project:hover { background: var(--dsw-alias-interactive-bg-hover, rgba(15, 23, 42, .05)); }
+.dtr-project:hover { background: var(--dsw-alias-fill-secondary); }
+.dtr-project:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: -2px; }
+.dtr-project-icon { flex: none; display: inline-flex; color: var(--dsw-alias-label-secondary); }
 .dtr-project-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .dtr-project-export {
   flex: none; display: inline-flex; align-items: center; justify-content: center;
@@ -80,6 +82,7 @@ export const DATA_ROOT_STYLES = `
 .dtr-project-export:disabled { opacity: .3; cursor: default; }
 .dtr-project-export:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: -2px; }
 .dtr-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 0 4px; }
+.dtr-empty-icon { color: var(--dsw-alias-label-secondary); }
 .dtr-empty-title { font-size: 13px; line-height: 20px; }
 .dtr-spinner {
   width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent;
@@ -124,6 +127,15 @@ function DownloadIcon() {
   )
 }
 
+function FolderIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M2.5 4.5c0-.55.45-1 1-1h3l1.5 1.5h4.5c.55 0 1 .45 1 1v6c0 .55-.45 1-1 1h-9c-.55 0-1-.45-1-1v-7.5Z"
+        stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 /**
  * Subscribe one component to the archive service.
  * @param archive - shared service.
@@ -153,6 +165,8 @@ export function DataRootSection({ t, archive }: DataRootSectionProps) {
   const archiveState = useArchiveSnapshot(archive)
   const at = archive.t
   const archiveBusy = archiveState.picking || archiveState.job?.state === 'running'
+  const archiveImporting = archiveState.picking
+    || (archiveState.job?.state === 'running' && archiveState.job?.kind === 'import')
 
   useEffect(() => {
     let active = true
@@ -222,9 +236,13 @@ export function DataRootSection({ t, archive }: DataRootSectionProps) {
   const job = archiveState.job
   const jobLine = job?.state === 'running'
     ? job.kind === 'import'
-      ? fill(at('cardImporting'), { name: job.name ?? '' })
-      : fill(at('cardExporting'), { name: job.name ?? '' })
+      ? fill(t('projectsImporting'), { name: job.name ?? '' })
+      : fill(t('projectsExporting'), { name: job.name ?? '' })
     : null
+  // A failed list request must not hide the import action: show the card once
+  // the first answer settled, and surface the list error inline.
+  const archiveVisible = archiveState.supported === true
+    || (archiveState.supported === undefined && archiveState.projectsReady)
 
   return <div className="dtr-root">
     <p className="dtr-intro">{t('intro')}</p>
@@ -243,23 +261,24 @@ export function DataRootSection({ t, archive }: DataRootSectionProps) {
       {status.lastError ? <p className="dtr-error" role="alert">{status.lastError}</p> : null}
     </section>
 
-    {archiveState.supported === true ? (
+    {archiveVisible ? (
       <section className="dtr-card">
         <div className="dtr-card-head">
           <span className="dtr-card-title">
-            {at('projectsTitle')}
-            <span className="dtr-badge">{fill(at('count'), { count: archiveState.projects.length })}</span>
+            {t('projectsTitle')}
+            <span className="dtr-badge">{fill(t('projectsCount'), { count: archiveState.projects.length })}</span>
           </span>
           <button type="button" className="dtr-btn" disabled={archiveBusy}
             onClick={() => { void archive.startImport() }}>
-            {archiveBusy ? <span className="dtr-spinner" aria-hidden="true" /> : <DownloadIcon />}
+            {archiveImporting ? <span className="dtr-spinner" aria-hidden="true" /> : <DownloadIcon />}
             {at('import')}
           </button>
         </div>
         {archiveState.projects.length === 0 ? (
           <div className="dtr-empty">
-            <span className="dtr-empty-title">{at('empty')}</span>
-            <span className="dtr-muted">{at('emptyHint')}</span>
+            <span className="dtr-empty-icon"><FolderIcon size={20} /></span>
+            <span className="dtr-empty-title">{t('projectsEmpty')}</span>
+            <span className="dtr-muted">{t('projectsEmptyHint')}</span>
             <button type="button" className="dtr-link" disabled={archiveBusy}
               onClick={() => { void archive.startImport() }}>
               {at('import')}
@@ -268,8 +287,17 @@ export function DataRootSection({ t, archive }: DataRootSectionProps) {
         ) : (
           <ul className="dtr-project-list">
             {archiveState.projects.map(project => (
-              <li key={project.path} className="dtr-project" title={project.path}
-                data-easel-project={project.path} data-easel-project-name={project.name}>
+              <li key={project.path} className="dtr-project" title={project.path} tabIndex={0}
+                data-easel-project={project.path} data-easel-project-name={project.name}
+                onKeyDown={(event) => {
+                  if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return
+                  event.preventDefault()
+                  const rect = event.currentTarget.getBoundingClientRect()
+                  event.currentTarget.dispatchEvent(new MouseEvent('contextmenu', {
+                    bubbles: true, cancelable: true, clientX: rect.left + 24, clientY: rect.top + 20,
+                  }))
+                }}>
+                <span className="dtr-project-icon"><FolderIcon /></span>
                 <span className="dtr-project-name">{project.name}</span>
                 <button type="button" className="dtr-project-export" disabled={archiveBusy}
                   aria-label={at('export')} title={at('export')}
@@ -284,8 +312,8 @@ export function DataRootSection({ t, archive }: DataRootSectionProps) {
           </ul>
         )}
         {jobLine === null ? null : <p className="dtr-muted">{jobLine}</p>}
-        {archiveError === null ? null : <p className="dtr-error" role="alert">{fill(at('loadFailed'), { message: archiveError })}</p>}
-        <p className="dtr-muted">{at('hint')}</p>
+        {archiveError === null ? null : <p className="dtr-error" role="alert">{fill(t('projectsLoadFailed'), { message: archiveError })}</p>}
+        <p className="dtr-muted">{t('projectsHint')}</p>
       </section>
     ) : null}
 

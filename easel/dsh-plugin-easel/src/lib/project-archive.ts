@@ -34,6 +34,8 @@ export interface ProjectArchiveService {
   subscribe: (listener: () => void) => () => void
   /** Fetch the project list and refresh the supported flag. */
   loadProjects: () => Promise<ArchiveProjectSummary[]>
+  /** Whether this deployment enables project archives. */
+  supported: () => boolean
   /** Native picker, import job, workspace registration. */
   startImport: () => Promise<void>
   /** Native save dialog and export job for one project path. */
@@ -51,7 +53,7 @@ const POLL_FAILURE_LIMIT = 3
 const KNOWN_ERROR_CODES = new Set([
   'unsupported', 'picker-unavailable', 'busy', 'not-a-project', 'destination-inside-source',
   'invalid-archive', 'unsafe-path', 'path-conflict', 'too-many-entries', 'manifest-version',
-  'no-files', 'file-too-large', 'disk-space', 'archive-engine-unavailable', 'io',
+  'no-files', 'file-too-large', 'file-changed', 'disk-space', 'archive-engine-unavailable', 'io',
   'bad-destination', 'bad-name', 'name-conflict',
 ])
 
@@ -59,7 +61,7 @@ function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function pickerLocale(): 'zh' | 'en' {
+function browserLocale(): 'zh' | 'en' {
   const language = typeof navigator === 'undefined' ? 'zh' : navigator.language
   return language.toLowerCase().startsWith('zh') ? 'zh' : 'en'
 }
@@ -80,6 +82,10 @@ export function createProjectArchiveService(ctx: any, t: (key: string) => string
     state = { ...state, ...patch }
     for (const listener of listeners) listener()
   }
+  const currentLocale = (): 'zh' | 'en' => {
+    const active = ctx.locale?.getSnapshot?.().active
+    return active === 'zh' || active === 'en' ? active : browserLocale()
+  }
   const setToast = (next: Parameters<typeof showToast>[0]): void => {
     if (toast === null) toast = showToast({ closeLabel: t('close'), ...next })
     else toast.update(next)
@@ -94,6 +100,7 @@ export function createProjectArchiveService(ctx: any, t: (key: string) => string
       kind: 'error',
       message: known ? t(`error.${code}`) : `${t('error.generic')}：${detail}`,
       detail,
+      progress: undefined,
       dismissible: true,
       duration: 8000,
     })
@@ -137,6 +144,8 @@ export function createProjectArchiveService(ctx: any, t: (key: string) => string
       setToast({
         kind: 'warn',
         message: fillArchiveText(t('workspaceFailed'), { message: error instanceof Error ? error.message : String(error) }),
+        detail: undefined,
+        progress: undefined,
         dismissible: true,
         duration: 8000,
       })
@@ -147,6 +156,8 @@ export function createProjectArchiveService(ctx: any, t: (key: string) => string
         message: result.renamed === true
           ? fillArchiveText(t('importedRenamed'), { name: result.name })
           : fillArchiveText(t('imported'), { name: result.name }),
+        detail: undefined,
+        progress: undefined,
         duration: 4000,
       })
     }
@@ -158,12 +169,15 @@ export function createProjectArchiveService(ctx: any, t: (key: string) => string
     const target = result?.path ?? job.destination ?? ''
     const links = result?.skippedLinks ?? 0
     const unreadable = result?.skippedUnreadable ?? 0
-    const skipped = links + unreadable
+    const junk = result?.skippedJunk ?? 0
+    const skipped = links + unreadable + junk
     setToast({
       kind: skipped > 0 ? 'warn' : 'ok',
       message: skipped > 0
-        ? fillArchiveText(t('exportedSkipped'), { path: target, links, unreadable })
+        ? fillArchiveText(t('exportedSkipped'), { path: target, links, unreadable, junk })
         : fillArchiveText(t('exported'), { path: target }),
+      detail: undefined,
+      progress: undefined,
       duration: 6000,
     })
   }
@@ -224,6 +238,11 @@ export function createProjectArchiveService(ctx: any, t: (key: string) => string
     })
     try {
       const started = await start()
+      if (disposed) {
+        publish({ picking: false })
+        closeToast()
+        return
+      }
       if (started.cancelled === true) {
         publish({ picking: false })
         closeToast()
@@ -259,8 +278,9 @@ export function createProjectArchiveService(ctx: any, t: (key: string) => string
       return () => { listeners.delete(listener) }
     },
     loadProjects,
-    startImport: () => startJob('import', '', () => startArchiveImport(pickerLocale())),
-    startExport: (path, name) => startJob('export', name, () => startArchiveExport(path, pickerLocale())),
+    supported: () => state.supported === true,
+    startImport: () => startJob('import', '', () => startArchiveImport(currentLocale())),
+    startExport: (path, name) => startJob('export', name, () => startArchiveExport(path, currentLocale())),
     isProject(path) {
       if (state.supported !== true) return false
       if (state.projectRoot !== undefined) return isProjectDirectory(state.projectRoot, path)

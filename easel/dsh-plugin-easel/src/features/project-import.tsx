@@ -57,17 +57,20 @@ function ImportButton({ wide, archive, t }: {
 }) {
   const snapshot = useArchiveSnapshot(archive)
   if (!wide || snapshot.supported !== true) return null
-  const busy = snapshot.picking || snapshot.job?.state === 'running'
+  const jobRunning = snapshot.job?.state === 'running'
+  const busy = snapshot.picking || jobRunning
+  const importing = snapshot.picking || (jobRunning && snapshot.job?.kind === 'import')
   return (
     <button
       type="button"
       className="easel-header-import"
       aria-label={t('import')}
       title={t('import')}
+      aria-busy={importing}
       disabled={busy}
       onClick={() => { void archive.startImport() }}
     >
-      {busy ? <span className="easel-header-import__spinner" aria-hidden="true" /> : <ImportIcon />}
+      {importing ? <span className="easel-header-import__spinner" aria-hidden="true" /> : <ImportIcon />}
     </button>
   )
 }
