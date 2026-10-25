@@ -32,7 +32,7 @@ interface ScheduleRemoteFace {
   catalog?: () => Promise<RemoteEnvelope<ScheduleEntry[]>>;
   update?: (req: { sessionId: string; id: string; expected: ScheduleEntry; title?: string; prompt?: string; change?: Record<string, unknown> }) => Promise<RemoteEnvelope<Record<string, unknown>>>;
   delete?: (req: { sessionId: string; id: string }) => Promise<RemoteEnvelope<Record<string, unknown>>>;
-  history?: (req: { sessionId: string; id: string; limit: number; cursor?: string }) => Promise<RemoteEnvelope<ScheduleHistoryResult>>;
+  history?: (req: { sessionId: string; id: string; limit: number; before?: string }) => Promise<RemoteEnvelope<ScheduleHistoryResult>>;
 }
 
 interface ScheduleHistoryResult {
