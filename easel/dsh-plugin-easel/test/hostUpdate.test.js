@@ -138,3 +138,33 @@ test('the client bundle carries the About section and its feedback link', () => 
   assert.match(bundle, /https:\/\/github\.com\/laochenfei233\/easel-dsh\/issues/)
   assert.match(bundle, /feedbackLink/)
 })
+
+test('setSource relays the selector choice and applies the returned snapshot', async () => {
+  const calls = []
+  const bridge = fakeBridge(async (action, args) => {
+    calls.push([action, args])
+    return {
+      ok: true,
+      data: {
+        version: '0.2.1-alpha.33',
+        endpoints: ['https://mirror.example/latest.json'],
+        source: 'override',
+        sourceKey: 'custom',
+        customUrl: 'https://mirror.example/latest.json',
+      },
+    }
+  })
+  const store = createUpdateStore(bridge)
+  assert.deepEqual(await store.setSource('custom', 'https://mirror.example/latest.json'), { ok: true })
+  assert.deepEqual(calls[0], ['update-source-set', { source: 'custom', url: 'https://mirror.example/latest.json' }])
+  assert.equal(store.snapshot().sourceKey, 'custom')
+  assert.equal(store.snapshot().customUrl, 'https://mirror.example/latest.json')
+  assert.deepEqual(store.snapshot().endpoints, ['https://mirror.example/latest.json'])
+})
+
+test('setSource surfaces a refused choice as the last error', async () => {
+  const bridge = fakeBridge(async () => ({ ok: false, error: '自定义更新源需要填写地址' }))
+  const store = createUpdateStore(bridge)
+  assert.deepEqual(await store.setSource('custom', ''), { ok: false, error: '自定义更新源需要填写地址' })
+  assert.equal(store.snapshot().lastError, '自定义更新源需要填写地址')
+})

@@ -36,6 +36,12 @@ worktree: .worktrees/easel-app-update
 - 清单 = Tauri updater 标准格式：`{version, notes, pub_date, platforms: {<platform>: {signature, url}}}`；协议契约本 spec 定义，清单与签名的生成分发在 `easel-website.md` 的发布管道。
 - 签名：minisign 私钥为 CI secret（GitHub Actions），公钥内置 `tauri.conf.json`。密钥对已在实现时用 `tauri signer generate` 生成：公钥入库，私钥存于仓库外 `~/.easel-updater/easel-updater.key`（无口令），交付时提醒用户把它配成 GitHub secret。
 
+### 更新源切换（0.2.27）
+- 默认顺序：`tauri.conf.json` 的 endpoints 按「官方站点优先、GitHub 镜像回退」排列——`https://easel.xyern.com/downloads/updates/latest.json` 在前，`https://laochenfei233.github.io/easel-dsh/updates/latest.json` 在后。官方站点尚未部署时，检查自动落到镜像。
+- 设置·关于的「更新源」下拉：官方站点（优先）/ GitHub 镜像 / 自定义；自定义输入先按 http(s) 校验，再写入 `update-source.json`，坏输入不落盘。
+- 选择经宿主桥 `update-source-set` → `easel_set_update_source`，返回的 `easel_update_state` 快照新增 `sourceKey`（default/github/custom）与 `customUrl`，下拉据此回显。
+- 关于页改版：品牌块（画架标记、名称、一句话定位、版本胶囊、检查更新）＋ 更新源行 ＋ 链接卡（官方网站/更新日志/源码仓库/意见反馈），沿用设置卡片的 token 与 13/22 字号，只有品牌块用品牌色。
+
 ### 更新源配置缝（显式 > 隐式）
 
 - 内置默认 endpoints 写在 `tauri.conf.json` 的 `plugins.updater.endpoints`，指向产品站的 `updates/latest.json`；域名按 easel-website 的部署拍板先取 GitHub Pages（`https://laochenfei233.github.io/easel-dsh/`），境内轻量服务器就绪后换默认值。

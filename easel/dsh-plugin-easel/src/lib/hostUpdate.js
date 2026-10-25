@@ -72,6 +72,8 @@ export function createUpdateStore(bridge) {
       version: payload.version,
       endpoints: Array.isArray(payload.endpoints) ? payload.endpoints : [],
       source: payload.source ?? 'default',
+      sourceKey: payload.sourceKey ?? 'default',
+      customUrl: payload.customUrl,
       lastCheckMs: payload.lastCheckMs,
       lastCheckStatus: payload.lastCheckStatus,
       latest: payload.latest,
@@ -136,6 +138,23 @@ export function createUpdateStore(bridge) {
     }
   }
 
+  /** Switch the update source from the About selector; the shell persists it. */
+  const setSource = async (source, url) => {
+    if (bridge === undefined) return { ok: false, error: 'unsupported' }
+    try {
+      const res = await bridge.rpc('update-source-set', { source, url })
+      if (res.ok) {
+        applyStatePayload(res.data)
+        return { ok: true }
+      }
+      set({ lastError: res.error })
+      return { ok: false, error: res.error }
+    } catch (err) {
+      set({ lastError: String(err) })
+      return { ok: false, error: String(err) }
+    }
+  }
+
   const offProgress = bridge?.onEvent?.(EVENT_PROGRESS, (payload) => {
     if (payload?.phase === 'failed') {
       // Keep the failed phase on the store (the notice dialog renders it) and
@@ -158,6 +177,7 @@ export function createUpdateStore(bridge) {
     refresh,
     check,
     install,
+    setSource,
     dismiss: () => set({ announce: undefined }),
     dispose: () => { offProgress?.(); offAvailable?.(); readers.clear() },
   }

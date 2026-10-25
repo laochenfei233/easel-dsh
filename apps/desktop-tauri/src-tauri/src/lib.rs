@@ -234,6 +234,7 @@ pub fn run() {
             dsh_runner::open_ui,
             app_update::easel_check_update,
             app_update::easel_update_state,
+            app_update::easel_set_update_source,
             app_update::easel_install_update,
         ])
         .build(tauri::generate_context!())

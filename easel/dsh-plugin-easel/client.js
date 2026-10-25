@@ -23,14 +23,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/client.tsx
+// easel/dsh-plugin-easel/src/client.tsx
 var client_exports = {};
 __export(client_exports, {
   default: () => client_default
 });
 module.exports = __toCommonJS(client_exports);
 
-// src/generated/easel-css.js
+// easel/dsh-plugin-easel/src/generated/easel-css.js
 var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .easel-scope {
   color-scheme: dark;
   --bg: #14171e;
@@ -912,10 +912,10 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
     box-shadow: inset 0 0 0 1px var(--border-strong);
   }}`;
 
-// src/lib/shell.tsx
+// easel/dsh-plugin-easel/src/lib/shell.tsx
 var import_react = require("react");
 
-// src/lib/task.ts
+// easel/dsh-plugin-easel/src/lib/task.ts
 var getServices = null;
 var cwdResolver = null;
 function configureTasks(cfg) {
@@ -1019,7 +1019,7 @@ async function resolveHomeWorkspaceId(projectDir) {
   return root ? findWorkspaceByPath(root)?.workspaceId ?? null : null;
 }
 
-// src/lib/shell.tsx
+// easel/dsh-plugin-easel/src/lib/shell.tsx
 function pageKey(view12) {
   return `easel.${view12}`;
 }
@@ -1160,7 +1160,7 @@ function createShellBridge(ctx, t) {
   return { useShellProps, navigate, useTopic, t, refresh: shell.refresh, setPersona: shell.setPersona };
 }
 
-// src/features/dashboard.tsx
+// easel/dsh-plugin-easel/src/features/dashboard.tsx
 var dashboard_exports = {};
 __export(dashboard_exports, {
   Component: () => Component,
@@ -1171,7 +1171,7 @@ __export(dashboard_exports, {
   view: () => view
 });
 
-// src/components/icons.tsx
+// easel/dsh-plugin-easel/src/components/icons.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 var svg = (size = 18, sw = 1.8) => ({
   width: size,
@@ -1305,11 +1305,42 @@ var IconPublish = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, impo
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "m3 11 18-5v12L3 14v-3z" }),
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6" })
 ] });
+var IconGlobe = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { ...svg(size, strokeWidth), className, children: [
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", { cx: "12", cy: "12", r: "10" }),
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M2 12h20" }),
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" })
+] });
+var IconGithub = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { ...svg(size, strokeWidth), className, children: [
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" }),
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M9 18c-4.51 2-5-2-7-2" })
+] });
+var IconEaselMark = ({ size, className }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+  "svg",
+  {
+    width: size ?? 24,
+    height: size ?? 24,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    className,
+    stroke: "currentColor",
+    strokeWidth: 1.7,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true",
+    children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M12 2.6v9.2" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M5.2 8.4h13.6" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M5.6 21.4 10 13.2" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "m18.4 21.4-4.4-8.2" }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M5.2 8.4 3.4 6.6M18.8 8.4l1.8-1.8" })
+    ]
+  }
+);
 
-// src/components/DashboardPage.tsx
+// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
 var import_react2 = require("react");
 
-// src/lib/api.ts
+// easel/dsh-plugin-easel/src/lib/api.ts
 var BASE = "/easel";
 async function request(url, options) {
   const res = await fetch(`${BASE}${url}`, { cache: "no-store", ...options });
@@ -1539,7 +1570,7 @@ function projectizeTopic(body) {
   return request("/api/projectize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 }
 
-// src/lib/whoami.ts
+// easel/dsh-plugin-easel/src/lib/whoami.ts
 var KEY = "easel_whoami";
 var WHOAMI_TTL_MS = 6e5;
 function getWhoamiCache() {
@@ -1585,7 +1616,7 @@ function verifyStale(platforms, opts = {}) {
   );
 }
 
-// src/components/DashboardPage.tsx
+// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
 function fmtNum(n) {
   if (n == null) return "\u2014";
@@ -1873,7 +1904,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
   ] });
 }
 
-// src/features/dashboard.tsx
+// easel/dsh-plugin-easel/src/features/dashboard.tsx
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var view = "dashboard";
 var order = 30;
@@ -1905,7 +1936,7 @@ var plugin = {
   }
 };
 
-// src/features/trends.tsx
+// easel/dsh-plugin-easel/src/features/trends.tsx
 var trends_exports = {};
 __export(trends_exports, {
   Component: () => Component2,
@@ -1916,7 +1947,7 @@ __export(trends_exports, {
   view: () => view2
 });
 
-// src/components/TrendsPage.tsx
+// easel/dsh-plugin-easel/src/components/TrendsPage.tsx
 var import_react3 = require("react");
 var import_jsx_runtime4 = require("react/jsx-runtime");
 var ALL_PLATFORMS = [
@@ -2484,7 +2515,7 @@ function builtinColumns(groups) {
   return groups.filter((g) => !g.platform.startsWith("custom:")).map((g) => ({ ...g, source: sourceOf(g.label) }));
 }
 
-// src/features/trends.tsx
+// easel/dsh-plugin-easel/src/features/trends.tsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
 var view2 = "trends";
 var order2 = 31;
@@ -2516,7 +2547,7 @@ var plugin2 = {
   }
 };
 
-// src/features/ideas.tsx
+// easel/dsh-plugin-easel/src/features/ideas.tsx
 var ideas_exports = {};
 __export(ideas_exports, {
   Component: () => Component3,
@@ -2527,10 +2558,10 @@ __export(ideas_exports, {
   view: () => view3
 });
 
-// src/components/IdeasPage.tsx
+// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
 var import_react4 = require("react");
 
-// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3687,7 +3718,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -5662,7 +5693,7 @@ function createDOMPurify() {
 }
 var purify_default = createDOMPurify();
 
-// src/lib/sanitize.ts
+// easel/dsh-plugin-easel/src/lib/sanitize.ts
 k.setOptions({ breaks: true, gfm: true });
 function renderMarkdown(md) {
   if (!md) return "";
@@ -5670,7 +5701,7 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
-// src/components/IdeasPage.tsx
+// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
 var import_jsx_runtime6 = require("react/jsx-runtime");
 var COLUMNS = [
   { key: "pending", label: "\u5F85\u505A", color: "var(--text-tertiary)" },
@@ -5933,7 +5964,7 @@ function IdeasPage({ onUseTopic }) {
   ] });
 }
 
-// src/features/ideas.tsx
+// easel/dsh-plugin-easel/src/features/ideas.tsx
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var view3 = "ideas";
 var order3 = 32;
@@ -5965,7 +5996,7 @@ var plugin3 = {
   }
 };
 
-// src/features/calendar.tsx
+// easel/dsh-plugin-easel/src/features/calendar.tsx
 var calendar_exports = {};
 __export(calendar_exports, {
   Component: () => Component4,
@@ -5976,10 +6007,10 @@ __export(calendar_exports, {
   view: () => view4
 });
 
-// src/components/CalendarPage.tsx
+// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
 var import_react5 = require("react");
 
-// src/data/holidays-cn.js
+// easel/dsh-plugin-easel/src/data/holidays-cn.js
 var HOLIDAYS_CN = {
   2025: {
     "2025-01-01": ["\u5143\u65E6", 1],
@@ -6059,7 +6090,7 @@ var HOLIDAYS_CN = {
   }
 };
 
-// src/lib/lunar.js
+// easel/dsh-plugin-easel/src/lib/lunar.js
 var LUNAR_INFO = [
   19416,
   19168,
@@ -6378,7 +6409,7 @@ function lunarFestivalsFor(year, month) {
   return result;
 }
 
-// src/lib/festivals.js
+// easel/dsh-plugin-easel/src/lib/festivals.js
 var FIXED_FESTIVALS = [
   ["01-01", "\u5143\u65E6"],
   ["02-14", "\u60C5\u4EBA\u8282"],
@@ -6455,7 +6486,7 @@ function festivalsFor(year, month) {
   return result;
 }
 
-// src/components/CalendarPage.tsx
+// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var STATUS_META = {
   idea: { label: "\u9009\u9898", color: "var(--text-tertiary)" },
@@ -7268,7 +7299,7 @@ function CalendarPage() {
   ] });
 }
 
-// src/features/calendar.tsx
+// easel/dsh-plugin-easel/src/features/calendar.tsx
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var view4 = "calendar";
 var order4 = 34;
@@ -7300,7 +7331,7 @@ var plugin4 = {
   }
 };
 
-// src/features/schedules.tsx
+// easel/dsh-plugin-easel/src/features/schedules.tsx
 var schedules_exports = {};
 __export(schedules_exports, {
   Component: () => Component5,
@@ -7311,7 +7342,7 @@ __export(schedules_exports, {
   view: () => view5
 });
 
-// src/components/SchedulesPage.tsx
+// easel/dsh-plugin-easel/src/components/SchedulesPage.tsx
 var import_react6 = require("react");
 var import_jsx_runtime10 = require("react/jsx-runtime");
 var TIMING_KINDS = [
@@ -7910,7 +7941,7 @@ function SchedulesPage({
   ] });
 }
 
-// src/features/schedules.tsx
+// easel/dsh-plugin-easel/src/features/schedules.tsx
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var view5 = "schedules";
 var order5 = 36;
@@ -7950,7 +7981,7 @@ var plugin5 = {
   }
 };
 
-// src/features/skills.tsx
+// easel/dsh-plugin-easel/src/features/skills.tsx
 var skills_exports = {};
 __export(skills_exports, {
   Component: () => Component6,
@@ -7961,13 +7992,13 @@ __export(skills_exports, {
   view: () => view6
 });
 
-// src/components/SkillPage.tsx
+// easel/dsh-plugin-easel/src/components/SkillPage.tsx
 var import_react8 = require("react");
 
-// src/components/SkillDrawer.tsx
+// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
 var import_react7 = require("react");
 
-// src/lib/skillDisplayNames.ts
+// easel/dsh-plugin-easel/src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
   "ai-image-gen": "AI \u751F\u56FE",
   "ai-music": "BGM / \u97F3\u4E50\u751F\u6210",
@@ -8087,7 +8118,7 @@ function displayName(raw) {
   return SKILL_DISPLAY_NAMES[raw] || raw;
 }
 
-// src/components/SkillDrawer.tsx
+// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
 var import_jsx_runtime12 = require("react/jsx-runtime");
 function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) {
   const [detail, setDetail] = (0, import_react7.useState)(null);
@@ -8308,7 +8339,7 @@ ${input.trim()}
   ] }) });
 }
 
-// src/components/SkillPage.tsx
+// easel/dsh-plugin-easel/src/components/SkillPage.tsx
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var LAYERS = [
   { key: "discover", label: "\u53D1\u73B0", Icon: IconSearch, color: "var(--layer-discover)" },
@@ -8454,7 +8485,7 @@ function SkillPage({ persona, onNavigate }) {
   ] });
 }
 
-// src/features/skills.tsx
+// easel/dsh-plugin-easel/src/features/skills.tsx
 var import_jsx_runtime14 = require("react/jsx-runtime");
 var view6 = "skills";
 var order6 = 35;
@@ -8486,7 +8517,7 @@ var plugin6 = {
   }
 };
 
-// src/features/outputs.tsx
+// easel/dsh-plugin-easel/src/features/outputs.tsx
 var outputs_exports = {};
 __export(outputs_exports, {
   Component: () => Component7,
@@ -8497,7 +8528,7 @@ __export(outputs_exports, {
   view: () => view7
 });
 
-// src/components/OutputsPage.tsx
+// easel/dsh-plugin-easel/src/components/OutputsPage.tsx
 var import_react9 = require("react");
 var import_jsx_runtime15 = require("react/jsx-runtime");
 var FILTERS = [
@@ -8803,7 +8834,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   ] });
 }
 
-// src/features/outputs.tsx
+// easel/dsh-plugin-easel/src/features/outputs.tsx
 var import_jsx_runtime16 = require("react/jsx-runtime");
 var view7 = "outputs";
 var order7 = 37;
@@ -8835,7 +8866,7 @@ var plugin7 = {
   }
 };
 
-// src/features/publish.tsx
+// easel/dsh-plugin-easel/src/features/publish.tsx
 var publish_exports = {};
 __export(publish_exports, {
   Component: () => Component8,
@@ -8846,10 +8877,10 @@ __export(publish_exports, {
   view: () => view8
 });
 
-// src/components/PublishPage.tsx
+// easel/dsh-plugin-easel/src/components/PublishPage.tsx
 var import_react10 = require("react");
 
-// src/lib/store.ts
+// easel/dsh-plugin-easel/src/lib/store.ts
 var PUBLISH_KEY = "easel_publish_draft";
 var PREVIOUS_BRAND = ["post", "craft"].join("");
 function readMigratedLocalValue(key, suffix) {
@@ -8886,7 +8917,7 @@ function savePublishDraft(d2) {
   }
 }
 
-// src/components/PublishPage.tsx
+// easel/dsh-plugin-easel/src/components/PublishPage.tsx
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var PLATFORMS2 = [
   { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", titleLimit: 20, bodyLimit: 1e3, hint: "\u6807\u9898\u226420\uFF0C\u6B63\u6587\u22641000\uFF0C\u91CD\u60C5\u7EEA+\u8BDD\u9898\u6807\u7B7E" },
@@ -9435,7 +9466,7 @@ function PublishPage({ persona }) {
   ] });
 }
 
-// src/features/publish.tsx
+// easel/dsh-plugin-easel/src/features/publish.tsx
 var import_jsx_runtime18 = require("react/jsx-runtime");
 var view8 = "publish";
 var order8 = 38;
@@ -9467,7 +9498,7 @@ var plugin8 = {
   }
 };
 
-// src/features/accounts.tsx
+// easel/dsh-plugin-easel/src/features/accounts.tsx
 var accounts_exports = {};
 __export(accounts_exports, {
   Component: () => Component9,
@@ -9478,7 +9509,7 @@ __export(accounts_exports, {
   view: () => view9
 });
 
-// src/components/AccountsPage.tsx
+// easel/dsh-plugin-easel/src/components/AccountsPage.tsx
 var import_react11 = require("react");
 var import_jsx_runtime19 = require("react/jsx-runtime");
 var STATE_LABEL = {
@@ -10135,7 +10166,7 @@ function AccountsPage() {
   ] });
 }
 
-// src/features/accounts.tsx
+// easel/dsh-plugin-easel/src/features/accounts.tsx
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var view9 = "accounts";
 var order9 = 39;
@@ -10167,7 +10198,7 @@ var plugin9 = {
   }
 };
 
-// src/features/profile.tsx
+// easel/dsh-plugin-easel/src/features/profile.tsx
 var profile_exports = {};
 __export(profile_exports, {
   Component: () => Component10,
@@ -10178,10 +10209,10 @@ __export(profile_exports, {
   view: () => view10
 });
 
-// src/components/PersonaBrowser.tsx
+// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
 var import_react14 = require("react");
 
-// src/components/ProfilePage.tsx
+// easel/dsh-plugin-easel/src/components/ProfilePage.tsx
 var import_react12 = require("react");
 var import_jsx_runtime21 = require("react/jsx-runtime");
 function fanTier(n) {
@@ -10409,7 +10440,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
   ] });
 }
 
-// src/components/OnboardingWizard.tsx
+// easel/dsh-plugin-easel/src/components/OnboardingWizard.tsx
 var import_react13 = require("react");
 var import_jsx_runtime22 = require("react/jsx-runtime");
 var PLATFORMS3 = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u89C6\u9891\u53F7", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
@@ -10641,7 +10672,7 @@ ${formToInstruction(name, form)}`;
   ] }) });
 }
 
-// src/components/PersonaBrowser.tsx
+// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
 var import_jsx_runtime23 = require("react/jsx-runtime");
 function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }) {
   const [wizardOpen, setWizardOpen] = (0, import_react14.useState)(false);
@@ -10711,7 +10742,7 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
   ] });
 }
 
-// src/features/profile.tsx
+// easel/dsh-plugin-easel/src/features/profile.tsx
 var import_jsx_runtime24 = require("react/jsx-runtime");
 var view10 = "profile";
 var order10 = 38;
@@ -10743,7 +10774,7 @@ var plugin10 = {
   }
 };
 
-// src/features/breakdown.tsx
+// easel/dsh-plugin-easel/src/features/breakdown.tsx
 var breakdown_exports = {};
 __export(breakdown_exports, {
   Component: () => Component11,
@@ -10754,7 +10785,7 @@ __export(breakdown_exports, {
   view: () => view11
 });
 
-// src/components/BreakdownPage.tsx
+// easel/dsh-plugin-easel/src/components/BreakdownPage.tsx
 var import_react15 = require("react");
 var import_jsx_runtime25 = require("react/jsx-runtime");
 var FETCH_STAGES = [
@@ -11082,7 +11113,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
   ] });
 }
 
-// src/features/breakdown.tsx
+// easel/dsh-plugin-easel/src/features/breakdown.tsx
 var import_jsx_runtime26 = require("react/jsx-runtime");
 var view11 = "breakdown";
 var order11 = 33;
@@ -11114,10 +11145,10 @@ var plugin11 = {
   }
 };
 
-// src/lib/media-preview.tsx
+// easel/dsh-plugin-easel/src/lib/media-preview.tsx
 var import_react16 = require("react");
 
-// src/lib/media-url.js
+// easel/dsh-plugin-easel/src/lib/media-url.js
 var VIDEO_EXTENSIONS = ["mp4", "m4v", "mov", "webm", "mkv"];
 var AUDIO_EXTENSIONS = ["mp3", "wav", "m4a", "aac", "flac", "ogg", "opus"];
 var MEDIA_EXTENSIONS = [...VIDEO_EXTENSIONS, ...AUDIO_EXTENSIONS];
@@ -11148,7 +11179,7 @@ function workspaceMediaPath(absolutePath, projectRoot2) {
   return rel;
 }
 
-// src/lib/media-preview.tsx
+// easel/dsh-plugin-easel/src/lib/media-preview.tsx
 var import_jsx_runtime27 = require("react/jsx-runtime");
 var MEDIA_BODY_ID = "easel-media-player";
 var MEDIA_COPY = {
@@ -11296,7 +11327,7 @@ function registerMediaPreview(ctx) {
   else if (ctx.get?.("documentPreviews") !== void 0) attach(ctx);
 }
 
-// src/features/media.ts
+// easel/dsh-plugin-easel/src/features/media.ts
 var plugin12 = {
   name: "easel-media",
   inject: ["slots", "locale"],
@@ -11309,10 +11340,10 @@ var plugin12 = {
   }
 };
 
-// src/components/BackupSettings.tsx
+// easel/dsh-plugin-easel/src/components/BackupSettings.tsx
 var import_react17 = require("react");
 
-// src/lib/backup-api.ts
+// easel/dsh-plugin-easel/src/lib/backup-api.ts
 var BASE2 = "/easel/api/backup";
 async function request2(url, options) {
   const res = await fetch(`${BASE2}${url}`, { cache: "no-store", ...options });
@@ -11352,7 +11383,7 @@ function connectSmb(root, username, password) {
   return request2("/connect-smb", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ root, username, password }) });
 }
 
-// src/components/BackupSettings.tsx
+// easel/dsh-plugin-easel/src/components/BackupSettings.tsx
 var import_jsx_runtime28 = require("react/jsx-runtime");
 var GROUPS = [
   { id: "config", title: "scopeConfig", hint: "scopeConfigHint" },
@@ -11934,7 +11965,7 @@ function BackupSettings({ t }) {
   ] });
 }
 
-// src/locales/backup.ts
+// easel/dsh-plugin-easel/src/locales/backup.ts
 var BACKUP_COPY = {
   en: {
     nav: "Backup",
@@ -12102,7 +12133,7 @@ var BACKUP_COPY = {
   }
 };
 
-// src/features/backup.tsx
+// easel/dsh-plugin-easel/src/features/backup.tsx
 var NS = "easel.backup";
 var STYLE_ID = "easel-backup-settings-styles";
 var plugin13 = {
@@ -12131,7 +12162,7 @@ var plugin13 = {
   }
 };
 
-// src/lib/context-menu-model.js
+// easel/dsh-plugin-easel/src/lib/context-menu-model.js
 var FILE_ROW_SELECTOR = "[data-files-entry]";
 var FILE_ROOT_SELECTOR = "[data-files-root]";
 var EDITABLE_SELECTOR = [
@@ -12275,7 +12306,7 @@ function fileNameOf(path) {
   return parts[parts.length - 1] ?? "";
 }
 
-// src/features/context-menu.js
+// easel/dsh-plugin-easel/src/features/context-menu.js
 var STYLE_ID2 = "easel-context-menu-style";
 var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
@@ -12960,10 +12991,10 @@ function reportError(ctx, error) {
   }
 }
 
-// src/components/HandoffSettings.tsx
+// easel/dsh-plugin-easel/src/components/HandoffSettings.tsx
 var import_react18 = require("react");
 
-// src/lib/handoff-api.ts
+// easel/dsh-plugin-easel/src/lib/handoff-api.ts
 var BASE3 = "/easel";
 async function request3(url, options) {
   const res = await fetch(`${BASE3}${url}`, { cache: "no-store", ...options });
@@ -13005,7 +13036,7 @@ function sendHandoff(peerId, workspacePath, payload) {
   });
 }
 
-// src/components/HandoffSettings.tsx
+// easel/dsh-plugin-easel/src/components/HandoffSettings.tsx
 var import_jsx_runtime29 = require("react/jsx-runtime");
 var COPY = {
   en: {
@@ -13479,7 +13510,7 @@ function HandoffSettings({ t }) {
   ] });
 }
 
-// src/features/handoff.tsx
+// easel/dsh-plugin-easel/src/features/handoff.tsx
 var NS2 = "easel.handoff";
 var STYLE_ID3 = "easel-handoff-settings-styles";
 var plugin15 = {
@@ -13508,7 +13539,7 @@ var plugin15 = {
   }
 };
 
-// src/features/index.ts
+// easel/dsh-plugin-easel/src/features/index.ts
 var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, schedules_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
 var FEATURES = views.map((module2) => ({
   view: module2.view,
@@ -13518,7 +13549,7 @@ var FEATURES = views.map((module2) => ({
 }));
 var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin12, plugin13, plugin14, plugin15];
 
-// src/lib/hostUpdate.js
+// easel/dsh-plugin-easel/src/lib/hostUpdate.js
 var EVENT_PROGRESS = "easel://update-progress";
 var EVENT_AVAILABLE = "easel://update-available";
 function detectHostUpdateBridge(win) {
@@ -13567,6 +13598,8 @@ function createUpdateStore(bridge) {
       version: payload.version,
       endpoints: Array.isArray(payload.endpoints) ? payload.endpoints : [],
       source: payload.source ?? "default",
+      sourceKey: payload.sourceKey ?? "default",
+      customUrl: payload.customUrl,
       lastCheckMs: payload.lastCheckMs,
       lastCheckStatus: payload.lastCheckStatus,
       latest: payload.latest,
@@ -13621,6 +13654,21 @@ function createUpdateStore(bridge) {
       return { status: "error", detail: String(err) };
     }
   };
+  const setSource = async (source, url) => {
+    if (bridge === void 0) return { ok: false, error: "unsupported" };
+    try {
+      const res = await bridge.rpc("update-source-set", { source, url });
+      if (res.ok) {
+        applyStatePayload(res.data);
+        return { ok: true };
+      }
+      set({ lastError: res.error });
+      return { ok: false, error: res.error };
+    } catch (err) {
+      set({ lastError: String(err) });
+      return { ok: false, error: String(err) };
+    }
+  };
   const offProgress = bridge?.onEvent?.(EVENT_PROGRESS, (payload) => {
     if (payload?.phase === "failed") {
       set({ progress: payload });
@@ -13643,6 +13691,7 @@ function createUpdateStore(bridge) {
     refresh,
     check,
     install,
+    setSource,
     dismiss: () => set({ announce: void 0 }),
     dispose: () => {
       offProgress?.();
@@ -13652,7 +13701,7 @@ function createUpdateStore(bridge) {
   };
 }
 
-// src/components/DataRootSection.tsx
+// easel/dsh-plugin-easel/src/components/DataRootSection.tsx
 var import_react19 = require("react");
 var import_jsx_runtime30 = require("react/jsx-runtime");
 var DATA_ROOT_STYLES = `
@@ -13841,7 +13890,7 @@ function DataRootSection({ t }) {
   ] });
 }
 
-// src/locales/dataRoot.ts
+// easel/dsh-plugin-easel/src/locales/dataRoot.ts
 var DATA_ROOT_COPY = {
   zh: {
     nav: "\u6570\u636E\u4F4D\u7F6E",
@@ -13891,32 +13940,80 @@ var DATA_ROOT_COPY = {
   }
 };
 
-// src/components/AboutSection.tsx
+// easel/dsh-plugin-easel/src/components/AboutSection.tsx
 var import_react20 = require("react");
 var import_jsx_runtime31 = require("react/jsx-runtime");
 var ABOUT_STYLES = `
-.eau-root { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
-.eau-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
-.eau-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 22px; font-weight: 500; }
-.eau-badge { flex: none; padding: 1px 8px; border-radius: 999px; font-size: 11px; line-height: 16px; font-weight: 400; background: var(--dsw-alias-fill-secondary); color: var(--dsw-alias-label-secondary); }
-.eau-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.eau-muted { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; word-break: break-all; }
-.eau-error { margin: 0; color: var(--dsw-alias-state-danger-primary, #d4453f); font-size: 12px; line-height: 18px; word-break: break-all; }
+.eau-root { display: flex; flex-direction: column; gap: 14px; padding: 4px 0 8px; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
+.eau-card { border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
+.eau-hero { padding: 18px 18px 4px; }
+.eau-brand { display: flex; align-items: flex-start; gap: 12px; }
+.eau-mark {
+  flex: none; width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
+  color: #fff; background: linear-gradient(145deg, var(--dsw-alias-state-business-primary) 10%, #7c5cff 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+.eau-id { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding-top: 1px; }
+.eau-name { font-size: 15px; line-height: 22px; font-weight: 600; letter-spacing: 0.01em; }
+.eau-tagline { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.eau-version {
+  align-self: flex-start; margin-top: 5px; padding: 0 8px; border-radius: 999px;
+  font-size: 11px; line-height: 18px; font-variant-numeric: tabular-nums;
+  background: var(--dsw-alias-fill-secondary); color: var(--dsw-alias-label-secondary);
+}
+.eau-grow { flex: 1; }
 .eau-btn {
   box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
-  border: none; cursor: pointer; font-family: inherit;
-  height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md);
-  font-size: 14px; line-height: 22px; color: var(--dsw-alias-label-primary);
+  border: none; cursor: pointer; font-family: inherit; white-space: nowrap;
+  height: 34px; padding: 0 14px; border-radius: var(--dsw-radius-md);
+  font-size: 13px; line-height: 20px; color: var(--dsw-alias-label-primary);
   background: var(--dsw-alias-fill-secondary);
-  transition: transform 100ms ease-out, background-color 120ms ease-out;
+  transition: transform 100ms ease-out, background-color 120ms ease-out, opacity 120ms ease-out;
 }
+.eau-btn:hover:not(:disabled) { background: var(--dsw-alias-fill-tertiary, var(--dsw-alias-fill-secondary)); }
+.eau-btn:active:not(:disabled) { transform: scale(0.98); }
 .eau-btn:disabled { opacity: 0.5; cursor: default; }
 .eau-btn-primary { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-business-primary); }
-.eau-link { border: none; background: none; padding: 0; cursor: pointer; font-family: inherit; font-size: 12px; line-height: 18px; color: var(--dsw-alias-state-business-primary); text-decoration: none; }
-.eau-progress { display: flex; align-items: center; gap: 10px; }
+.eau-btn-primary:hover:not(:disabled) { background: var(--dsw-alias-state-business-primary); opacity: 0.92; }
+.eau-status { display: flex; align-items: center; gap: 6px; margin: 10px 0 0 56px; font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); }
+.eau-status.is-available { color: var(--dsw-alias-state-business-primary); }
+.eau-status.is-error { color: var(--dsw-alias-state-danger-primary, #d4453f); }
+.eau-dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; flex: none; }
+.eau-progress { display: flex; align-items: center; gap: 10px; margin: 12px 0 2px 56px; }
 .eau-progress-track { flex: 1; min-width: 120px; height: 4px; border-radius: 999px; background: var(--dsw-alias-fill-secondary); overflow: hidden; }
 .eau-progress-fill { height: 100%; border-radius: 999px; background: var(--dsw-alias-state-business-primary); transition: width 200ms ease-out; }
-.eau-note { margin: 0; padding: 8px 10px; border-radius: var(--dsw-radius-md, 8px); font-size: 12px; line-height: 18px; background: var(--dsw-alias-fill-secondary); }
+.eau-muted { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; word-break: break-all; }
+.eau-divider { height: 0; border-top: 0.5px solid var(--dsw-alias-settings-card-stroke); margin: 14px -18px 0; }
+.eau-row { display: flex; align-items: center; gap: 12px; min-height: 46px; }
+.eau-row + .eau-row { border-top: 0.5px solid var(--dsw-alias-settings-card-stroke); }
+.eau-row-label { flex: none; color: var(--dsw-alias-label-primary); }
+.eau-row-body { flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
+.eau-select, .eau-input {
+  box-sizing: border-box; height: 32px; padding: 0 8px; font-family: inherit; font-size: 13px;
+  color: var(--dsw-alias-label-primary); background: transparent;
+  border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-md);
+}
+.eau-select { max-width: 220px; cursor: pointer; }
+.eau-input { flex: 1; min-width: 0; }
+.eau-source-note { display: flex; flex-direction: column; gap: 8px; padding: 0 0 12px; }
+.eau-hint { margin: 0; font-size: 11px; line-height: 16px; color: var(--dsw-alias-label-tertiary, var(--dsw-alias-label-secondary)); }
+.eau-custom { display: flex; align-items: center; gap: 8px; }
+.eau-links { padding: 2px 18px; }
+.eau-link-row {
+  display: flex; align-items: center; gap: 12px; min-height: 50px;
+  color: var(--dsw-alias-label-primary); text-decoration: none;
+}
+.eau-link-row + .eau-link-row { border-top: 0.5px solid var(--dsw-alias-settings-card-stroke); }
+.eau-link-icon { flex: none; display: flex; color: var(--dsw-alias-label-secondary); transition: color 120ms ease-out; }
+.eau-link-label { flex: 1; min-width: 0; }
+.eau-link-action { flex: none; display: flex; align-items: center; gap: 2px; font-size: 12px; color: var(--dsw-alias-label-secondary); transition: color 120ms ease-out; }
+.eau-link-row:hover .eau-link-icon, .eau-link-row:hover .eau-link-action { color: var(--dsw-alias-state-business-primary); }
+.eau-root :is(.eau-btn, .eau-link-row, .eau-select, .eau-input):focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eau-root :is(.eau-btn, .eau-link-icon, .eau-link-action, .eau-progress-fill) { transition: none; }
+}
 
 .eau-overlay { position: fixed; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center; }
 .eau-overlay-mask { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4); }
@@ -13931,21 +14028,37 @@ var ABOUT_STYLES = `
 `;
 var WEBSITE_URL = "https://laochenfei233.github.io/easel-dsh/";
 var CHANGELOG_URL = `${WEBSITE_URL}#changelog`;
+var REPO_URL = "https://github.com/laochenfei233/easel-dsh";
 var ISSUES_URL = "https://github.com/laochenfei233/easel-dsh/issues";
 function AboutSection({ t, update }) {
   const state = (0, import_react20.useSyncExternalStore)(update.subscribe, update.snapshot);
+  const [draftSource, setDraftSource] = (0, import_react20.useState)(void 0);
+  const [customUrl, setCustomUrl] = (0, import_react20.useState)("");
+  const [sourceBusy, setSourceBusy] = (0, import_react20.useState)(false);
+  const [sourceNote, setSourceNote] = (0, import_react20.useState)(void 0);
   (0, import_react20.useEffect)(() => {
     void update.refresh();
   }, [update]);
-  const links = /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-row", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("a", { className: "eau-link", href: WEBSITE_URL, target: "_blank", rel: "noreferrer", children: t("websiteLink") }),
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("changelogLink") }),
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("a", { className: "eau-link", href: ISSUES_URL, target: "_blank", rel: "noreferrer", children: t("feedbackLink") })
-  ] });
+  (0, import_react20.useEffect)(() => {
+    setCustomUrl(state.customUrl ?? "");
+  }, [state.customUrl]);
+  const links = [
+    { href: WEBSITE_URL, label: t("websiteLink"), Icon: IconGlobe },
+    { href: CHANGELOG_URL, label: t("changelogLink"), Icon: IconFile },
+    { href: REPO_URL, label: t("repoLink"), Icon: IconGithub },
+    { href: ISSUES_URL, label: t("feedbackLink"), Icon: IconChat }
+  ].map(({ href, label, Icon: Icon12 }) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("a", { className: "eau-link-row", href, target: "_blank", rel: "noreferrer", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-link-icon", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Icon12, { size: 16 }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-link-label", children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "eau-link-action", children: [
+      t("openLink"),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(IconChevron, { size: 14 })
+    ] })
+  ] }, href));
   if (!state.supported) {
     return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-root", children: [
       /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("desktopOnly") }),
-      links
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("section", { className: "eau-card eau-links", children: links })
     ] });
   }
   const installing = state.progress?.phase === "installing";
@@ -13955,20 +14068,44 @@ function AboutSection({ t, update }) {
   const checkOrInstall = () => {
     void (state.lastCheckStatus === "available" ? update.install() : update.check());
   };
-  const statusText = state.lastCheckStatus === "error" ? null : state.lastCheckStatus === "up-to-date" ? t("upToDate") : state.lastCheckStatus === "available" && state.latest ? t("availableFound").replace("{version}", state.latest.version) : null;
+  const statusText = state.lastCheckStatus === "up-to-date" ? t("upToDate") : state.lastCheckStatus === "available" && state.latest ? t("availableFound").replace("{version}", state.latest.version) : state.lastCheckStatus === "error" ? state.lastError ?? t("sourceUnavailable") : null;
+  const statusClass = state.lastCheckStatus === "available" ? "is-available" : state.lastCheckStatus === "error" ? "is-error" : "";
+  const applies = async (source, url) => {
+    setSourceBusy(true);
+    setSourceNote(void 0);
+    const result = await update.setSource(source, url);
+    setSourceBusy(false);
+    if (result.ok) {
+      setDraftSource(void 0);
+      setSourceNote(t("saved"));
+    }
+  };
+  const choice = draftSource ?? state.sourceKey;
+  const onSourceChange = (value) => {
+    setDraftSource(value);
+    setSourceNote(void 0);
+    if (value !== "custom") void applies(value);
+  };
+  const saveCustom = () => {
+    if (!/^https?:\/\/\S+$/i.test(customUrl.trim())) {
+      setSourceNote(t("invalidUrl"));
+      return;
+    }
+    void applies("custom", customUrl.trim());
+  };
   return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-root", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "eau-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-card-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { children: t("appName") }),
-        state.version ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "eau-badge", children: [
-          "v",
-          state.version
-        ] }) : null
-      ] }),
-      downloading || installing ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-progress", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : installing ? t("installing") : t("downloading") })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-row", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "eau-card eau-hero", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-brand", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-mark", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(IconEaselMark, { size: 26 }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-id", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-name", children: t("appName") }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-tagline", children: t("tagline") }),
+          state.version ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "eau-version", children: [
+            "v",
+            state.version
+          ] }) : null
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-grow" }),
         /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
           "button",
           {
@@ -13978,24 +14115,65 @@ function AboutSection({ t, update }) {
             onClick: checkOrInstall,
             children: buttonLabel
           }
-        ),
-        statusText ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: state.lastCheckStatus === "available" ? "eau-error" : "eau-muted", role: "status", children: statusText }) : null
+        )
       ] }),
-      state.lastError ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-error", role: "alert", children: state.lastError }) : null,
-      state.lastCheckMs ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("lastChecked").replace("{time}", new Date(state.lastCheckMs).toLocaleString()) }) : null
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "eau-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-card-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { children: t("sourceLabel") }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-badge", children: state.source === "override" ? t("sourceOverride") : state.source === "error" ? t("sourceUnavailable") : t("sourceDefault") })
+      downloading || installing ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : installing ? t("installing") : t("downloading") })
+      ] }) : statusText ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("p", { className: `eau-status ${statusClass}`, role: "status", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-dot" }),
+        statusText
+      ] }) : null,
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-divider" }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-row-label", children: t("sourceLabel") }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-row-body", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+          "select",
+          {
+            className: "eau-select",
+            "aria-label": t("sourceLabel"),
+            value: choice,
+            disabled: sourceBusy || installing,
+            onChange: (event) => onSourceChange(event.target.value),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("option", { value: "default", children: t("sourceDefault") }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("option", { value: "github", children: t("sourceGithub") }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("option", { value: "custom", children: t("sourceCustom") })
+            ]
+          }
+        ) })
       ] }),
-      state.endpoints.length > 0 ? state.endpoints.map((endpoint) => /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: endpoint }, endpoint)) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("sourceUnavailable") })
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-source-note", children: [
+        choice === "custom" ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-custom", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+            "input",
+            {
+              className: "eau-input",
+              "aria-label": t("customUrlLabel"),
+              placeholder: "https://\u2026/latest.json",
+              value: customUrl,
+              disabled: sourceBusy || installing,
+              spellCheck: false,
+              onChange: (event) => {
+                setCustomUrl(event.target.value);
+                setSourceNote(void 0);
+              },
+              onKeyDown: (event) => {
+                if (event.key === "Enter") saveCustom();
+              }
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("button", { type: "button", className: "eau-btn", disabled: sourceBusy || installing, onClick: saveCustom, children: t("save") })
+        ] }) : null,
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-hint", role: "status", children: sourceNote ?? (choice === "default" ? t("sourceHint") : state.endpoints.length > 0 ? state.endpoints.join(" \xB7 ") : t("sourceUnavailable")) })
+      ] }),
+      state.lastCheckMs && !statusText ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("lastChecked").replace("{time}", new Date(state.lastCheckMs).toLocaleString()) }) : null
     ] }),
-    links
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("section", { className: "eau-card eau-links", children: links })
   ] });
 }
 
-// src/components/UpdateNotice.tsx
+// easel/dsh-plugin-easel/src/components/UpdateNotice.tsx
 var import_react21 = require("react");
 var import_jsx_runtime32 = require("react/jsx-runtime");
 function UpdateNotice({ t, update }) {
@@ -14025,11 +14203,12 @@ function UpdateNotice({ t, update }) {
   ] });
 }
 
-// src/locales/easelAbout.ts
+// easel/dsh-plugin-easel/src/locales/easelAbout.ts
 var EASEL_ABOUT_COPY = {
   zh: {
     nav: "\u5173\u4E8E",
     appName: "Easel-dsh",
+    tagline: "\u672C\u5730\u4F18\u5148\u7684\u793E\u5A92\u521B\u4F5C\u5DE5\u4F5C\u53F0",
     checkUpdate: "\u68C0\u67E5\u66F4\u65B0",
     checking: "\u6B63\u5728\u68C0\u67E5\u2026",
     retry: "\u91CD\u8BD5",
@@ -14041,12 +14220,20 @@ var EASEL_ABOUT_COPY = {
     installing: "\u6B63\u5728\u5B89\u88C5\uFF0C\u5E94\u7528\u5373\u5C06\u9000\u51FA\u2026",
     lastChecked: "\u4E0A\u6B21\u68C0\u67E5\uFF1A{time}",
     sourceLabel: "\u66F4\u65B0\u6E90",
-    sourceDefault: "\u9ED8\u8BA4",
-    sourceOverride: "\u81EA\u5B9A\u4E49",
+    sourceDefault: "\u5B98\u65B9\u7AD9\u70B9\uFF08\u4F18\u5148\uFF09",
+    sourceGithub: "GitHub \u955C\u50CF",
+    sourceCustom: "\u81EA\u5B9A\u4E49\u2026",
+    sourceHint: "\u5B98\u65B9\u7AD9\u70B9\u4E0D\u53EF\u7528\u65F6\u81EA\u52A8\u56DE\u9000\u5230\u955C\u50CF\u3002",
     sourceUnavailable: "\u4E0D\u53EF\u7528",
-    websiteLink: "\u5B98\u7F51",
+    customUrlLabel: "\u5730\u5740",
+    save: "\u4FDD\u5B58",
+    saved: "\u5DF2\u4FDD\u5B58",
+    invalidUrl: "\u8BF7\u586B\u5199 http(s) \u94FE\u63A5",
+    websiteLink: "\u5B98\u65B9\u7F51\u7AD9",
     changelogLink: "\u66F4\u65B0\u65E5\u5FD7",
+    repoLink: "\u6E90\u7801\u4ED3\u5E93",
     feedbackLink: "\u610F\u89C1\u53CD\u9988",
+    openLink: "\u6253\u5F00",
     desktopOnly: "\u5E94\u7528\u7248\u672C\u4E0E\u66F4\u65B0\u68C0\u67E5\u4EC5\u5728\u684C\u9762\u7248\u63D0\u4F9B\u3002",
     noticeTitle: "\u53D1\u73B0\u65B0\u7248\u672C {version}",
     noticeInstallNow: "\u7ACB\u5373\u66F4\u65B0",
@@ -14056,6 +14243,7 @@ var EASEL_ABOUT_COPY = {
   en: {
     nav: "About",
     appName: "Easel-dsh",
+    tagline: "A local-first studio for social content",
     checkUpdate: "Check for updates",
     checking: "Checking\u2026",
     retry: "Retry",
@@ -14067,12 +14255,20 @@ var EASEL_ABOUT_COPY = {
     installing: "Installing; the app will exit shortly\u2026",
     lastChecked: "Last checked: {time}",
     sourceLabel: "Update source",
-    sourceDefault: "Default",
-    sourceOverride: "Custom",
+    sourceDefault: "Official site (preferred)",
+    sourceGithub: "GitHub mirror",
+    sourceCustom: "Custom\u2026",
+    sourceHint: "Falls back to the mirror when the official site is unavailable.",
     sourceUnavailable: "Unavailable",
+    customUrlLabel: "URL",
+    save: "Save",
+    saved: "Saved",
+    invalidUrl: "Enter an http(s) URL",
     websiteLink: "Website",
     changelogLink: "Changelog",
+    repoLink: "Source code",
     feedbackLink: "Feedback",
+    openLink: "Open",
     desktopOnly: "The app version and update check are available in the desktop app only.",
     noticeTitle: "New version {version} available",
     noticeInstallNow: "Install update",
@@ -14081,7 +14277,7 @@ var EASEL_ABOUT_COPY = {
   }
 };
 
-// src/client.tsx
+// easel/dsh-plugin-easel/src/client.tsx
 var NS3 = "easel.panel";
 var STYLE_ID4 = "dsh-plugin-easel-style";
 var DATA_ROOT_STYLE_ID = "easel-data-root-settings-styles";

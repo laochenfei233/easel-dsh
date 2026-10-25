@@ -28,6 +28,7 @@ const UPDATE_RPC = {
   'update-state': 'easel_update_state',
   'update-check': 'easel_check_update',
   'update-install': 'easel_install_update',
+  'update-source-set': 'easel_set_update_source',
 };
 
 async function handleHostRpc(data) {

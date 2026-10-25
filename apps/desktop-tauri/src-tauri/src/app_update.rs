@@ -74,6 +74,21 @@ enum UpdateSource {
     Override(Vec<Url>),
 }
 
+/// Which update source the About page's selector shows.
+#[derive(Serialize, Clone, Copy, Debug, PartialEq)]
+#[serde(rename_all = "kebab-case")]
+pub enum SourceKey {
+    /// No override file: the configured endpoints (official site first, mirror second).
+    Default,
+    /// The GitHub Pages mirror only.
+    Github,
+    /// A user-provided endpoint.
+    Custom,
+}
+
+/// The GitHub Pages mirror endpoint, offered as the fallback source.
+const GITHUB_ENDPOINT: &str = "https://laochenfei233.github.io/easel-dsh/updates/latest.json";
+
 impl std::fmt::Debug for UpdateSource {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -93,6 +108,11 @@ pub struct UpdateStateSnapshot {
     pub endpoints: Vec<String>,
     /// `default`, `override`, or `error` (loud misconfiguration).
     pub source: SourceState,
+    /// Which choice the selector shows: `default`, `github`, or `custom`.
+    pub source_key: SourceKey,
+    /// The custom endpoint when `sourceKey` is `custom`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub custom_url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_check_ms: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -199,6 +219,17 @@ struct SourceFile {
     endpoints: Vec<String>,
 }
 
+/// Validate one configured endpoint: http(s) only, absolute.
+fn parse_endpoint(candidate: &str) -> Result<Url, String> {
+    let url = candidate
+        .parse::<Url>()
+        .map_err(|e| format!("更新源「{candidate}」不是合法 URL：{e}"))?;
+    if !matches!(url.scheme(), "http" | "https") {
+        return Err(format!("更新源「{candidate}」必须是 http(s) 地址"));
+    }
+    Ok(url)
+}
+
 fn read_update_source_at(home: &Path) -> Result<UpdateSource, String> {
     let path = source_path_at(home);
     let raw = match std::fs::read_to_string(&path) {
@@ -213,15 +244,53 @@ fn read_update_source_at(home: &Path) -> Result<UpdateSource, String> {
     }
     let mut urls = Vec::new();
     for candidate in parsed.endpoints {
-        let url = candidate
-            .parse::<Url>()
-            .map_err(|e| format!("{SOURCE_FILE} 的 endpoint「{candidate}」不是合法 URL：{e}"))?;
-        if !matches!(url.scheme(), "http" | "https") {
-            return Err(format!("{SOURCE_FILE} 的 endpoint「{candidate}」必须是 http(s) 地址"));
-        }
-        urls.push(url);
+        urls.push(parse_endpoint(&candidate)?);
     }
     Ok(UpdateSource::Override(urls))
+}
+
+/// Which selector choice an effective source represents.
+fn classify_source(source: &UpdateSource) -> (SourceKey, Option<String>) {
+    match source {
+        UpdateSource::Default => (SourceKey::Default, None),
+        UpdateSource::Override(urls) => match urls.as_slice() {
+            [only] if only.as_str() == GITHUB_ENDPOINT => (SourceKey::Github, None),
+            [only] => (SourceKey::Custom, Some(only.to_string())),
+            _ => (SourceKey::Custom, urls.first().map(Url::to_string)),
+        },
+    }
+}
+
+/// Persist one selector choice: `default` removes the override, `github`
+/// pins the mirror, `custom` pins a validated endpoint.
+fn write_source_at(home: &Path, source_key: SourceKey, custom_url: Option<&str>) -> Result<(), String> {
+    let path = source_path_at(home);
+    let endpoints = match source_key {
+        SourceKey::Default => {
+            match std::fs::remove_file(&path) {
+                Ok(()) => {}
+                Err(err) if err.kind() == std::io::ErrorKind::NotFound => {}
+                Err(err) => return Err(format!("删除 {SOURCE_FILE} 失败：{err}")),
+            }
+            return Ok(());
+        }
+        SourceKey::Github => vec![GITHUB_ENDPOINT.to_string()],
+        SourceKey::Custom => {
+            let raw = custom_url.unwrap_or_default().trim();
+            if raw.is_empty() {
+                return Err("自定义更新源需要填写地址".into());
+            }
+            // Validate before writing so a typo cannot brick the updater.
+            parse_endpoint(raw)?;
+            vec![raw.to_string()]
+        }
+    };
+    let payload = serde_json::json!({ "endpoints": endpoints });
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+    }
+    std::fs::write(&path, serde_json::to_vec_pretty(&payload).map_err(|e| e.to_string())?)
+        .map_err(|e| e.to_string())
 }
 
 /// Strict semver-style ordering of `major.minor.patch[-pre][+build]` strings.
@@ -460,7 +529,13 @@ pub async fn easel_check_update(app: AppHandle) -> Result<CheckUpdateResult, Str
 
 #[tauri::command]
 pub fn easel_update_state(app: AppHandle) -> UpdateStateSnapshot {
-    let state = read_state_at(&crate::setup::dsh_home());
+    snapshot_at(&app)
+}
+
+/// Read the snapshot for one app handle (shared by the state and set commands).
+fn snapshot_at(app: &AppHandle) -> UpdateStateSnapshot {
+    let home = crate::setup::dsh_home();
+    let state = read_state_at(&home);
     let defaults = app
         .config()
         .plugins
@@ -469,21 +544,43 @@ pub fn easel_update_state(app: AppHandle) -> UpdateStateSnapshot {
         .and_then(|updater| updater.get("endpoints"))
         .and_then(|endpoints| serde_json::from_value::<Vec<String>>(endpoints.clone()).ok())
         .unwrap_or_default();
-    let (source, endpoints) = match read_update_source_at(&crate::setup::dsh_home()) {
-        Ok(UpdateSource::Override(urls)) => (SourceState::Override, urls.into_iter().map(|url| url.to_string()).collect()),
-        Ok(UpdateSource::Default) => (SourceState::Default, defaults),
-        Err(_) => (SourceState::Error, Vec::new()),
+    let (source, endpoints, source_key, custom_url) = match read_update_source_at(&home) {
+        Ok(UpdateSource::Default) => (SourceState::Default, defaults, SourceKey::Default, None),
+        Ok(UpdateSource::Override(urls)) => {
+            let (key, custom) = classify_source(&UpdateSource::Override(urls.clone()));
+            let endpoints = urls.into_iter().map(|url| url.to_string()).collect();
+            (SourceState::Override, endpoints, key, custom)
+        }
+        Err(_) => (SourceState::Error, Vec::new(), SourceKey::Default, None),
     };
     UpdateStateSnapshot {
         version: app.package_info().version.to_string(),
         endpoints,
         source,
+        source_key,
+        custom_url,
         last_check_ms: state.last_check_ms,
         last_check_status: state.last_check_status,
         latest: state.latest,
         last_error: state.last_error,
         noted_version: state.noted_version,
     }
+}
+
+/// Switch the update source from the About page. `default` restores the
+/// configured endpoints (official site first, mirror second), `github` pins the
+/// mirror, and `custom` pins one validated endpoint.
+#[tauri::command]
+pub fn easel_set_update_source(app: AppHandle, source: String, url: Option<String>) -> Result<UpdateStateSnapshot, String> {
+    let home = crate::setup::dsh_home();
+    let key = match source.as_str() {
+        "default" => SourceKey::Default,
+        "github" => SourceKey::Github,
+        "custom" => SourceKey::Custom,
+        other => return Err(format!("未知的更新源：{other}")),
+    };
+    write_source_at(&home, key, url.as_deref())?;
+    Ok(snapshot_at(&app))
 }
 
 /// One install chain at a time: a second 立即更新 while a download runs would
@@ -725,6 +822,28 @@ mod tests {
     }
 
     #[test]
+    fn update_source_selector_roundtrips_and_validates() {
+        let home = temp_dir("source-selector");
+        assert_eq!(classify_source(&UpdateSource::Default), (SourceKey::Default, None));
+
+        write_source_at(&home, SourceKey::Github, None).unwrap();
+        let github = read_update_source_at(&home).unwrap();
+        assert_eq!(classify_source(&github), (SourceKey::Github, None));
+
+        write_source_at(&home, SourceKey::Custom, Some("https://mirror.example/latest.json")).unwrap();
+        let custom = classify_source(&read_update_source_at(&home).unwrap());
+        assert_eq!(custom.0, SourceKey::Custom);
+        assert_eq!(custom.1.as_deref(), Some("https://mirror.example/latest.json"));
+
+        // A typo is refused before it can brick the updater.
+        assert!(write_source_at(&home, SourceKey::Custom, Some("ftp://mirror.example/x")).is_err());
+        assert!(write_source_at(&home, SourceKey::Custom, Some("  ")).is_err());
+
+        write_source_at(&home, SourceKey::Default, None).unwrap();
+        assert!(matches!(read_update_source_at(&home), Ok(UpdateSource::Default)));
+    }
+
+    #[test]
     fn percent_of_is_clamped_and_unknown_without_total() {
         assert_eq!(percent_of(50, 200), Some(25));
         assert_eq!(percent_of(200, 200), Some(100));
@@ -797,6 +916,8 @@ mod tests {
                 version: "0.2.1-alpha.32".into(),
                 endpoints: vec!["https://example.invalid/latest.json".into()],
                 source: SourceState::Default,
+                source_key: SourceKey::Default,
+                custom_url: None,
                 last_check_ms: None,
                 last_check_status: None,
                 latest: None,
@@ -808,6 +929,7 @@ mod tests {
                 "version": "0.2.1-alpha.32",
                 "endpoints": ["https://example.invalid/latest.json"],
                 "source": "default",
+                "sourceKey": "default",
             }),
         );
         // The populated snapshot pins the camelCase field names the About
@@ -817,6 +939,8 @@ mod tests {
                 version: "0.2.1-alpha.32".into(),
                 endpoints: vec!["https://example.invalid/latest.json".into()],
                 source: SourceState::Override,
+                source_key: SourceKey::Custom,
+                custom_url: Some("https://example.invalid/latest.json".into()),
                 last_check_ms: Some(1_700_000_000_000),
                 last_check_status: Some(CheckStatus::Available),
                 latest: Some(LatestRelease {
@@ -832,6 +956,8 @@ mod tests {
                 "version": "0.2.1-alpha.32",
                 "endpoints": ["https://example.invalid/latest.json"],
                 "source": "override",
+                "sourceKey": "custom",
+                "customUrl": "https://example.invalid/latest.json",
                 "lastCheckMs": 1_700_000_000_000u64,
                 "lastCheckStatus": "available",
                 "latest": {"version": "0.3.0", "notes": "release notes", "pubDateMs": 1_000},

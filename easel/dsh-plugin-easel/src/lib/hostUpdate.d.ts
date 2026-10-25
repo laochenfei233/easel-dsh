@@ -20,6 +20,8 @@ export interface UpdateStoreState {
   version?: string
   endpoints: string[]
   source: 'default' | 'override' | 'error'
+  sourceKey: 'default' | 'github' | 'custom'
+  customUrl?: string
   lastCheckMs?: number
   lastCheckStatus?: 'up-to-date' | 'available' | 'error'
   latest?: LatestRelease
@@ -36,6 +38,7 @@ export interface EaselUpdate {
   refresh(): Promise<void>
   check(): Promise<{ status: string; version?: string; notes?: string; pubDateMs?: number; detail?: string }>
   install(): Promise<{ status: string; detail?: string }>
+  setSource(source: 'default' | 'github' | 'custom', url?: string): Promise<{ ok: boolean; error?: string }>
   dismiss(): void
   dispose(): void
 }
