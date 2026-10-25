@@ -8,9 +8,14 @@ import {
   ApiError, createAutomationRoutes, dispatchLocalApi, normalizeClockTime, scheduleApiError, timingToSelector,
 } from '../index.js'
 
-const call = (body, service) =>
+const call = (body, service, controller = KNOWN_SESSIONS) =>
   dispatchLocalApi({}, 'POST', ['automation', 'tasks'], new URLSearchParams(),
-    async () => body, {}, createAutomationRoutes({ get: () => service }))
+    async () => body, {}, createAutomationRoutes({
+      get: (name) => (name === 'schedule' ? service : controller),
+    }))
+
+/** sessionController stub：Host 列表只读投影，s1 存在。 */
+const KNOWN_SESSIONS = { list: async () => ({ items: [{ sessionId: 's1' }] }) }
 
 /** 记录 create 收到的 (sessionId, request) 并返回一条最小 ScheduleRecord。 */
 const stubService = (impl) => ({
@@ -59,21 +64,21 @@ test('form errors answer as readable 400s before the engine is consulted', async
   const service = stubService(() => { throw new Error('引擎不应被调用') })
   await assert.rejects(call({ sessionId: '', title: 't', prompt: 'p', timeZone: 'UTC', timing: { kind: 'daily', time: '09:00' } }, service),
     /必须选择目标会话/)
-  await assert.rejects(call({ sessionId: 's', title: 't', prompt: 'p', timeZone: 'UTC', timing: { kind: 'at', date: 'bad', time: '09:00' } }, service),
+  await assert.rejects(call({ sessionId: 's1', title: 't', prompt: 'p', timeZone: 'UTC', timing: { kind: 'at', date: 'bad', time: '09:00' } }, service),
     /有效的日期/)
-  await assert.rejects(call({ sessionId: 's', title: 't', prompt: '', timeZone: 'UTC', timing: { kind: 'daily', time: '09:00' } }, service),
+  await assert.rejects(call({ sessionId: 's1', title: 't', prompt: '', timeZone: 'UTC', timing: { kind: 'daily', time: '09:00' } }, service),
     /任务内容必填/)
 })
 
 test('engine ScheduleInputError codes surface as readable Chinese 400s', async () => {
   const service = stubService(() => Object.assign(new Error('Reminder must be in the future.'), { code: 'not_future' }))
-  await assert.rejects(call({ sessionId: 's', title: 't', prompt: 'p', timeZone: 'UTC', timing: { kind: 'at', date: '2099-01-01', time: '09:00' } }, service),
+  await assert.rejects(call({ sessionId: 's1', title: 't', prompt: 'p', timeZone: 'UTC', timing: { kind: 'at', date: '2099-01-01', time: '09:00' } }, service),
     /一次性任务必须选择未来的日期时刻/)
 })
 
 test('unknown engine failures become 500s without leaking internals', async () => {
   const service = stubService(() => Object.assign(new Error('boom'), { code: 'internal_error' }))
-  await assert.rejects(call({ sessionId: 's', title: 't', prompt: 'p', timeZone: 'UTC', timing: { kind: 'daily', time: '09:00' } }, service),
+  await assert.rejects(call({ sessionId: 's1', title: 't', prompt: 'p', timeZone: 'UTC', timing: { kind: 'daily', time: '09:00' } }, service),
     error => error instanceof ApiError && error.status === 500 && error.detail.startsWith('创建定时任务失败'))
 })
 
@@ -81,6 +86,19 @@ test('scheduleApiError passes ApiError through and maps unknown codes to 500', (
   const passthrough = new ApiError(400, '原文')
   assert.equal(scheduleApiError(passthrough), passthrough)
   assert.equal(scheduleApiError(Object.assign(new Error('x'), { code: 'mystery' })).status, 500)
+})
+
+test('a dead target session id is refused with an explicit 400', async () => {
+  await assert.rejects(call({ sessionId: 'ghost', title: 't', prompt: 'p', timeZone: 'UTC', timing: { kind: 'daily', time: '09:00' } }, stubService(() => RECORD)),
+    /目标会话不存在/)
+})
+
+test('an unusable session service answers 409/502 instead of writing the task', async () => {
+  await assert.rejects(call({ sessionId: 's1', title: 't', prompt: 'p', timeZone: 'UTC', timing: { kind: 'daily', time: '09:00' } }, stubService(() => RECORD), null),
+    /会话服务不可用/)
+  const broken = { list: async () => { throw new Error('feed down') } }
+  await assert.rejects(call({ sessionId: 's1', title: 't', prompt: 'p', timeZone: 'UTC', timing: { kind: 'daily', time: '09:00' } }, stubService(() => RECORD), broken),
+    error => error instanceof ApiError && error.status === 502 && /无法确认目标会话/.test(error.detail))
 })
 
 test('the automation table registers the create route', () => {

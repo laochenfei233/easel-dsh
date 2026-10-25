@@ -2,10 +2,10 @@
 // 数据面：目录/编辑/删除/运行记录走 dsh 的 remote.schedule（变更事件驱动刷新），
 // 创建走 easel 的 /api/automation/tasks（引擎 create 是 host 进程 API）。
 // 时机表单只做四种形状（仅一次/每天/每周/每 N 小时或分钟）；cron 任务只读展示。
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { createScheduledTask, type ScheduledTiming } from '../lib/api';
 import type { PageProps } from '../lib/shell';
-import { IconClock, IconEdit, IconPlus, IconRefresh, IconTrash } from './icons';
+import { IconChevron, IconClock, IconEdit, IconPlus, IconRefresh, IconTrash } from './icons';
 
 /** 目录里的一个定时任务（引擎 ScheduleRecord + 会话绑定与状态）。 */
 export interface ScheduleEntry {
@@ -87,7 +87,8 @@ const freqLine = (e: ScheduleEntry): string => {
   if (e.kind === 'at' || e.kind === 'after') return '仅一次';
   if (e.kind === 'every') {
     const s = e.everySeconds ?? 0;
-    return s >= 3600 ? `每 ${Math.max(1, Math.round(s / 3600))} 小时` : `每 ${Math.max(1, Math.round(s / 60))} 分钟`;
+    if (s % 3600 === 0) return `每 ${s / 3600} 小时`;
+    return `每 ${Math.ceil(s / 60)} 分钟`;
   }
   if (e.kind === 'daily') return `每天 ${hhmm(e.time) ?? ''}`.trim();
   if (e.kind === 'weekly') return `每周${(e.weekdays ?? []).map(d => WEEKDAYS[d - 1]?.label ?? '').join('、')} ${hhmm(e.time) ?? ''}`.trim();
@@ -199,6 +200,18 @@ function TimingFields({ draft, onChange }: { draft: TimingDraft; onChange: (next
   );
 }
 
+/** 引擎 tool-error 稳定 code 的客户端文案（与宿主 SCHEDULE_ERROR_DETAILS 同表）。 */
+const TOOL_ERROR_ZH: Record<string, string> = {
+  invalid_prompt: '任务内容为空、过长或含首尾空白',
+  invalid_selector: '时机设置不完整或有冲突',
+  invalid_rule: '规则参数无效',
+  invalid_time_zone: '时区无效',
+  not_future: '一次性任务必须选择未来的日期时刻',
+  time_out_of_range: '时间超出可设置的范围',
+  frequency_too_high: '触发频率过高（最小间隔 1 分钟）',
+  subagent_session: '子 agent 会话不能承载定时任务',
+};
+
 export default function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }: SchedulesPageProps) {
   const face = (remote ?? undefined) as ScheduleRemoteFace | undefined;
   const [entries, setEntries] = useState<ScheduleEntry[]>([]);
@@ -213,13 +226,15 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
   const [editingTiming, setEditingTiming] = useState<TimingDraft | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [records, setRecords] = useState<{ scheduledAt: string; deliveredAt: string }[]>([]);
+  const [recordsError, setRecordsError] = useState('');
   const [recordsCursor, setRecordsCursor] = useState<string | undefined>(undefined);
   const [recordsDone, setRecordsDone] = useState(true);
+  const [sessionsTick, bumpSessions] = useReducer(x => x + 1, 0);
   const [, setTick] = useState(0);
 
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2400); };
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<ScheduleEntry[] | undefined> => {
     setLoading(true);
     try {
       const read = face?.catalog;
@@ -228,11 +243,12 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
       if (res?.ok === true && Array.isArray(res.value)) {
         setEntries(res.value);
         setError('');
-      } else {
-        throw new Error(res?.error?.message ?? '无法加载任务');
+        return res.value;
       }
+      throw new Error(res?.error?.message ?? '无法加载任务');
     } catch (e) {
       setError(e instanceof Error ? e.message : '无法加载任务');
+      return undefined;
     } finally {
       setLoading(false);
     }
@@ -249,6 +265,11 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
     const timer = setInterval(() => setTick(x => x + 1), 30_000);
     return () => clearInterval(timer);
   }, []);
+  // 会话列表投影变化时刷新选择器（store 订阅缺席时保持现状）。
+  useEffect(() => {
+    const unsub = sessions?.list?.subscribe?.(() => bumpSessions());
+    return typeof unsub === 'function' ? unsub : undefined;
+  }, [sessions]);
 
   /** 目标会话选择器：非归档、按会话列表顺序（近期在前），空标题回退 id。 */
   const sessionOptions = useMemo(() => {
@@ -258,7 +279,7 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
     return (sSnap?.ids ?? [])
       .filter(id => !archived.has(id))
       .map(id => ({ id, title: sSnap?.byId?.[id]?.title?.trim() || id }));
-  }, [sessions, workspaces, entries.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sessions, workspaces, sessionsTick]);
 
   const filtered = useMemo(() => entries.filter((e) => {
     if (filter !== 'all' && e.status !== filter) return false;
@@ -311,16 +332,22 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
     setEditingTiming(null);
     setConfirmingDelete(false);
     setRecords([]);
+    setRecordsError('');
     setRecordsCursor(undefined);
     setRecordsDone(true);
     void (async () => {
       try {
         const res = await face?.history?.({ sessionId: e.sessionId, id: e.id, limit: 20 });
-        const value = res?.ok === true ? res.value : undefined;
+        if (res?.ok !== true) throw new Error(res?.error?.message ?? '');
+        const value = res.value;
         setRecords(value?.records ?? []);
         setRecordsCursor(value?.nextBefore);
         setRecordsDone(value?.nextBefore === undefined);
-      } catch { setRecordsDone(true); }
+        setRecordsError('');
+      } catch {
+        setRecordsDone(true);
+        setRecordsError('无法加载运行记录');
+      }
     })();
   };
 
@@ -329,12 +356,18 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
     if (e === null || recordsCursor === undefined || detailBusy) return;
     setDetailBusy(true);
     try {
-      const res = await face?.history?.({ sessionId: e.sessionId, id: e.id, limit: 20, cursor: recordsCursor });
-      const value = res?.ok === true ? res.value : undefined;
+      // 引擎的游标字段是 before（返回侧是 nextBefore）。
+      const res = await face?.history?.({ sessionId: e.sessionId, id: e.id, limit: 20, before: recordsCursor });
+      if (res?.ok !== true) throw new Error(res?.error?.message ?? '');
+      const value = res.value;
       setRecords(cur => [...cur, ...(value?.records ?? [])]);
       setRecordsCursor(value?.nextBefore);
       setRecordsDone(value?.nextBefore === undefined);
-    } catch { setRecordsDone(true); } finally { setDetailBusy(false); }
+      setRecordsError('');
+    } catch {
+      setRecordsDone(true);
+      setRecordsError('无法加载运行记录');
+    } finally { setDetailBusy(false); }
   };
 
   const saveTiming = async () => {
@@ -349,22 +382,29 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
     }
     setDetailBusy(true);
     try {
-      const res = await face?.update?.({
+      const call = face?.update;
+      if (call === undefined) throw new Error('更新通道不可用（远端平面未连接）');
+      const res = await call({
         sessionId: e.sessionId, id: e.id, expected: e,
         change: timingToChange(editingTiming, e.timeZone || localZone()),
       });
-      const value = res?.ok === true ? res.value : undefined;
-      if (value !== undefined && value.updated === false) {
+      if (res?.ok !== true) throw new Error(res?.error?.message ?? '无法确认更新');
+      const value = res.value as Record<string, unknown> | undefined;
+      if (value?.updated === false) {
         if (value.code === 'schedule_conflict') showToast('任务已变化，请刷新后重试');
         else if (value.code === 'schedule_ended') showToast('任务已结束，无法修改');
         else showToast('任务已不可用');
-      } else {
+      } else if (value?.updated === true) {
         setEditingTiming(null);
         showToast('时机已更新');
+        const fresh = await load();
+        const freshEntry = fresh?.find(x => x.id === e.id) ?? null;
+        if (freshEntry !== null) setDetail(freshEntry);
+      } else {
+        // 拒绝的编辑以 tool-error 值返回（有 code 无 updated），不当成保存成功。
+        const code = typeof value?.code === 'string' ? value.code : '';
+        showToast(TOOL_ERROR_ZH[code] ?? '无法确认时机更新');
       }
-      await load();
-      const fresh = entries.find(x => x.id === e.id) ?? null;
-      if (fresh !== null) setDetail({ ...fresh });
     } catch (err) {
       showToast(err instanceof Error ? err.message : '更新失败');
     } finally {
@@ -376,12 +416,23 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
     if (detailBusy) return;
     setDetailBusy(true);
     try {
-      const res = await face?.delete?.({ sessionId: e.sessionId, id: e.id });
-      const value = res?.ok === true ? res.value : undefined;
-      if (value === undefined || value.deleted !== true) { showToast('任务已不可用'); }
-      else showToast('任务已删除');
-      setDetail(null);
-      await load();
+      const call = face?.delete;
+      if (call === undefined) throw new Error('删除通道不可用（远端平面未连接）');
+      const res = await call({ sessionId: e.sessionId, id: e.id });
+      if (res?.ok !== true) throw new Error(res?.error?.message ?? '无法确认删除');
+      const value = res.value as Record<string, unknown> | undefined;
+      if (value?.deleted === true) {
+        showToast('任务已删除');
+        setDetail(null);
+        setConfirmingDelete(false);
+        await load();
+      } else if (value?.code === 'schedule_not_found') {
+        showToast('任务已不存在');
+        setDetail(null);
+        await load();
+      } else {
+        showToast('删除未生效，请重试');
+      }
     } catch (err) {
       showToast(err instanceof Error ? err.message : '删除失败');
     } finally {
@@ -390,7 +441,7 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
   };
 
   return (
-    <div className="page-scroll sch-page">
+    <div className="page-scroll">
       <div className="page-head">
         <div>
           <h1 className="page-title"><IconClock size={21} /> 定时任务</h1>
@@ -439,8 +490,8 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
               <span className="sch-title">{e.title}</span>
               <span className="sch-freq">{freqLine(e)}</span>
               <span className="sch-card-actions">
-                <button className="session-act" title="详情" onClick={() => openDetail(e)}><IconEdit size={13} /></button>
-                <button className="session-act danger" title="删除" onClick={() => { setDetail(e); setConfirmingDelete(true); setEditingTiming(null); }}><IconTrash size={13} /></button>
+                <button className="session-act" title="详情" onClick={() => openDetail(e)}><IconChevron size={13} /></button>
+                <button className="session-act danger" title="删除" onClick={() => { openDetail(e); setConfirmingDelete(true); }}><IconTrash size={13} /></button>
               </span>
             </div>
             {e.status === 'active' && (
@@ -524,7 +575,8 @@ export default function SchedulesPage({ remote, sessions, workspaces, subscribeC
             )}
             <p style={{ marginTop: 14, marginBottom: 6, fontSize: 12.5, color: 'var(--text-secondary)' }}>运行记录</p>
             <div className="sch-records">
-              {records.length === 0 && <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>暂无运行记录</p>}
+              {recordsError !== '' && <p style={{ fontSize: 12, color: 'var(--red)' }}>{recordsError}</p>}
+              {recordsError === '' && records.length === 0 && <p style={{ fontSize: 12, color: 'var(--text-tertiary)' }}>暂无运行记录</p>}
               {records.map((r, i) => (
                 <div key={`${r.deliveredAt}-${i}`} className="sch-record">
                   <span className="ok">✓</span>

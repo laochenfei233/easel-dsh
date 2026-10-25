@@ -2619,6 +2619,20 @@ export function createAutomationRoutes(ctx) {
       if (prompt === '') throw new ApiError(400, '任务内容必填')
       const timeZone = String(body?.timeZone ?? '').trim()
       if (timeZone === '') throw new ApiError(400, '缺少时区')
+      // 目标会话必须真实存在（list 是 Host 列表的只读投影，不激活会话）；
+      // 引擎只拒子 agent 目标，死 id 会被它收下并永久过期。
+      const controller = ctx.get?.('sessionController')
+      if (controller === null || controller === undefined || typeof controller.list !== 'function') {
+        throw new ApiError(409, '会话服务不可用，无法确认目标会话')
+      }
+      let known = false
+      try {
+        const state = await controller.list({}, new AbortController().signal)
+        known = Array.isArray(state?.items) && state.items.some(item => String(item?.sessionId ?? '') === sessionId)
+      } catch (error) {
+        throw new ApiError(502, `无法确认目标会话（${error instanceof Error ? error.message : String(error)}）`)
+      }
+      if (!known) throw new ApiError(400, '目标会话不存在或已不可用')
       const request = { prompt, title, ...timingToSelector(body?.timing, timeZone) }
       try {
         return { json: await requireSchedule().create(sessionId, request) }

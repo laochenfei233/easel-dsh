@@ -559,7 +559,6 @@ export function submitLoginSms(platform: string, code: string): Promise<{ ok: bo
   });
 }
 
-/** 项目根与画像列表（/easel/api/status；立项建工作区与画像选择要用）。 */
 // ---- 定时任务（Host schedule 引擎；spec easel-scheduled-tasks）----
 // 读/改/删/记录走 dsh 的 remote.schedule（页面经 PageProps.remote 直连），
 // 只有 create 是 host 进程 API，需要这条 easel 路由中转。
@@ -588,6 +587,7 @@ export function createScheduledTask(input: ScheduledTaskInput): Promise<unknown>
   });
 }
 
+/** 项目根与画像列表（/easel/api/status；立项建工作区与画像选择要用）。 */
 export async function fetchStatus(): Promise<{ projectRoot?: string; personas?: { name: string; description?: string }[] } | null> {
   return request<{ projectRoot?: string; personas?: { name: string; description?: string }[] }>('/api/status').catch(() => null);
 }

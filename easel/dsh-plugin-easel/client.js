@@ -7340,7 +7340,8 @@ var freqLine = (e) => {
   if (e.kind === "at" || e.kind === "after") return "\u4EC5\u4E00\u6B21";
   if (e.kind === "every") {
     const s = e.everySeconds ?? 0;
-    return s >= 3600 ? `\u6BCF ${Math.max(1, Math.round(s / 3600))} \u5C0F\u65F6` : `\u6BCF ${Math.max(1, Math.round(s / 60))} \u5206\u949F`;
+    if (s % 3600 === 0) return `\u6BCF ${s / 3600} \u5C0F\u65F6`;
+    return `\u6BCF ${Math.ceil(s / 60)} \u5206\u949F`;
   }
   if (e.kind === "daily") return `\u6BCF\u5929 ${hhmm(e.time) ?? ""}`.trim();
   if (e.kind === "weekly") return `\u6BCF\u5468${(e.weekdays ?? []).map((d2) => WEEKDAYS2[d2 - 1]?.label ?? "").join("\u3001")} ${hhmm(e.time) ?? ""}`.trim();
@@ -7463,6 +7464,16 @@ function TimingFields({ draft, onChange }) {
     /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { marginTop: 6, fontSize: 12, color: "var(--text-secondary)" }, children: "\u5230\u70B9\u540E\uFF0C\u4EFB\u52A1\u5185\u5BB9\u4F1A\u4F5C\u4E3A\u4E00\u6761\u6D88\u606F\u53D1\u7ED9\u6240\u9009\u4F1A\u8BDD\u5E76\u81EA\u52A8\u6267\u884C\u3002" })
   ] });
 }
+var TOOL_ERROR_ZH = {
+  invalid_prompt: "\u4EFB\u52A1\u5185\u5BB9\u4E3A\u7A7A\u3001\u8FC7\u957F\u6216\u542B\u9996\u5C3E\u7A7A\u767D",
+  invalid_selector: "\u65F6\u673A\u8BBE\u7F6E\u4E0D\u5B8C\u6574\u6216\u6709\u51B2\u7A81",
+  invalid_rule: "\u89C4\u5219\u53C2\u6570\u65E0\u6548",
+  invalid_time_zone: "\u65F6\u533A\u65E0\u6548",
+  not_future: "\u4E00\u6B21\u6027\u4EFB\u52A1\u5FC5\u987B\u9009\u62E9\u672A\u6765\u7684\u65E5\u671F\u65F6\u523B",
+  time_out_of_range: "\u65F6\u95F4\u8D85\u51FA\u53EF\u8BBE\u7F6E\u7684\u8303\u56F4",
+  frequency_too_high: "\u89E6\u53D1\u9891\u7387\u8FC7\u9AD8\uFF08\u6700\u5C0F\u95F4\u9694 1 \u5206\u949F\uFF09",
+  subagent_session: "\u5B50 agent \u4F1A\u8BDD\u4E0D\u80FD\u627F\u8F7D\u5B9A\u65F6\u4EFB\u52A1"
+};
 function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
   const face = remote ?? void 0;
   const [entries2, setEntries] = (0, import_react6.useState)([]);
@@ -7477,8 +7488,10 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
   const [editingTiming, setEditingTiming] = (0, import_react6.useState)(null);
   const [confirmingDelete, setConfirmingDelete] = (0, import_react6.useState)(false);
   const [records, setRecords] = (0, import_react6.useState)([]);
+  const [recordsError, setRecordsError] = (0, import_react6.useState)("");
   const [recordsCursor, setRecordsCursor] = (0, import_react6.useState)(void 0);
   const [recordsDone, setRecordsDone] = (0, import_react6.useState)(true);
+  const [sessionsTick, bumpSessions] = (0, import_react6.useReducer)((x2) => x2 + 1, 0);
   const [, setTick] = (0, import_react6.useState)(0);
   const showToast = (m2) => {
     setToast(m2);
@@ -7493,11 +7506,12 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
       if (res?.ok === true && Array.isArray(res.value)) {
         setEntries(res.value);
         setError("");
-      } else {
-        throw new Error(res?.error?.message ?? "\u65E0\u6CD5\u52A0\u8F7D\u4EFB\u52A1");
+        return res.value;
       }
+      throw new Error(res?.error?.message ?? "\u65E0\u6CD5\u52A0\u8F7D\u4EFB\u52A1");
     } catch (e) {
       setError(e instanceof Error ? e.message : "\u65E0\u6CD5\u52A0\u8F7D\u4EFB\u52A1");
+      return void 0;
     } finally {
       setLoading(false);
     }
@@ -7515,12 +7529,16 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
     const timer = setInterval(() => setTick((x2) => x2 + 1), 3e4);
     return () => clearInterval(timer);
   }, []);
+  (0, import_react6.useEffect)(() => {
+    const unsub = sessions?.list?.subscribe?.(() => bumpSessions());
+    return typeof unsub === "function" ? unsub : void 0;
+  }, [sessions]);
   const sessionOptions = (0, import_react6.useMemo)(() => {
     const wsSnap = workspaces?.list?.getSnapshot?.();
     const sSnap = sessions?.list?.getSnapshot?.();
     const archived = new Set(wsSnap?.archivedSessionIds ?? []);
     return (sSnap?.ids ?? []).filter((id) => !archived.has(id)).map((id) => ({ id, title: sSnap?.byId?.[id]?.title?.trim() || id }));
-  }, [sessions, workspaces, entries2.length]);
+  }, [sessions, workspaces, sessionsTick]);
   const filtered = (0, import_react6.useMemo)(() => entries2.filter((e) => {
     if (filter !== "all" && e.status !== filter) return false;
     if (query.trim() === "") return true;
@@ -7583,17 +7601,21 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
     setEditingTiming(null);
     setConfirmingDelete(false);
     setRecords([]);
+    setRecordsError("");
     setRecordsCursor(void 0);
     setRecordsDone(true);
     void (async () => {
       try {
         const res = await face?.history?.({ sessionId: e.sessionId, id: e.id, limit: 20 });
-        const value = res?.ok === true ? res.value : void 0;
+        if (res?.ok !== true) throw new Error(res?.error?.message ?? "");
+        const value = res.value;
         setRecords(value?.records ?? []);
         setRecordsCursor(value?.nextBefore);
         setRecordsDone(value?.nextBefore === void 0);
+        setRecordsError("");
       } catch {
         setRecordsDone(true);
+        setRecordsError("\u65E0\u6CD5\u52A0\u8F7D\u8FD0\u884C\u8BB0\u5F55");
       }
     })();
   };
@@ -7602,13 +7624,16 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
     if (e === null || recordsCursor === void 0 || detailBusy) return;
     setDetailBusy(true);
     try {
-      const res = await face?.history?.({ sessionId: e.sessionId, id: e.id, limit: 20, cursor: recordsCursor });
-      const value = res?.ok === true ? res.value : void 0;
+      const res = await face?.history?.({ sessionId: e.sessionId, id: e.id, limit: 20, before: recordsCursor });
+      if (res?.ok !== true) throw new Error(res?.error?.message ?? "");
+      const value = res.value;
       setRecords((cur) => [...cur, ...value?.records ?? []]);
       setRecordsCursor(value?.nextBefore);
       setRecordsDone(value?.nextBefore === void 0);
+      setRecordsError("");
     } catch {
       setRecordsDone(true);
+      setRecordsError("\u65E0\u6CD5\u52A0\u8F7D\u8FD0\u884C\u8BB0\u5F55");
     } finally {
       setDetailBusy(false);
     }
@@ -7629,24 +7654,30 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
     }
     setDetailBusy(true);
     try {
-      const res = await face?.update?.({
+      const call = face?.update;
+      if (call === void 0) throw new Error("\u66F4\u65B0\u901A\u9053\u4E0D\u53EF\u7528\uFF08\u8FDC\u7AEF\u5E73\u9762\u672A\u8FDE\u63A5\uFF09");
+      const res = await call({
         sessionId: e.sessionId,
         id: e.id,
         expected: e,
         change: timingToChange(editingTiming, e.timeZone || localZone())
       });
-      const value = res?.ok === true ? res.value : void 0;
-      if (value !== void 0 && value.updated === false) {
+      if (res?.ok !== true) throw new Error(res?.error?.message ?? "\u65E0\u6CD5\u786E\u8BA4\u66F4\u65B0");
+      const value = res.value;
+      if (value?.updated === false) {
         if (value.code === "schedule_conflict") showToast("\u4EFB\u52A1\u5DF2\u53D8\u5316\uFF0C\u8BF7\u5237\u65B0\u540E\u91CD\u8BD5");
         else if (value.code === "schedule_ended") showToast("\u4EFB\u52A1\u5DF2\u7ED3\u675F\uFF0C\u65E0\u6CD5\u4FEE\u6539");
         else showToast("\u4EFB\u52A1\u5DF2\u4E0D\u53EF\u7528");
-      } else {
+      } else if (value?.updated === true) {
         setEditingTiming(null);
         showToast("\u65F6\u673A\u5DF2\u66F4\u65B0");
+        const fresh = await load();
+        const freshEntry = fresh?.find((x2) => x2.id === e.id) ?? null;
+        if (freshEntry !== null) setDetail(freshEntry);
+      } else {
+        const code = typeof value?.code === "string" ? value.code : "";
+        showToast(TOOL_ERROR_ZH[code] ?? "\u65E0\u6CD5\u786E\u8BA4\u65F6\u673A\u66F4\u65B0");
       }
-      await load();
-      const fresh = entries2.find((x2) => x2.id === e.id) ?? null;
-      if (fresh !== null) setDetail({ ...fresh });
     } catch (err) {
       showToast(err instanceof Error ? err.message : "\u66F4\u65B0\u5931\u8D25");
     } finally {
@@ -7657,20 +7688,30 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
     if (detailBusy) return;
     setDetailBusy(true);
     try {
-      const res = await face?.delete?.({ sessionId: e.sessionId, id: e.id });
-      const value = res?.ok === true ? res.value : void 0;
-      if (value === void 0 || value.deleted !== true) {
-        showToast("\u4EFB\u52A1\u5DF2\u4E0D\u53EF\u7528");
-      } else showToast("\u4EFB\u52A1\u5DF2\u5220\u9664");
-      setDetail(null);
-      await load();
+      const call = face?.delete;
+      if (call === void 0) throw new Error("\u5220\u9664\u901A\u9053\u4E0D\u53EF\u7528\uFF08\u8FDC\u7AEF\u5E73\u9762\u672A\u8FDE\u63A5\uFF09");
+      const res = await call({ sessionId: e.sessionId, id: e.id });
+      if (res?.ok !== true) throw new Error(res?.error?.message ?? "\u65E0\u6CD5\u786E\u8BA4\u5220\u9664");
+      const value = res.value;
+      if (value?.deleted === true) {
+        showToast("\u4EFB\u52A1\u5DF2\u5220\u9664");
+        setDetail(null);
+        setConfirmingDelete(false);
+        await load();
+      } else if (value?.code === "schedule_not_found") {
+        showToast("\u4EFB\u52A1\u5DF2\u4E0D\u5B58\u5728");
+        setDetail(null);
+        await load();
+      } else {
+        showToast("\u5220\u9664\u672A\u751F\u6548\uFF0C\u8BF7\u91CD\u8BD5");
+      }
     } catch (err) {
       showToast(err instanceof Error ? err.message : "\u5220\u9664\u5931\u8D25");
     } finally {
       setDetailBusy(false);
     }
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "page-scroll sch-page", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "page-scroll", children: [
     /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "page-head", children: [
       /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
         /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("h1", { className: "page-title", children: [
@@ -7724,11 +7765,10 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
         /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "sch-title", children: e.title }),
         /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "sch-freq", children: freqLine(e) }),
         /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("span", { className: "sch-card-actions", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "session-act", title: "\u8BE6\u60C5", onClick: () => openDetail(e), children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconEdit, { size: 13 }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "session-act", title: "\u8BE6\u60C5", onClick: () => openDetail(e), children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconChevron, { size: 13 }) }),
           /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "session-act danger", title: "\u5220\u9664", onClick: () => {
-            setDetail(e);
+            openDetail(e);
             setConfirmingDelete(true);
-            setEditingTiming(null);
           }, children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconTrash, { size: 13 }) })
         ] })
       ] }),
@@ -7835,7 +7875,8 @@ function SchedulesPage({ remote, sessions, workspaces, subscribeChanged }) {
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { marginTop: 14, marginBottom: 6, fontSize: 12.5, color: "var(--text-secondary)" }, children: "\u8FD0\u884C\u8BB0\u5F55" }),
       /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "sch-records", children: [
-        records.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { fontSize: 12, color: "var(--text-tertiary)" }, children: "\u6682\u65E0\u8FD0\u884C\u8BB0\u5F55" }),
+        recordsError !== "" && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { fontSize: 12, color: "var(--red)" }, children: recordsError }),
+        recordsError === "" && records.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { fontSize: 12, color: "var(--text-tertiary)" }, children: "\u6682\u65E0\u8FD0\u884C\u8BB0\u5F55" }),
         records.map((r, i) => /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "sch-record", children: [
           /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "ok", children: "\u2713" }),
           /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "sch-time", children: absoluteShort(r.deliveredAt) }),
