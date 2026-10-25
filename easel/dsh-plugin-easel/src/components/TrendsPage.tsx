@@ -10,6 +10,8 @@ interface TrendsPageProps {
 const ALL_PLATFORMS: { key: string; label: string }[] = [
   { key: 'weibo', label: '微博' },
   { key: 'douyin', label: '抖音' },
+  { key: 'douyin_rule', label: '抖音规则' },
+  { key: 'douyin_activity', label: '抖音活动' },
   { key: 'zhihu', label: '知乎' },
   { key: 'bilibili', label: 'B站' },
   { key: 'baidu', label: '百度' },
@@ -20,7 +22,11 @@ const ALL_PLATFORMS: { key: string; label: string }[] = [
 interface RowRef extends TrendItem { platform: string; label: string; source: string; }
 
 /** 源 → 选题来源文案（右键 payload 与书签共享同一份计算）。 */
-function sourceOf(label: string): string { return `${label}热搜`; }
+function sourceOf(label: string): string {
+  if (label === '抖音规则') return '抖音规则中心';
+  if (label === '抖音活动') return '抖音创作者活动';
+  return `${label}热搜`;
+}
 
 const fmtClock = (seconds?: number) =>
   seconds === undefined ? '' : new Date(seconds * 1000).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
@@ -340,7 +346,7 @@ function RadarSettings({ cfg, onSaved, onClose }: {
 }
 
 export default function TrendsPage({ onUseTopic }: TrendsPageProps) {
-  const [selected, setSelected] = useState<string[]>(['weibo', 'douyin', 'zhihu']);
+  const [selected, setSelected] = useState<string[]>(['weibo', 'douyin', 'zhihu', 'douyin_rule', 'douyin_activity']);
   const [groups, setGroups] = useState<TrendGroup[]>([]);
   const [clusters, setClusters] = useState<null | TrendCluster[]>(null);
   const [watch, setWatch] = useState<WatchGroup[]>([]);
