@@ -16,11 +16,15 @@
 ; The shell is tray-resident and spawns the dsh web server from its runtime
 ; directory. Tauri's CheckIfAppIsRunning only terminates the shell binary; a
 ; forced kill never runs RunEvent::Exit, so the node child keeps serving from
-; the install directory and locks runtime\ against the next upgrade. Stop the
-; shell first (its supervisor would otherwise respawn the child), then every
-; process whose executable lives under runtime\ — the flat root and the
-; pre-alpha.32 app\ subtree alike. Matches are by executable path, never by
-; image name, so other node applications are untouched.
+; the install directory and locks runtime\ against the next upgrade, and
+; Windows keeps the shell's tray icon as a ghost entry until the user hovers
+; it. The stop below therefore asks each running shell to exit through the
+; `--quit` single-instance channel first (`app.exit` removes the tray icon),
+; and only force-kills what is still alive after the grace period (an older
+; shell that does not know the flag, or a hung one). Then every process whose
+; executable lives under runtime\ — the flat root and the pre-alpha.32 app\
+; subtree alike. Matches are by executable path, never by image name, so other
+; node applications are untouched.
 
 !macro EASEL_STOP_RUNTIME
   InitPluginsDir
@@ -33,6 +37,15 @@
   FileWrite $0 '  $$runtimes += (Join-Path $$d $\"runtime$\"), (Join-Path $$d $\"app\runtime$\")$\r$\n'
   FileWrite $0 '}$\r$\n'
   FileWrite $0 'foreach ($$s in $$shells) {$\r$\n'
+  FileWrite $0 '  if (-not (Test-Path -LiteralPath $$s)) { continue }$\r$\n'
+  FileWrite $0 '  $$running = @(Get-CimInstance Win32_Process | Where-Object { $$_.ExecutablePath -and $$_.ExecutablePath -ieq $$s })$\r$\n'
+  FileWrite $0 '  if ($$running.Count -gt 0) {$\r$\n'
+  FileWrite $0 '    try { Start-Process -FilePath $$s -ArgumentList $\"--quit$\" -WindowStyle Hidden -ErrorAction Stop } catch { }$\r$\n'
+  FileWrite $0 '    for ($$i = 0; $$i -lt 16; $$i++) {$\r$\n'
+  FileWrite $0 '      if (@(Get-CimInstance Win32_Process | Where-Object { $$_.ExecutablePath -and $$_.ExecutablePath -ieq $$s }).Count -eq 0) { break }$\r$\n'
+  FileWrite $0 '      Start-Sleep -Milliseconds 250$\r$\n'
+  FileWrite $0 '    }$\r$\n'
+  FileWrite $0 '  }$\r$\n'
   FileWrite $0 '  Get-CimInstance Win32_Process | Where-Object { $$_.ExecutablePath -and $$_.ExecutablePath -ieq $$s } | ForEach-Object { Stop-Process -Id $$_.ProcessId -Force -ErrorAction SilentlyContinue }$\r$\n'
   FileWrite $0 '}$\r$\n'
   FileWrite $0 'Start-Sleep -Milliseconds 400$\r$\n'

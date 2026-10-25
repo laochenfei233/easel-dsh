@@ -182,17 +182,37 @@ fn hide_child_consoles() {
 #[cfg(not(windows))]
 fn hide_child_consoles() {}
 
+/// Command-line flag the installer's stop hook passes to a running shell. The
+/// single-instance guard hands it to the resident instance, which exits through
+/// `app.exit` so Windows removes the tray icon; a forced kill leaves a ghost
+/// entry in the notification area until the user hovers it.
+const QUIT_ARG: &str = "--quit";
+
+/// Whether a launch only asks the resident shell to shut down. Only the release
+/// shell recognizes the flag; dev builds stay multi-instance and never run the
+/// single-instance callback.
+#[cfg_attr(debug_assertions, allow(dead_code))]
+fn is_quit_request(args: &[String]) -> bool {
+    args.iter().any(|arg| arg == QUIT_ARG)
+}
+
 pub fn run() {
     hide_child_consoles();
     let builder = tauri::Builder::default();
     // Release only: a second launch of the installed shell must surface the
     // resident instance instead of stacking another tray-resident one (window
     // close only hides to tray) whose forced kill would leave a ghost tray
-    // icon behind. The plugin's mutex keys on the shared `ai.easel.desktop`
-    // identifier, so a dev build beside an installed shell would bounce off
-    // it — dev builds stay multi-instance.
+    // icon behind. The installer/uninstaller stop hook launches the shell with
+    // `--quit`, which exits through `app.exit` here so Windows removes the tray
+    // icon instead of being force-killed by the installer. The plugin's mutex
+    // keys on the shared `ai.easel.desktop` identifier, so a dev build beside
+    // an installed shell would bounce off it — dev builds stay multi-instance.
     #[cfg(not(debug_assertions))]
-    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+        if is_quit_request(&args) {
+            app.exit(0);
+            return;
+        }
         tray::show_main_window(app);
     }));
     builder
@@ -246,4 +266,17 @@ pub fn run() {
                 }
             }
         });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_quit_request;
+
+    #[test]
+    fn quit_flag_from_the_installer_is_recognized() {
+        let exe = r"C:\Users\me\AppData\Local\Easel-dsh\dsh-desktop.exe".to_string();
+        assert!(is_quit_request(&[exe.clone(), "--quit".into()]));
+        assert!(!is_quit_request(&[exe, "--quiet".into()]));
+        assert!(!is_quit_request(&[]));
+    }
 }
