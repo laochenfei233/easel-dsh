@@ -2,8 +2,8 @@
 feature: easel-installer-graceful-stop
 status: delivered
 updated: 2026-10-26
-branch: feat/easel-installer-graceful-stop（base master ea747a05e2）
-commits: ea747a05e2..7aa13bf42f（spec 回填提交紧随其后）
+branch: feat/easel-installer-graceful-stop（base master 6b6c0e6278）
+commits: 6b6c0e6278..790bcfddb5（spec 回填提交紧随其后）
 ---
 
 > **数据事故记录（2026-10-25 23:44）**：验证 harness 曾误删真实数据根；用户 2026-10-26 指示暂缓事故处置、继续本特性（已重启 Easel 并新建空数据根）。事故详情与恢复信息保留在 Report 的 INCIDENT 段，不阻塞本特性的代码交付。
@@ -35,7 +35,7 @@ commits: ea747a05e2..7aa13bf42f（spec 回填提交紧随其后）
 - 被删目录：`C:\Users\chenfei\Documents\Easel-dsh`（workspace + home：项目/素材/outputs、会话、profile、凭据、插件数据）。
 - 原因：验证脚本把 `installer-hooks.nsh` 中**所有** `FileWrite $0 '...'` 行解出并执行。`$env:LOCALAPPDATA` 指向临时目录，但 `[Environment]::GetFolderPath("MyDocuments")` 仍是真实 Documents；`data-root.json` 把 `$dataRoot` 指向真实数据根；`Test-EaselRoot` 通过后执行 `Remove-Item -Recurse -Force`。
 - 已做：删除未安全 harness；把仍存的 `.dsh`（76.4MB，session 到 2026-10-15）与 WebView 配置/缓存（318MB）复制到 `\\chenfei-nas\Backup\chenfei_s_Legion_backup\Easel-recovery-2026-10-25`；桌面留 `Easel-数据丢失-请先阅读.txt`；检查 VSS/File History/OneDrive/回收站/NAS Document_Backup 均无副本（NAS 文档备份最后运行 2026-10-16，早于数据根创建）。
-- 事故后 master `ea747a05e2` 把卸载删数据改成「仅勾选确认页复选框且非 /UPDATE」；但本 harness 直接执行解出的 PS 删除段，绕过 NSIS 条件，所以该保护不能替代沙箱。安全重跑只取 `EASEL_STOP_RUNTIME` 宏，并在执行前断言不含删除逻辑。
+- 事故后 master `ea747a05e2` 把卸载删数据改成「仅勾选确认页复选框且非 /UPDATE」，`6b6c0e6278` 再在 PREUNINSTALL 把 `data-root.json` 复制到 `$PLUGINSDIR`（标准段会先删 `ai.easel.desktop`）；但本 harness 直接执行解出的 PS 删除段，绕过 NSIS 条件，所以该保护不能替代沙箱。安全重跑只取 `EASEL_STOP_RUNTIME` 宏，并在执行前断言不含删除逻辑。
 - 现状：用户 2026-10-26 07:02 已重启 Easel，数据根被新建为空目录（17.9MB 新数据）；旧数据的恢复/放弃由用户后续决定，桌面说明与 NAS 幸存副本仍保留。
 - 代码本身未被评审发现缺陷（reviewer 对 diff 判 SHIP）；是否合并/安装由用户决定（本分支未自动合并/安装）。`--quit` 的真实安装器 E2E 留到用户下次安装。
 
