@@ -193,7 +193,9 @@ export default function CalendarPage() {
         style={{ ['--ev' as string]: STATUS_META[it.status]?.color || 'var(--text-tertiary)' }}
         onClick={(e) => { e.stopPropagation(); openEdit(it); }}>
         <span className="cal-event-dot" />
-        <span className="cal-event-title">{it.platform ? `[${it.platform}] ` : ''}{it.title}</span>
+        <span className="cal-event-title">
+          {it.platform ? `[${it.platform}${it.accountName ? `·${it.accountName}` : ''}] ` : ''}{it.title}
+        </span>
         {it.status === 'published' && it.source && SOURCE_LABEL[it.source]
           && <span className="cal-src">{SOURCE_LABEL[it.source]}</span>}
       </div>

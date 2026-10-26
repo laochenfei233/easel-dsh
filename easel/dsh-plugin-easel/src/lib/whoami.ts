@@ -28,6 +28,8 @@ function isFresh(e: WhoamiEntry | undefined, ttlMs: number): boolean {
 interface VerifyOpts {
   ttlMs?: number;
   force?: boolean;
+  /** 缓存 key → 账号寻址；缺省 = key 即平台（校验平台默认账号）。 */
+  resolve?: (key: string) => { platform: string; account?: string };
   onUpdate?: (platform: string, r: AccountWhoami) => void;
   alive?: () => boolean;
 }
@@ -51,7 +53,8 @@ export function verifyStale(platforms: string[], opts: VerifyOpts = {}): void {
       if (opts.alive && !opts.alive()) return;
       const p = todo[next++];
       try {
-        const r = await accountWhoami(p);
+        const addr = opts.resolve?.(p) ?? { platform: p };
+        const r = await accountWhoami(addr.platform, addr.account);
         setWhoamiCache(p, r);
         if (!opts.alive || opts.alive()) opts.onUpdate?.(p, r);
       } catch {
