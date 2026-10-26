@@ -84,3 +84,12 @@ python <ROOT>/skills/shared/scripts/web_publisher.py publish --platform kuaishou
 网页发布思路同 social-auto-upload 的快手模块；本 SKILL 复用统一 Playwright 框架，配置驱动、
 登录态持久化。选择器需按平台现状维护；2026-08-19 真机调试校准（登录态发布子系统探针、JS 派发
 发布按钮、话题上限 4）；2026-09 起成功判定升级为**读回对账**（作品列表比对，界面 URL 信号仅作旁证）。
+
+## 多账号（可选）
+
+数据根 `outputs/_accounts.json` 是账号注册表，支持同平台多账号（账号页管理：每账号独立登录态 + 可绑定画像）。
+
+- 默认不传参 = 该平台默认账号，行为不变。
+- 指定账号：`--profile-dir "<浏览器 profile 根下该账号的 profileDir>"`（账号 id / profileDir 见账号页或注册表；profile 根默认 `~/.easel-browser-profiles`）。
+- 该账号的直启登录窗口开着时：`--cdp-endpoint http://127.0.0.1:<端口>` 直接附身那个可见窗口（用户可随时插手验证码/短信，脚本结束后不要关它）。
+- 走宿主 API（`POST /easel/api/publish/<平台>`、login/logout/whoami）时带 `account: <账号id>` 即可，profile 解析由宿主负责。
