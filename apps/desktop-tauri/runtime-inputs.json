@@ -6,7 +6,8 @@
       "win-x64": "cbc74b5e0982c9dbb41525fd8fb5dcd32fbee237863f7829072f4639a1ce5f20",
       "darwin-arm64": "037650d0839f457747396f052073fb48333d31bf5abd3c98b74da20d89ebb1ad",
       "darwin-x64": "f42abca7aaac61efc57d49fb42ea84fc53bbeba9a749cb03a291ce6e4e7a69c1",
-      "linux-x64": "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce"
+      "linux-x64": "1805bcd35e6815559bd2eb97db438d3fdb0eb3a5e6a977b7c1badca76337e9ce",
+      "win-arm64": "a8b8cd79cbbb3062435f449591d98dd63730bbbf30ce2d7cc3a6376c236cb111"
     }
   },
   "winTerminalInspector": {
