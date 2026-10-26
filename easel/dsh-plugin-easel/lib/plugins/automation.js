@@ -826,6 +826,55 @@ async function apiMpLoginStatus(c) {
 
 // ---- 归因抓取（spawn runner，180s）----
 
+/** 参与归档的归因平台：走 account_stats.py 的五家写 outputs/_analytics/<归档键>.jsonl。
+ * B站（biliup）与公众号（mp 后台）走各自采集链路、不写归档——全览如实标记未归档。 */
+const ARCHIVED_ANALYTICS = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'zhihu', 'weixin-channels'])
+
+/** 读一个账号的归档快照（history 子命令，不起浏览器）；失败降级为「无数据」而不是整表失败。 */
+async function readAccountHistory(settings, account) {
+  if (!ARCHIVED_ANALYTICS.has(account.platform)) {
+    return { archived: false, latest: null, growth: null, points: [], ageDays: null }
+  }
+  const cmd = [settings.python, join(SHARED_SCRIPTS(settings), 'account_stats.py'),
+    'history', '--platform', account.platform, '--history-key', account.id]
+  const proc = await runCapture(cmd, { cwd: settings.projectRoot, env: await runnerEnv(settings), timeout: 30_000 })
+  for (const line of proc.stdout.trim().split(/\r?\n/).reverse()) {
+    const trimmed = line.trim()
+    if (!trimmed.startsWith('{')) continue
+    try {
+      const d = JSON.parse(trimmed)
+      return {
+        archived: true,
+        latest: d.latest ?? null,
+        growth: d.growth ?? null,
+        points: Array.isArray(d.points) ? d.points : [],
+        ageDays: typeof d.ageDays === 'number' ? d.ageDays : null,
+      }
+    } catch { continue }
+  }
+  return { archived: true, latest: null, growth: null, points: [], ageDays: null }
+}
+
+/** 工作台全览：注册表里每个归因平台账号的最新快照 + 增长窗口（只读归档，不启浏览器）。 */
+async function apiAnalyticsOverview(c) {
+  const registry = await loadRegistry(c.settings)
+  const rows = registry.accounts.filter(account => ANALYTICS_PLATFORMS.has(account.platform))
+  const result = await Promise.all(rows.map(async account => {
+    const cfg = LOGIN_RUNNERS[account.platform]
+    const history = await readAccountHistory(c.settings, account)
+    return {
+      id: account.id,
+      platform: account.platform,
+      name: account.name,
+      persona: account.persona ?? '',
+      backend: cfg.backend,
+      loggedIn: cfg === undefined ? false : await accountLoggedIn(c.settings, account, cfg),
+      ...history,
+    }
+  }))
+  return { json: result }
+}
+
 async function apiAnalytics(c) {
   const platform = c.params.p
   if (!ANALYTICS_PLATFORMS.has(platform)) throw new ApiError(404, '该平台暂不支持数据抓取')
@@ -843,7 +892,8 @@ async function apiAnalytics(c) {
     cmd = [py, join(scripts, 'weixin_mp_stats.py'), 'stats', '--proxy', wxProxy, '--count', '20']
   } else {
     // 代理策略由 account_stats.py 按平台自定（xhs 直连、其它走 env）；账号参数在末尾。
-    cmd = [py, join(scripts, 'account_stats.py'), 'fetch', '--platform', platform, ...(await accountBrowserArgs(c.settings, account))]
+    // 归档键 = 账号 id：默认账号 id 就是平台 key，既有 <platform>.jsonl 天然是它的历史。
+    cmd = [py, join(scripts, 'account_stats.py'), 'fetch', '--platform', platform, '--history-key', account.id, ...(await accountBrowserArgs(c.settings, account))]
   }
   const proc = await runCapture(cmd, { cwd: c.settings.projectRoot, env: await runnerEnv(c.settings), timeout: 180_000 })
   for (const line of proc.stdout.trim().split(/\r?\n/).reverse()) {
@@ -1089,6 +1139,7 @@ export const AUTOMATION_ROUTES = [
   ['PUT', ['accounts', ':a'], apiAccountUpdate],
   ['DELETE', ['accounts', ':a'], apiAccountDelete],
   ['GET', ['analytics', 'platforms'], apiAnalyticsPlatforms],
+  ['GET', ['analytics', 'overview'], apiAnalyticsOverview],
   ['GET', ['login', ':p', 'status'], apiLoginStatus],
   ['POST', ['login', ':p', 'sms'], apiLoginSms],
   ['GET', ['publish', ':p', 'status'], apiPublishStatus],
