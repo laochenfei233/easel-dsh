@@ -16,13 +16,13 @@ const HISTORY = {
 }
 
 /** 假 account_stats.py：history 按归档键回不同数据；fetch 把收到的归档键回显出来；
- * 归档键 `broken` 模拟子进程失败 → 该行必须降级为无数据而不是整表失败。 */
+ * 归档键 `douyin-broken` 模拟子进程失败 → 该行必须降级为无数据而不是整表失败。 */
 const fakeStats = `const argv = process.argv.slice(2)
 const pick = flag => { const i = argv.indexOf(flag); return i === -1 ? null : argv[i + 1] }
 const key = pick('--history-key')
 const history = ${JSON.stringify(HISTORY)}
 if (argv[0] === 'history') {
-  if (key === 'broken') { console.error('boom'); process.exit(1) }
+  if (key === 'douyin-broken') { console.error('boom'); process.exit(1) }
   console.log(JSON.stringify({ platform: pick('--platform'), historyKey: key, ...(history[key] ?? { latest: null, growth: null, points: [], ageDays: null }) }))
 } else if (argv[0] === 'fetch') {
   console.log(JSON.stringify({

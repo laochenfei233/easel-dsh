@@ -1763,8 +1763,8 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
     }).catch(() => setAnaData((d2) => ({ ...d2, [target.id]: "error" })));
   };
   const reloadOverview = () => {
-    setAnaOverview("loading");
-    fetchAnalyticsOverview().then(setAnaOverview).catch(() => setAnaOverview("error"));
+    setAnaOverview((rows) => Array.isArray(rows) ? rows : "loading");
+    fetchAnalyticsOverview().then(setAnaOverview).catch(() => setAnaOverview((rows) => Array.isArray(rows) ? rows : "error"));
   };
   const hour = (/* @__PURE__ */ new Date()).getHours();
   const greet = hour < 6 ? "\u591C\u6DF1\u4E86" : hour < 12 ? "\u4E0A\u5348\u597D" : hour < 14 ? "\u4E2D\u5348\u597D" : hour < 18 ? "\u4E0B\u5348\u597D" : "\u665A\u4E0A\u597D";
@@ -1890,7 +1890,12 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
         ] }, g.name))
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card dash-card dash-card-wide", children: (() => {
-        const rows = Array.isArray(anaOverview) ? anaOverview : [];
+        const raw = Array.isArray(anaOverview) ? anaOverview : [];
+        const platformOrder = /* @__PURE__ */ new Map();
+        raw.forEach((row, i) => {
+          if (!platformOrder.has(row.platform)) platformOrder.set(row.platform, i);
+        });
+        const rows = raw.map((row, i) => ({ row, i })).sort((a, b2) => platformOrder.get(a.row.platform) - platformOrder.get(b2.row.platform) || a.row.name.localeCompare(b2.row.name, "zh") || a.i - b2.i).map(({ row }) => row);
         const isLogged = (a) => a.loggedIn || !!whoamiMap[a.id]?.loggedIn;
         const sel = anaSel ? rows.find((a) => a.id === anaSel) : void 0;
         const d2 = anaSel ? anaData[anaSel] : void 0;
@@ -1968,7 +1973,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
                         ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-muted", children: "\u65E0\u5BF9\u6BD4\u57FA\u7EBF" }) }),
                         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkline, { points: a.points }),
                         /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-sub", children: sub })
-                      ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-empty", children: a.archived ? logged ? "\u5C1A\u672A\u91C7\u96C6 \xB7 \u70B9\u5F00\u6293\u4E00\u6B21" : "\u672A\u767B\u5F55 \xB7 \u53BB\u8D26\u53F7\u9875" : "\u8BE5\u5E73\u53F0\u4E0D\u5199\u5F52\u6863 \xB7 \u70B9\u5F00\u5B9E\u65F6\u6293\u53D6" })
+                      ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-empty", children: !logged ? "\u672A\u767B\u5F55 \xB7 \u53BB\u8D26\u53F7\u9875" : a.archived ? "\u5C1A\u672A\u91C7\u96C6 \xB7 \u70B9\u5F00\u6293\u4E00\u6B21" : "\u8BE5\u5E73\u53F0\u4E0D\u5199\u5F52\u6863 \xB7 \u70B9\u5F00\u5B9E\u65F6\u6293\u53D6" })
                     ]
                   },
                   a.id

@@ -135,10 +135,12 @@ export default function DashboardPage({ persona, gatewayStatus, apiDirect, onNav
       .catch(() => setAnaData((d) => ({ ...d, [target.id]: 'error' as const })));
   };
 
-  /** 重读全览（只读归档，不启浏览器）。 */
+  /** 重读全览（只读归档，不启浏览器）。失败时保留上次成功的行，只有首读失败才转错误态。 */
   const reloadOverview = () => {
-    setAnaOverview('loading');
-    fetchAnalyticsOverview().then(setAnaOverview).catch(() => setAnaOverview('error'));
+    setAnaOverview((rows) => (Array.isArray(rows) ? rows : 'loading'));
+    fetchAnalyticsOverview()
+      .then(setAnaOverview)
+      .catch(() => setAnaOverview((rows) => (Array.isArray(rows) ? rows : 'error')));
   };
 
   const hour = new Date().getHours();
@@ -283,7 +285,15 @@ export default function DashboardPage({ persona, gatewayStatus, apiDirect, onNav
         <div className="card dash-card dash-card-wide">
           {(() => {
             // overview 行本身就是归因账号清单（注册表 ∩ 归因平台）；不再依赖 accounts / platforms 两个接口。
-            const rows = Array.isArray(anaOverview) ? anaOverview : [];
+            // 按平台首次出现的位置分组，保证同平台多号相邻（注册表顺序不保证这一点）。
+            const raw = Array.isArray(anaOverview) ? anaOverview : [];
+            const platformOrder = new Map<string, number>();
+            raw.forEach((row, i) => { if (!platformOrder.has(row.platform)) platformOrder.set(row.platform, i); });
+            const rows = raw
+              .map((row, i) => ({ row, i }))
+              .sort((a, b) => (platformOrder.get(a.row.platform)! - platformOrder.get(b.row.platform)!)
+                || a.row.name.localeCompare(b.row.name, 'zh') || (a.i - b.i))
+              .map(({ row }) => row);
             const isLogged = (a: AnalyticsOverviewRow) => a.loggedIn || !!whoamiMap[a.id]?.loggedIn;
             const sel = anaSel ? rows.find((a) => a.id === anaSel) : undefined;
             const d = anaSel ? anaData[anaSel] : undefined;
@@ -373,8 +383,9 @@ export default function DashboardPage({ persona, gatewayStatus, apiDirect, onNav
                                   </>
                                 ) : (
                                   <span className="ana-acct-empty">
-                                    {a.archived ? (logged ? '尚未采集 · 点开抓一次' : '未登录 · 去账号页')
-                                      : '该平台不写归档 · 点开实时抓取'}
+                                    {!logged ? '未登录 · 去账号页'
+                                      : a.archived ? '尚未采集 · 点开抓一次'
+                                        : '该平台不写归档 · 点开实时抓取'}
                                   </span>
                                 )}
                               </button>

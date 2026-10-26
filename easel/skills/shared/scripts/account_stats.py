@@ -330,7 +330,7 @@ def should_record(history: list[dict], snap: dict) -> bool:
     last = history[-1]
     if _local_day(last.get("ts", 0)) != _local_day(snap.get("ts", 0)):
         return True
-    return any(last.get(k) != snap.get(k) for k in ("followers", "likes", "posts"))
+    return any(last.get(k) != snap.get(k) for k in ("followers", "likes", "posts", "following"))
 
 
 def record_snapshot(key: str, snap: dict) -> None:
@@ -1029,7 +1029,7 @@ def main() -> int:
     pf.add_argument("--history-key", help="归档键（多账户用账号 id；缺省 = 平台）")
     pf.set_defaults(func=cmd_fetch)
     hz = sub.add_parser("history", help="读归档快照与增长（不起浏览器）→ JSON")
-    hz.add_argument("--platform", required=True, help=f"平台：{', '.join(PLATFORMS)}")
+    hz.add_argument("--platform", required=True, help="平台 key（读归档不校验；公众号传 wechat-oa）")
     hz.add_argument("--history-key", help="归档键（多账户用账号 id；缺省 = 平台）")
     hz.set_defaults(func=cmd_history)
     sub.add_parser("selftest", help="离线自检").set_defaults(func=cmd_selftest)
