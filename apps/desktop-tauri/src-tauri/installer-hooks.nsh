@@ -21,7 +21,7 @@
 ; it. The stop below therefore asks each running shell to exit through the
 ; `--quit` single-instance channel first (`app.exit` removes the tray icon),
 ; and only force-kills what is still alive after the grace period (an older
-; shell that does not know the flag, or a hung one). Then every process whose
+; shell that does not know the flag, or a hung one), then every process whose
 ; executable lives under runtime\ — the flat root and the pre-alpha.32 app\
 ; subtree alike. Matches are by executable path, never by image name, so other
 ; node applications are untouched.

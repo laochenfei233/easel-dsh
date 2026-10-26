@@ -188,10 +188,10 @@ fn hide_child_consoles() {}
 /// entry in the notification area until the user hovers it.
 const QUIT_ARG: &str = "--quit";
 
-/// Whether a launch only asks the resident shell to shut down. Only the release
-/// shell recognizes the flag; dev builds stay multi-instance and never run the
-/// single-instance callback.
-#[cfg_attr(debug_assertions, allow(dead_code))]
+/// Whether a launch only asks the resident shell to shut down. The release
+/// single-instance callback forwards the installer's flag to the resident
+/// instance; the setup check covers the race where no resident exists by the
+/// time the flag is delivered.
 fn is_quit_request(args: &[String]) -> bool {
     args.iter().any(|arg| arg == QUIT_ARG)
 }
@@ -220,6 +220,13 @@ pub fn run() {
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
+            // A `--quit` launch that became the primary (the resident exited
+            // between the stop hook's process check and this launch) must not
+            // build a window, tray icon, or dsh child just to be forced down.
+            if is_quit_request(&std::env::args().collect::<Vec<_>>()) {
+                app.handle().exit(0);
+                return Ok(());
+            }
             // EASEL-DIVERGENCE(easel-dsh-layout): relocate user data before the
             // first-run state or the dsh home is read. Installed-only; this runs
             // after the single-instance guard so a second launch cannot migrate

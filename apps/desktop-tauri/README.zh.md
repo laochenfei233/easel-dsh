@@ -9,7 +9,7 @@ Tauri 2 桌面壳：在原生窗口里内嵌 dsh web UI，内置 Node 运行时�
 ```
 src-tauri/            Rust shell
   src/dsh_runner.rs   dsh child-process lifecycle: spawn `dsh web --port 3081 --no-open`, port health probe, crash auto-restart (does not race when dsh-plugin restarts itself)
-  src/tray.rs         tray residency: closing the window hides it; only tray Quit ends the process tree
+  src/tray.rs         tray residency: closing the window hides it; tray Quit ends the process tree (the installer stop hook asks for the same graceful exit with --quit)
   src/setup.rs        first-run wizard commands: write preset into the profile patch (agent-presets.config.default), install plugins (dsh plugin / local copy)
 ui/dist/              shell frontend (pure static, no build): index.html full-window iframe + error banner; wizard.html first-run wizard
 scripts/bundle-runtime.mjs  pack Node runtime + pnpm-deployed dsh closure + local plugins → runtime/
