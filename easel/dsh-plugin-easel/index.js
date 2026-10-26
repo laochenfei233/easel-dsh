@@ -985,12 +985,13 @@ async function isProtectedOutput(root, full, loginQr) {
 
 /**
  * Resolve a content-library path under `outputs/` and refuse host-owned state.
+ * Also used by the automation plugin to validate publish media.
  * @param settings - resolved deployment settings (project root).
  * @param rel - the caller's relative path.
  * @param options.loginQr - allow the login QR PNG (the one image under `_login`).
  * @returns the absolute, existing file path.
  */
-async function safeOutputPath(settings, rel, { loginQr = false } = {}) {
+export async function safeOutputPath(settings, rel, { loginQr = false } = {}) {
   const root = resolve(settings.projectRoot, 'outputs')
   const full = resolve(root, rel)
   if (full !== root && !full.startsWith(root + sep)) throw new ApiError(403, '非法路径')

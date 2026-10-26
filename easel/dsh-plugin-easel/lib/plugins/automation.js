@@ -13,7 +13,7 @@ import { randomBytes } from 'node:crypto'
 import { createAccount, loadAccounts, resolveAccount, saveAccounts, validAccountName } from '../accounts.js'
 import {
   ANALYTICS_PLATFORMS, ApiError, IMAGE_EXTS, LOGIN_RUNNERS, SCHEDULE_FILE, VIDEO_EXTS,
-  isDirectory, isFile, pathStat,
+  isDirectory, isFile, pathStat, safeOutputPath,
   readEnvFile, readJsonFile, readRadarConfig, readStoreList, writeJsonFile,
 } from '../../index.js'
 
@@ -974,7 +974,7 @@ async function apiPublish(c) {
     const codeFile = join(dir, `${account.id}.code`)
     try { await unlink(codeFile) } catch { /* 无旧码 */ }
     await writePublishStatus(c.settings, account.id, 'starting', '发布中…（若触发风控会要求短信验证）')
-    void runPublishBg(c.settings, account.id, cmd.concat(['--status-file', join(dir, `${account.id}.json`), '--sms-code-file', codeFile]), title, reqBody, cfg, codeFile)
+    void runPublishBg(c.settings, account.id, cmd.concat(['--status-file', join(dir, `${account.id}.json`), '--sms-code-file', codeFile]), title, reqBody, cfg, codeFile, account)
     // 关键：不返回 ok:true——这只是「已启动」应答，真结果靠轮询 /status（防旧前端假成功）。
     return { json: { async: true, pending: true, message: '发布已启动，请稍候…' } }
   } else if (platform === 'wechat-oa') {
