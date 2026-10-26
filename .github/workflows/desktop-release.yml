@@ -153,6 +153,9 @@ jobs:
       - name: Build Tauri app
         if: matrix.platform == 'macos-latest'
         working-directory: apps/desktop-tauri
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         run: pnpm tauri build --verbose ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
 
       - name: Build Tauri app and upload to Release
@@ -160,8 +163,16 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Updater artifacts are signed (bundle.createUpdaterArtifacts); without the
+          # key the build dies after bundling.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           projectPath: apps/desktop-tauri
+          # Pin to the CLI locked in package.json: the action otherwise installs its
+          # own (newer) CLI, whose generated utils.nsh calls RestartManager_StartSession
+          # — a macro our forked installer.nsi does not include, failing NSIS bundling.
+          tauriScript: pnpm tauri
           tagName: v__VERSION__
           releaseName: 'DeepSeek Harness Desktop v__VERSION__'
           releaseBody: |
