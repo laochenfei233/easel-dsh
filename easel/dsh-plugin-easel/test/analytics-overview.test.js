@@ -12,14 +12,17 @@ import { dispatchLocalApi } from '../index.js'
 const HISTORY = {
   douyin: { latest: { ts: 1_700_000_000, followers: 100, likes: 10, posts: 2 }, growth: null, points: [{ ts: 1_700_000_000, followers: 100 }], ageDays: 2.5 },
   'douyin-x2': { latest: { ts: 1_700_000_500, followers: 200, likes: 20, posts: 3 }, growth: null, points: [{ ts: 1_700_000_500, followers: 200 }], ageDays: 0.2 },
+  'wechat-oa': { latest: { ts: 1_700_000_900, followers: 999, likes: 88, following: null, posts: 7 }, growth: null, points: [{ ts: 1_700_000_900, followers: 999 }], ageDays: 0.1 },
 }
 
-/** 假 account_stats.py：history 按归档键回不同数据；fetch 把收到的归档键回显出来。 */
+/** 假 account_stats.py：history 按归档键回不同数据；fetch 把收到的归档键回显出来；
+ * 归档键 `broken` 模拟子进程失败 → 该行必须降级为无数据而不是整表失败。 */
 const fakeStats = `const argv = process.argv.slice(2)
 const pick = flag => { const i = argv.indexOf(flag); return i === -1 ? null : argv[i + 1] }
 const key = pick('--history-key')
 const history = ${JSON.stringify(HISTORY)}
 if (argv[0] === 'history') {
+  if (key === 'broken') { console.error('boom'); process.exit(1) }
   console.log(JSON.stringify({ platform: pick('--platform'), historyKey: key, ...(history[key] ?? { latest: null, growth: null, points: [], ageDays: null }) }))
 } else if (argv[0] === 'fetch') {
   console.log(JSON.stringify({
@@ -44,6 +47,8 @@ writeFileSync(join(root, 'outputs', '_accounts.json'), JSON.stringify({
     { id: 'douyin', platform: 'douyin', name: '抖音', persona: null, profileDir: 'DouyinProfile' },
     { id: 'douyin-x2', platform: 'douyin', name: '小号', persona: '副人格', profileDir: 'Douyin__douyin-x2' },
     { id: 'bilibili-x1', platform: 'bilibili', name: 'B站主号', persona: null, profileDir: null, cookieFile: 'outputs/_accounts/bilibili-x1/cookies.json' },
+    { id: 'wechat-oa', platform: 'wechat-oa', name: '公众号', persona: null, profileDir: null },
+    { id: 'douyin-broken', platform: 'douyin', name: '坏归档', persona: null, profileDir: 'Douyin__douyin-broken' },
   ],
 }), 'utf8')
 writeFileSync(join(root, 'outputs', '_login', 'douyin.json'), JSON.stringify({ state: 'success' }), 'utf8')
@@ -56,8 +61,8 @@ const call = (method, path, body, query = '') => dispatchLocalApi(
 
 test('overview reads each account history separately and marks non-archived platforms', async () => {
   const rows = (await call('GET', 'analytics/overview')).json
-  assert.equal(rows.length, 3)
-  const [main, second, bili] = rows
+  assert.equal(rows.length, 5)
+  const [main, second, bili, wx, broken] = rows
   assert.equal(main.id, 'douyin')
   assert.equal(main.archived, true)
   assert.equal(main.loggedIn, true)
@@ -69,6 +74,18 @@ test('overview reads each account history separately and marks non-archived plat
   assert.equal(bili.archived, false, 'bilibili does not write an archive')
   assert.equal(bili.latest, null)
   assert.deepEqual(bili.points, [])
+  // 公众号由 weixin_mp_stats.py 写同一个 _analytics 目录，必须能读出来。
+  assert.equal(wx.archived, true)
+  assert.equal(wx.latest.followers, 999)
+  // 子进程失败只让该行无数据，不能拖垮整表。
+  assert.equal(broken.id, 'douyin-broken')
+  assert.equal(broken.archived, true)
+  assert.equal(broken.latest, null)
+})
+
+test('a failing history read degrades to an empty row instead of failing the whole overview', async () => {
+  const rows = (await call('GET', 'analytics/overview')).json
+  assert.equal(rows.filter((r) => r.latest !== null).length, 3, 'other accounts keep their data')
 })
 
 test('the overview literal route wins over the platform route', async () => {

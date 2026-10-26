@@ -526,7 +526,7 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   padding: 12px 13px 11px; border-radius: 14px; border: 1px solid var(--border);
   background: var(--surface); color: var(--text); cursor: pointer; font: inherit;
   transition: border-color var(--t-fast), box-shadow var(--t-fast);
-}.easel-scope .ana-acct:hover { border-color: var(--border-strong); box-shadow: 0 4px 14px rgba(24,24,48,.06); }.easel-scope .ana-acct:focus-visible { outline: 2px solid var(--accent-end); outline-offset: 2px; }.easel-scope .ana-acct.off { opacity: .62; border-style: dashed; }.easel-scope .ana-acct-top { display: flex; align-items: center; gap: 6px; min-height: 18px; }.easel-scope .ana-acct-plat { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; color: var(--text-tertiary); text-transform: uppercase; }.easel-scope .ana-acct-name { font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
+}.easel-scope .ana-acct:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }.easel-scope .ana-acct:focus-visible { outline: 2px solid var(--accent-end); outline-offset: 2px; }.easel-scope .ana-acct.off { opacity: .62; border-style: dashed; }.easel-scope .ana-acct-top { display: flex; align-items: center; gap: 6px; min-height: 18px; }.easel-scope .ana-acct-plat { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; color: var(--text-tertiary); text-transform: uppercase; }.easel-scope .ana-acct-name { font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-acct-num { font-size: 24px; font-weight: 700; line-height: 1.15; margin-top: 5px; font-variant-numeric: tabular-nums; }.easel-scope .ana-acct-unit { font-size: 11px; font-weight: 500; color: var(--text-tertiary); margin-left: 5px; }.easel-scope .ana-acct-delta { display: flex; align-items: baseline; gap: 5px; font-size: 11px; font-weight: 600;
   font-variant-numeric: tabular-nums; min-height: 15px; }.easel-scope .ana-acct-win { font-size: 10.5px; font-weight: 400; color: var(--text-tertiary); }.easel-scope .ana-spark { color: var(--accent-end); margin-top: 6px; width: 100%; height: 26px; opacity: .78; }.easel-scope .ana-acct-sub { font-size: 10.5px; color: var(--text-tertiary); margin-top: 5px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-acct-empty { font-size: 11.5px; color: var(--text-tertiary); line-height: 1.5; margin-top: 8px; min-height: 34px; }/* ============ \u5185\u5BB9\u5E93\u753B\u5ECA ============ */.easel-scope .gallery-page { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .gallery-head { max-width: 1160px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }.easel-scope .gallery-filters { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1160px; margin: 14px auto 0; }.easel-scope .gallery-grid { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }.easel-scope .gcard { padding: 0; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }.easel-scope .gcard-thumb { aspect-ratio: 4/3; background: var(--surface-2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }.easel-scope .gcard-thumb img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-thumb video { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-ph { color: var(--text-tertiary); display: flex; flex-direction: column; align-items: center; gap: 6px; }.easel-scope .gcard-kind { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: rgba(24,24,48,0.55); color: #fff; }.easel-scope .gcard-meta { padding: 10px 12px; }.easel-scope .gcard-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .gcard-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }/* \u5185\u5BB9\u5E93\u9762\u5305\u5C51 */.easel-scope .crumb { cursor: pointer; color: var(--text-secondary); }.easel-scope .crumb:hover { color: var(--accent-start); }.easel-scope .crumb-sep { color: var(--text-tertiary); margin: 0 2px; font-weight: 400; }/* ============ \u9009\u9898\u5E93\u770B\u677F ============ */.easel-scope .kanban { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }.easel-scope .kanban-col { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; min-height: 200px; }.easel-scope .kanban-col-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text-secondary); padding: 2px 4px 10px; }.easel-scope .kanban-dot { width: 9px; height: 9px; border-radius: 3px; }.easel-scope .kanban-count { color: var(--text-tertiary); font-weight: 500; }.easel-scope .kanban-list { display: flex; flex-direction: column; gap: 10px; }.easel-scope .kanban-empty { color: var(--text-tertiary); font-size: 12.5px; padding: 12px 4px; }.easel-scope .idea-card { position: relative; padding: 13px 14px; }.easel-scope .idea-card-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 2px; }.easel-scope .idea-card:hover .idea-card-actions { display: flex; }.easel-scope .idea-title { font-size: 14px; font-weight: 600; line-height: 1.45; padding-right: 40px; }.easel-scope .idea-note { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 7px;
@@ -1553,9 +1553,6 @@ function loginStatus(platform, account) {
   const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
   return request(`/api/login/${encodeURIComponent(platform)}/status${q2}`);
 }
-function fetchAnalyticsPlatforms() {
-  return request("/api/analytics/platforms");
-}
 function fetchAccountAnalytics(platform, account) {
   const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
   return request(`/api/analytics/${encodeURIComponent(platform)}${q2}`);
@@ -1710,7 +1707,6 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
   const [outputs, setOutputs] = (0, import_react2.useState)([]);
   const [accounts, setAccounts] = (0, import_react2.useState)([]);
   const [ideas, setIdeas] = (0, import_react2.useState)([]);
-  const [anaPlats, setAnaPlats] = (0, import_react2.useState)([]);
   const [anaSel, setAnaSel] = (0, import_react2.useState)("");
   const [anaData, setAnaData] = (0, import_react2.useState)(() => {
     try {
@@ -1733,11 +1729,10 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
     });
     fetchAccounts().then(setAccounts).catch(() => {
     });
-    fetchAnalyticsPlatforms().then(setAnaPlats).catch(() => {
-    });
     fetchAnalyticsOverview().then((rows) => {
       setAnaOverview(rows);
-      const verify = rows.filter((r) => r.backend !== "bilibili" && r.backend !== "wechat-oa");
+      const API_BASED = /* @__PURE__ */ new Set(["bilibili", "wechat-oa"]);
+      const verify = rows.filter((r) => !API_BASED.has(r.platform));
       const byId = new Map(verify.map((r) => [r.id, r]));
       verifyStale(verify.map((r) => r.id), {
         resolve: (id) => ({ platform: byId.get(id)?.platform ?? id, account: id }),
@@ -1745,28 +1740,27 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
       });
     }).catch(() => setAnaOverview("error"));
   }, []);
-  const runAna = (account) => {
-    setAnaSel(account.id);
-    setAnaData((d2) => ({ ...d2, [account.id]: "loading" }));
-    fetchAccountAnalytics(account.platform, account.id).then((r) => {
+  const runAna = (target) => {
+    setAnaSel(target.id);
+    setAnaData((d2) => ({ ...d2, [target.id]: "loading" }));
+    fetchAccountAnalytics(target.platform, target.id).then((r) => {
       setAnaData((d2) => {
-        const next = { ...d2, [account.id]: r };
+        const next = { ...d2, [target.id]: r };
         try {
           localStorage.setItem("easel_analytics", JSON.stringify(next));
         } catch {
         }
         return next;
       });
-      setAnaOverview((rows) => Array.isArray(rows) ? rows.map((row) => row.id === account.id ? {
+      setAnaOverview((rows) => Array.isArray(rows) ? rows.map((row) => row.id === target.id ? {
         ...row,
         loggedIn: r.loggedIn,
-        archived: row.archived,
-        latest: { ts: r.fetched_at, followers: r.followers, likes: r.likes, posts: r.posts },
+        latest: { ts: r.fetched_at, followers: r.followers, likes: r.likes, following: r.following, posts: r.posts },
         growth: r.growth,
         points: [...row.points, { ts: r.fetched_at, followers: r.followers, likes: r.likes, posts: r.posts }].slice(-20),
         ageDays: 0
       } : row) : rows);
-    }).catch(() => setAnaData((d2) => ({ ...d2, [account.id]: "error" })));
+    }).catch(() => setAnaData((d2) => ({ ...d2, [target.id]: "error" })));
   };
   const reloadOverview = () => {
     setAnaOverview("loading");
@@ -1896,11 +1890,9 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
         ] }, g.name))
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card dash-card dash-card-wide", children: (() => {
-        const anaKeys = new Set(anaPlats.map((p) => p.platform));
-        const order12 = (platform) => anaPlats.findIndex((p) => p.platform === platform);
-        const anaAccounts = accounts.filter((a) => anaKeys.has(a.platform)).sort((a, b2) => order12(a.platform) - order12(b2.platform) || a.name.localeCompare(b2.name, "zh"));
+        const rows = Array.isArray(anaOverview) ? anaOverview : [];
         const isLogged = (a) => a.loggedIn || !!whoamiMap[a.id]?.loggedIn;
-        const sel = anaSel ? anaAccounts.find((a) => a.id === anaSel) : void 0;
+        const sel = anaSel ? rows.find((a) => a.id === anaSel) : void 0;
         const d2 = anaSel ? anaData[anaSel] : void 0;
         return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "dash-card-head", children: [
@@ -1911,12 +1903,16 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
             anaSel === "" && anaOverview !== "loading" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "dash-more", onClick: reloadOverview, children: "\u91CD\u8BFB\u5F52\u6863 \u2192" }),
             anaSel !== "" && d2 !== void 0 && d2 !== "loading" && sel !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "dash-more", onClick: () => runAna(sel), children: "\u5237\u65B0 \u2192" })
           ] }),
-          anaPlats.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u52A0\u8F7D\u4E2D / \u9700\u914D\u7F6E\u4EE3\u7406" }),
-          anaPlats.length > 0 && anaAccounts.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: "\u53BB\u8D26\u53F7\u9875\u767B\u5F55\u540E\uFF0C\u8FD9\u91CC\u770B\u6BCF\u4E2A\u8D26\u53F7\u7684\u7C89\u4E1D / \u83B7\u8D5E / \u5173\u6CE8\u3001\u589E\u957F\u8D8B\u52BF\u4E0E\u6700\u65B0\u7B14\u8BB0 \u2192" }),
-          anaAccounts.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+          anaOverview === "loading" && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "loading", style: { padding: "24px 0" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "spinner" }),
+            "\u8BFB\u5F52\u6863\u2026"
+          ] }),
+          anaOverview === "error" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", style: { color: "var(--red)" }, children: "\u8BFB\u53D6\u5F52\u6863\u5931\u8D25\uFF0C\u70B9\u300C\u91CD\u8BFB\u5F52\u6863\u300D\u91CD\u8BD5" }),
+          anaOverview !== "loading" && anaOverview !== "error" && rows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: "\u53BB\u8D26\u53F7\u9875\u767B\u5F55\u540E\uFF0C\u8FD9\u91CC\u770B\u6BCF\u4E2A\u8D26\u53F7\u7684\u7C89\u4E1D / \u83B7\u8D5E / \u5173\u6CE8\u3001\u589E\u957F\u8D8B\u52BF\u4E0E\u6700\u65B0\u7B14\u8BB0 \u2192" }),
+          rows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
             /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-plats", children: [
               /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: `chip ${anaSel === "" ? "active" : ""}`, onClick: () => setAnaSel(""), children: "\u5168\u89C8" }),
-              anaAccounts.map((a) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+              rows.map((a) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
                 "button",
                 {
                   className: `chip ${anaSel === a.id ? "active" : ""} ${isLogged(a) ? "" : "ana-chip-off"}`,
@@ -1931,66 +1927,54 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
                 a.id
               ))
             ] }),
-            anaSel === "" && (() => {
-              if (anaOverview === "loading") {
-                return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "loading", style: { padding: "24px 0" }, children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "spinner" }),
-                  "\u8BFB\u5F52\u6863\u2026"
-                ] });
-              }
-              if (anaOverview === "error") {
-                return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", style: { color: "var(--red)" }, children: "\u8BFB\u53D6\u5F52\u6863\u5931\u8D25\uFF0C\u70B9\u300C\u91CD\u8BFB\u5F52\u6863\u300D\u91CD\u8BD5" });
-              }
-              return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins ana-wins-head", children: WIN.map(([k2, lab]) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+            anaSel === "" && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins ana-wins-head", children: WIN.map(([k2, lab]) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "button",
+                {
+                  className: `ana-win ${anaWin === k2 ? "on" : ""}`,
+                  onClick: () => setAnaWin(k2),
+                  children: lab
+                },
+                k2
+              )) }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-grid", children: rows.map((a) => {
+                const logged = isLogged(a);
+                const g = growthInfo(a.growth?.[anaWin]?.followers ?? null);
+                const sub = a.latest === null ? "" : [
+                  `\u83B7\u8D5E ${fmtNum(a.latest.likes)}`,
+                  a.latest.following != null ? `\u5173\u6CE8 ${fmtNum(a.latest.following)}` : "",
+                  ageLabel(a.ageDays)
+                ].filter(Boolean).join(" \xB7 ");
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
                   "button",
                   {
-                    className: `ana-win ${anaWin === k2 ? "on" : ""}`,
-                    onClick: () => setAnaWin(k2),
-                    children: lab
-                  },
-                  k2
-                )) }),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-grid", children: anaAccounts.map((a) => {
-                  const row = anaOverview.find((r) => r.id === a.id);
-                  const logged = isLogged(a);
-                  const g = growthInfo(row?.growth?.[anaWin]?.followers ?? null);
-                  return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
-                    "button",
-                    {
-                      className: `ana-acct ${logged ? "" : "off"}`,
-                      title: logged ? `\u67E5\u770B${platformLabel(a.platform)}\u300C${a.name}\u300D\u8BE6\u60C5` : "\u672A\u767B\u5F55\uFF0C\u53BB\u8D26\u53F7\u9875\u767B\u5F55",
-                      onClick: () => logged ? runAna(a) : onNavigate("accounts"),
-                      children: [
-                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-acct-top", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-plat", children: platformLabel(a.platform) }),
-                          a.persona !== "" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "badge", children: a.persona })
+                    className: `ana-acct ${logged ? "" : "off"}`,
+                    title: logged ? `\u67E5\u770B${platformLabel(a.platform)}\u300C${a.name}\u300D\u8BE6\u60C5` : "\u672A\u767B\u5F55\uFF0C\u53BB\u8D26\u53F7\u9875\u767B\u5F55",
+                    onClick: () => logged ? runAna(a) : onNavigate("accounts"),
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-acct-top", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-plat", children: platformLabel(a.platform) }),
+                        a.persona !== "" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "badge", children: a.persona })
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-name", children: a.name }),
+                      a.latest !== null ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-acct-num", children: [
+                          fmtNum(a.latest.followers),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-unit", children: "\u7C89\u4E1D" })
                         ] }),
-                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-name", children: a.name }),
-                        row !== void 0 && row.latest !== null ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-acct-num", children: [
-                            fmtNum(row.latest.followers),
-                            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-unit", children: "\u7C89\u4E1D" })
-                          ] }),
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-delta", children: g ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { style: { color: g.color }, children: g.text }),
-                            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-win", children: WIN.find(([k2]) => k2 === anaWin)?.[1] })
-                          ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-muted", children: "\u65E0\u5BF9\u6BD4\u57FA\u7EBF" }) }),
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkline, { points: row.points }),
-                          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-acct-sub", children: [
-                            "\u83B7\u8D5E ",
-                            fmtNum(row.latest.likes),
-                            " \xB7 ",
-                            ageLabel(row.ageDays)
-                          ] })
-                        ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-empty", children: row?.archived === false ? "\u8BE5\u5E73\u53F0\u4E0D\u5199\u5F52\u6863 \xB7 \u70B9\u5F00\u5B9E\u65F6\u6293\u53D6" : logged ? "\u5C1A\u672A\u91C7\u96C6 \xB7 \u70B9\u5F00\u6293\u4E00\u6B21" : "\u672A\u767B\u5F55 \xB7 \u53BB\u8D26\u53F7\u9875" })
-                      ]
-                    },
-                    a.id
-                  );
-                }) })
-              ] });
-            })(),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-delta", children: g ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { style: { color: g.color }, children: g.text }),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-win", children: WIN.find(([k2]) => k2 === anaWin)?.[1] })
+                        ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-muted", children: "\u65E0\u5BF9\u6BD4\u57FA\u7EBF" }) }),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkline, { points: a.points }),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-sub", children: sub })
+                      ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-empty", children: a.archived ? logged ? "\u5C1A\u672A\u91C7\u96C6 \xB7 \u70B9\u5F00\u6293\u4E00\u6B21" : "\u672A\u767B\u5F55 \xB7 \u53BB\u8D26\u53F7\u9875" : "\u8BE5\u5E73\u53F0\u4E0D\u5199\u5F52\u6863 \xB7 \u70B9\u5F00\u5B9E\u65F6\u6293\u53D6" })
+                    ]
+                  },
+                  a.id
+                );
+              }) })
+            ] }),
             anaSel !== "" && (() => {
               if (sel === void 0) return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8D26\u53F7\u5DF2\u4E0D\u5B58\u5728\uFF0C\u70B9\u300C\u5168\u89C8\u300D\u5237\u65B0" });
               if (d2 === void 0) return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u70B9\u4E0A\u65B9\u8D26\u53F7\u67E5\u770B\u8BE5\u8D26\u53F7\u6570\u636E" });

@@ -135,6 +135,12 @@ CDP，直启器支持面锁定 Chromium 系。
 publish/analytics 均带 `account` 参数（缺省 = 默认账号）。agent 侧靠提示词名册（技能推送、发布预检、
 拆解选题自动注入），技能文档带 `--profile-dir` / `--cdp-endpoint` / `account` 参数说明。
 
+工作台「创作数据」按账号看：`GET /easel/api/analytics/overview` 一次返回各账号的最新归档与增长窗口
+（读归档、不启浏览器），`GET /easel/api/analytics/:p?account=<id>` 实时抓取并写入该账号自己的归档
+`outputs/_analytics/<accountId>.jsonl`。默认账号 id 就是平台 key，升级前的 `<platform>.jsonl` 天然
+继续有效、无需迁移。B 站（biliup stats）不写归档，全览如实标记；公众号由 `weixin_mp_stats.py` 写入
+同一目录，因此也出现在全览里。
+
 运维取舍：浏览器 profile 是大体积二进制且 Chromium 用户目录在网络盘不可靠，因此登录态留在本地家目录、
 **不进** WebDAV/SMB/S3 备份与隔空传送载荷；注册表本身无凭据，随数据根正常备份。
 

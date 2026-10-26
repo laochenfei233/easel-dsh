@@ -591,8 +591,7 @@ export interface AccountAnalytics {
   posts: number | null;
   metrics: { label: string; value: string; vs: string }[];
   notes: { title: string; url: string; cover?: string; stat?: string }[];
-  growth: Record<'last' | 'day' | 'week' | 'month' | 'year',
-    { followers: number | null; likes: number | null; posts: number | null; since_days: number | null } | null>;
+  growth: AnalyticsGrowth;
   fetched_at: number;
 }
 
@@ -607,11 +606,12 @@ export function fetchAccountAnalytics(platform: string, account?: string): Promi
   return request<AccountAnalytics>(`/api/analytics/${encodeURIComponent(platform)}${q}`);
 }
 
-/** 归档快照点（全览走势图与增长对比的原始数据）。 */
+/** 归档快照点（全览走势图与增长对比的原始数据）。following 只在新增快照里有。 */
 export interface AnalyticsPoint {
   ts: number;
   followers: number | null;
   likes: number | null;
+  following?: number | null;
   posts: number | null;
 }
 

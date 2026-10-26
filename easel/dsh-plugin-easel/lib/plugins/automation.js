@@ -826,9 +826,9 @@ async function apiMpLoginStatus(c) {
 
 // ---- 归因抓取（spawn runner，180s）----
 
-/** 参与归档的归因平台：走 account_stats.py 的五家写 outputs/_analytics/<归档键>.jsonl。
- * B站（biliup）与公众号（mp 后台）走各自采集链路、不写归档——全览如实标记未归档。 */
-const ARCHIVED_ANALYTICS = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'zhihu', 'weixin-channels'])
+/** 参与归档的归因平台：account_stats.py 五家 + 公众号（weixin_mp_stats.py 也调
+ * record_snapshot("wechat-oa")，写在同一个 _analytics 目录）。B站走 biliup stats，不写归档。 */
+const ARCHIVED_ANALYTICS = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'zhihu', 'weixin-channels', 'wechat-oa'])
 
 /** 读一个账号的归档快照（history 子命令，不起浏览器）；失败降级为「无数据」而不是整表失败。 */
 async function readAccountHistory(settings, account) {
@@ -867,7 +867,7 @@ async function apiAnalyticsOverview(c) {
       platform: account.platform,
       name: account.name,
       persona: account.persona ?? '',
-      backend: cfg.backend,
+      backend: cfg?.backend ?? '',
       loggedIn: cfg === undefined ? false : await accountLoggedIn(c.settings, account, cfg),
       ...history,
     }

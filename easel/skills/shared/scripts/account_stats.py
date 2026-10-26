@@ -6,7 +6,8 @@
 把邻近的账号ID/曝光数等误当指标（曾把小红书账号号当获赞数）。数字解析/多窗口增长为纯函数，selftest 覆盖。
 
 返回：概览(粉丝/获赞/关注) + 平台近7日各指标含环比 + 最新笔记链接 + 我方快照多窗口增长(较上次/日/周/月/年)。
-子命令：check / fetch / selftest
+归档：`outputs/_analytics/<归档键>.jsonl`，键默认平台、传 `--history-key` 则按账号（多账户）。
+子命令：check / fetch / history / selftest（history 只读归档，不起浏览器，供工作台全览）。
 真实抓取需：playwright + chromium + 已登录 + 干净网络（xhs 直连、其它走 env 代理，同发布层）。
 """
 from __future__ import annotations
@@ -845,7 +846,7 @@ def cmd_fetch(a) -> int:
                 profile_dir=a.profile_dir, cdp_endpoint=browser_session.resolve_endpoint(a))
 
     now = int(time.time())
-    snap = {"ts": now, "followers": s["followers"], "likes": s["likes"], "posts": s["posts"]}
+    snap = {"ts": now, "followers": s["followers"], "likes": s["likes"], "following": s["following"], "posts": s["posts"]}
     key = _history_key(a.history_key, a.platform)
     history = load_history(key)
     growth = growth_windows(history, snap)
@@ -871,9 +872,11 @@ def cmd_fetch(a) -> int:
 
 
 def cmd_history(a) -> int:
-    """只读归档（不起浏览器）：给工作台全览供数。growth 语义与 fetch 完全一致。"""
-    if a.platform not in PLATFORMS:
-        _die(f"未知平台：{a.platform}（支持：{', '.join(PLATFORMS)}）")
+    """只读归档（不起浏览器）：给工作台全览供数。growth 语义与 fetch 完全一致。
+
+    不校验 platform 是否在 PLATFORMS：公众号（wechat-oa）由 weixin_mp_stats.py 写归档、
+    不在此表内，但同样要能读；归档只取决于键，平台名只用于缺省键。
+    """
     key = _history_key(a.history_key, a.platform)
     history = load_history(key)
     if not history:
@@ -892,6 +895,7 @@ def cmd_history(a) -> int:
             "ts": latest.get("ts"),
             "followers": latest.get("followers"),
             "likes": latest.get("likes"),
+            "following": latest.get("following"),
             "posts": latest.get("posts"),
         },
         "growth": growth,

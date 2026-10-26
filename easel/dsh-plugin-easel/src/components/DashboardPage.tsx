@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
   fetchTrends, fetchSchedule, fetchOutputs, fetchAccounts, fetchIdeas,
-  fetchAnalyticsPlatforms, fetchAccountAnalytics, fetchAnalyticsOverview,
+  fetchAccountAnalytics, fetchAnalyticsOverview,
 } from '../lib/api';
 import type {
   TrendGroup, ScheduleItem, OutputNode, AccountItem, Idea,
-  AnalyticsPlatform, AccountAnalytics, AnalyticsOverviewRow, AnalyticsPoint, AccountWhoami,
+  AccountAnalytics, AnalyticsOverviewRow, AnalyticsPoint, AccountWhoami,
 } from '../lib/api';
 import { getWhoamiCache, verifyStale } from '../lib/whoami';
 import { platformLabel } from '../lib/roster';
@@ -76,10 +76,9 @@ export default function DashboardPage({ persona, gatewayStatus, apiDirect, onNav
   const [outputs, setOutputs] = useState<OutputNode[]>([]);
   const [accounts, setAccounts] = useState<AccountItem[]>([]);
   const [ideas, setIdeas] = useState<Idea[]>([]);
-  // 归因层：账号创作数据（多账户：chips 按账号切换，'' = 全览）
-  const [anaPlats, setAnaPlats] = useState<AnalyticsPlatform[]>([]);
+  // 归因层：账号创作数据（多账户：chips 按账号切换，'' = 全览）。overview 行即账号清单。
   const [anaSel, setAnaSel] = useState('');
-  // 缓存键 = 账号 id（默认账号 id 就是平台 key，旧平台键缓存天然命中）
+  // 缓存键 = 账号 id（默认账号 id 就是平台 key，旧平台键缓存仍可命中）
   const [anaData, setAnaData] = useState<Record<string, AccountAnalytics | 'loading' | 'error'>>(() => {
     try { return JSON.parse(localStorage.getItem('easel_analytics') || '{}'); } catch { return {}; }
   });
@@ -94,12 +93,13 @@ export default function DashboardPage({ persona, gatewayStatus, apiDirect, onNav
     fetchOutputs().then(setOutputs).catch(() => {});
     fetchIdeas().then(setIdeas).catch(() => {});
     fetchAccounts().then(setAccounts).catch(() => {});
-    fetchAnalyticsPlatforms().then(setAnaPlats).catch(() => {});
     fetchAnalyticsOverview()
       .then((rows) => {
         setAnaOverview(rows);
-        // 开页后台自愈：对能起 whoami 的账号真校验（B 站走 cookie、公众号走凭证判定）。
-        const verify = rows.filter((r) => r.backend !== 'bilibili' && r.backend !== 'wechat-oa');
+        // 开页后台自愈：只对真能起 whoami 的账号校验——B 站走 biliup cookie、
+        // 公众号走 mp 会话/凭证判定，两者都不该为了一次登录态去发网络请求。
+        const API_BASED = new Set(['bilibili', 'wechat-oa']);
+        const verify = rows.filter((r) => !API_BASED.has(r.platform));
         const byId = new Map(verify.map((r) => [r.id, r]));
         verifyStale(verify.map((r) => r.id), {
           resolve: (id) => ({ platform: byId.get(id)?.platform ?? id, account: id }),
@@ -110,30 +110,29 @@ export default function DashboardPage({ persona, gatewayStatus, apiDirect, onNav
   }, []);
 
   /** 切到某账号详情并抓取（实时抓取会同时更新该账号自己的归档）。 */
-  const runAna = (account: AccountItem) => {
-    setAnaSel(account.id);
-    setAnaData((d) => ({ ...d, [account.id]: 'loading' }));
-    fetchAccountAnalytics(account.platform, account.id)
+  const runAna = (target: { id: string; platform: string }) => {
+    setAnaSel(target.id);
+    setAnaData((d) => ({ ...d, [target.id]: 'loading' }));
+    fetchAccountAnalytics(target.platform, target.id)
       .then((r) => {
         setAnaData((d) => {
-          const next = { ...d, [account.id]: r };
+          const next = { ...d, [target.id]: r };
           try { localStorage.setItem('easel_analytics', JSON.stringify(next)); } catch { /* quota */ }
           return next;
         });
         // 全览同步一行，回去不用等归档重读
-        setAnaOverview((rows) => (Array.isArray(rows) ? rows.map((row) => (row.id === account.id
+        setAnaOverview((rows) => (Array.isArray(rows) ? rows.map((row) => (row.id === target.id
           ? {
             ...row,
             loggedIn: r.loggedIn,
-            archived: row.archived,
-            latest: { ts: r.fetched_at, followers: r.followers, likes: r.likes, posts: r.posts },
+            latest: { ts: r.fetched_at, followers: r.followers, likes: r.likes, following: r.following, posts: r.posts },
             growth: r.growth,
             points: [...row.points, { ts: r.fetched_at, followers: r.followers, likes: r.likes, posts: r.posts }].slice(-20),
             ageDays: 0,
           }
           : row)) : rows));
       })
-      .catch(() => setAnaData((d) => ({ ...d, [account.id]: 'error' as const })));
+      .catch(() => setAnaData((d) => ({ ...d, [target.id]: 'error' as const })));
   };
 
   /** 重读全览（只读归档，不启浏览器）。 */
@@ -283,13 +282,10 @@ export default function DashboardPage({ persona, gatewayStatus, apiDirect, onNav
         {/* 创作数据（归因层）：全览每个账号，或切到单账号看详情（粉丝/获赞/关注 + 多窗口增长 + 近7日环比 + 最新笔记） */}
         <div className="card dash-card dash-card-wide">
           {(() => {
-            const anaKeys = new Set(anaPlats.map((p) => p.platform));
-            const order = (platform: string) => anaPlats.findIndex((p) => p.platform === platform);
-            const anaAccounts = accounts
-              .filter((a) => anaKeys.has(a.platform))
-              .sort((a, b) => order(a.platform) - order(b.platform) || a.name.localeCompare(b.name, 'zh'));
-            const isLogged = (a: AccountItem) => a.loggedIn || !!whoamiMap[a.id]?.loggedIn;
-            const sel = anaSel ? anaAccounts.find((a) => a.id === anaSel) : undefined;
+            // overview 行本身就是归因账号清单（注册表 ∩ 归因平台）；不再依赖 accounts / platforms 两个接口。
+            const rows = Array.isArray(anaOverview) ? anaOverview : [];
+            const isLogged = (a: AnalyticsOverviewRow) => a.loggedIn || !!whoamiMap[a.id]?.loggedIn;
+            const sel = anaSel ? rows.find((a) => a.id === anaSel) : undefined;
             const d = anaSel ? anaData[anaSel] : undefined;
 
             return (
@@ -304,18 +300,21 @@ export default function DashboardPage({ persona, gatewayStatus, apiDirect, onNav
                   )}
                 </div>
 
-                {anaPlats.length === 0 && <div className="dash-empty">加载中 / 需配置代理</div>}
-                {anaPlats.length > 0 && anaAccounts.length === 0 && (
+                {anaOverview === 'loading' && <div className="loading" style={{ padding: '24px 0' }}><div className="spinner" />读归档…</div>}
+                {anaOverview === 'error' && (
+                  <div className="dash-empty" style={{ color: 'var(--red)' }}>读取归档失败，点「重读归档」重试</div>
+                )}
+                {anaOverview !== 'loading' && anaOverview !== 'error' && rows.length === 0 && (
                   <div className="dash-empty" onClick={() => onNavigate('accounts')} style={{ cursor: 'pointer' }}>
                     去账号页登录后，这里看每个账号的粉丝 / 获赞 / 关注、增长趋势与最新笔记 →
                   </div>
                 )}
 
-                {anaAccounts.length > 0 && (
+                {rows.length > 0 && (
                   <>
                     <div className="ana-plats">
                       <button className={`chip ${anaSel === '' ? 'active' : ''}`} onClick={() => setAnaSel('')}>全览</button>
-                      {anaAccounts.map((a) => (
+                      {rows.map((a) => (
                         <button
                           key={a.id}
                           className={`chip ${anaSel === a.id ? 'active' : ''} ${isLogged(a) ? '' : 'ana-chip-off'}`}
@@ -328,67 +327,62 @@ export default function DashboardPage({ persona, gatewayStatus, apiDirect, onNav
                     </div>
 
                     {/* 全览：每个账号一张卡（读归档，不启浏览器）；点卡进详情 */}
-                    {anaSel === '' && (() => {
-                      if (anaOverview === 'loading') {
-                        return <div className="loading" style={{ padding: '24px 0' }}><div className="spinner" />读归档…</div>;
-                      }
-                      if (anaOverview === 'error') {
-                        return <div className="dash-empty" style={{ color: 'var(--red)' }}>读取归档失败，点「重读归档」重试</div>;
-                      }
-                      return (
-                        <>
-                          <div className="ana-wins ana-wins-head">
-                            {WIN.map(([k, lab]) => (
-                              <button key={k} className={`ana-win ${anaWin === k ? 'on' : ''}`}
-                                onClick={() => setAnaWin(k)}>{lab}</button>
-                            ))}
-                          </div>
-                          <div className="ana-grid">
-                            {anaAccounts.map((a) => {
-                              const row = anaOverview.find((r) => r.id === a.id);
-                              const logged = isLogged(a);
-                              const g = growthInfo(row?.growth?.[anaWin]?.followers ?? null);
-                              return (
-                                <button
-                                  key={a.id}
-                                  className={`ana-acct ${logged ? '' : 'off'}`}
-                                  title={logged ? `查看${platformLabel(a.platform)}「${a.name}」详情` : '未登录，去账号页登录'}
-                                  onClick={() => (logged ? runAna(a) : onNavigate('accounts'))}
-                                >
-                                  <span className="ana-acct-top">
-                                    <span className="ana-acct-plat">{platformLabel(a.platform)}</span>
-                                    {a.persona !== '' && <span className="badge">{a.persona}</span>}
-                                  </span>
-                                  <span className="ana-acct-name">{a.name}</span>
-                                  {row !== undefined && row.latest !== null ? (
-                                    <>
-                                      <span className="ana-acct-num">
-                                        {fmtNum(row.latest.followers)}<span className="ana-acct-unit">粉丝</span>
-                                      </span>
-                                      <span className="ana-acct-delta">
-                                        {g ? (
-                                          <>
-                                            <span style={{ color: g.color }}>{g.text}</span>
-                                            <span className="ana-acct-win">{WIN.find(([k]) => k === anaWin)?.[1]}</span>
-                                          </>
-                                        ) : <span className="ana-muted">无对比基线</span>}
-                                      </span>
-                                      <Sparkline points={row.points} />
-                                      <span className="ana-acct-sub">获赞 {fmtNum(row.latest.likes)} · {ageLabel(row.ageDays)}</span>
-                                    </>
-                                  ) : (
-                                    <span className="ana-acct-empty">
-                                      {row?.archived === false ? '该平台不写归档 · 点开实时抓取'
-                                        : logged ? '尚未采集 · 点开抓一次' : '未登录 · 去账号页'}
+                    {anaSel === '' && (
+                      <>
+                        <div className="ana-wins ana-wins-head">
+                          {WIN.map(([k, lab]) => (
+                            <button key={k} className={`ana-win ${anaWin === k ? 'on' : ''}`}
+                              onClick={() => setAnaWin(k)}>{lab}</button>
+                          ))}
+                        </div>
+                        <div className="ana-grid">
+                          {rows.map((a) => {
+                            const logged = isLogged(a);
+                            const g = growthInfo(a.growth?.[anaWin]?.followers ?? null);
+                            const sub = a.latest === null ? ''
+                              : [`获赞 ${fmtNum(a.latest.likes)}`,
+                                a.latest.following != null ? `关注 ${fmtNum(a.latest.following)}` : '',
+                                ageLabel(a.ageDays)].filter(Boolean).join(' · ');
+                            return (
+                              <button
+                                key={a.id}
+                                className={`ana-acct ${logged ? '' : 'off'}`}
+                                title={logged ? `查看${platformLabel(a.platform)}「${a.name}」详情` : '未登录，去账号页登录'}
+                                onClick={() => (logged ? runAna(a) : onNavigate('accounts'))}
+                              >
+                                <span className="ana-acct-top">
+                                  <span className="ana-acct-plat">{platformLabel(a.platform)}</span>
+                                  {a.persona !== '' && <span className="badge">{a.persona}</span>}
+                                </span>
+                                <span className="ana-acct-name">{a.name}</span>
+                                {a.latest !== null ? (
+                                  <>
+                                    <span className="ana-acct-num">
+                                      {fmtNum(a.latest.followers)}<span className="ana-acct-unit">粉丝</span>
                                     </span>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </>
-                      );
-                    })()}
+                                    <span className="ana-acct-delta">
+                                      {g ? (
+                                        <>
+                                          <span style={{ color: g.color }}>{g.text}</span>
+                                          <span className="ana-acct-win">{WIN.find(([k]) => k === anaWin)?.[1]}</span>
+                                        </>
+                                      ) : <span className="ana-muted">无对比基线</span>}
+                                    </span>
+                                    <Sparkline points={a.points} />
+                                    <span className="ana-acct-sub">{sub}</span>
+                                  </>
+                                ) : (
+                                  <span className="ana-acct-empty">
+                                    {a.archived ? (logged ? '尚未采集 · 点开抓一次' : '未登录 · 去账号页')
+                                      : '该平台不写归档 · 点开实时抓取'}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
 
                     {/* 详情：单个账号（实时抓取，写入该账号自己的归档） */}
                     {anaSel !== '' && (() => {
