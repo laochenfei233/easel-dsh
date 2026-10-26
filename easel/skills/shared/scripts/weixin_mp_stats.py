@@ -28,6 +28,7 @@ else:
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import login_state  # noqa: E402
+import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 LOGIN_DIR = PROJECT_ROOT / "outputs" / "_login"
@@ -145,8 +146,8 @@ def _proxy(explicit, disable):
     return None
 
 
-def _launch(p, headed, base, proxy):
-    prof = _profile_dir(base)
+def _launch(p, headed, base, proxy, profile_dir=None):
+    prof = browser_session.pick_profile(profile_dir, _profile_dir(base))
     prof.mkdir(parents=True, exist_ok=True)
     lock = _lock_profile(prof)
     kw = dict(headless=not headed, locale="zh-CN", args=LAUNCH_ARGS,
@@ -170,6 +171,16 @@ def _launch(p, headed, base, proxy):
 
     ctx.close = close
     return ctx
+
+
+def _open_session(a, p):
+    """双模式开会话，返回 (ctx, owned)：--cdp-endpoint 附身运行中实例（登录态在实例里，
+    不碰持久 profile、不加占用锁）；否则自起 persistent profile（_launch 内带占用锁）。"""
+    cdp = browser_session.resolve_endpoint(a)
+    if cdp:
+        return browser_session.open_browser(p, cdp_endpoint=cdp, launch=None)
+    return _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy),
+                   getattr(a, "profile_dir", None)), True
 
 
 def _now():
@@ -226,8 +237,8 @@ def _run_login(a):
     qr_out = a.qr_out or str(LOGIN_DIR / "wechat-oa-mp.png")
     login_state.write_status(status, "starting", "启动 mp 后台登录…")
     with sync_playwright() as p:
-        ctx = _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        ctx, owned = _open_session(a, p)
+        page = browser_session.open_page(ctx, owned)
         try:
             page.goto(MP_HOME, wait_until="commit", timeout=60000)
             page.wait_for_timeout(1500)
@@ -263,7 +274,8 @@ def _run_login(a):
             login_state.write_status(status, "expired", "二维码超时未扫")
             _die("login timeout", 1)
         finally:
-            ctx.close()
+            # launch 模式关自己起的浏览器（close 钩子会释放占用锁）；CDP 附身模式不关（用户窗口）
+            browser_session.close_session(ctx, owned)
 
 
 def _fetch_json(page, url):
@@ -302,8 +314,8 @@ def cmd_stats(a):
             pass
 
     with sync_playwright() as p:
-        ctx = _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        ctx, owned = _open_session(a, p)
+        page = browser_session.open_page(ctx, owned)
         page.on("response", on_resp)
         try:
             page.goto(MP_HOME, wait_until="commit", timeout=60000)
@@ -345,7 +357,8 @@ def cmd_stats(a):
             print(json.dumps(result, ensure_ascii=False))
             return 0
         finally:
-            ctx.close()
+            # launch 模式关自己起的浏览器（close 钩子会释放占用锁）；CDP 附身模式不关（用户窗口）
+            browser_session.close_session(ctx, owned)
 
 
 def _deep_find(obj, keys, out):
@@ -598,8 +611,8 @@ def cmd_publish(a):
     digest = (a.digest or "")[:120]
     author = a.author or ""
     with sync_playwright() as p:
-        ctx = _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        ctx, owned = _open_session(a, p)
+        page = browser_session.open_page(ctx, owned)
         try:
             page.goto(MP_HOME, wait_until="commit", timeout=60000); page.wait_for_timeout(1500)
             token = _extract_token(page.url)
@@ -704,7 +717,8 @@ def cmd_publish(a):
             out["error"] = f"建草稿失败 ret={ret}: {json.dumps(res, ensure_ascii=False)[:250]}"
             print(json.dumps(out, ensure_ascii=False)); return 1
         finally:
-            ctx.close()
+            # launch 模式关自己起的浏览器（close 钩子会释放占用锁）；CDP 附身模式不关（用户窗口）
+            browser_session.close_session(ctx, owned)
 
 
 def cmd_selftest(_a=None):
@@ -732,7 +746,13 @@ def cmd_selftest(_a=None):
     month = _tendency_metrics(daily, 30)
     assert len(daily) == 30, len(daily)
     assert week[0]["value"] == 70 and month[0]["value"] == 300
-    print("weixin_mp_stats selftest ok")
+    # 账号参数化（browser_session）：--profile-dir / --cdp-endpoint 解析契约
+    browser_session.selftest_args()
+    assert browser_session.pick_profile(None, _profile_dir(None)) == _profile_dir(None), \
+        "未传 --profile-dir 默认=现状路由"
+    assert browser_session.pick_profile("~/pd", _profile_dir(None)) == Path.home() / "pd", \
+        "显式覆盖生效"
+    print("weixin_mp_stats selftest ok（含账号参数 profile-dir/cdp-endpoint）")
     return 0
 
 
@@ -741,14 +761,15 @@ def cmd_whoami(a):
     out = {"loggedIn": False, "name": "", "avatar": ""}
     try:
         with sync_playwright() as p:
-            ctx = _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy))
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+            ctx, owned = _open_session(a, p)
+            page = browser_session.open_page(ctx, owned)
             try:
                 page.goto(MP_HOME, wait_until="commit", timeout=60000)
                 page.wait_for_timeout(1200)
                 out["loggedIn"] = bool(_extract_token(page.url))
             finally:
-                ctx.close()
+                # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                browser_session.close_session(ctx, owned)
     except Exception as e:
         out["error"] = str(e)
     print(json.dumps(out, ensure_ascii=False))
@@ -761,6 +782,7 @@ def main():
 
     def common(x):
         x.add_argument("--profile-base")
+        browser_session.add_args(x, default_hint="~/.easel-browser-profiles/WeixinMpProfile")
         x.add_argument("--proxy")
         x.add_argument("--no-proxy", action="store_true")
         x.add_argument("--headed", action="store_true")

@@ -20,6 +20,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
 import content_guard  # noqa: E402  出站内容安全闸门
 
 PROFILE_NAME = "XiaohongshuProfile"
@@ -273,8 +274,8 @@ def _parse_targets(json_str: str | None, nickname: str | None, content: str | No
 # --------------------------------------------------------------------------- #
 # 浏览器
 # --------------------------------------------------------------------------- #
-def _launch(p, headed: bool, base: str | None, proxy: str | None):
-    profile = _profile_dir(base)
+def _launch(p, headed: bool, base: str | None, proxy: str | None, profile_dir: str | None = None):
+    profile = browser_session.pick_profile(profile_dir, _profile_dir(base))
     profile.mkdir(parents=True, exist_ok=True)
     args = list(LAUNCH_ARGS)
     kwargs = dict(headless=not headed, locale="zh-CN", args=args)
@@ -476,8 +477,11 @@ def cmd_fetch(a) -> int:
         _die(f"需要 playwright：{e}", 3)
     raw_pages: list = []
     with sync_playwright() as p:
-        ctx = _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        ctx, owned = browser_session.open_browser(
+            p, cdp_endpoint=browser_session.resolve_endpoint(a),
+            launch=lambda: _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy),
+                                   a.profile_dir))
+        page = browser_session.open_page(ctx, owned)
 
         def _on_resp(resp):
             if "comment/page" in resp.url:
@@ -493,7 +497,8 @@ def cmd_fetch(a) -> int:
             _scroll_comments(page, a.scroll)
             page.wait_for_timeout(1000)
         finally:
-            ctx.close()
+            # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+            browser_session.close_session(ctx, owned)
     comments = _collect_comments(raw_pages, a.max)
     result = {"note_id": nid, "count": len(comments), "comments": comments}
     payload = json.dumps(result, ensure_ascii=False, indent=2)
@@ -539,8 +544,11 @@ def cmd_notes(a) -> int:
     token_map: dict = {}
     raw: list = []
     with sync_playwright() as p:
-        ctx = _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        ctx, owned = browser_session.open_browser(
+            p, cdp_endpoint=browser_session.resolve_endpoint(a),
+            launch=lambda: _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy),
+                                   a.profile_dir))
+        page = browser_session.open_page(ctx, owned)
 
         def _on_resp(resp):  # 拦截 note-manager 的 JSON 接口，从中取每篇的 xsec_token
             try:
@@ -572,7 +580,8 @@ def cmd_notes(a) -> int:
                 except Exception:
                     pass
         finally:
-            ctx.close()
+            # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+            browser_session.close_session(ctx, owned)
     for n in raw:
         h_nid, h_tok = _parse_note_url(n.get("href") or "")
         nid = n.get("noteId") or h_nid
@@ -635,8 +644,11 @@ def cmd_reply(a) -> int:
         _die(f"需要 playwright：{e}", 3)
     ok_n = fail_n = 0
     with sync_playwright() as p:
-        ctx = _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        ctx, owned = browser_session.open_browser(
+            p, cdp_endpoint=browser_session.resolve_endpoint(a),
+            launch=lambda: _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy),
+                                   a.profile_dir))
+        page = browser_session.open_page(ctx, owned)
         try:
             _open_note(page, nid, tok)
             if not _logged_in(page):
@@ -653,7 +665,8 @@ def cmd_reply(a) -> int:
                 if i < len(todo) - 1:
                     page.wait_for_timeout(int(a.gap * 1000))  # 逐条间隔防风控
         finally:
-            ctx.close()
+            # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+            browser_session.close_session(ctx, owned)
     print(f"\n完成：成功 {ok_n} / 失败 {fail_n}" + (f"（另跳过已回复 {skipped}）" if skipped else ""))
     return 0 if fail_n == 0 else 1
 
@@ -676,8 +689,11 @@ def cmd_delete(a) -> int:
         _die(f"需要 playwright：{e}", 3)
     ok_n = fail_n = 0
     with sync_playwright() as p:
-        ctx = _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        ctx, owned = browser_session.open_browser(
+            p, cdp_endpoint=browser_session.resolve_endpoint(a),
+            launch=lambda: _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy),
+                                   a.profile_dir))
+        page = browser_session.open_page(ctx, owned)
         try:
             _open_note(page, nid, tok)
             if not _logged_in(page):
@@ -691,7 +707,8 @@ def cmd_delete(a) -> int:
                 if i < len(targets) - 1:
                     page.wait_for_timeout(int(a.gap * 1000))  # 逐条间隔防风控
         finally:
-            ctx.close()
+            # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+            browser_session.close_session(ctx, owned)
     print(f"\n完成：删除成功 {ok_n} / 失败 {fail_n}。可重新 `fetch` 核对是否已消失。")
     return 0 if fail_n == 0 else 1
 
@@ -903,8 +920,11 @@ def cmd_post(a) -> int:
 
     ok_n = fail_n = 0
     with sync_playwright() as p:
-        ctx = _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        ctx, owned = browser_session.open_browser(
+            p, cdp_endpoint=browser_session.resolve_endpoint(a),
+            launch=lambda: _launch(p, a.headed, a.profile_base, _proxy(a.proxy, a.no_proxy),
+                                   a.profile_dir))
+        page = browser_session.open_page(ctx, owned)
         try:
             if not _logged_in(page):
                 # 先访问一个页面确认登录态
@@ -931,7 +951,8 @@ def cmd_post(a) -> int:
                     print(f"  等待 {a.gap}s 防风控...")
                     page.wait_for_timeout(gap)
         finally:
-            ctx.close()
+            # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+            browser_session.close_session(ctx, owned)
     print(f"\n完成：成功 {ok_n} / 失败 {fail_n}")
     return 0 if fail_n == 0 else 1
 
@@ -945,6 +966,12 @@ def cmd_selftest(_a) -> int:
     assert _profile_dir(None).name == PROFILE_NAME
     assert str(_profile_dir(None)).startswith(str(Path.home()))
     assert _profile_dir("/tmp/x").parent == Path("/tmp/x")
+    # 账号参数化（browser_session）：--profile-dir / --cdp-endpoint 解析契约
+    browser_session.selftest_args()
+    assert browser_session.pick_profile(None, _profile_dir(None)) == _profile_dir(None), \
+        "未传 --profile-dir 默认=现状路由"
+    assert browser_session.pick_profile("~/pd", _profile_dir(None)) == Path.home() / "pd", \
+        "显式覆盖生效"
     # 代理逻辑
     assert _proxy(None, True) is None
     assert _proxy("http://x:1", False) == "http://x:1"
@@ -1020,7 +1047,7 @@ def cmd_selftest(_a) -> int:
     tm = _extract_note_tokens(sample)
     assert tm == {"n1": "tk1", "n2": "tk2"}, tm
     assert _extract_note_tokens([]) == {} and _extract_note_tokens("x") == {}
-    print("✅ selftest 通过（选择器 + 可移植路径 + 代理 + 评论解析/去重/子评论 + replied 文件 + 入参校验 + 链接解析/note定位 + 删除目标解析 + 接口token提取）")
+    print("✅ selftest 通过（选择器 + 可移植路径 + 账号参数 profile-dir/cdp-endpoint + 代理 + 评论解析/去重/子评论 + replied 文件 + 入参校验 + 链接解析/note定位 + 删除目标解析 + 接口token提取）")
     return 0
 
 
@@ -1030,6 +1057,7 @@ def main() -> int:
 
     def add_common(p):
         p.add_argument("--profile-base", help="登录态根目录（默认 ~/.easel-browser-profiles）")
+        browser_session.add_args(p, default_hint="~/.easel-browser-profiles/XiaohongshuProfile")
         p.add_argument("--proxy", help="外网代理（默认取 env）")
         p.add_argument("--no-proxy", action="store_true", help="禁用代理（小红书建议直连）")
         p.add_argument("--headed", action="store_true", help="有头模式（首次校验/排错）")

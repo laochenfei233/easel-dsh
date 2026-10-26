@@ -28,6 +28,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import login_state  # noqa: E402
+import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
 import content_guard  # noqa: E402  出站内容安全闸门
 import platform_readback  # noqa: E402  发布读回对账（快照+列表对账协议）
 import human_pace  # noqa: E402  人类节奏（分档随机停顿）
@@ -147,8 +148,8 @@ def _proxy(explicit: str | None, disable: bool) -> str | None:
         or os.environ.get("EASEL_PROXY")
 
 
-def _launch(p, headed: bool, base: str | None, proxy: str | None):
-    profile = _profile_dir(base)
+def _launch(p, headed: bool, base: str | None, proxy: str | None, profile_dir: str | None = None):
+    profile = browser_session.pick_profile(profile_dir, _profile_dir(base))
     profile.mkdir(parents=True, exist_ok=True)
     args = list(LAUNCH_ARGS)
     if not proxy:
@@ -960,21 +961,21 @@ def cmd_login(a) -> int:
                  else qr_out.parent / "douyin.code")
     login_state.read_sms_code(str(code_file))  # 清理陈旧验证码文件
     login_state.write_status(sf, "starting")
-    cdp = getattr(a, "cdp", None)
+    cdp = browser_session.resolve_endpoint(a)
     if a.headed:
         login_state.write_status(sf, "window_login",
                                "请在弹出的浏览器窗口里用抖音 App 扫码，不要关掉那个窗口。")
 
     with sync_playwright() as p:
+        ctx, owned = browser_session.open_browser(
+            p, cdp_endpoint=cdp,
+            launch=lambda: _launch(p, headed=a.headed, base=a.profile_base,
+                                   proxy=_proxy(a.proxy, a.no_proxy),
+                                   profile_dir=a.profile_dir))
         if cdp:
-            # CDP 接管用户自己开的 Chrome：真指纹/真 IP，不碰持久 profile。
-            browser = p.chromium.connect_over_cdp(cdp)
-            ctx = browser.contexts[0] if browser.contexts else browser.new_context()
             login_state.write_status(sf, "window_login",
                                      "已接管你的 Chrome——请在那个浏览器窗口里完成登录。")
-        else:
-            ctx = _launch(p, headed=a.headed, base=a.profile_base, proxy=_proxy(a.proxy, a.no_proxy))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        page = browser_session.open_page(ctx, owned)
         try:
             try:
                 page.goto(HOME_URL, wait_until="domcontentloaded", timeout=45000)
@@ -1100,7 +1101,8 @@ def cmd_login(a) -> int:
             print(f"❌ 登录流程异常：{e}", file=sys.stderr)
             return 4
         finally:
-            ctx.close()
+            # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+            browser_session.close_session(ctx, owned)
 
 
 def _plan_lines(kind, title, desc, media, tags):
@@ -1131,14 +1133,31 @@ def cmd_plan(a) -> int:
 
 
 def _readback_verify(p, a, title: str, since_ms: int | None = None,
-                     snapshot_ids: set[str] | None = None):
+                     snapshot_ids: set[str] | None = None, attach_ctx=None):
     """重开一个干净 context 读回创作者中心作品列表，与本次发布对账（权威判定）。
 
     发布收尾偶发渲染进程崩溃（"Page crashed"）但作品其实已提交成功——崩溃后用它核验，
     避免误报失败。对账协议见 platform_readback。
+    attach_ctx 非空 = CDP 附身模式：在已附身的默认 context 开新页读回，不自起第二个浏览器
+    （登录态只在运行实例里，persistent profile 也未必是这个账号的）。
     返回 platform_readback.ReadbackResult（outcome: verified/unverified/login_required/readback_error）；不抛异常。
     """
     try:
+        if attach_ctx is not None:
+            page = attach_ctx.new_page()
+            try:
+                page.set_default_timeout(30000)
+                page.goto("https://creator.douyin.com/creator-micro/content/manage",
+                          wait_until="domcontentloaded")
+                page.wait_for_timeout(3000)     # 页面上下文稳定后再发页内请求
+                return platform_readback.verify_douyin_publish(
+                    page, title=title, since_ms=since_ms, limit=20, attempts=3, delay_s=10,
+                    snapshot_ids=snapshot_ids)
+            finally:
+                try:
+                    page.close()
+                except Exception:
+                    pass
         ctx = _launch(p, headed=False, base=a.profile_base, proxy=_proxy(a.proxy, a.no_proxy))
         page = ctx.pages[0] if ctx.pages else ctx.new_page()
         try:
@@ -1197,8 +1216,13 @@ def _publish(a, kind: str) -> int:
     readback = None    # 读回对账（权威判定）：platform_readback.ReadbackResult
     snapshot_ids: set[str] = set()   # 发前快照（发布前作品 id 集；发布动作前在页面里抓）
     with sync_playwright() as p:
-        ctx = _launch(p, headed=a.headed, base=a.profile_base, proxy=_proxy(a.proxy, a.no_proxy))
-        page = ctx.pages[0] if ctx.pages else ctx.new_page()
+        cdp = browser_session.resolve_endpoint(a)
+        ctx, owned = browser_session.open_browser(
+            p, cdp_endpoint=cdp,
+            launch=lambda: _launch(p, headed=a.headed, base=a.profile_base,
+                                   proxy=_proxy(a.proxy, a.no_proxy),
+                                   profile_dir=a.profile_dir))
+        page = browser_session.open_page(ctx, owned)
         page.set_default_timeout(300000)
         try:
             page.goto(HOME_URL, wait_until="domcontentloaded")
@@ -1278,15 +1302,18 @@ def _publish(a, kind: str) -> int:
         finally:
             try:
                 if not a.keep_open:
-                    ctx.close()
+                    # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                    browser_session.close_session(ctx, owned)
             except Exception:
                 pass
         # 就地读回没拿到结论（崩溃/超时/通道错）→ 重开干净 context。
-        # --keep-open 时窗口还占着 profile，禁止再 launch_persistent_context。
+        # --keep-open 时窗口还占着 profile，禁止再 launch_persistent_context；
+        # CDP 附身模式不能自起第二个浏览器——在已附身的默认 context 开新页读回。
         if (not a.keep_open
                 and (readback is None or readback.outcome == "readback_error")):
             readback = _readback_verify(p, a, a.title, since_ms=started_ms,
-                                        snapshot_ids=snapshot_ids)
+                                        snapshot_ids=snapshot_ids,
+                                        attach_ctx=None if owned else ctx)
     # 结算：以读回对账为权威（四档），界面判定仅作旁证。
     outcome = readback.outcome if readback else "readback_error"
     if outcome == "verified":
@@ -1338,8 +1365,12 @@ def cmd_whoami(a) -> int:
     result = {"loggedIn": False, "name": "", "avatar": ""}
     try:
         with sync_playwright() as p:
-            ctx = _launch(p, headed=False, base=a.profile_base, proxy=_proxy(a.proxy, a.no_proxy))
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+            ctx, owned = browser_session.open_browser(
+                p, cdp_endpoint=browser_session.resolve_endpoint(a),
+                launch=lambda: _launch(p, headed=False, base=a.profile_base,
+                                       proxy=_proxy(a.proxy, a.no_proxy),
+                                       profile_dir=a.profile_dir))
+            page = browser_session.open_page(ctx, owned)
             try:
                 page.goto(HOME_URL, wait_until="domcontentloaded")
                 try:
@@ -1372,7 +1403,8 @@ def cmd_whoami(a) -> int:
                     except Exception:
                         pass
             finally:
-                ctx.close()
+                # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                browser_session.close_session(ctx, owned)
     except Exception as e:  # noqa: BLE001 — whoami 永远输出 JSON
         result["error"] = str(e)
     print(json.dumps(result, ensure_ascii=False))
@@ -1392,6 +1424,12 @@ def cmd_selftest(_a) -> int:
     except SystemExit:
         pass
     assert _profile_dir(None).name == PROFILE_NAME
+    # 账号参数化（browser_session）：--profile-dir / --cdp-endpoint 解析契约
+    browser_session.selftest_args()
+    assert browser_session.pick_profile(None, _profile_dir(None)) == _profile_dir(None), \
+        "未传 --profile-dir 默认=现状路由"
+    assert browser_session.pick_profile("~/pd", _profile_dir(None)) == Path.home() / "pd", \
+        "显式覆盖生效"
     assert _proxy(None, True) is None
     assert _proxy("http://x:1", False) == "http://x:1"
     lv = _plan_lines("video", "标题", "简介", ["/a.mp4"], ["热点"])
@@ -1439,7 +1477,7 @@ def cmd_selftest(_a) -> int:
     _src = _ins.getsource(_click_publish)
     assert "_wait_publish_button_ready" in _src and "pause_before_commit" in _src
     assert callable(_wait_publish_button_ready)
-    print("✅ selftest 通过（短信选择器 + 弹窗定位 + 墙判定 + 路径/代理/路由 + plan + 验证码文件协议 + 读回对账 + 发前快照 + 人类节奏 + 单次提交契约）")
+    print("✅ selftest 通过（短信选择器 + 弹窗定位 + 墙判定 + 路径/代理/路由 + 账号参数 profile-dir/cdp-endpoint + plan + 验证码文件协议 + 读回对账 + 发前快照 + 人类节奏 + 单次提交契约）")
     return 0
 
 
@@ -1451,6 +1489,7 @@ def main() -> int:
 
     def add_common(p):
         p.add_argument("--profile-base", help="登录态根目录（默认 ~/.easel-browser-profiles）")
+        browser_session.add_args(p, default_hint="~/.easel-browser-profiles/DouyinProfile")
         p.add_argument("--proxy", help="外网代理（默认取 env）")
         p.add_argument("--no-proxy", action="store_true", help="禁用代理")
 
@@ -1474,8 +1513,6 @@ def main() -> int:
     add_common(p)
     p.add_argument("--qr-out", help=f"二维码图片输出路径（默认 {DEFAULT_QR_OUT}）")
     p.add_argument("--status-file", help="登录状态 JSON 输出路径（供 Web 后端轮询）")
-    p.add_argument("--cdp", metavar="ENDPOINT",
-                   help="CDP 接管：连接用户已开的 Chrome（如 http://127.0.0.1:9222），不再自己启动浏览器")
     p.add_argument("--sms-code-file", help="短信验证码回填文件（默认 <qr目录>/douyin.code）")
     p.add_argument("--timeout", type=int, help="等待扫码超时秒数（默认 180）")
     p.add_argument("--headed", action="store_true", help="有头模式")

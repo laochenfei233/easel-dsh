@@ -37,6 +37,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import login_state  # noqa: E402
+import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
 import content_guard  # noqa: E402  出站内容安全闸门
 
 # --------------------------------------------------------------------------- #
@@ -127,6 +128,12 @@ def _abspaths(csv: str | None) -> list[str]:
 def _profile_dir(base: str | None) -> Path:
     root = Path(base).expanduser() if base else Path.home() / ".easel-browser-profiles"
     return root / PROFILE_NAME
+
+
+def _session_profile(a) -> Path:
+    """本命令实际使用的 profile 目录：--profile-dir 显式覆盖，否则现状默认路由（多账号用）。"""
+    return browser_session.pick_profile(getattr(a, "profile_dir", None),
+                                        _profile_dir(a.profile_base))
 
 
 def _cloak_executable() -> Path | None:
@@ -547,8 +554,8 @@ def _fill_and_submit(page, title, content, tags):
 # --------------------------------------------------------------------------- #
 # 命令
 # --------------------------------------------------------------------------- #
-def _launch(p, headed: bool, base: str | None, proxy: str | None):
-    profile = _profile_dir(base)
+def _launch(p, headed: bool, base: str | None, proxy: str | None, profile_dir: str | None = None):
+    profile = browser_session.pick_profile(profile_dir, _profile_dir(base))
     profile.mkdir(parents=True, exist_ok=True)
     args = list(LAUNCH_ARGS)
     kwargs = dict(headless=not headed,
@@ -644,11 +651,12 @@ def cmd_login(a) -> int:
     qr_out = Path(a.qr_out).expanduser() if a.qr_out else DEFAULT_QR_OUT
     timeout_s = a.timeout or 180
     sf = getattr(a, "status_file", None)
-    cdp = getattr(a, "cdp", None)
+    cdp = browser_session.resolve_endpoint(a)
+    lock = None
     login_state.write_status(sf, "starting", "正在启动…")
     if not cdp:
-        # CDP 模式接管的是用户自己开的浏览器：不碰 Easel 的持久 profile，也不加锁。
-        lock = _ProfileLock(_profile_dir(a.profile_base))
+        # 自起模式才碰 Easel 的持久 profile：加锁防并发双开；CDP 附身的是运行中实例，不碰 profile。
+        lock = _ProfileLock(_session_profile(a))
         try:
             lock.acquire(90)
         except TimeoutError:
@@ -658,17 +666,18 @@ def cmd_login(a) -> int:
     try:
         with sync_playwright() as p:
             try:
+                ctx, owned = browser_session.open_browser(
+                    p, cdp_endpoint=cdp,
+                    launch=lambda: _launch(p, headed=a.headed, base=a.profile_base,
+                                           proxy=_proxy(a.proxy, a.no_proxy),
+                                           profile_dir=a.profile_dir))
                 if cdp:
-                    browser = p.chromium.connect_over_cdp(cdp)
-                    ctx = browser.contexts[0] if browser.contexts else browser.new_context()
                     login_state.write_status(sf, "window_login",
                                              "已接管你的 Chrome——请在那个浏览器窗口里完成登录。")
-                else:
-                    ctx = _launch(p, headed=a.headed, base=a.profile_base, proxy=_proxy(a.proxy, a.no_proxy))
             except Exception as e:
                 login_state.write_status(sf, "error", "浏览器没能打开。请关闭弹窗，等 10 秒再点登录，不要连点。")
                 _die(f"启动浏览器失败：{e}", 1)
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+            page = browser_session.open_page(ctx, owned)
             try:
                 if a.headed:
                     login_state.write_status(
@@ -694,7 +703,7 @@ def cmd_login(a) -> int:
                         _die("小红书判定当前网络为风险 IP（安全限制 300012「IP存在风险，请切换可靠网络环境」）——"
                              "二维码在此环境无法弹出。解决：①用干净/家宽 IP 的代理 `--proxy socks5://...`；"
                              "②在正常网络的机器上 login 拿到登录态，再把持久化目录 "
-                             f"{_profile_dir(a.profile_base)} 整个拷到本机复用。", 4)
+                             f"{_session_profile(a)} 整个拷到本机复用。", 4)
                     try:
                         if _is_logged_in(page):
                             break
@@ -716,7 +725,7 @@ def cmd_login(a) -> int:
                         _die("小红书判定当前网络为风险 IP（安全限制 300012「IP存在风险，请切换可靠网络环境」）——"
                              "二维码在此环境无法弹出。解决：①用干净/家宽 IP 的代理 `--proxy socks5://...`；"
                              "②在正常网络的机器上 login 拿到登录态，再把持久化目录 "
-                             f"{_profile_dir(a.profile_base)} 整个拷到本机复用。", 4)
+                             f"{_session_profile(a)} 整个拷到本机复用。", 4)
                     if not a.headed:
                         login_state.write_status(sf, "error", "未找到登录二维码")
                         _die("未找到登录二维码（页面结构可能已变，检查 SELECTORS.qrcode），"
@@ -764,9 +773,11 @@ def cmd_login(a) -> int:
                       file=sys.stderr)
                 return 1
             finally:
-                ctx.close()
+                # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                browser_session.close_session(ctx, owned)
     finally:
-        lock.release()
+        if lock is not None:
+            lock.release()
 
 
 def _plan_lines(kind: str, title: str, content: str, media: list[str], tags: list[str]) -> list[str]:
@@ -832,15 +843,23 @@ def _publish(a, kind: str) -> int:
         from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
     except Exception as e:
         _die(f"需要 playwright：{e}", 3)
-    lock = _ProfileLock(_profile_dir(a.profile_base))
-    try:
-        lock.acquire(90)
-    except TimeoutError:
-        _die("小红书登录目录正被占用，请稍后再发")
+    cdp = browser_session.resolve_endpoint(a)
+    lock = None
+    if not cdp:
+        # 自起模式才锁 profile；CDP 附身的是运行中实例，不碰持久目录。
+        lock = _ProfileLock(_session_profile(a))
+        try:
+            lock.acquire(90)
+        except TimeoutError:
+            _die("小红书登录目录正被占用，请稍后再发")
     try:
         with sync_playwright() as p:
-            ctx = _launch(p, headed=a.headed, base=a.profile_base, proxy=_proxy(a.proxy, a.no_proxy))
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+            ctx, owned = browser_session.open_browser(
+                p, cdp_endpoint=cdp,
+                launch=lambda: _launch(p, headed=a.headed, base=a.profile_base,
+                                       proxy=_proxy(a.proxy, a.no_proxy),
+                                       profile_dir=a.profile_dir))
+            page = browser_session.open_page(ctx, owned)
             page.set_default_timeout(300000)
             try:
                 page.goto(PUBLISH_URL, wait_until="domcontentloaded")
@@ -868,9 +887,11 @@ def _publish(a, kind: str) -> int:
                 _die(f"步骤超时（选择器可能已失效，检查 SELECTORS）：{e}")
             finally:
                 if not a.keep_open:
-                    ctx.close()
+                    # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                    browser_session.close_session(ctx, owned)
     finally:
-        lock.release()
+        if lock is not None:
+            lock.release()
     # 发布成功 → 落统一内容日历（对话页自动记录；发布页由 web 设 AUTORECORD=0 跳过防重复）
     try:
         import calendar_ops
@@ -899,17 +920,25 @@ def cmd_whoami(a) -> int:
         print(json.dumps({"loggedIn": False, "name": "", "avatar": "", "error": f"playwright:{e}"}))
         return 0
     result = {"loggedIn": False, "name": "", "avatar": ""}
-    lock = _ProfileLock(_profile_dir(a.profile_base))
-    try:
-        lock.acquire(4)
-    except TimeoutError:
-        result["error"] = "profile-busy"
-        print(json.dumps(result, ensure_ascii=False))
-        return 0
+    cdp = browser_session.resolve_endpoint(a)
+    lock = None
+    if not cdp:
+        # 自起模式才与登录/发布共用 profile 锁；CDP 附身不碰持久目录。
+        lock = _ProfileLock(_session_profile(a))
+        try:
+            lock.acquire(4)
+        except TimeoutError:
+            result["error"] = "profile-busy"
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
     try:
         with sync_playwright() as p:
-            ctx = _launch(p, headed=False, base=a.profile_base, proxy=_proxy(a.proxy, a.no_proxy))
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+            ctx, owned = browser_session.open_browser(
+                p, cdp_endpoint=cdp,
+                launch=lambda: _launch(p, headed=False, base=a.profile_base,
+                                       proxy=_proxy(a.proxy, a.no_proxy),
+                                       profile_dir=a.profile_dir))
+            page = browser_session.open_page(ctx, owned)
             try:
                 page.goto(EXPLORE_URL, wait_until="domcontentloaded")
                 try:  # 等登录态元素出现（已登录会很快命中；未登录则短等后判定）
@@ -947,11 +976,13 @@ def cmd_whoami(a) -> int:
                         except Exception:
                             pass
             finally:
-                ctx.close()
+                # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                browser_session.close_session(ctx, owned)
     except Exception as e:  # noqa: BLE001 — whoami 永远输出 JSON，异常视作未登录
         result["error"] = str(e)
     finally:
-        lock.release()
+        if lock is not None:
+            lock.release()
     print(json.dumps(result, ensure_ascii=False))
     return 0
 
@@ -966,17 +997,25 @@ def cmd_dump_cookies(a) -> int:
         print(json.dumps({"loggedIn": False, "cookie": "", "count": 0, "error": f"playwright:{e}"}))
         return 0
     result = {"loggedIn": False, "cookie": "", "count": 0}
-    lock = _ProfileLock(_profile_dir(a.profile_base))
-    try:
-        lock.acquire(4)
-    except TimeoutError:
-        result["error"] = "profile-busy"
-        print(json.dumps(result, ensure_ascii=False))
-        return 0
+    cdp = browser_session.resolve_endpoint(a)
+    lock = None
+    if not cdp:
+        # 自起模式才与登录/发布/whoami 共用 profile 锁；CDP 附身不碰持久目录。
+        lock = _ProfileLock(_session_profile(a))
+        try:
+            lock.acquire(4)
+        except TimeoutError:
+            result["error"] = "profile-busy"
+            print(json.dumps(result, ensure_ascii=False))
+            return 0
     try:
         with sync_playwright() as p:
-            ctx = _launch(p, headed=False, base=a.profile_base, proxy=_proxy(a.proxy, a.no_proxy))
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+            ctx, owned = browser_session.open_browser(
+                p, cdp_endpoint=cdp,
+                launch=lambda: _launch(p, headed=False, base=a.profile_base,
+                                       proxy=_proxy(a.proxy, a.no_proxy),
+                                       profile_dir=a.profile_dir))
+            page = browser_session.open_page(ctx, owned)
             try:
                 page.goto(EXPLORE_URL, wait_until="domcontentloaded")
                 try:
@@ -990,11 +1029,13 @@ def cmd_dump_cookies(a) -> int:
                     result["count"] = len(parts)
                     result["loggedIn"] = bool(parts)
             finally:
-                ctx.close()
+                # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                browser_session.close_session(ctx, owned)
     except Exception as e:  # noqa: BLE001 — 永远输出 JSON，异常视作未登录
         result["error"] = str(e)
     finally:
-        lock.release()
+        if lock is not None:
+            lock.release()
     print(json.dumps(result, ensure_ascii=False))
     return 0
 
@@ -1021,6 +1062,18 @@ def cmd_selftest(_a) -> int:
     # profile 目录路由
     assert _profile_dir(None).name == PROFILE_NAME
     assert "cloak-research-profile" not in str(_profile_dir(None))
+    # 账号参数化（browser_session）：--profile-dir / --cdp-endpoint 解析契约
+    browser_session.selftest_args()
+
+    class _Args:
+        def __init__(self, **kw):
+            self.profile_base = None
+            self.profile_dir = kw.get("profile_dir")
+            self.cdp_endpoint = kw.get("cdp_endpoint")
+
+    assert _session_profile(_Args()) == _profile_dir(None), "未传 --profile-dir 默认=现状路由"
+    assert _session_profile(_Args(profile_dir="~/pd")) == Path.home() / "pd", "显式覆盖生效"
+
     cloak = _cloak_executable()
     assert cloak is None or cloak.is_file()
     import shutil
@@ -1050,7 +1103,7 @@ def cmd_selftest(_a) -> int:
     assert any("上传图文" in ln for ln in lines) and any("成功校验" in ln for ln in lines)
     lines_v = _plan_lines("video", "t", "c", ["/a.mp4"], [])
     assert any("上传视频" in ln for ln in lines_v)
-    print("✅ selftest 通过（标题算法 + 选择器字典 + 路径/代理/路由 + plan 渲染）")
+    print("✅ selftest 通过（标题算法 + 选择器字典 + 路径/代理/路由 + 账号参数 profile-dir/cdp-endpoint + plan 渲染）")
     return 0
 
 
@@ -1062,6 +1115,7 @@ def main() -> int:
 
     def add_common(p):
         p.add_argument("--profile-base", help="登录态根目录（默认 ~/.easel-browser-profiles）")
+        browser_session.add_args(p, default_hint="~/.easel-browser-profiles/XiaohongshuProfile")
         p.add_argument("--proxy", help="外网代理（默认取 env，小红书是外网需代理）")
         p.add_argument("--no-proxy", action="store_true", help="禁用代理")
 
@@ -1085,8 +1139,6 @@ def main() -> int:
     p.add_argument("--status-file", help="登录状态 JSON 输出路径（供 Web 后端轮询）")
     p.add_argument("--timeout", type=int, help="等待扫码超时秒数（默认 180）")
     p.add_argument("--headed", action="store_true", help="有头模式（本地有桌面时可窗口内扫）")
-    p.add_argument("--cdp", metavar="ENDPOINT",
-                   help="CDP 接管：连接用户已开的 Chrome（如 http://127.0.0.1:9222），不再自己启动浏览器")
     p.set_defaults(func=cmd_login)
 
     p = sub.add_parser("plan", help="发布步骤预览（离线）")

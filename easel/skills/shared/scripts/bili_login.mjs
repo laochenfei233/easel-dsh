@@ -35,6 +35,12 @@ const STATES = new Set(['starting', 'qr_ready', 'window_login', 'scanned', 'sms_
 const die = (msg, code = 1) => { console.error(`ERROR: ${msg}`); process.exit(code) }
 const sleep = (ms) => new Promise(r => setTimeout(r, ms))
 
+/** 生效的 cookie 文件路径：--cookie-file（新，多账号用）优先，兼容旧 --cookie，
+ *  缺省 = workspace 根 cookies.json（现状默认）。所有读/写点统一走这里。 */
+function cookiePath(a) {
+  return resolve(a.cookieFile ?? a.cookie ?? DEFAULT_COOKIE)
+}
+
 // ---------- 状态文件（login_state 协议：{state,message,qr,ts} 原子写） ----------
 
 async function writeStatus(sf, state, message = '', qr) {
@@ -175,7 +181,7 @@ async function writeCookie(data, cookieFile) {
 
 async function cmdLogin(a) {
   const qrOut = resolve(a.qrOut ?? DEFAULT_QR_OUT)
-  const cookieFile = resolve(a.cookie ?? DEFAULT_COOKIE)
+  const cookieFile = cookiePath(a)
   const sf = a.statusFile
   const timeoutS = a.timeout ?? 180
   await writeStatus(sf, 'starting')
@@ -235,7 +241,7 @@ async function api(url, cookie, timeoutMs = 15_000) {
 async function cmdWhoami(a) {
   // 真校验登录态 + 昵称/头像（调 B站 nav API），输出单行 JSON（永远 exit 0）。
   const result = { loggedIn: false, name: '', avatar: '' }
-  const cookieFile = resolve(a.cookie ?? DEFAULT_COOKIE)
+  const cookieFile = cookiePath(a)
   const [cookie] = await loadCookie(cookieFile)
   if (cookie) {
     try {
@@ -255,7 +261,7 @@ async function cmdWhoami(a) {
 
 async function cmdStats(a) {
   // 抓 B站创作数据（粉丝/关注/获赞/总播放/投稿数），输出单行 JSON（对齐 account_stats 结构）。
-  const cookieFile = resolve(a.cookie ?? DEFAULT_COOKIE)
+  const cookieFile = cookiePath(a)
   const [cookie, cookieMid] = await loadCookie(cookieFile)
   const r = {
     platform: 'bilibili', name: 'B站', nickname: '', loggedIn: false,
@@ -317,8 +323,8 @@ async function cmdStats(a) {
   return 0
 }
 
-async function cmdCheck() {
-  const ck = DEFAULT_COOKIE
+async function cmdCheck(a) {
+  const ck = cookiePath(a)
   console.log(`✅ 二维码库已内置（vendor/qrcode.mjs）`)
   console.log(`cookie：${existsSync(ck) ? '✅ 已存在 ' + ck : '未登录（login 扫码生成）'}`)
   return 0
@@ -344,7 +350,13 @@ async function cmdSelftest() {
   assert.ok((await stat(qp)).size > 100)
   await unlink(dirname(qp)).catch(() => {})
   assert.ok(STATES.has('success') && STATES.has('qr_ready'))
-  console.log('✅ selftest 通过（签名/排序 + cookie 格式 + 二维码渲染 + 状态机）')
+  // cookie 路径解析：默认 workspace 根 cookies.json；--cookie-file 覆盖；旧 --cookie 兼容；--cookie-file 优先
+  assert.equal(cookiePath({}), DEFAULT_COOKIE)
+  assert.equal(cookiePath(parseArgs(['login', '--cookie-file', '/tmp/c.json'])), resolve('/tmp/c.json'))
+  assert.equal(cookiePath(parseArgs(['login', '--cookie', '/tmp/old.json'])), resolve('/tmp/old.json'))
+  assert.equal(cookiePath(parseArgs(['login', '--cookie', '/tmp/old.json', '--cookie-file', '/tmp/new.json'])),
+               resolve('/tmp/new.json'), '--cookie-file 应优先于旧 --cookie')
+  console.log('✅ selftest 通过（签名/排序 + cookie 格式 + cookie 路径解析 + 二维码渲染 + 状态机）')
   return 0
 }
 
@@ -359,6 +371,7 @@ function parseArgs(argv) {
     if (arg === '--qr-out') a.qrOut = argv[++i]
     else if (arg === '--status-file') a.statusFile = argv[++i]
     else if (arg === '--cookie') a.cookie = argv[++i]
+    else if (arg === '--cookie-file') a.cookieFile = argv[++i]
     else if (arg === '--timeout') a.timeout = Number(argv[++i])
   }
   return a
@@ -368,7 +381,7 @@ const a = parseArgs(process.argv.slice(2))
 const handlers = { login: cmdLogin, whoami: cmdWhoami, stats: cmdStats, check: cmdCheck, selftest: cmdSelftest }
 const handler = handlers[a._]
 if (!handler) {
-  console.error('usage: node bili_login.mjs <login|whoami|stats|check|selftest> [--qr-out P] [--status-file P] [--cookie P] [--timeout S]')
+  console.error('usage: node bili_login.mjs <login|whoami|stats|check|selftest> [--qr-out P] [--status-file P] [--cookie-file P] [--cookie P] [--timeout S]')
   process.exit(1)
 }
 handler(a).then(code => { process.exitCode = code })

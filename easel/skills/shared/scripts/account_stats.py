@@ -19,6 +19,9 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 ANALYTICS_DIR = PROJECT_ROOT / "outputs" / "_analytics"
 # 分层保留：近 KEEP_FULL_DAYS 天全部变化一条不丢；90~DAILY_DAYS 天每天≤1条；更老每周≤1条。
@@ -373,34 +376,41 @@ def _platform_logged_in(page, cfg: dict) -> bool:
     return False
 
 
-def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) -> dict:
+def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None,
+            profile_dir: str | None = None, cdp_endpoint: str | None = None) -> dict:
     from playwright.sync_api import sync_playwright
     cfg = PLATFORMS[platform]
     r = {"nickname": "", "followers": None, "likes": None, "following": None,
          "posts": None, "metrics": [], "notes": [], "logged_in": True}
-    profile = _profile_dir(platform, base)
-    profile.mkdir(parents=True, exist_ok=True)
+    profile = browser_session.pick_profile(profile_dir, _profile_dir(platform, base))
     xhs_lock = None
-    if platform == "xiaohongshu":
-        # 同一个 XiaohongshuProfile 目录，xhs_publish.py 的登录/发布/whoami 都用 _ProfileLock
-        # 互斥（见其模块注释：并发打开会把内核打成 exit 21）；看数据这条路径也走同一个目录，
-        # 必须一起遵守，否则就是那个锁没堵住的后门。锁在起 playwright 之前拿，确保启动失败
-        # 也不会漏放（finally 包住整段，不只是 ctx 的生命周期）。
-        from xhs_publish import _launch as _xhs_launch, _clear_stale_chrome_locks, _ProfileLock
-        xhs_lock = _ProfileLock(profile)
-        xhs_lock.acquire(20)
+    if not cdp_endpoint:
+        # 自起模式才建/占持久 profile；CDP 附身的是运行中实例，不碰目录。
+        profile.mkdir(parents=True, exist_ok=True)
+        if platform == "xiaohongshu":
+            # 同一个 XiaohongshuProfile 目录，xhs_publish.py 的登录/发布/whoami 都用 _ProfileLock
+            # 互斥（见其模块注释：并发打开会把内核打成 exit 21）；看数据这条路径也走同一个目录，
+            # 必须一起遵守，否则就是那个锁没堵住的后门。锁在起 playwright 之前拿，确保启动失败
+            # 也不会漏放（finally 包住整段，不只是 ctx 的生命周期）。
+            from xhs_publish import _launch as _xhs_launch, _clear_stale_chrome_locks, _ProfileLock
+            xhs_lock = _ProfileLock(profile)
+            xhs_lock.acquire(20)
     try:
         with sync_playwright() as p:
-            if platform == "xiaohongshu":
+            if cdp_endpoint:
+                # CDP 附身运行中实例（账号直启的窗口）：登录态在实例里，不碰持久 profile。
+                ctx, owned = browser_session.open_browser(p, cdp_endpoint=cdp_endpoint, launch=None)
+            elif platform == "xiaohongshu":
                 # 与发布/登录共用 Cloak + 同一套启动参数；禁图版 Chromium 会把创作中心打回登录页。
+                # （_xhs_launch/_clear_stale_chrome_locks 已在上面拿锁时导入——能走到这里必然非 CDP。）
                 _clear_stale_chrome_locks(profile)
-                ctx = _xhs_launch(p, headed, base, proxy)
+                ctx, owned = _xhs_launch(p, headed, base, proxy, profile_dir=profile_dir), True
             else:
                 kwargs = dict(headless=not headed, locale="zh-CN", args=LAUNCH_ARGS)
                 if proxy:
                     kwargs["proxy"] = {"server": proxy}
-                ctx = p.chromium.launch_persistent_context(str(profile), **kwargs)
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+                ctx, owned = p.chromium.launch_persistent_context(str(profile), **kwargs), True
+            page = browser_session.open_page(ctx, owned)
             try:
                 page.goto(cfg["url"], wait_until="domcontentloaded", timeout=30000)
                 ov, d = cfg["overview"], cfg.get("overview_dir", "after")
@@ -473,7 +483,8 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
                 # 最新笔记放最后抓——小红书会跳转到笔记管理页，之后不再读首页
                 r["notes"] = _scrape_notes(platform, page, cfg)
             finally:
-                ctx.close()
+                # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                browser_session.close_session(ctx, owned)
     finally:
         if xhs_lock is not None:
             xhs_lock.release()
@@ -824,7 +835,8 @@ def cmd_fetch(a) -> int:
     except Exception as e:
         _die(f"需要 playwright：{e}", 3)
     disable = True if a.no_proxy else (False if a.proxy else None)
-    s = _scrape(a.platform, a.headed, a.profile_base, _proxy(a.platform, a.proxy, disable))
+    s = _scrape(a.platform, a.headed, a.profile_base, _proxy(a.platform, a.proxy, disable),
+                profile_dir=a.profile_dir, cdp_endpoint=browser_session.resolve_endpoint(a))
 
     now = int(time.time())
     snap = {"ts": now, "followers": s["followers"], "likes": s["likes"], "posts": s["posts"]}
@@ -934,6 +946,12 @@ def cmd_selftest(_a) -> int:
             assert c.get(f), f"{k} 缺 {f}"
         assert set(c["overview"]) >= {"followers", "likes"}
     assert _proxy("xiaohongshu", None, None) is None and _proxy("douyin", "http://x:1", False) == "http://x:1"
+    # 账号参数化（browser_session）：--profile-dir / --cdp-endpoint 解析契约
+    browser_session.selftest_args()
+    assert browser_session.pick_profile(None, _profile_dir("zhihu", None)) == _profile_dir("zhihu", None), \
+        "未传 --profile-dir 默认=现状路由"
+    assert browser_session.pick_profile("~/pd", _profile_dir("zhihu", None)) == Path.home() / "pd", \
+        "显式覆盖生效"
     # 接口 JSON 递归提取 note→token（可靠取 xhs 笔记 token）
     assert _extract_note_tokens({"d": {"notes": [{"note_id": "n1", "xsec_token": "t1"},
                                                  {"id": "n2", "xsecToken": "t2"}, {"noteId": "n3"}]}}) \
@@ -944,7 +962,7 @@ def cmd_selftest(_a) -> int:
     assert is_public_xhs_note({"title": "(无标题)"}) is False
     assert is_public_xhs_note({"title": "还没写完", "text": "草稿 编辑"}) is False
     assert is_public_xhs_note({"title": "有标题草稿", "href": "https://creator.xiaohongshu.com/publish/publish?id=1"}) is False
-    print("✅ selftest 通过（解析 + 概览分方向取数(修获赞bug) + 近7日环比 + 多窗口增长 + 配置/代理 + 接口token提取 + 排除草稿）")
+    print("✅ selftest 通过（解析 + 概览分方向取数(修获赞bug) + 近7日环比 + 多窗口增长 + 配置/代理 + 账号参数 profile-dir/cdp-endpoint + 接口token提取 + 排除草稿）")
     return 0
 
 
@@ -955,6 +973,7 @@ def main() -> int:
     pf = sub.add_parser("fetch", help="抓某平台账号数据 → JSON")
     pf.add_argument("--platform", required=True, help=f"平台：{', '.join(PLATFORMS)}")
     pf.add_argument("--profile-base", help="登录态根目录（默认 ~/.easel-browser-profiles）")
+    browser_session.add_args(pf, default_hint="~/.easel-browser-profiles/<平台>Profile")
     pf.add_argument("--proxy", help="外网代理（默认按平台：xhs 直连、其它走 env）")
     pf.add_argument("--no-proxy", action="store_true", help="强制直连")
     pf.add_argument("--headed", action="store_true", help="有头模式（首次校准）")
