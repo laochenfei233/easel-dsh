@@ -55,6 +55,14 @@
 
 !macro NSIS_HOOK_PREUNINSTALL
   !insertmacro EASEL_STOP_RUNTIME
+  ; Data is deleted only on explicit consent, and the stock section removes
+  ; %LOCALAPPDATA%\ai.easel.desktop — the data-root pointer — before
+  ; POSTUNINSTALL runs. Keep a copy now so a moved data root is still found.
+  ${If} $UpdateMode <> 1
+  ${AndIf} $DeleteAppDataCheckboxState = 1
+    InitPluginsDir
+    CopyFiles /SILENT "$LOCALAPPDATA\ai.easel.desktop\data-root.json" "$PLUGINSDIR\data-root.json"
+  ${EndIf}
 !macroend
 
 !macro NSIS_HOOK_POSTINSTALL
@@ -84,14 +92,16 @@
       InitPluginsDir
       FileOpen $0 "$PLUGINSDIR\remove-easel-data.ps1" w
       ; Links first: a junction must lose only its entry, never its target.
-      ; The data root comes from the bootstrap pointer the settings page wrote;
-      ; the Documents default and the v2/v3 legacy roots stay as fallbacks.
-      ; Recursive deletion is limited to directories carrying an Easel marker,
-      ; so a malformed pointer cannot turn this into a delete-anything tool.
+      ; The data root comes from the bootstrap pointer the settings page wrote
+      ; (or the copy PREUNINSTALL kept), with the Documents default and the
+      ; v2/v3 legacy roots as fallbacks. Recursive deletion is limited to
+      ; directories carrying an Easel marker, so a malformed pointer cannot
+      ; turn this into a delete-anything tool.
       FileWrite $0 '$$links = @()$\r$\n'
       FileWrite $0 '$$links += (Join-Path $$env:LOCALAPPDATA $\"Easel$\")$\r$\n'
       FileWrite $0 '$$links += (Join-Path $$env:USERPROFILE $\".easel$\")$\r$\n'
       FileWrite $0 '$$config = Join-Path (Join-Path $$env:LOCALAPPDATA $\"ai.easel.desktop$\") $\"data-root.json$\"$\r$\n'
+      FileWrite $0 'if (-not (Test-Path -LiteralPath $$config)) { $$config = $\"$PLUGINSDIR\data-root.json$\" }$\r$\n'
       FileWrite $0 '$$dataRoot = Join-Path ([Environment]::GetFolderPath($\"MyDocuments$\")) $\"Easel-dsh$\"$\r$\n'
       FileWrite $0 '$$previousRoot = $$null$\r$\n'
       FileWrite $0 'try { $$json = Get-Content -LiteralPath $$config -Raw -ErrorAction Stop | ConvertFrom-Json; if ($$json.dataRoot) { $$dataRoot = $$json.dataRoot }; if ($$json.previousRoot) { $$previousRoot = $$json.previousRoot } } catch { }$\r$\n'

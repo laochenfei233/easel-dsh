@@ -300,7 +300,10 @@ dsh-plugin-easel 客户端注册。内容：当前根、默认根、是否默认
   自行删除。
 - 删数据是显式选择：用卸载器确认页（第一页）自带的「Delete the application
   data」复选框，默认不勾；只有勾选且 `$UpdateMode <> 1` 才执行删除。被动/静默
-  卸载与 `/UPDATE` 会跳过该页，因此不会删数据（复选框状态为空按保留处理）。
+  卸载与 `/UPDATE` 会跳过该页，因此不会删数据（复选框状态为空按保留处理）。勾选
+  时标准模板会先删 `%LOCALAPPDATA%\ai.easel.desktop`（含数据根指针），所以
+  `PREUNINSTALL` 先把 `data-root.json` 复制到 `$PLUGINSDIR`，`POSTUNINSTALL`
+  再读这份副本，保证迁移过的数据根也能被找到。
 
 ### 路径长度
 
