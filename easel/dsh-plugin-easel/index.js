@@ -229,7 +229,7 @@ export class ApiError extends Error {
 const PROFILE_FILE_ORDER = ['identity.md', 'style.md', 'audience.md', 'platforms.md', 'preferences.md', 'memory.md']
 const PROTECTED_OUTPUTS = new Set(['_login', '_analytics', '_schedule.json', '_ideas.json',
   '_publish', '_publish.log', '_sessions', '_profile_build', '_debug', '_inbox',
-  '_caldav_config.json', '_caldav_cache.json'])
+  '_caldav_config.json', '_caldav_cache.json', '_accounts', '_accounts.json'])
 // outputs/ holds two kinds of data: the content library the workbench browses,
 // and host-owned state (stored cookies, login/SMS state, runner capability,
 // store files). The read routes must not turn the second kind into downloads.
@@ -237,13 +237,15 @@ const PROTECTED_OUTPUTS = new Set(['_login', '_analytics', '_schedule.json', '_i
 // legitimate reads, and the breakdown page reads `_deconstruct/<id>/*` files.
 const PROTECTED_READ_FILES = new Set([
   '_easel_api.json', '_ideas.json', '_schedule.json', '_radar_config.json', '_publish.log',
-  '_caldav_config.json', '_caldav_cache.json',
+  '_caldav_config.json', '_caldav_cache.json', '_accounts.json',
   '_deconstruct/cookies.json',
 ])
 const PROTECTED_READ_DIRS = new Set([
   '_login', '_publish', '_analytics', '_sessions', '_profile_build', '_debug', '_inbox',
   // 无下划线但仍然只由宿主写入：账号数据（analytics/wechat）与内容库同目录。
   'analytics', 'wechat',
+  // 账户注册表附属目录（per-account B站 cookie）。
+  '_accounts',
 ])
 const LOGIN_QR_FILE = /^_login\/[^/]+\.png$/
 

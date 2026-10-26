@@ -34,6 +34,14 @@ writeFileSync(join(root, 'outputs', 'demo-project', 'cover.png'), Buffer.from([0
 writeFileSync(join(root, 'outputs', 'demo-project', 'note.md'), 'hello', 'utf8')
 mkdirSync(join(root, 'outputs', '_login'), { recursive: true })
 
+// 多账户夹具：浏览器 profile 根注入 tmp（迁移探测不碰真实 home），
+// 预置三个 legacy profile 目录 → 升级迁移注册 xiaohongshu/kuaishou/douyin 默认账号。
+const browserProfiles = join(root, 'browser-profiles')
+process.env.EASEL_BROWSER_PROFILES = browserProfiles
+for (const legacy of ['XiaohongshuProfile', 'KuaishouProfile', 'DouyinProfile']) {
+  mkdirSync(join(browserProfiles, legacy), { recursive: true })
+}
+
 const call = (method, path, body, query = '') =>
   dispatchLocalApi(settings, method, path.split('/').filter(Boolean), new URLSearchParams(query),
     async () => body ?? {}, {}, ALL_ROUTES)
@@ -227,14 +235,14 @@ test('media route returns the file with its content type', async () => {
   assert.equal(media.headers['content-type'], 'image/png')
 })
 
-test('accounts and analytics platforms reflect the status/cookie files', async () => {
+test('accounts come from the registry; analytics platforms read the default account', async () => {
   const accounts = (await call('GET', 'accounts')).json
-  assert.equal(accounts.length, 7)
-  assert.equal(accounts[0].platform, 'xiaohongshu')
-  let bilibili = accounts.find(a => a.platform === 'bilibili')
-  assert.equal(bilibili.loggedIn, false)
+  assert.equal(accounts.length, 3)
+  assert.equal(accounts[0].id, 'xiaohongshu')
+  assert.equal(accounts[0].name, '小红书')
+  assert.equal(accounts[0].loggedIn, false)
   writeFileSync(join(root, 'cookies.json'), '{}', 'utf8')
-  bilibili = (await call('GET', 'accounts')).json.find(a => a.platform === 'bilibili')
+  const bilibili = (await call('GET', 'accounts')).json.find(a => a.platform === 'bilibili')
   assert.equal(bilibili.loggedIn, true)
   const platforms = (await call('GET', 'analytics/platforms')).json
   assert.equal(platforms.length, 7)
@@ -272,11 +280,15 @@ test('publish status and sms mirror the file protocol', async () => {
 })
 
 test('logout removes browser profile state; wechat-oa clears credentials locally', async () => {
+  writeFileSync(join(root, 'cookies.json'), '{}', 'utf8')
   writeFileSync(join(root, 'outputs', '_login', 'bilibili.json'), '{}', 'utf8')
   const result = await call('POST', 'logout/bilibili')
   assert.ok(result.json.deleted.includes('cookies.json'))
   assert.ok(result.json.deleted.includes('bilibili.json'))
   assert.ok(!existsSync(join(root, 'cookies.json')))
+  mkdirSync(join(root, 'skills', 'openclaw', 'skill-wechat-publisher'), { recursive: true })
+  writeFileSync(join(root, 'skills', 'openclaw', 'skill-wechat-publisher', 'wechat-publisher.yaml'),
+    "default: 'web'\naccounts:\n  web:\n    name: '我的号'\n", 'utf8')
   const wx = await call('POST', 'logout/wechat-oa')
   assert.equal(wx.json.ok, true)
   assert.ok(wx.json.deleted.includes('wechat-publisher.yaml:accounts.web'))

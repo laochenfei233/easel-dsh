@@ -3,57 +3,74 @@
 // fleet can be enabled, fail and be reasoned about independently. The route table
 // registers into the core plugin's easelApi service; shared helpers are imported
 // from the core module (no cycle: core never imports this file).
-import { createReadStream, existsSync, closeSync, mkdirSync, openSync } from 'node:fs'
+import { createReadStream, existsSync, closeSync, mkdirSync, openSync, readdirSync } from 'node:fs'
 import { appendFile, mkdir, readFile, readdir, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
+import net from 'node:net'
 import { basename, dirname, extname, join, relative, resolve, sep } from 'node:path'
 import { homedir } from 'node:os'
 import { randomBytes } from 'node:crypto'
+import { createAccount, loadAccounts, resolveAccount, saveAccounts, validAccountName } from '../accounts.js'
 import {
   ANALYTICS_PLATFORMS, ApiError, IMAGE_EXTS, LOGIN_RUNNERS, SCHEDULE_FILE, VIDEO_EXTS,
   isDirectory, isFile, pathStat,
   readEnvFile, readJsonFile, readRadarConfig, readStoreList, writeJsonFile,
 } from '../../index.js'
 
-async function accountLoggedIn(settings, platform, cfg) {
+const LOGIN_URLS = {
+  xiaohongshu: 'https://creator.xiaohongshu.com',
+  douyin: 'https://creator.douyin.com',
+  kuaishou: 'https://www.kuaishou.com',
+  'weixin-channels': 'https://channels.weixin.qq.com',
+  zhihu: 'https://www.zhihu.com',
+  bilibili: 'https://www.bilibili.com',
+}
+
+async function accountLoggedIn(settings, account, cfg) {
   const root = settings.projectRoot
-  if (cfg.backend === 'biliup') return existsSync(join(root, 'cookies.json'))
+  if (cfg.backend === 'biliup') return existsSync(accountCookieFile(root, account))
   if (cfg.backend === 'wechat-oa') {
-    // mp 后台会话优先；AppID 凭证兜底（B2 起宿主半直读凭证 YAML）。
+    // mp 后台会话优先；AppID 凭证兜底（B2 起宿主半直读凭证 YAML）。公众号 v1 单账号。
     const mp = await readJsonFile(join(root, 'outputs', '_login', 'wechat-oa-mp.json'), null)
     if (mp !== null && typeof mp === 'object' && mp.state === 'success') return true
     return wechatHasCredentials(settings)
   }
-  const status = await readJsonFile(join(root, 'outputs', '_login', `${platform}.json`), null)
+  const status = await readJsonFile(join(root, 'outputs', '_login', `${account.id}.json`), null)
   return status !== null && typeof status === 'object' && status.state === 'success'
 }
 
 async function apiAccounts(c) {
+  const registry = await loadRegistry(c.settings)
   const result = []
-  for (const [platform, cfg] of Object.entries(LOGIN_RUNNERS)) {
+  for (const account of registry.accounts) {
+    const cfg = LOGIN_RUNNERS[account.platform]
+    if (cfg === undefined) continue
     result.push({
-      platform,
-      name: cfg.name,
+      id: account.id,
+      platform: account.platform,
+      name: account.name,
+      persona: account.persona ?? '',
       backend: cfg.backend,
-      supported: cfg.backend !== 'unsupported',
-      loggedIn: await accountLoggedIn(c.settings, platform, cfg),
-      note: '',
+      profileDir: account.profileDir ?? '',
+      loggedIn: await accountLoggedIn(c.settings, account, cfg),
+      direct: await accountCdpEndpoint(c.settings, account) !== '',
     })
   }
   return { json: result }
 }
 
 async function apiAnalyticsPlatforms(c) {
+  const registry = await loadRegistry(c.settings)
   const result = []
   for (const [platform, cfg] of Object.entries(LOGIN_RUNNERS)) {
     if (!ANALYTICS_PLATFORMS.has(platform)) continue
-    result.push({ platform, name: cfg.name, loggedIn: await accountLoggedIn(c.settings, platform, cfg) })
+    const account = resolveAccount(registry, platform, '')
+    result.push({ platform, name: cfg.name, loggedIn: account !== null && await accountLoggedIn(c.settings, account, cfg) })
   }
   return { json: result }
 }
 
-async function writeSmsCode(c, subdir, prefix) {
-  const body = await c.body()
+async function writeSmsCode(c, subdir, prefix, body) {
   const code = String(body?.code ?? '').replace(/\D/g, '')
   if (code.length < 4 || code.length > 8) throw new ApiError(400, '验证码应为 4-8 位数字')
   const dir = join(c.settings.projectRoot, 'outputs', subdir)
@@ -63,38 +80,49 @@ async function writeSmsCode(c, subdir, prefix) {
 }
 
 async function apiLoginSms(c) {
-  if (!(c.params.p in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
-  return writeSmsCode(c, '_login', c.params.p)
+  const platform = c.params.p
+  if (!(platform in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
+  const body = await c.body()
+  const registry = await loadRegistry(c.settings)
+  const account = resolveAccount(registry, platform, typeof body?.account === 'string' ? body.account : '')
+  if (account === null) throw new ApiError(400, '该平台还没有账号，请先登录一次')
+  return writeSmsCode(c, '_login', account.id, body)
 }
 
 async function apiPublishStatus(c) {
   const platform = c.params.p
   if (!(platform in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
-  const raw = await readJsonFile(join(c.settings.projectRoot, 'outputs', '_publish', `${platform}.json`), null)
+  const registry = await loadRegistry(c.settings)
+  const account = resolveAccount(registry, platform, c.query.get('account') ?? '')
+  const key = account !== null ? account.id : platform
+  const raw = await readJsonFile(join(c.settings.projectRoot, 'outputs', '_publish', `${key}.json`), null)
   const state = raw !== null && typeof raw === 'object' && typeof raw.state === 'string' ? raw.state : 'unknown'
   const message = raw !== null && typeof raw === 'object' && typeof raw.message === 'string' ? raw.message : ''
   return { json: { mode: 'publish', state, message } }
 }
 
 async function apiPublishSms(c) {
-  if (!(c.params.p in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
-  return writeSmsCode(c, '_publish', c.params.p)
+  const platform = c.params.p
+  if (!(platform in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
+  const body = await c.body()
+  const registry = await loadRegistry(c.settings)
+  const account = resolveAccount(registry, platform, typeof body?.account === 'string' ? body.account : '')
+  if (account === null) throw new ApiError(400, '该平台还没有账号，请先登录一次')
+  return writeSmsCode(c, '_publish', account.id, body)
 }
 
-async function apiLogout(c) {
-  const platform = c.params.p
-  const cfg = LOGIN_RUNNERS[platform]
-  if (cfg === undefined) throw new ApiError(404, '未知平台')
+/** 单账号登出清理：杀直启实例、删 profile/cookie、删登录标记。返回删除清单。 */
+async function logoutAccountFiles(settings, account, cfg) {
   if (cfg.backend === 'wechat-oa') {
-    // 清 AppID 凭证 + 停 mp 登录进程 + 删标记/二维码/日志 + 删 mp 浏览器会话。
+    // 清 AppID 凭证 + 停 mp 登录进程 + 删标记/二维码/日志 + 删 mp 浏览器会话（公众号 v1 单账号）。
     const deleted = []
-    await wechatClearCredentials(c.settings)
+    await wechatClearCredentials(settings)
     deleted.push('wechat-publisher.yaml:accounts.web')
     const mpProc = loginProcesses.get('wechat-oa-mp')
     if (mpProc !== undefined && mpProc.exitCode === null) {
       try { mpProc.kill() } catch { /* 已死 */ }
     }
-    const loginDir = join(c.settings.projectRoot, 'outputs', '_login')
+    const loginDir = join(settings.projectRoot, 'outputs', '_login')
     for (const name of ['wechat-oa.json', 'wechat-oa.png', 'wechat-oa-mp.json', 'wechat-oa-mp.png', 'wechat-oa-mp.log']) {
       try {
         const file = join(loginDir, name)
@@ -110,35 +138,55 @@ async function apiLogout(c) {
       await rm(mpdir, { recursive: true, force: true })
       deleted.push('WeixinMpProfile')
     }
-    clearWhoamiCache(platform)
-    return { json: { ok: true, deleted } }
+    clearWhoamiCache(account.id)
+    return deleted
   }
   const deleted = []
-  if (cfg.profile !== undefined) {
-    const profilesRoot = resolve(join(homedir(), '.easel-browser-profiles'))
-    const pdir = resolve(profilesRoot, cfg.profile)
+  const inst = directInstances.get(account.id)
+  if (inst !== undefined && inst.pid > 0) {
+    directInstances.delete(account.id)
+    // 浏览器是 detached 真进程，必须 taskkill 整树；进程已死时安静忽略。
+    await runCapture(['taskkill', '/PID', String(inst.pid), '/T', '/F'], { timeout: 10_000 })
+  }
+  const profileName = account.profileDir || cfg.profile
+  if (profileName !== undefined) {
+    const profilesRoot = resolve(BROWSER_PROFILES())
+    const pdir = resolve(profilesRoot, profileName)
     if (pdir.startsWith(profilesRoot + sep) && await isDirectory(pdir)) {
       await rm(pdir, { recursive: true, force: true })
-      deleted.push(cfg.profile)
+      deleted.push(profileName)
     }
   }
   if (cfg.backend === 'biliup') {
-    const cookies = join(c.settings.projectRoot, 'cookies.json')
+    const cookies = accountCookieFile(settings.projectRoot, account)
     if (existsSync(cookies)) {
       await unlink(cookies)
-      deleted.push('cookies.json')
+      deleted.push(account.cookieFile || 'cookies.json')
     }
   }
-  const loginDir = join(c.settings.projectRoot, 'outputs', '_login')
+  const loginDir = join(settings.projectRoot, 'outputs', '_login')
   for (const suffix of ['.json', '.png', '-me.png', '.code']) {
-    const file = join(loginDir, `${platform}${suffix}`)
+    const file = join(loginDir, `${account.id}${suffix}`)
     try {
       if (await isFile(file)) {
         await unlink(file)
-        deleted.push(`${platform}${suffix}`)
+        deleted.push(`${account.id}${suffix}`)
       }
     } catch { /* 单个文件删不掉不挡其余 */ }
   }
+  clearWhoamiCache(account.id)
+  return deleted
+}
+
+async function apiLogout(c) {
+  const platform = c.params.p
+  const cfg = LOGIN_RUNNERS[platform]
+  if (cfg === undefined) throw new ApiError(404, '未知平台')
+  const body = await c.body().catch(() => ({}))
+  const registry = await loadRegistry(c.settings)
+  const account = resolveAccount(registry, platform, typeof body?.account === 'string' ? body.account : '')
+  if (account === null) throw new ApiError(404, '该平台还没有可登出的账号')
+  const deleted = await logoutAccountFiles(c.settings, account, cfg)
   return { json: { ok: true, deleted } }
 }
 
@@ -155,9 +203,99 @@ async function apiLogout(c) {
 // ═══════════════════════════════════════════════════════════════════════
 
 export const SHARED_SCRIPTS = settings => join(settings.projectRoot, 'skills', 'shared', 'scripts')
-const BROWSER_PROFILES = () => join(homedir(), '.easel-browser-profiles')
+// 浏览器 profile 根：EASEL_BROWSER_PROFILES 覆盖（测试注入 fixture / 未来壳层重定位），默认家目录。
+const BROWSER_PROFILES = () => process.env.EASEL_BROWSER_PROFILES || join(homedir(), '.easel-browser-profiles')
+/** 注册表加载统一走这里：浏览器 profile 根与宿主同源，迁移探测不吃测试机真实 home。 */
+export const loadRegistry = settings => loadAccounts(settings.projectRoot, { browserProfilesDir: BROWSER_PROFILES() })
 const WECHAT_SKILL_DIR = root => join(root, 'skills', 'openclaw', 'skill-wechat-publisher')
 const WECHAT_SKILL_SCRIPTS = root => join(WECHAT_SKILL_DIR(root), 'scripts')
+
+// ---- 多账户：注册表解析 + 账号直启 CDP 实例 ----
+// 注册表 outputs/_accounts.json（lib/accounts.js）。默认账号 id = 平台 key，所以
+// legacy 的 _login/<platform>.json、_publish/<platform>.json 天然就是默认账号的文件，
+// 升级零迁移。直启实例：真实 Chrome 直启（非 Playwright 托管）+ 账号 profile + CDP 端口。
+
+/** 账号在跑的直启实例：accountId → { port, pid }；宿主重启后从登录标记里的 port 恢复。 */
+const directInstances = new Map()
+/** 直启端口探测失败的短负缓存（端口 → ts）：关掉的窗口不反复拖着 0.7s 超时。 */
+const cdpProbeFailAt = new Map()
+
+/** B站账号的 biliup cookie 路径：注册表 cookieFile，缺省根 cookies.json。 */
+function accountCookieFile(root, account) {
+  return account.cookieFile ? join(root, account.cookieFile) : join(root, 'cookies.json')
+}
+
+async function cdpAlive(port) {
+  const failedAt = cdpProbeFailAt.get(port)
+  if (failedAt !== undefined && Date.now() - failedAt < 5000) return false
+  try {
+    const res = await fetch(`http://127.0.0.1:${port}/json/version`, { signal: AbortSignal.timeout(700) })
+    if (res.ok) {
+      cdpProbeFailAt.delete(port)
+      return true
+    }
+  } catch { /* 端口没人听 */ }
+  cdpProbeFailAt.set(port, Date.now())
+  return false
+}
+
+/** 账号直启实例的 CDP 端点；内存表没有时从登录标记恢复（宿主重启后窗口可能还开着）。 */
+async function accountCdpEndpoint(settings, account) {
+  const inst = directInstances.get(account.id)
+  if (inst !== undefined) {
+    if (await cdpAlive(inst.port)) return `http://127.0.0.1:${inst.port}`
+    directInstances.delete(account.id)
+  }
+  const raw = await readJsonFile(join(settings.projectRoot, 'outputs', '_login', `${account.id}.json`), null)
+  const port = raw !== null && typeof raw === 'object' ? Number(raw.port) : NaN
+  if (Number.isInteger(port) && port > 0 && await cdpAlive(port)) {
+    directInstances.set(account.id, { port, pid: Number(raw.pid) || 0 })
+    return `http://127.0.0.1:${port}`
+  }
+  return ''
+}
+
+/** 目标账号的浏览器定位参数：直启实例活着 → 附身（用户可插手验证码）；否则用自己的 profile 无头跑。 */
+export async function accountBrowserArgs(settings, account) {
+  const endpoint = await accountCdpEndpoint(settings, account)
+  if (endpoint) return ['--cdp-endpoint', endpoint]
+  if (account.profileDir) return ['--profile-dir', join(BROWSER_PROFILES(), account.profileDir)]
+  return []
+}
+
+/** 直启器浏览器发现：Playwright 自带 Chromium → 系统 Chrome → Edge。 */
+function findBrowserExe() {
+  const candidates = []
+  const local = process.env.LOCALAPPDATA
+  if (local) {
+    try {
+      for (const dir of readdirSync(join(local, 'ms-playwright')).sort().reverse()) {
+        if (!dir.startsWith('chromium-')) continue
+        for (const sub of ['chrome-win64', 'chrome-win']) {
+          candidates.push(join(local, 'ms-playwright', dir, sub, 'chrome.exe'))
+        }
+      }
+    } catch { /* 没有 playwright 浏览器目录 */ }
+  }
+  candidates.push(
+    'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
+    'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
+  )
+  return candidates.find(path => { try { return existsSync(path) } catch { return false } }) ?? ''
+}
+
+function freePort() {
+  return new Promise((resolvePort, rejectPort) => {
+    const server = net.createServer()
+    server.listen(0, '127.0.0.1', () => {
+      const { port } = server.address()
+      server.close(() => resolvePort(port))
+    })
+    server.on('error', rejectPort)
+  })
+}
 
 /** Live login/publish runner processes: platform key → ChildProcess. */
 const loginProcesses = new Map()
@@ -228,15 +366,15 @@ export function runCapture(cmd, { cwd, env, timeout = 60_000 } = {}) {
   })
 }
 
-/** Spawn a long-running login runner with stdout/stderr appended to its log file. */
-function spawnRunner(settings, platform, cmd, env) {
+/** Spawn a long-running login runner with stdout/stderr appended to its log file. key = 账号 id 或 wechat-oa-mp。 */
+function spawnRunner(settings, key, cmd, env) {
   const loginDir = join(settings.projectRoot, 'outputs', '_login')
   mkdirSync(loginDir, { recursive: true })
-  const fd = openSync(join(loginDir, `${platform}.log`), 'a')
+  const fd = openSync(join(loginDir, `${key}.log`), 'a')
   const child = spawn(cmd[0], cmd.slice(1), { cwd: settings.projectRoot, env, stdio: ['ignore', fd, fd], windowsHide: true })
   closeSync(fd)
-  loginProcesses.set(platform, child)
-  child.on('exit', () => { if (loginProcesses.get(platform) === child) loginProcesses.delete(platform) })
+  loginProcesses.set(key, child)
+  child.on('exit', () => { if (loginProcesses.get(key) === child) loginProcesses.delete(key) })
   return child
 }
 
@@ -244,11 +382,11 @@ function clearWhoamiCache(platform) {
   whoamiCache.delete(platform)
 }
 
-/** 登录标记 outputs/_login/<p>.json（与 login_state.write_status 同格式，原子写）。 */
-async function writeLoginMarker(settings, platform, state, message = '') {
+/** 登录标记 outputs/_login/<key>.json（与 login_state.write_status 同格式，原子写）；extra 带直启 port/pid。 */
+async function writeLoginMarker(settings, key, state, message = '', extra = {}) {
   const dir = join(settings.projectRoot, 'outputs', '_login')
   await mkdir(dir, { recursive: true })
-  await writeJsonFile(join(dir, `${platform}.json`), { state, message, qr: '', ts: Math.floor(Date.now() / 1000) })
+  await writeJsonFile(join(dir, `${key}.json`), { state, message, qr: '', ts: Math.floor(Date.now() / 1000), ...extra })
 }
 
 async function loginStatusData(settings, platform) {
@@ -276,14 +414,82 @@ async function loginStatusData(settings, platform) {
 }
 
 async function apiLoginStatus(c) {
-  if (!(c.params.p in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
-  const s = await loginStatusData(c.settings, c.params.p)
-  if (s.state === 'success') clearWhoamiCache(c.params.p)
-  return { json: { mode: 'qr', ...s } }
+  const platform = c.params.p
+  if (!(platform in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
+  const registry = await loadRegistry(c.settings)
+  const account = resolveAccount(registry, platform, c.query.get('account') ?? '')
+  if (account === null) return { json: { mode: 'qr', state: 'unknown', message: '', qr: '', qrTs: 0 } }
+  const s = await loginStatusData(c.settings, account.id)
+  if (s.state === 'success') clearWhoamiCache(account.id)
+  const direct = await accountCdpEndpoint(c.settings, account)
+  return { json: { mode: direct !== '' ? 'direct' : 'qr', ...s, direct: direct !== '' } }
 }
 
 const LOGIN_WAIT_STATES = new Set(['window_login', 'qr_ready', 'success', 'error', 'expired'])
 const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms) })
+
+/** 登录目标账号解析：显式 account id → 必须存在；否则平台默认账号；一个都没有 → 现场建号。 */
+async function ensureLoginAccount(settings, platform, body) {
+  const registry = await loadRegistry(settings)
+  const wanted = typeof body?.account === 'string' ? body.account.trim() : ''
+  if (wanted) {
+    const found = resolveAccount(registry, platform, wanted)
+    if (found === null) throw new ApiError(404, `账号「${wanted}」不存在`)
+    return { registry, account: found }
+  }
+  const fallback = resolveAccount(registry, platform, '')
+  if (fallback !== null) return { registry, account: fallback }
+  if (platform === 'wechat-oa') throw new ApiError(400, '公众号暂只支持一个账号')
+  const cfg = LOGIN_RUNNERS[platform]
+  const name = typeof body?.name === 'string' && body.name.trim() ? body.name.trim() : cfg.name
+  const account = createAccount(registry, platform, name)
+  await saveAccounts(settings.projectRoot, registry)
+  return { registry, account }
+}
+
+/** 直启窗口登录：真实 Chrome 直启（非 Playwright 托管）+ 账号 profile + CDP 端口，用户在窗口里人工登录。
+ * 窗口保持打开：后续 whoami/发布经 --cdp-endpoint 附身同一实例，用户可随时插手。 */
+async function directLoginStart(c, registry, account) {
+  const cfg = LOGIN_RUNNERS[account.platform]
+  if (cfg.backend === 'biliup') throw new ApiError(400, 'B站走 TV 端扫码，不支持直启窗口')
+  if (cfg.backend === 'wechat-oa') throw new ApiError(400, '公众号走后台扫码/凭证，不支持直启窗口')
+  const existing = await accountCdpEndpoint(c.settings, account)
+  if (existing) {
+    return { json: { mode: 'direct', state: 'window-open', message: '登录窗口已开着：请在窗口里完成登录后点「校验登录态」' } }
+  }
+  const exe = findBrowserExe()
+  if (!exe) throw new ApiError(500, '未找到可用的 Chrome/Chromium/Edge，无法打开登录窗口')
+  if (!account.profileDir) {
+    account.profileDir = cfg.profile ?? `${account.platform}__${account.id}`
+    await saveAccounts(c.settings.projectRoot, registry)
+  }
+  const loginDir = join(c.settings.projectRoot, 'outputs', '_login')
+  await mkdir(loginDir, { recursive: true })
+  const port = await freePort()
+  const profilePath = join(BROWSER_PROFILES(), account.profileDir)
+  await mkdir(profilePath, { recursive: true })
+  const fd = openSync(join(loginDir, `${account.id}.log`), 'a')
+  const child = spawn(exe, [
+    `--remote-debugging-port=${port}`,
+    '--remote-allow-origins=*',
+    `--user-data-dir=${profilePath}`,
+    '--no-first-run', '--no-default-browser-check', '--no-sandbox', '--disable-dev-shm-usage',
+    LOGIN_URLS[account.platform] ?? 'about:blank',
+  ], { detached: true, stdio: ['ignore', fd, fd], windowsHide: false })
+  closeSync(fd)
+  child.unref()
+  directInstances.set(account.id, { port, pid: child.pid })
+  await writeLoginMarker(c.settings, account.id, 'window-open', '正在打开登录窗口…', { port, pid: child.pid })
+  for (let i = 0; i < 30; i++) {
+    await sleep(400)
+    if (await cdpAlive(port)) {
+      return { json: { mode: 'direct', state: 'window-open', message: '请在打开的窗口中登录，完成后点「校验登录态」' } }
+    }
+  }
+  directInstances.delete(account.id)
+  await writeLoginMarker(c.settings, account.id, 'error', `浏览器窗口未能启动，请查看 outputs/_login/${account.id}.log`)
+  throw new ApiError(502, `浏览器窗口未能启动，请查看 outputs/_login/${account.id}.log`)
+}
 
 async function apiLoginStart(c) {
   const platform = c.params.p
@@ -294,43 +500,43 @@ async function apiLoginStart(c) {
     return { json: { mode: 'credentials', configured: await wechatHasCredentials(c.settings), message: '微信公众号请填写 AppID / AppSecret' } }
   }
   const body = await c.body()
-  let mode = typeof body?.mode === 'string' && ['qr', 'manual', 'cdp'].includes(body.mode) ? body.mode : 'qr'
-  const radar = await readRadarConfig(c.settings)
-  if (mode === 'cdp' && cfg.backend === 'biliup') throw new ApiError(400, 'B站走 TV 端扫码 API，不支持 CDP/手动窗口模式')
+  const mode = typeof body?.mode === 'string' ? body.mode : 'qr'
+  if (mode === 'cdp' || mode === 'manual') {
+    throw new ApiError(400, '登录模式已改为「扫码」和「直启窗口」（原 CDP 接管/托管窗口已下线，直启窗口见 direct）')
+  }
+  if (mode !== 'qr' && mode !== 'direct') throw new ApiError(400, `未知登录模式 ${mode}`)
+  const { registry, account } = await ensureLoginAccount(c.settings, platform, body)
   const loginDir = join(c.settings.projectRoot, 'outputs', '_login')
   await mkdir(loginDir, { recursive: true })
-  for (const name of [`${platform}.png`, `${platform}.json`]) {
-    try { await unlink(join(loginDir, name)) } catch { /* 本来就不在 */ }
+  for (const suffix of ['.png', '.json', '.code']) {
+    try { await unlink(join(loginDir, `${account.id}${suffix}`)) } catch { /* 本来就不在 */ }
   }
-  const modeArgs = mode === 'manual' ? ['--headed'] : mode === 'cdp' ? ['--cdp', radar.cdpEndpoint] : []
+  if (mode === 'direct') return directLoginStart(c, registry, account)
+  const live = await accountCdpEndpoint(c.settings, account)
+  if (live) throw new ApiError(409, '该账号的登录窗口还开着：请在窗口里完成登录后点「校验登录态」，或先关掉窗口再扫码')
   const py = c.settings.python
   const scripts = SHARED_SCRIPTS(c.settings)
   const timeout = 240
   let cmd
   if (cfg.backend === 'xhs') {
-    cmd = [py, join(scripts, 'xhs_publish.py'), 'login', '--no-proxy', '--qr-out', join(loginDir, `${platform}.png`), '--status-file', join(loginDir, `${platform}.json`), '--timeout', String(timeout)]
+    cmd = [py, join(scripts, 'xhs_publish.py'), 'login', '--no-proxy', '--qr-out', join(loginDir, `${account.id}.png`), '--status-file', join(loginDir, `${account.id}.json`), '--timeout', String(timeout)]
   } else if (cfg.backend === 'biliup') {
-    // B站：TV 端扫码登录 API 生成二维码 + 写 biliup cookie（biliup login 需真终端）。
-    cmd = [process.execPath, join(scripts, 'bili_login.mjs'), 'login', '--qr-out', join(loginDir, `${platform}.png`), '--status-file', join(loginDir, `${platform}.json`), '--cookie', join(c.settings.projectRoot, 'cookies.json'), '--timeout', String(timeout)]
+    // B站：TV 端扫码登录 API 生成二维码 + 写账号 cookie（biliup login 需真终端）。
+    cmd = [process.execPath, join(scripts, 'bili_login.mjs'), 'login', '--qr-out', join(loginDir, `${account.id}.png`), '--status-file', join(loginDir, `${account.id}.json`), '--cookie', accountCookieFile(c.settings.projectRoot, account), '--timeout', String(timeout)]
   } else if (cfg.backend === 'douyin') {
-    try { await unlink(join(loginDir, `${platform}.code`)) } catch { /* 无旧码 */ }
-    cmd = [py, join(scripts, 'douyin_publish.py'), 'login', '--qr-out', join(loginDir, `${platform}.png`), '--status-file', join(loginDir, `${platform}.json`), '--sms-code-file', join(loginDir, `${platform}.code`), '--timeout', String(timeout)]
+    cmd = [py, join(scripts, 'douyin_publish.py'), 'login', '--qr-out', join(loginDir, `${account.id}.png`), '--status-file', join(loginDir, `${account.id}.json`), '--sms-code-file', join(loginDir, `${account.id}.code`), '--timeout', String(timeout)]
   } else {
-    cmd = [py, join(scripts, 'web_publisher.py'), 'login-qr', '--platform', cfg.wp, '--qr-out', join(loginDir, `${platform}.png`), '--status-file', join(loginDir, `${platform}.json`), '--timeout', String(timeout)]
+    cmd = [py, join(scripts, 'web_publisher.py'), 'login-qr', '--platform', cfg.wp, '--qr-out', join(loginDir, `${account.id}.png`), '--status-file', join(loginDir, `${account.id}.json`), '--timeout', String(timeout)]
   }
-  cmd.push(...modeArgs)
-  if (mode !== 'qr' && cfg.backend !== 'biliup') {
-    // 手动/CDP 模式必须真开窗口或接管真浏览器：撤掉 QR 模式的 --no-proxy。
-    cmd = cmd.filter(arg => arg !== '--no-proxy')
-  }
-  clearWhoamiCache(platform)
-  spawnRunner(c.settings, platform, cmd, await runnerEnv(c.settings))
+  if (account.profileDir) cmd.push('--profile-dir', join(BROWSER_PROFILES(), account.profileDir))
+  clearWhoamiCache(account.id)
+  spawnRunner(c.settings, account.id, cmd, await runnerEnv(c.settings))
   for (let i = 0; i < 50; i++) {
     await sleep(500)
-    const s = await loginStatusData(c.settings, platform)
+    const s = await loginStatusData(c.settings, account.id)
     if (s.qr || LOGIN_WAIT_STATES.has(s.state)) return { json: { mode, ...s } }
   }
-  return { json: { mode, ...(await loginStatusData(c.settings, platform)) } }
+  return { json: { mode, ...(await loginStatusData(c.settings, account.id)) } }
 }
 
 // ---- whoami（真校验，TTL 缓存）----
@@ -341,21 +547,24 @@ async function apiWhoami(c) {
   if (cfg === undefined) throw new ApiError(404, '未知平台')
   if (cfg.backend === 'wechat-oa') {
     // 不起浏览器：以 mp 后台会话/AppID 配置判断，名字取配置账号名。
-    return { json: { loggedIn: await accountLoggedIn(c.settings, platform, cfg), name: (await wechatWebAccount(c.settings)).name || '微信公众号', avatar: '' } }
+    return { json: { loggedIn: await accountLoggedIn(c.settings, { id: platform }, cfg), name: (await wechatWebAccount(c.settings)).name || '微信公众号', avatar: '' } }
   }
-  const hit = whoamiCache.get(platform)
+  const registry = await loadRegistry(c.settings)
+  const account = resolveAccount(registry, platform, c.query.get('account') ?? '')
+  if (account === null) return { json: { loggedIn: false, name: '', avatar: '' } }
+  const hit = whoamiCache.get(account.id)
   if (hit !== undefined && Date.now() - hit.at < WHOAMI_TTL_MS) return { json: hit.data }
   const py = c.settings.python
   const scripts = SHARED_SCRIPTS(c.settings)
   let cmd
   if (cfg.backend === 'biliup') {
-    cmd = [process.execPath, join(scripts, 'bili_login.mjs'), 'whoami', '--cookie', join(c.settings.projectRoot, 'cookies.json')]
+    cmd = [process.execPath, join(scripts, 'bili_login.mjs'), 'whoami', '--cookie', accountCookieFile(c.settings.projectRoot, account)]
   } else if (cfg.backend === 'xhs') {
-    cmd = [py, join(scripts, 'xhs_publish.py'), 'whoami', '--no-proxy']
+    cmd = [py, join(scripts, 'xhs_publish.py'), 'whoami', '--no-proxy', ...(await accountBrowserArgs(c.settings, account))]
   } else if (cfg.backend === 'douyin') {
-    cmd = [py, join(scripts, 'douyin_publish.py'), 'whoami']
+    cmd = [py, join(scripts, 'douyin_publish.py'), 'whoami', ...(await accountBrowserArgs(c.settings, account))]
   } else {
-    cmd = [py, join(scripts, 'web_publisher.py'), 'whoami', '--platform', cfg.wp]
+    cmd = [py, join(scripts, 'web_publisher.py'), 'whoami', '--platform', cfg.wp, ...(await accountBrowserArgs(c.settings, account))]
   }
   const proc = await runCapture(cmd, { cwd: c.settings.projectRoot, env: await runnerEnv(c.settings), timeout: 150_000 })
   let data = { loggedIn: false, name: '', avatar: '' }
@@ -372,12 +581,12 @@ async function apiWhoami(c) {
   }
   if (!confident) {
     // 校验失败/无有效输出 → 不缓存、不删标记，返回「上次已知」登录态（读标记）。
-    return { json: { loggedIn: await accountLoggedIn(c.settings, platform, cfg), name: '', avatar: '' } }
+    return { json: { loggedIn: await accountLoggedIn(c.settings, account, cfg), name: '', avatar: '' } }
   }
-  whoamiCache.set(platform, { at: Date.now(), data })
+  whoamiCache.set(account.id, { at: Date.now(), data })
   if (cfg.backend !== 'biliup') {
-    if (data.loggedIn) await writeLoginMarker(c.settings, platform, 'success', data.name || '')
-    else { try { await unlink(join(c.settings.projectRoot, 'outputs', '_login', `${platform}.json`)) } catch { /* 不在 */ } }
+    if (data.loggedIn) await writeLoginMarker(c.settings, account.id, 'success', data.name || '')
+    else { try { await unlink(join(c.settings.projectRoot, 'outputs', '_login', `${account.id}.json`)) } catch { /* 不在 */ } }
   }
   return { json: data }
 }
@@ -554,6 +763,12 @@ async function apiCredentialsSave(c) {
   const name = String(body?.name ?? '').trim()
   const author = String(body?.author ?? '').trim()
   await wechatSaveCredentials(c.settings, { appId, appSecret, name, author })
+  // 凭证落了就确保公众号账号条目存在（公众号 v1 单账号，条目仅承载名字/画像绑定）。
+  const registry = await loadRegistry(c.settings)
+  if (resolveAccount(registry, platform, '') === null) {
+    createAccount(registry, platform, name || '微信公众号')
+    await saveAccounts(c.settings.projectRoot, registry)
+  }
   clearWhoamiCache(platform)
   const verdict = await wechatVerifyToken(c.settings)
   if (verdict.ok) {
@@ -598,18 +813,21 @@ async function apiMpLoginStatus(c) {
 async function apiAnalytics(c) {
   const platform = c.params.p
   if (!ANALYTICS_PLATFORMS.has(platform)) throw new ApiError(404, '该平台暂不支持数据抓取')
+  const registry = await loadRegistry(c.settings)
+  const account = resolveAccount(registry, platform, c.query.get('account') ?? '')
+  if (account === null) throw new ApiError(400, '该平台还没有账号，请先在账号页登录')
   const py = c.settings.python
   const scripts = SHARED_SCRIPTS(c.settings)
   let cmd
   if (platform === 'bilibili') {
-    cmd = [process.execPath, join(scripts, 'bili_login.mjs'), 'stats', '--cookie', join(c.settings.projectRoot, 'cookies.json')]
+    cmd = [process.execPath, join(scripts, 'bili_login.mjs'), 'stats', '--cookie', accountCookieFile(c.settings.projectRoot, account)]
   } else if (platform === 'wechat-oa') {
     // 公众号走 mp 后台网页端（Playwright 拦数据 XHR）；默认直连，受限网络才需代理。
     const wxProxy = process.env.EASEL_PROXY || process.env.https_proxy || ''
     cmd = [py, join(scripts, 'weixin_mp_stats.py'), 'stats', '--proxy', wxProxy, '--count', '20']
   } else {
-    // 代理策略由 account_stats.py 按平台自定（xhs 直连、其它走 env）。
-    cmd = [py, join(scripts, 'account_stats.py'), 'fetch', '--platform', platform]
+    // 代理策略由 account_stats.py 按平台自定（xhs 直连、其它走 env）；账号参数在末尾。
+    cmd = [py, join(scripts, 'account_stats.py'), 'fetch', '--platform', platform, ...(await accountBrowserArgs(c.settings, account))]
   }
   const proc = await runCapture(cmd, { cwd: c.settings.projectRoot, env: await runnerEnv(c.settings), timeout: 180_000 })
   for (const line of proc.stdout.trim().split(/\r?\n/).reverse()) {
@@ -623,10 +841,10 @@ async function apiAnalytics(c) {
 
 // ---- 发布（runner 保持 Python；抖音异步 + 短信码文件协议）----
 
-async function appendPublishLog(settings, platform, tag, cmd, proc) {
+async function appendPublishLog(settings, label, tag, cmd, proc) {
   try {
     const lines = [
-      '', `===== ${new Date().toLocaleString('zh-CN', { hour12: false })} ${platform}${tag} =====`,
+      '', `===== ${new Date().toLocaleString('zh-CN', { hour12: false })} ${label}${tag} =====`,
       `CMD: ${cmd.join(' ')}`,
       'STDOUT:', (proc.stdout || '').slice(-2000), 'STDERR:', (proc.stderr || '').slice(-2000),
     ]
@@ -634,34 +852,34 @@ async function appendPublishLog(settings, platform, tag, cmd, proc) {
   } catch { /* 日志失败不挡发布 */ }
 }
 
-async function writePublishStatus(settings, platform, state, message = '') {
+async function writePublishStatus(settings, key, state, message = '') {
   const dir = join(settings.projectRoot, 'outputs', '_publish')
   await mkdir(dir, { recursive: true })
-  await writeJsonFile(join(dir, `${platform}.json`), { state, message, ts: Math.floor(Date.now() / 1000) })
+  await writeJsonFile(join(dir, `${key}.json`), { state, message, ts: Math.floor(Date.now() / 1000) })
 }
 
 /** 抖音式异步发布的后台执行：脚本自写状态文件；结束后兜底补终态 + 日志 + 回流排期。 */
-async function runPublishBg(settings, platform, cmd, title, body, cfg, codeFile) {
+async function runPublishBg(settings, key, cmd, title, body, cfg, codeFile) {
   const r = await runCapture(cmd, { cwd: settings.projectRoot, env: await runnerEnv(settings, { publish: true }), timeout: 900_000 })
   const ok = r.code === 0
-  await appendPublishLog(settings, platform, '(async)', cmd, r)
+  await appendPublishLog(settings, key, '(async)', cmd, r)
   const detail = r.timedOut ? '发布超时（>900s）' : '\n'.join(((r.stderr || r.stdout || '').trim().split(/\r?\n/).filter(part => part.trim())).slice(-4))
-  const current = await readJsonFile(join(settings.projectRoot, 'outputs', '_publish', `${platform}.json`), null)
+  const current = await readJsonFile(join(settings.projectRoot, 'outputs', '_publish', `${key}.json`), null)
   const currentState = current !== null && typeof current === 'object' ? current.state : 'unknown'
   if (currentState !== 'success' && currentState !== 'error') {
-    await writePublishStatus(settings, platform, ok ? 'success' : 'error', ok ? '发布成功' : (detail || '发布失败'))
+    await writePublishStatus(settings, key, ok ? 'success' : 'error', ok ? '发布成功' : (detail || '发布失败'))
   }
   try { await unlink(codeFile) } catch { /* 不在 */ }
   if (ok) await recordPublishedSchedule(settings, title, cfg.name, body)
 }
 
 /** 成功发布回流排期（与 web/app.py 同 schema；脚本侧自动记录已由 EASEL_CALENDAR_AUTORECORD=0 关掉）。 */
-async function recordPublishedSchedule(settings, title, platformName, body) {
+async function recordPublishedSchedule(settings, title, platformName, body, account = null) {
   try {
     const items = await readStoreList(settings, SCHEDULE_FILE)
     const now = new Date()
     const pad = n => String(n).padStart(2, '0')
-    items.push({
+    const item = {
       id: randomBytes(6).toString('hex'),
       title,
       date: `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`,
@@ -671,7 +889,12 @@ async function recordPublishedSchedule(settings, title, platformName, body) {
       note: body.slice(0, 200),
       kind: 'content',
       source: 'publish-page',
-    })
+    }
+    if (account !== null) {
+      item.accountId = account.id
+      item.accountName = account.name
+    }
+    items.push(item)
     await writeJsonFile(join(settings.projectRoot, 'outputs', SCHEDULE_FILE), items)
   } catch { /* 排期回流失败不挡发布结果 */ }
 }
@@ -702,6 +925,10 @@ async function apiPublish(c) {
     throw new ApiError(400, `${cfg.name} 只能发视频，请附带一个视频文件`)
   }
   const title = reqTitle.trim() || reqBody.trim().slice(0, 20)
+  const registry = await loadRegistry(c.settings)
+  const account = resolveAccount(registry, platform, typeof body?.account === 'string' ? body.account : '')
+  if (account === null && platform !== 'wechat-oa') throw new ApiError(400, '该平台还没有账号，请先在账号页登录')
+  const browserArgs = account !== null ? await accountBrowserArgs(c.settings, account) : []
   const py = c.settings.python
   const scripts = SHARED_SCRIPTS(c.settings)
   let cmd
@@ -711,10 +938,11 @@ async function apiPublish(c) {
       ? base.concat(['publish-video', '--no-proxy', '--video', vids[0]])
       : base.concat(['publish', '--no-proxy', '--images', imgs.join(',')]))
       .concat(['--title', title, '--content', reqBody, '--tags', tags, '--exec'])
+      .concat(browserArgs)
   } else if (platform === 'bilibili') {
-    // B站投稿：直接调 biliup CLI（cookies.json + PATH 上的 biliup）。tid=36「知识」；投稿必须 ≥1 标签。
+    // B站投稿：直接调 biliup CLI（账号 cookie + PATH 上的 biliup）。tid=36「知识」；投稿必须 ≥1 标签。
     const biliTag = tags.replace(/#/g, '').replace(/，/g, ',').trim().replace(/^,+|,+$/g, '') || '日常'
-    cmd = ['biliup', '-u', join(c.settings.projectRoot, 'cookies.json'), 'upload', vids[0],
+    cmd = ['biliup', '-u', accountCookieFile(c.settings.projectRoot, account), 'upload', vids[0],
       '--title', title.slice(0, 80), '--tid', '36', '--copyright', '1', '--tag', biliTag]
     if (reqBody.trim()) cmd.push('--desc', reqBody.slice(0, 2000))
   } else if (platform === 'douyin') {
@@ -723,13 +951,14 @@ async function apiPublish(c) {
       ? base.concat(['publish-video', '--no-proxy', '--video', vids[0]])
       : base.concat(['publish', '--no-proxy', '--images', imgs.join(',')]))
       .concat(['--title', title, '--content', reqBody, '--tags', tags, '--exec'])
+      .concat(browserArgs)
     // 抖音可能触发风控短信墙——异步跑 + 状态/验证码文件，前端轮询到 sms_required 时弹输入框。
     const dir = join(c.settings.projectRoot, 'outputs', '_publish')
     await mkdir(dir, { recursive: true })
-    const codeFile = join(dir, 'douyin.code')
+    const codeFile = join(dir, `${account.id}.code`)
     try { await unlink(codeFile) } catch { /* 无旧码 */ }
-    await writePublishStatus(c.settings, platform, 'starting', '发布中…（若触发风控会要求短信验证）')
-    void runPublishBg(c.settings, platform, cmd.concat(['--status-file', join(dir, 'douyin.json'), '--sms-code-file', codeFile]), title, reqBody, cfg, codeFile)
+    await writePublishStatus(c.settings, account.id, 'starting', '发布中…（若触发风控会要求短信验证）')
+    void runPublishBg(c.settings, account.id, cmd.concat(['--status-file', join(dir, `${account.id}.json`), '--sms-code-file', codeFile]), title, reqBody, cfg, codeFile)
     // 关键：不返回 ok:true——这只是「已启动」应答，真结果靠轮询 /status（防旧前端假成功）。
     return { json: { async: true, pending: true, message: '发布已启动，请稍候…' } }
   } else if (platform === 'wechat-oa') {
@@ -759,6 +988,7 @@ async function apiPublish(c) {
       '--title', title, '--desc', reqBody, '--tags', tags, '--exec']
     const media0 = vids[0] ?? imgs[0]
     if (media0 !== undefined) cmd.push('--media', media0)
+    cmd.push(...browserArgs)
   }
   const proc = await runCapture(cmd, {
     cwd: c.settings.projectRoot,
@@ -766,8 +996,8 @@ async function apiPublish(c) {
     timeout: 600_000,
   })
   const ok = proc.code === 0
-  await appendPublishLog(c.settings, platform, ` rc=${proc.code}`, cmd, proc)
-  if (ok) await recordPublishedSchedule(c.settings, title, cfg.name, reqBody)
+  await appendPublishLog(c.settings, account !== null ? `${platform}/${account.name}` : platform, ` rc=${proc.code}`, cmd, proc)
+  if (ok) await recordPublishedSchedule(c.settings, title, cfg.name, reqBody, account)
   const tail = (proc.stderr || proc.stdout || '').trim().split(/\r?\n/).filter(part => part.trim())
   return { json: { ok, message: ok ? '发布成功' : '发布失败（见 detail）', detail: tail.slice(-8).join('\n') } }
 }
@@ -787,9 +1017,61 @@ async function apiScheduleContext(c) {
     return { json: {} }
   }
 }
+// ---- 账号实体 CRUD（注册表层；登录/登出走 login/logout 路由）----
+
+async function apiAccountCreate(c) {
+  const body = await c.body()
+  const platform = typeof body?.platform === 'string' ? body.platform.trim() : ''
+  const cfg = LOGIN_RUNNERS[platform]
+  if (cfg === undefined) throw new ApiError(404, '未知平台')
+  if (platform === 'wechat-oa') throw new ApiError(400, '公众号暂只支持一个账号')
+  const name = typeof body?.name === 'string' ? body.name.trim() : ''
+  if (!validAccountName(name)) throw new ApiError(400, '账号名不能为空，且不能超过 40 字或包含路径分隔符')
+  const registry = await loadRegistry(c.settings)
+  const account = createAccount(registry, platform, name)
+  await saveAccounts(c.settings.projectRoot, registry)
+  return { json: { id: account.id, platform, name: account.name, persona: '', profileDir: account.profileDir ?? '', loggedIn: false } }
+}
+
+async function apiAccountUpdate(c) {
+  const registry = await loadRegistry(c.settings)
+  const account = registry.accounts.find(item => item.id === c.params.a)
+  if (account === undefined) throw new ApiError(404, '账号不存在')
+  const body = await c.body()
+  if (body?.name !== undefined) {
+    const name = typeof body.name === 'string' ? body.name.trim() : ''
+    if (!validAccountName(name)) throw new ApiError(400, '账号名不能为空，且不能超过 40 字或包含路径分隔符')
+    account.name = name
+  }
+  if (body?.persona !== undefined) {
+    const persona = typeof body.persona === 'string' && body.persona.trim() ? body.persona.trim() : null
+    if (persona !== null && !await isDirectory(join(c.settings.projectRoot, 'profiles', persona))) {
+      throw new ApiError(404, `画像「${persona}」不存在`)
+    }
+    account.persona = persona
+  }
+  await saveAccounts(c.settings.projectRoot, registry)
+  clearWhoamiCache(account.id)
+  return { json: { ok: true, id: account.id, name: account.name, persona: account.persona ?? '' } }
+}
+
+async function apiAccountDelete(c) {
+  const registry = await loadRegistry(c.settings)
+  const index = registry.accounts.findIndex(item => item.id === c.params.a)
+  if (index === -1) throw new ApiError(404, '账号不存在')
+  const [account] = registry.accounts.splice(index, 1)
+  const cfg = LOGIN_RUNNERS[account.platform]
+  const deleted = cfg !== undefined ? await logoutAccountFiles(c.settings, account, cfg) : []
+  await saveAccounts(c.settings.projectRoot, registry)
+  return { json: { ok: true, deleted } }
+}
+
 // ── Routes contributed by this plugin ───────────────────────────────────
 export const AUTOMATION_ROUTES = [
   ['GET', ['accounts'], apiAccounts],
+  ['POST', ['accounts'], apiAccountCreate],
+  ['PUT', ['accounts', ':a'], apiAccountUpdate],
+  ['DELETE', ['accounts', ':a'], apiAccountDelete],
   ['GET', ['analytics', 'platforms'], apiAnalyticsPlatforms],
   ['GET', ['login', ':p', 'status'], apiLoginStatus],
   ['POST', ['login', ':p', 'sms'], apiLoginSms],
