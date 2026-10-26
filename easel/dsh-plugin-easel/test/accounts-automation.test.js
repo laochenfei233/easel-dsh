@@ -27,6 +27,9 @@ const tmpRoot = () => {
   const root = mkdtempSync(join(tmpdir(), 'easel-automation-'))
   mkdirSync(join(root, 'outputs', '_publish'), { recursive: true })
   mkdirSync(join(root, 'outputs', '_login'), { recursive: true })
+  // 注册表迁移探测必须封闭在这个临时根里，否则会扫到开发者真实 home 的 legacy profile。
+  process.env.EASEL_BROWSER_PROFILES = join(root, 'browser-profiles')
+  mkdirSync(join(root, 'browser-profiles'), { recursive: true })
   return root
 }
 
@@ -47,17 +50,28 @@ function fakeRunner(root, name, whoamiJson) {
   writeFileSync(join(dir, name), source, 'utf8')
 }
 
-const waitForState = async (file, timeoutMs = 20_000) => {
+/** 轮询到谓词成立；生产者先写状态再写排期，所以两个文件要分别等。 */
+const waitFor = async (predicate, label, timeoutMs = 20_000) => {
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {
     try {
-      const raw = JSON.parse(readFileSync(file, 'utf8'))
-      if (raw.state === 'success' || raw.state === 'error') return raw
-    } catch { /* 还没写 */ }
+      const value = predicate()
+      if (value !== undefined && value !== false) return value
+    } catch { /* 目标文件还没写 */ }
     await new Promise(done => { setTimeout(done, 50) })
   }
-  throw new Error(`state file never settled: ${file}`)
+  throw new Error(`timed out waiting for ${label}`)
 }
+
+const waitForState = (file, timeoutMs) => waitFor(() => {
+  const raw = JSON.parse(readFileSync(file, 'utf8'))
+  return raw.state === 'success' || raw.state === 'error' ? raw : undefined
+}, `state file ${file}`, timeoutMs)
+
+const waitForSchedule = (root, timeoutMs) => waitFor(() => {
+  const items = JSON.parse(readFileSync(join(root, 'outputs', '_schedule.json'), 'utf8'))
+  return items.length > 0 ? items : undefined
+}, 'schedule entry', timeoutMs)
 
 test('async publish finishes its bookkeeping and writes the account into the schedule', async () => {
   const root = tmpRoot()
@@ -111,7 +125,7 @@ test('POST /publish/douyin carries the account through the async route into the 
 
     const status = await waitForState(join(root, 'outputs', '_publish', 'douyin-x1.json'))
     assert.equal(status.state, 'success')
-    const items = JSON.parse(readFileSync(join(root, 'outputs', '_schedule.json'), 'utf8'))
+    const items = await waitForSchedule(root)
     assert.equal(items[0].accountId, 'douyin-x1')
     assert.equal(items[0].accountName, '大号')
   } finally {
