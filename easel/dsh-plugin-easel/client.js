@@ -1459,6 +1459,26 @@ function mediaUrl(path) {
 function deleteOutput(path) {
   return request(`/api/output/${path.split("/").map(encodeURIComponent).join("/")}`, { method: "DELETE" });
 }
+function fetchAccounts() {
+  return request("/api/accounts");
+}
+function createAccount(platform, name) {
+  return request("/api/accounts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ platform, name })
+  });
+}
+function updateAccount(id, patch) {
+  return request(`/api/accounts/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch)
+  });
+}
+function deleteAccount(id) {
+  return request(`/api/accounts/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
 function getCredentials(platform) {
   return request(`/api/accounts/${encodeURIComponent(platform)}/credentials`);
 }
@@ -1475,14 +1495,16 @@ function startMpLogin(platform) {
 function mpLoginStatus(platform) {
   return request(`/api/accounts/${encodeURIComponent(platform)}/mp-login/status`);
 }
-function fetchAccounts() {
-  return request("/api/accounts");
+function accountWhoami(platform, account) {
+  const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
+  return request(`/api/accounts/${encodeURIComponent(platform)}/whoami${q2}`);
 }
-function accountWhoami(platform) {
-  return request(`/api/accounts/${encodeURIComponent(platform)}/whoami`);
-}
-function logoutAccount(platform) {
-  return request(`/api/logout/${encodeURIComponent(platform)}`, { method: "POST" });
+function logoutAccount(platform, account) {
+  return request(`/api/logout/${encodeURIComponent(platform)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(account ? { account } : {})
+  });
 }
 function publishNow(platform, payload) {
   return request(`/api/publish/${encodeURIComponent(platform)}`, {
@@ -1491,21 +1513,22 @@ function publishNow(platform, payload) {
     body: JSON.stringify(payload)
   });
 }
-function publishStatus(platform) {
-  return request(`/api/publish/${encodeURIComponent(platform)}/status`);
+function publishStatus(platform, account) {
+  const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
+  return request(`/api/publish/${encodeURIComponent(platform)}/status${q2}`);
 }
-function submitPublishSms(platform, code) {
+function submitPublishSms(platform, code, account) {
   return request(`/api/publish/${encodeURIComponent(platform)}/sms`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code })
+    body: JSON.stringify(account ? { code, account } : { code })
   });
 }
-function startLogin(platform, mode = "qr") {
+function startLogin(platform, mode = "qr", target = {}) {
   return request(`/api/login/${encodeURIComponent(platform)}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ mode })
+    body: JSON.stringify({ mode, account: target.account, name: target.name })
   });
 }
 function fetchRadarConfig() {
@@ -1518,20 +1541,22 @@ function saveRadarConfig(cfg) {
     body: JSON.stringify(cfg)
   });
 }
-function loginStatus(platform) {
-  return request(`/api/login/${encodeURIComponent(platform)}/status`);
+function loginStatus(platform, account) {
+  const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
+  return request(`/api/login/${encodeURIComponent(platform)}/status${q2}`);
 }
 function fetchAnalyticsPlatforms() {
   return request("/api/analytics/platforms");
 }
-function fetchAccountAnalytics(platform) {
-  return request(`/api/analytics/${encodeURIComponent(platform)}`);
+function fetchAccountAnalytics(platform, account) {
+  const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
+  return request(`/api/analytics/${encodeURIComponent(platform)}${q2}`);
 }
-function submitLoginSms(platform, code) {
+function submitLoginSms(platform, code, account) {
   return request(`/api/login/${encodeURIComponent(platform)}/sms`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code })
+    body: JSON.stringify(account ? { code, account } : { code })
   });
 }
 function createScheduledTask(input) {
@@ -1582,7 +1607,8 @@ function verifyStale(platforms, opts = {}) {
       if (opts.alive && !opts.alive()) return;
       const p = todo[next++];
       try {
-        const r = await accountWhoami(p);
+        const addr = opts.resolve?.(p) ?? { platform: p };
+        const r = await accountWhoami(addr.platform, addr.account);
         setWhoamiCache(p, r);
         if (!opts.alive || opts.alive()) opts.onUpdate?.(p, r);
       } catch {
@@ -2539,7 +2565,7 @@ __export(ideas_exports, {
 // src/components/IdeasPage.tsx
 var import_react4 = require("react");
 
-// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3696,7 +3722,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -6680,7 +6706,7 @@ function CalendarPage() {
         children: [
           /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
           /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-event-title", children: [
-            it.platform ? `[${it.platform}] ` : "",
+            it.platform ? `[${it.platform}${it.accountName ? `\xB7${it.accountName}` : ""}] ` : "",
             it.title
           ] }),
           it.status === "published" && it.source && SOURCE_LABEL[it.source] && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: SOURCE_LABEL[it.source] })
@@ -7322,6 +7348,45 @@ __export(schedules_exports, {
 
 // src/components/SchedulesPage.tsx
 var import_react6 = require("react");
+
+// src/lib/roster.ts
+var PLATFORM_LABELS = {
+  xiaohongshu: "\u5C0F\u7EA2\u4E66",
+  kuaishou: "\u5FEB\u624B",
+  "weixin-channels": "\u5FAE\u4FE1\u89C6\u9891\u53F7",
+  zhihu: "\u77E5\u4E4E",
+  bilibili: "B\u7AD9",
+  douyin: "\u6296\u97F3",
+  "wechat-oa": "\u5FAE\u4FE1\u516C\u4F17\u53F7"
+};
+var platformLabel = (platform) => PLATFORM_LABELS[platform] ?? platform;
+async function fetchRoster() {
+  const accounts = await fetchAccounts().catch(() => []);
+  return accounts.map((account) => ({
+    id: account.id,
+    platform: account.platform,
+    name: account.name,
+    persona: account.persona || ""
+  }));
+}
+function renderRosterPrompt(accounts) {
+  if (accounts.length === 0) return "";
+  const lines = accounts.map((account) => {
+    const label = platformLabel(account.platform);
+    const persona = account.persona ? `\uFF0C\u753B\u50CF\u300C${account.persona}\u300D\uFF08profiles/${account.persona}/ \u4E0B\u7684\u516D\u7EF4\u6587\u4EF6\uFF09` : "\uFF0C\u672A\u7ED1\u5B9A\u753B\u50CF";
+    return `- ${label}\u300C${account.name}\u300D\uFF08\u8D26\u53F7 id\uFF1A${account.id}${persona}\uFF09`;
+  });
+  return `
+
+\u3010\u53EF\u7528\u53D1\u5E03\u8D26\u53F7\u3011
+${lines.join("\n")}
+\u6D89\u53CA\u53D1\u5E03/\u63A8\u9001\u65F6\u660E\u786E\u76EE\u6807\u8D26\u53F7\uFF08\u8D26\u53F7 id \u6216\u540D\u5B57\uFF09\uFF1B\u7528\u6237\u6CA1\u6307\u5B9A\u5C31\u5148\u786E\u8BA4\uFF0C\u6216\u6309\u753B\u50CF\u8D34\u5408\u5EA6\u7ED9\u5EFA\u8BAE\u540E\u518D\u6267\u884C\uFF1B\u7ED9\u6307\u5B9A\u8D26\u53F7\u5199\u6587\u6848\u65F6\u6309\u5176\u753B\u50CF\u8C03\u6574\u8BED\u6C14\u4E0E\u9009\u9898\u3002`;
+}
+async function rosterPrompt() {
+  return renderRosterPrompt(await fetchRoster());
+}
+
+// src/components/SchedulesPage.tsx
 var import_jsx_runtime10 = require("react/jsx-runtime");
 var TIMING_KINDS = [
   { key: "at", label: "\u4EC5\u4E00\u6B21" },
@@ -7499,6 +7564,7 @@ function SchedulesPage({
   const [query, setQuery] = (0, import_react6.useState)("");
   const [toast, setToast] = (0, import_react6.useState)("");
   const [form, setForm] = (0, import_react6.useState)(null);
+  const [rosterList, setRosterList] = (0, import_react6.useState)([]);
   const [detail, setDetail] = (0, import_react6.useState)(null);
   const [detailBusy, setDetailBusy] = (0, import_react6.useState)(false);
   const [editingTiming, setEditingTiming] = (0, import_react6.useState)(null);
@@ -7589,10 +7655,15 @@ function SchedulesPage({
     }
     setDetailBusy(true);
     try {
+      const linked = rosterList.find((a) => a.id === form.accountId);
+      const persona = linked?.persona ? `\uFF0C\u753B\u50CF\u300C${linked.persona}\u300D` : "";
+      const promptBody = linked === void 0 ? form.prompt.trim() : `${form.prompt.trim()}
+
+\u76EE\u6807\u8D26\u53F7\uFF1A${platformLabel(linked.platform)}\u300C${linked.name}\u300D\uFF08\u8D26\u53F7 id\uFF1A${linked.id}${persona}\uFF09`;
       await createScheduledTask({
         sessionId: form.sessionId,
         title: form.title.trim(),
-        prompt: form.prompt.trim(),
+        prompt: promptBody,
         timeZone: localZone(),
         timing: {
           kind: form.timing.kind,
@@ -7736,12 +7807,16 @@ function SchedulesPage({
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "page-subtitle", children: "\u5230\u70B9\u81EA\u52A8\u628A\u4EFB\u52A1\u5185\u5BB9\u53D1\u7ED9\u6240\u9009\u4F1A\u8BDD\u2014\u2014\u6BCF\u65E5\u7B80\u62A5\u3001\u5468\u66F4\u521D\u7A3F\u3001\u7D20\u6750\u5DE1\u68C0\u90FD\u4EA4\u7ED9\u5B83\u3002" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("button", { className: "btn btn-sm btn-primary", onClick: () => setForm({
-        title: "",
-        prompt: "",
-        timing: { ...EMPTY_TIMING },
-        sessionId: sessionOptions[0]?.id ?? ""
-      }), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("button", { className: "btn btn-sm btn-primary", onClick: () => {
+        void fetchRoster().then(setRosterList);
+        setForm({
+          title: "",
+          prompt: "",
+          timing: { ...EMPTY_TIMING },
+          sessionId: sessionOptions[0]?.id ?? "",
+          accountId: ""
+        });
+      }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconPlus, { size: 13 }),
         " \u65B0\u5EFA\u4EFB\u52A1"
       ] })
@@ -7836,6 +7911,17 @@ function SchedulesPage({
       /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("select", { className: "field", value: form.sessionId, onChange: (e) => setForm({ ...form, sessionId: e.target.value }), children: [
         sessionOptions.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: "", children: "\uFF08\u6682\u65E0\u53EF\u7528\u4F1A\u8BDD\uFF0C\u5148\u65B0\u5EFA\u4E00\u4E2A\u5BF9\u8BDD\uFF09" }),
         sessionOptions.map((s) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: s.id, children: s.title }, s.id))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "field-label", children: "\u5173\u8054\u53D1\u5E03\u8D26\u53F7\uFF08\u53EF\u9009\uFF09" }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("select", { className: "field", value: form.accountId, onChange: (e) => setForm({ ...form, accountId: e.target.value }), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: "", children: "\u4E0D\u5173\u8054" }),
+        rosterList.map((a) => /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("option", { value: a.id, children: [
+          platformLabel(a.platform),
+          "\u300C",
+          a.name,
+          "\u300D",
+          a.persona ? `\uFF08\u753B\u50CF\uFF1A${a.persona}\uFF09` : ""
+        ] }, a.id))
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-sm", onClick: () => setForm(null), children: "\u53D6\u6D88" }),
@@ -8155,9 +8241,10 @@ function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) 
     setRunErr("");
     setResult("");
     const batch = `skill-${Date.now().toString(36)}.md`;
+    const roster = await rosterPrompt();
     const prompt = `\u8BF7\u4E25\u683C\u6267\u884C\u6280\u80FD\u300C${skillName}\u300D\uFF1A\u8BFB\u53D6 skills/openclaw/${skillName}/SKILL.md\uFF0C\u6309\u5B83\u7684\u6D41\u7A0B\u3001\u6570\u636E\u6E90\u4E0E\u5DE5\u5177\u6267\u884C\u3002
 ` + (persona ? `\u6267\u884C\u65F6\u4F7F\u7528\u6211\u7684\u753B\u50CF\u300C${persona}\u300D\uFF08profiles/${persona}/ \u4E0B\u7684\u516D\u7EF4\u6587\u4EF6\uFF09\u3002
-` : "") + `\u4EFB\u52A1\u8F93\u5165\uFF1A
+` : "") + roster + `\u4EFB\u52A1\u8F93\u5165\uFF1A
 ${input.trim()}
 
 \u3010\u4EA4\u4ED8\u65B9\u5F0F\u3011\u5B8C\u6210\u540E\uFF0C\u628A\u6700\u7EC8\u4EA7\u51FA\u5168\u6587\u5199\u5165 outputs/_adapt/${batch}\uFF08Markdown\uFF0C\u5185\u5BB9\u53EA\u6709\u4EA7\u51FA\u672C\u8EAB\uFF09\u3002\u9664\u8BE5\u6587\u4EF6\u5916\u4E0D\u8981\u5199\u5176\u5B83\u6587\u4EF6\u3002`;
@@ -8875,7 +8962,7 @@ function readMigratedLocalValue(key, suffix) {
 var PUBLISH_DEFAULT = {
   title: "",
   body: "",
-  platforms: ["xiaohongshu", "douyin"],
+  accounts: [],
   overrides: {},
   tags: ""
 };
@@ -8906,15 +8993,15 @@ var PLATFORMS2 = [
   { key: "bilibili", label: "B\u7AD9", titleLimit: 80, bodyLimit: 2e3, hint: "\u9700\u9644\u89C6\u9891\uFF0C\u6807\u9898\u226480\u3001\u7B80\u4ECB\u22642000\uFF0C\u9ED8\u8BA4\u6295\u300C\u77E5\u8BC6\u300D\u5206\u533A" },
   { key: "wechat-oa", label: "\u516C\u4F17\u53F7", titleLimit: 64, bodyLimit: 2e4, hint: "\u56FE\u6587\u6587\u7AE0\uFF0C\u6B63\u6587\u7528 Markdown\uFF0C\u9996\u56FE\u4F5C\u5C01\u9762\uFF0C\u53D1\u5230\u8349\u7A3F\u7BB1\uFF1B\u9700\u5148\u5728\u8D26\u53F7\u9875\u300C\u767B\u5F55\u516C\u4F17\u53F7\u540E\u53F0\u300D\u626B\u7801" }
 ];
-var PUBLISHABLE = /* @__PURE__ */ new Set(["xiaohongshu", "douyin", "kuaishou", "weixin-channels", "zhihu", "bilibili", "wechat-oa"]);
 var MEDIA_REQUIRED = /* @__PURE__ */ new Set(["xiaohongshu", "douyin", "kuaishou", "weixin-channels", "bilibili", "wechat-oa"]);
 var VIDEO_ONLY = /* @__PURE__ */ new Set(["douyin", "weixin-channels", "bilibili"]);
 var VIDEO_RE = /\.(mp4|mov|webm|mkv|avi|m4v|flv|ts)$/i;
-function PublishPage({ persona }) {
+var PUBLISH_CONCURRENCY = 2;
+function PublishPage({ persona, onNavigate }) {
   const draft0 = loadPublishDraft();
   const [title, setTitle] = (0, import_react10.useState)(draft0.title);
   const [body, setBody] = (0, import_react10.useState)(draft0.body);
-  const [platforms, setPlatforms] = (0, import_react10.useState)(draft0.platforms);
+  const [accountIds, setAccountIds] = (0, import_react10.useState)(draft0.accounts);
   const [overrides, setOverrides] = (0, import_react10.useState)(draft0.overrides);
   const [tags, setTags] = (0, import_react10.useState)(draft0.tags || "");
   const [editing, setEditing] = (0, import_react10.useState)(null);
@@ -8935,8 +9022,8 @@ function PublishPage({ persona }) {
   const [pubSmsCode, setPubSmsCode] = (0, import_react10.useState)("");
   const [pubSmsBusy, setPubSmsBusy] = (0, import_react10.useState)(false);
   (0, import_react10.useEffect)(() => {
-    savePublishDraft({ title, body, platforms, overrides, tags });
-  }, [title, body, platforms, overrides, tags]);
+    savePublishDraft({ title, body, accounts: accountIds, overrides, tags });
+  }, [title, body, accountIds, overrides, tags]);
   (0, import_react10.useEffect)(() => {
     fetchAccounts().then(setAccounts).catch(() => {
     });
@@ -8955,8 +9042,27 @@ function PublishPage({ persona }) {
     }).catch(() => {
     });
   }, []);
-  const loginOf = (key) => accounts.find((a) => a.platform === key)?.loggedIn ?? false;
-  const toggle = (k2) => setPlatforms((prev) => prev.includes(k2) ? prev.filter((x2) => x2 !== k2) : [...prev, k2]);
+  (0, import_react10.useEffect)(() => {
+    if (accounts.length === 0) return;
+    setAccountIds((ids) => {
+      const alive = ids.filter((id) => accounts.some((a) => a.id === id));
+      return alive.length === ids.length ? ids : alive;
+    });
+  }, [accounts]);
+  const targets = (0, import_react10.useMemo)(
+    () => accountIds.map((id) => accounts.find((a) => a.id === id)).filter((a) => !!a),
+    [accountIds, accounts]
+  );
+  const selectedPlatformKeys = (0, import_react10.useMemo)(() => {
+    const set = new Set(targets.map((a) => a.platform));
+    return PLATFORMS2.filter((p) => set.has(p.key));
+  }, [targets]);
+  const samePlatformMulti = (0, import_react10.useMemo)(() => {
+    const count = {};
+    for (const a of targets) count[a.platform] = (count[a.platform] || 0) + 1;
+    return Object.values(count).some((n) => n >= 2);
+  }, [targets]);
+  const toggleAccount = (id) => setAccountIds((prev) => prev.includes(id) ? prev.filter((x2) => x2 !== id) : [...prev, id]);
   const showToast = (m2) => {
     setToast(m2);
     setTimeout(() => setToast(""), 2800);
@@ -8980,8 +9086,8 @@ function PublishPage({ persona }) {
     return [...prev, path];
   });
   const adapt = async () => {
-    if (empty || platforms.length === 0 || adapting) return;
-    const sel = PLATFORMS2.filter((p) => platforms.includes(p.key));
+    if (empty || selectedPlatformKeys.length === 0 || adapting) return;
+    const sel = selectedPlatformKeys;
     const batch = `adapt-${Date.now().toString(36)}`;
     const prompt = `\u8BF7\u6267\u884C\u6280\u80FD skill-content-repurposing\uFF08\u5148\u8BFB\u53D6 skills/openclaw/skill-content-repurposing/SKILL.md\uFF0C\u52A1\u5FC5\u53C2\u8003\u8BE5 SKILL \u7684 platform-specs \u4E0E\u6539\u5199\u914D\u65B9\uFF09\uFF1A\u628A\u4E0B\u9762\u8FD9\u6761\u5185\u5BB9\u6539\u7F16\u5230\u8FD9\u4E9B\u5E73\u53F0\uFF1A${sel.map((p) => p.label).join("\u3001")}\u3002
 \u3010\u786C\u6027\u8981\u6C42\u3011\u6BCF\u4E2A\u5E73\u53F0\u8F93\u51FA\u201C\u53EF\u76F4\u63A5\u590D\u5236\u53D1\u5E03\u7684\u7EAF\u6587\u672C\u6B63\u6587\u201D\uFF0C\u7981\u6B62\u4EFB\u4F55 Markdown \u8BED\u6CD5\uFF1A\u4E0D\u8981 **\u52A0\u7C97**\u3001# \u6807\u9898\u3001---\u3001\u8868\u683C\u3001\u4EE3\u7801\u5757\u3001\u7F16\u53F7\u5217\u8868\u7B26\u53F7\uFF1B\u5C0F\u7EA2\u4E66\u53EF\u7528 emoji \u548C #\u8BDD\u9898\u6807\u7B7E\uFF0C\u6309\u5E73\u53F0\u4E60\u60EF\u81EA\u7136\u5206\u884C\u5373\u53EF\u3002
@@ -9024,6 +9130,7 @@ function PublishPage({ persona }) {
   const stopAdapt = () => adaptCtl.current?.();
   const runPrecheck = async () => {
     const batch = `precheck-${Date.now().toString(36)}.md`;
+    const roster = await rosterPrompt();
     const prompt = `\u4F60\u662F\u793E\u5A92\u53D1\u5E03\u5BA1\u6838\u52A9\u624B\u3002\u5BF9\u4E0B\u9762\u8FD9\u6761\u5F85\u53D1\u5185\u5BB9\u505A\u4E09\u9879\u68C0\u67E5\uFF0C\u7528\u7B80\u6D01\u4E2D\u6587\u5206\u70B9\u8F93\u51FA\uFF1A
 1. **\u5408\u89C4\u98CE\u9669**\uFF1A\u662F\u5426\u542B\u6781\u9650\u8BCD/\u533B\u7597\u529F\u6548/\u654F\u611F\u6216\u8FDD\u89C4\u8868\u8FF0\uFF0C\u5217\u51FA\u95EE\u9898\u8BCD+\u66FF\u6362\u5EFA\u8BAE\uFF1B\u65E0\u5219\u5199"\u672A\u89C1\u660E\u663E\u98CE\u9669"\u3002
 2. **\u6807\u9898/\u94A9\u5B50**\uFF1A\u7ED9\u6807\u9898\u6253 1-10 \u5206\uFF0C\u5E76\u7ED9 1-2 \u4E2A\u66F4\u597D\u7684\u5907\u9009\u3002
@@ -9032,7 +9139,7 @@ function PublishPage({ persona }) {
 `) + `\u6700\u540E\u4E00\u884C\u7ED9\u300C\u2705\u53EF\u53D1 / \u26A0\uFE0F\u5EFA\u8BAE\u4FEE\u6539\u300D\u7ED3\u8BBA\u3002
 \u5B8C\u6210\u540E\u628A\u5B8C\u6574\u9884\u68C0\u62A5\u544A\u5199\u5165 outputs/_adapt/${batch}\uFF08Markdown\uFF09\u3002\u9664\u8BE5\u6587\u4EF6\u5916\u4E0D\u8981\u5199\u5176\u5B83\u6587\u4EF6\u3002
 
-\u5F85\u68C0\u5185\u5BB9\uFF1A
+${roster}${roster ? "\n" : ""}\u5F85\u68C0\u5185\u5BB9\uFF1A
 \u6807\u9898\uFF1A${title}
 \u6B63\u6587\uFF1A${body}`;
     const handle = await pushTask(prompt, { open: false });
@@ -9057,9 +9164,9 @@ function PublishPage({ persona }) {
   };
   const publishAll = async () => {
     if (empty || publishing || checking) return;
-    const targets = PLATFORMS2.filter((p) => platforms.includes(p.key) && PUBLISHABLE.has(p.key));
-    if (targets.length === 0) {
-      showToast("\u6240\u9009\u5E73\u53F0\u6682\u4E0D\u652F\u6301\u4E00\u952E\u53D1\u5E03\uFF08B\u7AD9\u8BF7\u7528\u300C\u590D\u5236\u300D\u6216\u7EC8\u7AEF biliup\uFF09");
+    const groups = PLATFORMS2.map((p) => targets.filter((a) => a.platform === p.key)).filter((g) => g.length > 0);
+    if (groups.length === 0) {
+      showToast("\u8BF7\u5148\u52FE\u9009\u8981\u53D1\u5E03\u7684\u8D26\u53F7");
       return;
     }
     setChecking(true);
@@ -9072,76 +9179,91 @@ function PublishPage({ persona }) {
     } finally {
       setChecking(false);
     }
+    const plan = groups.map((g) => {
+      const label = PLATFORMS2.find((p) => p.key === g[0].platform)?.label || g[0].platform;
+      return `${label}\uFF1A${g.map((a) => a.name).join("\u3001")}`;
+    }).join("\n");
     const okToSend = window.confirm(
       `\u53D1\u5E03\u524D\u9884\u68C0\u5DF2\u6267\u884C\uFF0C\u7ED3\u679C\u5DF2\u663E\u793A\u5728\u9875\u9762\u4E2D\u3002\u4EBA\u8BBE\u8BC4\u5206\u53EA\u505A\u63D0\u9192\uFF0C\u4E0D\u4F1A\u963B\u6B62\u53D1\u5E03\u3002
 
-\u5373\u5C06\u3010\u771F\u5B9E\u53D1\u5E03\u3011\u5230\uFF1A${targets.map((t) => t.label).join("\u3001")}\u3002
+\u5373\u5C06\u3010\u771F\u5B9E\u53D1\u5E03\u3011\u5230\u4EE5\u4E0B\u8D26\u53F7\uFF08\u540C\u5E73\u53F0\u4E32\u884C\u3001\u8DE8\u5E73\u53F0\u6700\u591A ${PUBLISH_CONCURRENCY} \u8DEF\u5E76\u884C\uFF09\uFF1A
+${plan}
 \u8FD9\u4F1A\u516C\u5F00\u53D1\u5E03\u5230\u4F60\u7684\u8D26\u53F7\uFF0C\u786E\u5B9A\u7EE7\u7EED\uFF1F`
     );
     if (!okToSend) return;
     setPublishing(true);
-    for (const t of targets) {
-      if (!loginOf(t.key)) {
-        setPub((r) => ({ ...r, [t.key]: { status: "fail", msg: "\u672A\u767B\u5F55 \xB7 \u53BB\u8D26\u53F7\u9875\u767B\u5F55" } }));
-        continue;
+    let gi = 0;
+    const worker = async () => {
+      while (gi < groups.length) {
+        const group = groups[gi++];
+        for (const a of group) await publishOne(a);
       }
-      if (MEDIA_REQUIRED.has(t.key) && selectedMedia.length === 0) {
-        setPub((r) => ({ ...r, [t.key]: { status: "fail", msg: "\u9700\u9644\u5E26\u56FE\u7247/\u89C6\u9891" } }));
-        continue;
-      }
-      if (VIDEO_ONLY.has(t.key) && !selectedMedia.some((p) => VIDEO_RE.test(p))) {
-        setPub((r) => ({ ...r, [t.key]: { status: "fail", msg: `${t.label}\u53EA\u80FD\u53D1\u89C6\u9891\uFF0C\u8BF7\u4ECE\u5185\u5BB9\u5E93\u9009\u4E00\u4E2A\u89C6\u9891` } }));
-        continue;
-      }
-      setPub((r) => ({ ...r, [t.key]: { status: "publishing", msg: "\u53D1\u5E03\u4E2D\u2026\u53EF\u80FD\u9700 1-2 \u5206\u949F" } }));
-      try {
-        const res = await publishNow(t.key, { title, body: effective(t.key), media: selectedMedia, tags });
-        if (res.async) {
-          await pollAsyncPublish(t.key, t.label);
-        } else {
-          setPub((r) => ({
-            ...r,
-            [t.key]: res.ok ? { status: "ok", msg: "\u5DF2\u53D1\u5E03 \u2705" } : { status: "fail", msg: res.detail || res.message || "\u53D1\u5E03\u5931\u8D25" }
-          }));
-        }
-      } catch (e) {
-        setPub((r) => ({ ...r, [t.key]: { status: "fail", msg: e instanceof Error ? e.message : "\u53D1\u5E03\u5931\u8D25" } }));
-      }
-    }
+    };
+    await Promise.all(Array.from({ length: Math.min(PUBLISH_CONCURRENCY, groups.length) }, () => worker()));
     setPublishing(false);
-    showToast("\u53D1\u5E03\u6D41\u7A0B\u7ED3\u675F\uFF0C\u89C1\u5404\u5E73\u53F0\u5361\u7247\u72B6\u6001");
+    showToast("\u53D1\u5E03\u6D41\u7A0B\u7ED3\u675F\uFF0C\u89C1\u5404\u8D26\u53F7\u72B6\u6001");
   };
-  const pollAsyncPublish = (key, label) => new Promise((resolve) => {
+  const publishOne = async (a) => {
+    const meta = PLATFORMS2.find((p) => p.key === a.platform);
+    if (!a.loggedIn) {
+      setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: "\u672A\u767B\u5F55 \xB7 \u53BB\u8D26\u53F7\u9875\u767B\u5F55" } }));
+      return;
+    }
+    if (MEDIA_REQUIRED.has(a.platform) && selectedMedia.length === 0) {
+      setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: "\u9700\u9644\u5E26\u56FE\u7247/\u89C6\u9891" } }));
+      return;
+    }
+    if (meta && VIDEO_ONLY.has(a.platform) && !selectedMedia.some((p) => VIDEO_RE.test(p))) {
+      setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: `${meta.label}\u53EA\u80FD\u53D1\u89C6\u9891\uFF0C\u8BF7\u4ECE\u5185\u5BB9\u5E93\u9009\u4E00\u4E2A\u89C6\u9891` } }));
+      return;
+    }
+    setPub((r) => ({ ...r, [a.id]: { status: "publishing", msg: "\u53D1\u5E03\u4E2D\u2026\u53EF\u80FD\u9700 1-2 \u5206\u949F" } }));
+    try {
+      const res = await publishNow(a.platform, { title, body: effective(a.platform), media: selectedMedia, tags, account: a.id });
+      if (res.async) {
+        await pollAsyncPublish(a);
+      } else {
+        setPub((r) => ({
+          ...r,
+          [a.id]: res.ok ? { status: "ok", msg: "\u5DF2\u53D1\u5E03 \u2705" } : { status: "fail", msg: res.detail || res.message || "\u53D1\u5E03\u5931\u8D25" }
+        }));
+      }
+    } catch (e) {
+      setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: e instanceof Error ? e.message : "\u53D1\u5E03\u5931\u8D25" } }));
+    }
+  };
+  const pollAsyncPublish = (a) => new Promise((resolve) => {
+    const label = PLATFORMS2.find((p) => p.key === a.platform)?.label || a.platform;
     const started = Date.now();
     const iv = setInterval(async () => {
       if (Date.now() - started > 15 * 60 * 1e3) {
         clearInterval(iv);
-        setPubSms(null);
-        setPub((r) => ({ ...r, [key]: { status: "fail", msg: "\u53D1\u5E03\u8D85\u65F6" } }));
+        setPubSms((m2) => m2 && m2.accountId === a.id ? null : m2);
+        setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: "\u53D1\u5E03\u8D85\u65F6" } }));
         resolve();
         return;
       }
       let s;
       try {
-        s = await publishStatus(key);
+        s = await publishStatus(a.platform, a.id);
       } catch {
         return;
       }
       if (s.state === "sms_required" || s.state === "verifying") {
-        setPubSms({ platform: key, name: label, state: s.state, message: s.message });
-        setPub((r) => ({ ...r, [key]: { status: "publishing", msg: s.message || "\u9700\u77ED\u4FE1\u9A8C\u8BC1" } }));
+        setPubSms({ platform: a.platform, accountId: a.id, name: `${label} \xB7 ${a.name}`, state: s.state, message: s.message });
+        setPub((r) => ({ ...r, [a.id]: { status: "publishing", msg: s.message || "\u9700\u77ED\u4FE1\u9A8C\u8BC1" } }));
       } else if (s.state === "success") {
         clearInterval(iv);
-        setPubSms(null);
-        setPub((r) => ({ ...r, [key]: { status: "ok", msg: "\u5DF2\u53D1\u5E03 \u2705" } }));
+        setPubSms((m2) => m2 && m2.accountId === a.id ? null : m2);
+        setPub((r) => ({ ...r, [a.id]: { status: "ok", msg: "\u5DF2\u53D1\u5E03 \u2705" } }));
         resolve();
       } else if (s.state === "error") {
         clearInterval(iv);
-        setPubSms(null);
-        setPub((r) => ({ ...r, [key]: { status: "fail", msg: s.message || "\u53D1\u5E03\u5931\u8D25" } }));
+        setPubSms((m2) => m2 && m2.accountId === a.id ? null : m2);
+        setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: s.message || "\u53D1\u5E03\u5931\u8D25" } }));
         resolve();
       } else {
-        setPub((r) => ({ ...r, [key]: { status: "publishing", msg: s.message || "\u53D1\u5E03\u4E2D\u2026" } }));
+        setPub((r) => ({ ...r, [a.id]: { status: "publishing", msg: s.message || "\u53D1\u5E03\u4E2D\u2026" } }));
       }
     }, 2500);
   });
@@ -9154,7 +9276,7 @@ function PublishPage({ persona }) {
     }
     setPubSmsBusy(true);
     try {
-      await submitPublishSms(pubSms.platform, code);
+      await submitPublishSms(pubSms.platform, code, pubSms.accountId);
       setPubSmsCode("");
       setPubSms((p) => p && { ...p, state: "verifying", message: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" });
     } catch (e) {
@@ -9182,14 +9304,14 @@ function PublishPage({ persona }) {
     });
     showToast("\u5DF2\u5B58\u4E3A\u8349\u7A3F\u5E76\u52A0\u5165\u4ECA\u5929\u7684\u65E5\u5386");
   };
-  const canPublish = platforms.some((k2) => PUBLISHABLE.has(k2));
+  const canPublish = targets.length > 0;
   return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "publish-page", children: [
     /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "publish-editor", children: [
       /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("h1", { className: "page-title", children: [
         /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconPublish, { size: 21 }),
         " \u53D1\u5E03\u4E2D\u5FC3"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "page-subtitle", children: "\u4E00\u6B21\u7F16\u8F91 \u2192 AI \u4E00\u952E\u6539\u5199\u6210\u5404\u5E73\u53F0\u7248\u672C \u2192 \u9884\u68C0 \u2192 \u9644\u5A92\u4F53 \u2192 \u4E00\u952E\u771F\u53D1\u5E03\u3002" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "page-subtitle", children: "\u4E00\u6B21\u7F16\u8F91 \u2192 AI \u4E00\u952E\u6539\u5199\u6210\u5404\u5E73\u53F0\u7248\u672C \u2192 \u9884\u68C0 \u2192 \u9644\u5A92\u4F53 \u2192 \u6309\u8D26\u53F7\u4E00\u952E\u5206\u53D1\u3002" }),
       /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { className: "field-label", children: "\u6807\u9898" }),
       /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
         "input",
@@ -9224,16 +9346,36 @@ function PublishPage({ persona }) {
           onChange: (e) => setTags(e.target.value)
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { className: "field-label", children: "\u53D1\u5E03\u5E73\u53F0" }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8 }, children: PLATFORMS2.map((p) => /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-        "button",
-        {
-          className: `chip ${platforms.includes(p.key) ? "active" : ""}`,
-          onClick: () => toggle(p.key),
-          children: p.label
-        },
-        p.key
-      )) }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("label", { className: "field-label", children: [
+        "\u53D1\u5E03\u76EE\u6807 ",
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { style: { color: "var(--text-secondary)", fontWeight: 400, fontSize: 12 }, children: [
+          "\uFF08\u5E73\u53F0 \u2192 \u8D26\u53F7\uFF0C\u53EF\u8DE8\u5E73\u53F0\u591A\u9009\uFF1B\u540C\u5E73\u53F0\u4E32\u884C\u53D1\u5E03\uFF0C\u8DE8\u5E73\u53F0\u6700\u591A ",
+          PUBLISH_CONCURRENCY,
+          " \u8DEF\u5E76\u884C\uFF09"
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", flexDirection: "column", gap: 8 }, children: PLATFORMS2.map((p) => {
+        const accs = accounts.filter((a) => a.platform === p.key);
+        return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("b", { style: { fontSize: 13, minWidth: 70 }, children: p.label }),
+          accs.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { style: { fontSize: 12.5, color: "var(--text-secondary)" }, children: [
+            "\u8BE5\u5E73\u53F0\u8FD8\u6CA1\u6709\u8D26\u53F7",
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+              "button",
+              {
+                className: "btn btn-sm btn-ghost",
+                style: { marginLeft: 8 },
+                onClick: () => onNavigate?.("accounts"),
+                children: "\u53BB\u8D26\u53F7\u9875\u6DFB\u52A0"
+              }
+            )
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px 16px" }, children: accs.map((a) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("label", { style: { display: "flex", alignItems: "center", gap: 5, fontSize: 13, cursor: "pointer" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("input", { type: "checkbox", checked: accountIds.includes(a.id), onChange: () => toggleAccount(a.id) }),
+            a.name,
+            !a.loggedIn && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 11.5, color: "var(--amber)" }, children: "\u672A\u767B\u5F55" })
+          ] }, a.id)) })
+        ] }, p.key);
+      }) }),
       /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("label", { className: "field-label", style: { marginTop: 14 }, children: [
         "\u5A92\u4F53\u9644\u4EF6 ",
         selectedMedia.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "pv-badge", children: [
@@ -9277,7 +9419,7 @@ function PublishPage({ persona }) {
         adapting ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "btn btn-sm", onClick: stopAdapt, children: [
           /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconStop, { size: 13 }),
           " \u505C\u6B62\u751F\u6210"
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "btn btn-sm btn-primary", disabled: empty || platforms.length === 0, onClick: adapt, children: [
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "btn btn-sm btn-primary", disabled: empty || selectedPlatformKeys.length === 0, onClick: adapt, children: [
           /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconSkills, { size: 14 }),
           " \u4E00\u952E\u9002\u914D\u5404\u5E73\u53F0"
         ] }),
@@ -9286,7 +9428,7 @@ function PublishPage({ persona }) {
           " ",
           checking ? "\u9884\u68C0\u4E2D\u2026" : "\u53D1\u5E03\u524D\u9884\u68C0"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "btn btn-sm", disabled: empty, onClick: () => addToCalendar(platforms[0] || "xiaohongshu"), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "btn btn-sm", disabled: empty, onClick: () => addToCalendar(selectedPlatformKeys[0]?.key || "xiaohongshu"), children: [
           /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconCalendar, { size: 14 }),
           " \u5B58\u8349\u7A3F\u5E76\u6392\u671F"
         ] }),
@@ -9295,7 +9437,7 @@ function PublishPage({ persona }) {
           {
             className: "btn btn-sm btn-primary",
             disabled: empty || publishing || checking || !canPublish,
-            title: canPublish ? "\u771F\u5B9E\u53D1\u5E03\u5230\u5DF2\u767B\u5F55\u5E73\u53F0" : "\u6240\u9009\u5E73\u53F0\u65E0\u4E00\u952E\u53D1\u5E03\uFF08B\u7AD9\u8D70\u7EC8\u7AEF biliup\uFF09",
+            title: canPublish ? "\u771F\u5B9E\u53D1\u5E03\u5230\u52FE\u9009\u7684\u8D26\u53F7" : "\u8BF7\u5148\u52FE\u9009\u8981\u53D1\u5E03\u7684\u8D26\u53F7",
             onClick: publishAll,
             children: [
               /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconPublish, { size: 14 }),
@@ -9323,13 +9465,14 @@ function PublishPage({ persona }) {
               " \u6E05\u7A7A"
             ]
           }
-        )
+        ),
+        samePlatformMulti && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--amber)", alignSelf: "center", lineHeight: 1.5 }, children: "\u26A0\uFE0F \u540C\u5E73\u53F0\u591A\u53F7\u53D1\u540C\u4E00\u5185\u5BB9\u6709\u53BB\u91CD/\u9650\u6D41\u98CE\u9669\uFF0C\u53EF\u5728\u804A\u5929\u91CC\u8BA9 agent \u6309\u5404\u53F7\u753B\u50CF\u6539\u5199\u6587\u6848" })
       ] }),
       adapting && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "adapt-hint", children: [
         /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "live-pulse" }),
         "AI \u6B63\u5728\u9010\u5B57\u6539\u5199\u5404\u5E73\u53F0\u7248\u672C\u2026\u53EF\u968F\u65F6\u505C\u6B62\u3002"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "publish-saved-note", children: "\u8349\u7A3F\u5DF2\u81EA\u52A8\u4FDD\u5B58\uFF0C\u5207\u6362\u9875\u9762/\u5237\u65B0\u56DE\u6765\u5185\u5BB9\u90FD\u5728\u3002\u4E00\u952E\u53D1\u5E03\u4EC5\u5BF9\u300C\u5DF2\u767B\u5F55 + \u5A92\u4F53\u9F50\u5168\u300D\u7684\u5E73\u53F0\u751F\u6548\u3002" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "publish-saved-note", children: "\u8349\u7A3F\u5DF2\u81EA\u52A8\u4FDD\u5B58\uFF0C\u5207\u6362\u9875\u9762/\u5237\u65B0\u56DE\u6765\u5185\u5BB9\u90FD\u5728\u3002\u4E00\u952E\u53D1\u5E03\u4EC5\u5BF9\u300C\u5DF2\u767B\u5F55 + \u5A92\u4F53\u9F50\u5168\u300D\u7684\u8D26\u53F7\u751F\u6548\u3002" }),
       checkResult && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "panel", style: { marginTop: 14 }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "panel-title", children: [
           /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconCheck, { size: 14 }),
@@ -9339,21 +9482,22 @@ function PublishPage({ persona }) {
       ] })
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "publish-previews", children: [
-      platforms.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "dash-empty", children: "\u9009\u62E9\u81F3\u5C11\u4E00\u4E2A\u5E73\u53F0\u67E5\u770B\u9884\u89C8" }),
-      PLATFORMS2.filter((p) => platforms.includes(p.key)).map((p) => {
+      selectedPlatformKeys.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "dash-empty", children: "\u9009\u62E9\u81F3\u5C11\u4E00\u4E2A\u8D26\u53F7\u67E5\u770B\u9884\u89C8" }),
+      selectedPlatformKeys.map((p) => {
         const text2 = effective(p.key);
         const over = text2.length > p.bodyLimit;
         const titleOver = p.titleLimit != null && title.length > p.titleLimit;
         const isEdit = editing === p.key;
-        const ps = pub[p.key];
-        const publishable = PUBLISHABLE.has(p.key);
-        const logged = loginOf(p.key);
+        const accs = targets.filter((a) => a.platform === p.key);
         return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: `card pv-card pv-${p.key}`, children: [
           /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "pv-head", children: [
             /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "pv-plat", children: [
               p.label,
               overrides[p.key] != null && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "pv-badge", children: "AI \u7248" }),
-              publishable && (logged ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "pv-badge pv-badge-ok", children: "\u5DF2\u767B\u5F55" }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "pv-badge", children: "\u672A\u767B\u5F55" }))
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "pv-badge", children: [
+                accs.length,
+                " \u4E2A\u8D26\u53F7"
+              ] })
             ] }),
             /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: `pv-count ${over ? "over" : ""}`, children: [
               text2.length,
@@ -9374,11 +9518,19 @@ function PublishPage({ persona }) {
               }
             ) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "pv-text", children: text2 || /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "pv-ph", children: "\u6B63\u6587\u9884\u89C8\u2026" }) })
           ] }),
-          ps && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: `pv-pubstate ${ps.status}`, children: [
-            ps.status === "publishing" && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "live-pulse" }),
-            ps.status === "ok" ? "\u2705 " : ps.status === "fail" ? "\u26A0\uFE0F " : "",
-            ps.msg
-          ] }),
+          accs.map((a) => {
+            const st = pub[a.id];
+            return st ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: `pv-pubstate ${st.status}`, children: [
+              st.status === "publishing" && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "live-pulse" }),
+              st.status === "ok" ? "\u2705 " : st.status === "fail" ? "\u26A0\uFE0F " : "",
+              a.name,
+              " \xB7 ",
+              st.msg
+            ] }, a.id) : /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { fontSize: 12, color: "var(--text-secondary)", margin: "6px 0 0", display: "flex", alignItems: "center", gap: 6 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: a.loggedIn ? "pv-badge pv-badge-ok" : "pv-badge", children: a.loggedIn ? "\u5DF2\u767B\u5F55" : "\u672A\u767B\u5F55" }),
+              a.name
+            ] }, a.id);
+          }),
           /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "pv-foot", children: [
             /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "pv-hint", children: [
               p.hint,
@@ -9437,7 +9589,7 @@ function PublishPage({ persona }) {
         ),
         /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" }, children: [
           /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn btn-sm btn-ghost", onClick: () => setPubSms(null), children: "\u5173\u95ED" }),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn btn-sm btn-primary", disabled: pubSmsBusy, onClick: submitPubSms, children: pubSmsBusy ? "\u63D0\u4EA4\u4E2D\u2026" : "\u63D0\u4EA4\u9A8C\u8BC1\u7801" })
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn btn-sm btn-primary", disabled: pubSmsBusy, onClick: () => void submitPubSms(), children: pubSmsBusy ? "\u63D0\u4EA4\u4E2D\u2026" : "\u63D0\u4EA4\u9A8C\u8BC1\u7801" })
         ] })
       ] })
     ] }) })
@@ -9492,7 +9644,6 @@ var import_react11 = require("react");
 var import_jsx_runtime19 = require("react/jsx-runtime");
 var STATE_LABEL = {
   starting: "\u542F\u52A8\u4E2D\u2026",
-  window_login: "\u8BF7\u5728\u5F39\u51FA\u7684\u6D4F\u89C8\u5668\u7A97\u53E3\u91CC\u5B8C\u6210\u767B\u5F55",
   qr_ready: "\u8BF7\u626B\u7801",
   scanned: "\u626B\u7801\u6210\u529F",
   sms_required: "\u9700\u77ED\u4FE1\u9A8C\u8BC1",
@@ -9501,6 +9652,25 @@ var STATE_LABEL = {
   expired: "\u4E8C\u7EF4\u7801\u5DF2\u8FC7\u671F",
   error: "\u767B\u5F55\u51FA\u9519",
   unknown: "\u7B49\u5F85\u4E2D\u2026"
+};
+var PLATFORM_META = [
+  { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", backend: "xhs" },
+  { key: "douyin", label: "\u6296\u97F3", backend: "douyin" },
+  { key: "kuaishou", label: "\u5FEB\u624B", backend: "web" },
+  { key: "weixin-channels", label: "\u5FAE\u4FE1\u89C6\u9891\u53F7", backend: "web" },
+  { key: "zhihu", label: "\u77E5\u4E4E", backend: "web" },
+  { key: "bilibili", label: "B\u7AD9", backend: "biliup" },
+  { key: "wechat-oa", label: "\u5FAE\u4FE1\u516C\u4F17\u53F7", backend: "wechat-oa" }
+];
+var WECHAT_PLACEHOLDER = {
+  id: "wechat-oa",
+  platform: "wechat-oa",
+  name: "\u5FAE\u4FE1\u516C\u4F17\u53F7",
+  persona: "",
+  backend: "wechat-oa",
+  profileDir: "",
+  loggedIn: false,
+  direct: false
 };
 function Avatar({ url, name }) {
   const [broken, setBroken] = (0, import_react11.useState)(false);
@@ -9519,11 +9689,6 @@ function Avatar({ url, name }) {
   }
   return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "account-avatar account-avatar-fallback", children: initial });
 }
-var LOGIN_MODES = [
-  { key: "qr", label: "\u626B\u7801\u767B\u5F55", title: "\u65E0\u5934\u6D4F\u89C8\u5668\u51FA\u4E8C\u7EF4\u7801\uFF0C\u624B\u673A App \u626B\u7801\uFF08\u53D7\u5E73\u53F0\u98CE\u63A7\u5F71\u54CD\u6700\u5927\uFF09" },
-  { key: "manual", label: "\u624B\u52A8\u767B\u5F55", title: "\u5F39\u51FA\u53EF\u89C1\u6D4F\u89C8\u5668\u7A97\u53E3\uFF0C\u4F60\u4EB2\u624B\u626B\u7801/\u8F93\u8D26\u53F7\u2014\u2014\u672C\u673A IP + \u771F\u7A97\u53E3\u6307\u7EB9\uFF0C\u6700\u63A8\u8350" },
-  { key: "cdp", label: "\u63A5\u7BA1 Chrome", title: "\u63A5\u7BA1\u4F60\u4EE5\u8C03\u8BD5\u7AEF\u53E3\u542F\u52A8\u7684\u81EA\u5DF1 Chrome\uFF08\u771F\u5B9E\u6307\u7EB9/\u767B\u5F55\u6001\uFF09\u3002\u9700\u5148\u7528 chrome --remote-debugging-port=9222 \u542F\u52A8\uFF0C\u7AEF\u70B9\u5728\u70ED\u70B9\u96F7\u8FBE\u8BBE\u7F6E\u91CC\u914D" }
-];
 function DeconstructSources() {
   const NAMES = { douyin: "\u6296\u97F3", xhs: "\u5C0F\u7EA2\u4E66", bili: "B\u7AD9", youtube: "YouTube" };
   const HINTS = {
@@ -9621,22 +9786,22 @@ function DeconstructSources() {
 }
 function AccountsPage() {
   const [accounts, setAccounts] = (0, import_react11.useState)([]);
+  const [personas, setPersonas] = (0, import_react11.useState)([]);
   const [err, setErr] = (0, import_react11.useState)("");
-  const [loginMode, setLoginMode] = (0, import_react11.useState)(
-    () => localStorage.getItem("easel_login_mode") || "manual"
-  );
-  const pickLoginMode = (m2) => {
-    setLoginMode(m2);
-    try {
-      localStorage.setItem("easel_login_mode", m2);
-    } catch {
-    }
-  };
+  const [loginTarget, setLoginTarget] = (0, import_react11.useState)(null);
+  const [loginErr, setLoginErr] = (0, import_react11.useState)("");
   const [qr, setQr] = (0, import_react11.useState)(null);
+  const [direct, setDirect] = (0, import_react11.useState)(null);
   const [qrNonce, setQrNonce] = (0, import_react11.useState)(0);
-  const [terminalMsg, setTerminalMsg] = (0, import_react11.useState)("");
   const [busy, setBusy] = (0, import_react11.useState)("");
   const [logoutBusy, setLogoutBusy] = (0, import_react11.useState)("");
+  const [delBusy, setDelBusy] = (0, import_react11.useState)("");
+  const [personaBusy, setPersonaBusy] = (0, import_react11.useState)("");
+  const [rename, setRename] = (0, import_react11.useState)(null);
+  const [addTarget, setAddTarget] = (0, import_react11.useState)(null);
+  const [addName, setAddName] = (0, import_react11.useState)("");
+  const [addBusy, setAddBusy] = (0, import_react11.useState)(false);
+  const [addErr, setAddErr] = (0, import_react11.useState)("");
   const [smsCode, setSmsCode] = (0, import_react11.useState)("");
   const [smsBusy, setSmsBusy] = (0, import_react11.useState)(false);
   const [smsErr, setSmsErr] = (0, import_react11.useState)("");
@@ -9648,24 +9813,24 @@ function AccountsPage() {
   const [credErr, setCredErr] = (0, import_react11.useState)("");
   const pollRef = (0, import_react11.useRef)(null);
   const aliveRef = (0, import_react11.useRef)(true);
-  const qrPlatformRef = (0, import_react11.useRef)("");
+  const smsAccountRef = (0, import_react11.useRef)(null);
   (0, import_react11.useEffect)(() => {
     aliveRef.current = true;
     return () => {
       aliveRef.current = false;
     };
   }, []);
-  const runWhoami = (0, import_react11.useCallback)((platform) => {
-    setWhoami((w2) => ({ ...w2, [platform]: "loading" }));
-    accountWhoami(platform).then((r) => {
+  const runWhoami = (0, import_react11.useCallback)((a) => {
+    setWhoami((w2) => ({ ...w2, [a.id]: "loading" }));
+    accountWhoami(a.platform, a.id).then((r) => {
       if (aliveRef.current) {
-        setWhoami((w2) => ({ ...w2, [platform]: r }));
-        setWhoamiCache(platform, r);
+        setWhoami((w2) => ({ ...w2, [a.id]: r }));
+        setWhoamiCache(a.id, r);
       }
     }).catch(() => {
       if (aliveRef.current) setWhoami((w2) => {
         const n = { ...w2 };
-        delete n[platform];
+        delete n[a.id];
         return n;
       });
     });
@@ -9675,12 +9840,20 @@ function AccountsPage() {
     fetchAccounts().then((list) => {
       if (!aliveRef.current) return;
       setAccounts(list);
-      const targets = list.filter((a) => a.supported && a.backend !== "biliup").map((a) => a.platform);
-      verifyStale(targets, {
-        alive: () => aliveRef.current,
-        onUpdate: (platform, r) => setWhoami((w2) => ({ ...w2, [platform]: r }))
-      });
-    }).catch(() => setErr("\u52A0\u8F7D\u8D26\u53F7\u72B6\u6001\u5931\u8D25"));
+      const byId = new Map(list.map((a) => [a.id, a]));
+      verifyStale(
+        list.filter((a) => a.backend !== "biliup" && a.backend !== "wechat-oa").map((a) => a.id),
+        {
+          alive: () => aliveRef.current,
+          resolve: (id) => ({ platform: byId.get(id)?.platform ?? "", account: id }),
+          onUpdate: (id, r) => setWhoami((w2) => ({ ...w2, [id]: r }))
+        }
+      );
+    }).catch(() => setErr("\u52A0\u8F7D\u8D26\u53F7\u5217\u8868\u5931\u8D25"));
+    fetchStatus().then((s) => {
+      if (aliveRef.current && s?.personas) setPersonas(s.personas);
+    }).catch(() => {
+    });
   }, []);
   (0, import_react11.useEffect)(() => {
     load();
@@ -9703,16 +9876,97 @@ function AccountsPage() {
     }
   }, []);
   (0, import_react11.useEffect)(() => () => stopPoll(), [stopPoll]);
-  const closeQr = (0, import_react11.useCallback)(() => {
+  const closeLogin = (0, import_react11.useCallback)(() => {
     stopPoll();
+    setLoginTarget(null);
     setQr(null);
+    setDirect(null);
+    setLoginErr("");
     setSmsCode("");
     setSmsErr("");
     setSmsBusy(false);
     load();
   }, [stopPoll, load]);
+  const openLogin = (0, import_react11.useCallback)((a) => {
+    setLoginErr("");
+    setQr(null);
+    setDirect(null);
+    setLoginTarget(a);
+  }, []);
+  const onLoginSuccess = (0, import_react11.useCallback)((a) => {
+    runWhoami(a);
+    if (a.platform === "xiaohongshu") {
+      void fetch("/easel/api/cookies/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ platform: "xhs", account: a.id })
+      }).catch(() => {
+      });
+    }
+    load();
+  }, [runWhoami, load]);
+  const handleLogin = (0, import_react11.useCallback)(async (a, mode) => {
+    setLoginErr("");
+    setBusy(a.id);
+    setSmsCode("");
+    setSmsErr("");
+    smsAccountRef.current = a;
+    setQrNonce((n) => n + 1);
+    try {
+      const res = await startLogin(a.platform, mode, { account: a.id });
+      if (res.mode === "credentials") {
+        setLoginTarget(null);
+        openCred(a);
+        return;
+      }
+      if (mode === "direct") {
+        stopPoll();
+        setQr(null);
+        setDirect({
+          account: a,
+          message: res.message || "\u8BF7\u5728\u6253\u5F00\u7684\u7A97\u53E3\u4E2D\u767B\u5F55\uFF0C\u5B8C\u6210\u540E\u70B9\u300C\u6821\u9A8C\u767B\u5F55\u6001\u300D",
+          checking: false,
+          verdict: ""
+        });
+        load();
+        return;
+      }
+      stopPoll();
+      setQr({ account: a, state: res.state || "starting", message: res.message || "", qr: res.qr || "" });
+      pollRef.current = setInterval(async () => {
+        try {
+          const s = await loginStatus(a.platform, a.id);
+          setQr((prev) => prev && prev.account.id === a.id ? { ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs } : prev);
+          if (["success", "expired", "error"].includes(s.state)) {
+            stopPoll();
+            if (s.state === "success") onLoginSuccess(a);
+          }
+        } catch {
+        }
+      }, 2e3);
+    } catch (e) {
+      setLoginErr(e instanceof Error ? e.message : "\u542F\u52A8\u767B\u5F55\u5931\u8D25");
+    } finally {
+      setBusy("");
+    }
+  }, [stopPoll, onLoginSuccess, load]);
+  const verifyDirect = (0, import_react11.useCallback)((a) => {
+    setDirect((d2) => d2 && d2.account.id === a.id ? { ...d2, checking: true, verdict: "" } : d2);
+    accountWhoami(a.platform, a.id).then((r) => {
+      if (!aliveRef.current) return;
+      setWhoami((w2) => ({ ...w2, [a.id]: r }));
+      setWhoamiCache(a.id, r);
+      const ok = r.loggedIn;
+      setDirect((d2) => d2 && d2.account.id === a.id ? { ...d2, checking: false, verdict: ok ? "ok" : "no" } : d2);
+      if (ok) load();
+    }).catch(() => {
+      if (aliveRef.current) setDirect((d2) => d2 && d2.account.id === a.id ? { ...d2, checking: false, verdict: "no" } : d2);
+    });
+  }, [load]);
   const submitSms = (0, import_react11.useCallback)(async () => {
+    const target = smsAccountRef.current;
     const code = smsCode.replace(/\D/g, "");
+    if (!target) return;
     if (code.length < 4) {
       setSmsErr("\u8BF7\u8F93\u5165\u624B\u673A\u6536\u5230\u7684\u9A8C\u8BC1\u7801");
       return;
@@ -9720,7 +9974,7 @@ function AccountsPage() {
     setSmsBusy(true);
     setSmsErr("");
     try {
-      await submitLoginSms(qrPlatformRef.current, code);
+      await submitLoginSms(target.platform, code, target.id);
       setSmsCode("");
       setQr((prev) => prev && { ...prev, state: "verifying", message: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" });
     } catch (e) {
@@ -9758,7 +10012,8 @@ function AccountsPage() {
     try {
       const r = await saveCredentials(cred.platform, { appId, appSecret, name: cred.name, author: credForm.author.trim() });
       if (r.ok) {
-        runWhoami(cred.platform);
+        const entry = accounts.find((a) => a.platform === cred.platform);
+        if (entry) runWhoami(entry);
         closeCred();
       } else {
         setCredErr(r.message || "\u9A8C\u8BC1\u672A\u901A\u8FC7");
@@ -9768,74 +10023,18 @@ function AccountsPage() {
     } finally {
       setCredBusy(false);
     }
-  }, [cred, credForm, runWhoami, closeCred]);
-  const handleLogin = (0, import_react11.useCallback)(async (a, mode = loginMode) => {
-    if (!a.supported) return;
-    if (a.backend === "wechat-oa") {
-      openCred(a);
-      return;
-    }
-    setTerminalMsg("");
-    setBusy(a.platform);
-    setSmsCode("");
-    setSmsErr("");
-    qrPlatformRef.current = a.platform;
-    setQrNonce((n) => n + 1);
-    try {
-      const res = await startLogin(a.platform, mode);
-      if (res.mode === "terminal") {
-        setTerminalMsg(res.message || "\u8BF7\u5728\u7EC8\u7AEF\u767B\u5F55");
-        return;
-      }
-      if (res.mode === "credentials") {
-        openCred(a);
-        return;
-      }
-      setQr({
-        platform: a.platform,
-        name: a.name,
-        state: res.state || "starting",
-        message: res.message || "",
-        qr: res.qr || ""
-      });
-      stopPoll();
-      pollRef.current = setInterval(async () => {
-        try {
-          const s = await loginStatus(a.platform);
-          setQr((prev) => prev && { ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs });
-          if (["success", "expired", "error"].includes(s.state)) {
-            stopPoll();
-            if (s.state === "success") {
-              runWhoami(a.platform);
-              if (a.platform === "xiaohongshu") {
-                void fetch("/easel/api/cookies/import", {
-                  method: "POST",
-                  headers: { "content-type": "application/json" },
-                  body: JSON.stringify({ platform: "xhs" })
-                }).catch(() => {
-                });
-              }
-            }
-          }
-        } catch {
-        }
-      }, 2e3);
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "\u542F\u52A8\u767B\u5F55\u5931\u8D25");
-    } finally {
-      setBusy("");
-    }
-  }, [loginMode, stopPoll, runWhoami]);
+  }, [cred, credForm, accounts, runWhoami, closeCred]);
   const handleMpLogin = (0, import_react11.useCallback)(async (a) => {
-    setBusy(a.platform + ":mp");
+    setBusy(a.id + ":mp");
     setSmsCode("");
     setSmsErr("");
     setQrNonce((n) => n + 1);
     try {
       const res = await startMpLogin(a.platform);
+      setLoginTarget(a);
       setQr({
-        platform: a.platform,
-        name: a.name + " \xB7 \u540E\u53F0\u53D6\u6570",
+        account: a,
+        title: `${a.name} \xB7 \u540E\u53F0\u53D6\u6570`,
         state: res.state || "starting",
         message: res.message || "",
         qr: res.qr || "",
@@ -9845,18 +10044,18 @@ function AccountsPage() {
       pollRef.current = setInterval(async () => {
         try {
           const s = await mpLoginStatus(a.platform);
-          setQr((prev) => prev && { ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs });
+          setQr((prev) => prev && prev.account.id === a.id ? { ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs } : prev);
           if (["success", "expired", "error"].includes(s.state)) {
             stopPoll();
             if (s.state === "success") {
-              setAccounts((list) => list.map((x2) => x2.platform === a.platform ? { ...x2, loggedIn: true } : x2));
+              setAccounts((list) => list.map((x2) => x2.id === a.id ? { ...x2, loggedIn: true } : x2));
               setWhoami((w2) => {
                 const n = { ...w2 };
-                delete n[a.platform];
+                delete n[a.id];
                 return n;
               });
-              setWhoamiCache(a.platform, null);
-              runWhoami(a.platform);
+              setWhoamiCache(a.id, null);
+              runWhoami(a);
               load();
             }
           }
@@ -9870,17 +10069,17 @@ function AccountsPage() {
     }
   }, [stopPoll, runWhoami, load]);
   const handleLogout = (0, import_react11.useCallback)(async (a) => {
-    if (!window.confirm(`\u786E\u5B9A\u9000\u51FA\u300C${a.name}\u300D\u7684\u767B\u5F55\uFF1F\u767B\u5F55\u6001\u5C06\u88AB\u6E05\u9664\uFF0C\u4E0B\u6B21\u53D1\u5E03\u9700\u91CD\u65B0\u626B\u7801\u3002`)) return;
-    setLogoutBusy(a.platform);
+    if (!window.confirm(`\u786E\u5B9A\u9000\u51FA\u300C${a.name}\u300D\u7684\u767B\u5F55\uFF1F\u8BE5\u8D26\u53F7\u7684\u767B\u5F55\u6001\u5C06\u88AB\u6E05\u9664\uFF0C\u4E0B\u6B21\u53D1\u5E03\u9700\u91CD\u65B0\u767B\u5F55\u3002`)) return;
+    setLogoutBusy(a.id);
     try {
-      await logoutAccount(a.platform);
-      setAccounts((list) => list.map((x2) => x2.platform === a.platform ? { ...x2, loggedIn: false } : x2));
+      await logoutAccount(a.platform, a.id);
+      setAccounts((list) => list.map((x2) => x2.id === a.id ? { ...x2, loggedIn: false } : x2));
       setWhoami((w2) => {
         const n = { ...w2 };
-        delete n[a.platform];
+        delete n[a.id];
         return n;
       });
-      setWhoamiCache(a.platform, null);
+      setWhoamiCache(a.id, null);
       load();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "\u9000\u51FA\u767B\u5F55\u5931\u8D25");
@@ -9888,184 +10087,442 @@ function AccountsPage() {
       setLogoutBusy("");
     }
   }, [load]);
+  const handleDelete = (0, import_react11.useCallback)(async (a) => {
+    if (!window.confirm(`\u786E\u5B9A\u5220\u9664\u8D26\u53F7\u300C${a.name}\u300D\uFF1F\u5C06\u5220\u9664\u8D26\u53F7\u6761\u76EE\u5E76\u6E05\u9664\u8BE5\u8D26\u53F7\u7684\u767B\u5F55\u6001\u4E0E\u672C\u5730\u6D4F\u89C8\u5668\u6570\u636E\uFF0C\u4E0D\u53EF\u6062\u590D\u3002`)) return;
+    setDelBusy(a.id);
+    try {
+      await deleteAccount(a.id);
+      setWhoami((w2) => {
+        const n = { ...w2 };
+        delete n[a.id];
+        return n;
+      });
+      setWhoamiCache(a.id, null);
+      load();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "\u5220\u9664\u8D26\u53F7\u5931\u8D25");
+    } finally {
+      setDelBusy("");
+    }
+  }, [load]);
+  const setPersona = (0, import_react11.useCallback)(async (a, persona) => {
+    setPersonaBusy(a.id);
+    setAccounts((list) => list.map((x2) => x2.id === a.id ? { ...x2, persona } : x2));
+    try {
+      await updateAccount(a.id, { persona: persona || null });
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "\u753B\u50CF\u7ED1\u5B9A\u5931\u8D25");
+      load();
+    } finally {
+      setPersonaBusy("");
+    }
+  }, [load]);
+  const commitRename = (0, import_react11.useCallback)(() => {
+    if (!rename) return;
+    const { id, value } = rename;
+    setRename(null);
+    const name = value.trim();
+    if (!name) return;
+    updateAccount(id, { name }).then(load).catch((e) => setErr(e instanceof Error ? e.message : "\u6539\u540D\u5931\u8D25"));
+  }, [rename, load]);
+  const submitAdd = (0, import_react11.useCallback)(async () => {
+    if (!addTarget) return;
+    const name = addName.trim();
+    if (!name) {
+      setAddErr("\u8BF7\u8F93\u5165\u8D26\u53F7\u540D\u5B57");
+      return;
+    }
+    setAddBusy(true);
+    setAddErr("");
+    try {
+      const created = await createAccount(addTarget.platform, name);
+      setAddTarget(null);
+      setAddName("");
+      load();
+      openLogin({
+        id: created.id,
+        platform: created.platform,
+        name: created.name,
+        persona: created.persona,
+        backend: PLATFORM_META.find((p) => p.key === created.platform)?.backend ?? "",
+        profileDir: created.profileDir,
+        loggedIn: false,
+        direct: false
+      });
+    } catch (e) {
+      setAddErr(e instanceof Error ? e.message : "\u521B\u5EFA\u8D26\u53F7\u5931\u8D25");
+    } finally {
+      setAddBusy(false);
+    }
+  }, [addTarget, addName, load, openLogin]);
   const effLoggedIn = (a) => {
     if (a.backend === "wechat-oa") return a.loggedIn;
-    const w2 = whoami[a.platform];
+    const w2 = whoami[a.id];
     if (w2 && w2 !== "loading") return w2.loggedIn;
     return a.loggedIn;
   };
-  const badge2 = (a) => {
-    if (!a.supported) return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge", children: "\u5F85\u91CD\u5199" });
-    if (whoami[a.platform] === "loading") return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge", children: "\u6821\u9A8C\u4E2D\u2026" });
-    if (effLoggedIn(a)) return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge badge-ok", children: "\u2713 \u5DF2\u767B\u5F55" });
-    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge", children: "\u672A\u767B\u5F55" });
+  const groups = (0, import_react11.useMemo)(() => {
+    const m2 = /* @__PURE__ */ new Map();
+    for (const p of PLATFORM_META) m2.set(p.key, []);
+    for (const a of accounts) {
+      if (!m2.has(a.platform)) m2.set(a.platform, []);
+      m2.get(a.platform).push(a);
+    }
+    return [...m2.entries()];
+  }, [accounts]);
+  const renderRow = (a) => {
+    const w2 = whoami[a.id];
+    const info = w2 && w2 !== "loading" ? w2 : null;
+    const logged = effLoggedIn(a);
+    const isWechat = a.backend === "wechat-oa";
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: "1px solid var(--border)", flexWrap: "wrap" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Avatar, { url: info?.avatar, name: info?.name || a.name }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { flex: 1, minWidth: 150 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }, children: [
+          rename?.id === a.id ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "input",
+            {
+              className: "field",
+              style: { padding: "3px 8px", fontSize: 13, width: 150 },
+              value: rename.value,
+              autoFocus: true,
+              onChange: (e) => setRename({ id: a.id, value: e.target.value }),
+              onKeyDown: (e) => {
+                if (e.key === "Enter") commitRename();
+                if (e.key === "Escape") setRename(null);
+              },
+              onBlur: commitRename
+            }
+          ) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { style: { fontWeight: 650, fontSize: 14 }, children: a.name }),
+          logged ? w2 === "loading" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge", children: "\u6821\u9A8C\u4E2D\u2026" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge badge-ok", children: "\u2713 \u5DF2\u767B\u5F55" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge", children: "\u672A\u767B\u5F55" }),
+          a.direct && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge", title: "\u8BE5\u8D26\u53F7\u7684\u76F4\u542F\u767B\u5F55\u7A97\u53E3\u8FD8\u5F00\u7740", children: "\u{1FA9F} \u7A97\u53E3\u5F00\u542F" }),
+          rename?.id !== a.id && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "button",
+            {
+              className: "icon-btn",
+              title: "\u6539\u540D",
+              style: { fontSize: 12 },
+              onClick: () => setRename({ id: a.id, value: a.name }),
+              children: "\u270E"
+            }
+          )
+        ] }),
+        logged && info?.name && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }, children: info.name })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("label", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--text-secondary)" }, children: [
+        "\u753B\u50CF",
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+          "select",
+          {
+            value: a.persona,
+            disabled: personaBusy === a.id,
+            title: "\u7ED1\u5B9A\u753B\u50CF\uFF1A\u53D1\u5E03\u5230\u8BE5\u8D26\u53F7\u65F6\u6309\u753B\u50CF\u5B9A\u4F4D\uFF1B\u672A\u7ED1\u5B9A\u8D70\u901A\u7528\u6A21\u5F0F",
+            onChange: (e) => void setPersona(a, e.target.value),
+            style: { padding: "4px 8px", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12.5, background: "var(--surface)", color: "var(--text)", maxWidth: 170 },
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("option", { value: "", children: "\u672A\u7ED1\u5B9A\uFF08\u901A\u7528\u6A21\u5F0F\uFF09" }),
+              personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("option", { value: p.name, children: p.name }, p.name))
+            ]
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 6 }, children: [
+        logged ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm",
+            disabled: w2 === "loading" || busy === a.id,
+            onClick: () => runWhoami(a),
+            children: w2 === "loading" ? "\u6821\u9A8C\u4E2D\u2026" : "\u6821\u9A8C\u8D26\u53F7"
+          }
+        ) : a.direct ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm btn-primary",
+            onClick: () => {
+              setQr(null);
+              setDirect({ account: a, message: "\u8BF7\u5728\u6253\u5F00\u7684\u7A97\u53E3\u4E2D\u767B\u5F55\uFF0C\u5B8C\u6210\u540E\u70B9\u300C\u6821\u9A8C\u767B\u5F55\u6001\u300D", checking: false, verdict: "" });
+              setLoginTarget(a);
+            },
+            children: "\u6821\u9A8C\u767B\u5F55\u6001"
+          }
+        ) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm btn-primary",
+            disabled: busy === a.id || busy === a.id + ":mp",
+            onClick: () => isWechat ? openCred(a) : openLogin(a),
+            children: busy === a.id || busy === a.id + ":mp" ? "\u542F\u52A8\u4E2D\u2026" : "\u767B\u5F55"
+          }
+        ),
+        isWechat && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm",
+            disabled: busy === a.id + ":mp",
+            title: "\u767B\u5F55\u516C\u4F17\u53F7\u540E\u53F0\uFF08\u6570\u636E\u4E2D\u5FC3\u53D6\u6570\u7528\uFF0C\u72EC\u7ACB\u4E8E AppID \u51ED\u8BC1\uFF09",
+            onClick: () => void handleMpLogin(a),
+            children: busy === a.id + ":mp" ? "\u542F\u52A8\u4E2D\u2026" : "\u767B\u5F55\u540E\u53F0"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm btn-ghost",
+            disabled: logoutBusy === a.id,
+            onClick: () => void handleLogout(a),
+            children: logoutBusy === a.id ? "\u9000\u51FA\u4E2D\u2026" : "\u9000\u51FA\u767B\u5F55"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm btn-danger",
+            disabled: delBusy === a.id,
+            title: "\u5220\u9664\u8D26\u53F7\u6761\u76EE\u5E76\u6E05\u9664\u8BE5\u8D26\u53F7\u767B\u5F55\u6001",
+            onClick: () => void handleDelete(a),
+            children: delBusy === a.id ? "\u5220\u9664\u4E2D\u2026" : "\u5220\u9664"
+          }
+        )
+      ] })
+    ] }, a.id);
   };
   return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "accounts-page", children: [
     /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h1", { className: "page-title", children: "\u8D26\u53F7\u767B\u5F55 Accounts" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h1", { className: "page-title", children: "\u8D26\u53F7\u7BA1\u7406 Accounts" }),
         /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("p", { className: "page-subtitle", children: [
-          "\u7528\u624B\u673A App \u626B\u7801\u767B\u5F55\uFF0C\u767B\u5F55\u6001\u672C\u5730\u6301\u4E45\u5316\uFF0C\u4E4B\u540E\u53D1\u5E03\u514D\u767B\u3002",
+          "\u540C\u4E00\u5E73\u53F0\u53EF\u6DFB\u52A0\u591A\u4E2A\u8D26\u53F7\uFF0C\u5404\u81EA\u72EC\u7ACB\u767B\u5F55\u6001\u3001\u53EF\u7ED1\u5B9A\u4E0D\u540C\u753B\u50CF\uFF0C\u53D1\u5E03\u65F6\u6309\u8D26\u53F7\u5206\u53D1\u3002",
           /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("br", {}),
-          "\u26A0\uFE0F \u5E73\u53F0\u53EF\u80FD\u5BF9\u673A\u623F/\u4EE3\u7406 IP \u5224\u98CE\u9669\u5BFC\u81F4\u4E8C\u7EF4\u7801\u5F39\u4E0D\u51FA\uFF0C\u9700\u5E72\u51C0/\u5BB6\u5BBD IP\uFF0C\u6216\u5728\u6B63\u5E38\u7F51\u7EDC\u767B\u5F55\u540E\u62F7\u8D1D\u767B\u5F55\u6001\u76EE\u5F55\u3002"
+          "\u26A0\uFE0F \u5E73\u53F0\u53EF\u80FD\u5BF9\u673A\u623F/\u4EE3\u7406 IP \u5224\u98CE\u9669\uFF1A\u63A8\u8350\u300C\u6253\u5F00\u6D4F\u89C8\u5668\u7A97\u53E3\u300D\u4EBA\u5DE5\u767B\u5F55\uFF0C\u5E72\u51C0/\u5BB6\u5BBD IP \u66F4\u7A33\u3002"
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-sm", onClick: load, children: "\u27F3 \u5237\u65B0" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { display: "flex", gap: 0, borderRadius: 980, overflow: "hidden", boxShadow: "var(--shadow-sm)" }, children: LOGIN_MODES.map((m2) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
-          "button",
-          {
-            title: m2.title,
-            onClick: () => pickLoginMode(m2.key),
-            style: {
-              padding: "5px 12px",
-              border: "none",
-              cursor: "pointer",
-              fontSize: 12,
-              fontWeight: loginMode === m2.key ? 600 : 400,
-              background: loginMode === m2.key ? "var(--accent-soft)" : "var(--surface)",
-              color: loginMode === m2.key ? "var(--accent-start)" : "var(--text-secondary)"
-            },
-            children: m2.label
-          },
-          m2.key
-        )) })
-      ] })
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-sm", onClick: load, children: "\u27F3 \u5237\u65B0" })
     ] }),
     err && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 13, marginTop: 12 }, children: err }),
-    terminalMsg && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "card", style: { padding: 13, fontSize: 13, marginTop: 14 }, children: terminalMsg }),
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "accounts-grid", children: accounts.map((a) => {
-      const w2 = whoami[a.platform];
-      const info = w2 && w2 !== "loading" ? w2 : null;
-      const logged = effLoggedIn(a);
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "card account-card", style: { opacity: a.supported ? 1 : 0.6 }, children: [
+    groups.map(([platform, rows]) => {
+      const meta = PLATFORM_META.find((p) => p.key === platform);
+      const label = meta?.label ?? platform;
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "card", style: { marginTop: 14, padding: 14 }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "account-card-head", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "account-card-name", children: a.name }),
-          badge2(a)
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "account-card-name", children: label }),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8, alignItems: "center" }, children: [
+            rows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { style: { fontSize: 12, color: "var(--text-secondary)" }, children: [
+              rows.length,
+              " \u4E2A\u8D26\u53F7"
+            ] }),
+            platform === "wechat-oa" ? rows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-sm", onClick: () => openCred(WECHAT_PLACEHOLDER), children: "\u914D\u7F6E\u516C\u4F17\u53F7\u51ED\u8BC1" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+              "button",
+              {
+                className: "btn btn-sm",
+                onClick: () => {
+                  setAddTarget({ platform, label });
+                  setAddName("");
+                  setAddErr("");
+                },
+                children: "\uFF0B \u6DFB\u52A0\u8D26\u53F7"
+              }
+            )
+          ] })
         ] }),
-        logged && info && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "account-identity", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Avatar, { url: info.avatar, name: info.name || a.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "account-nick", children: info.name || "\uFF08\u5DF2\u767B\u5F55\uFF09" })
-        ] }),
-        !logged && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "account-card-note", children: a.note ? a.note : `\u540E\u7AEF\uFF1A${a.name}` }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { display: "flex", gap: 8, marginTop: "auto" }, children: logged ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
-            "button",
-            {
-              className: "btn btn-sm",
-              style: { flex: 1 },
-              disabled: busy === a.platform || busy === a.platform + ":mp" || w2 === "loading",
-              onClick: () => runWhoami(a.platform),
-              children: w2 === "loading" ? "\u6821\u9A8C\u4E2D\u2026" : "\u6821\u9A8C\u8D26\u53F7"
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
-            "button",
-            {
-              className: "btn btn-sm btn-ghost",
-              style: { flex: 1 },
-              disabled: logoutBusy === a.platform,
-              onClick: () => handleLogout(a),
-              children: logoutBusy === a.platform ? "\u9000\u51FA\u4E2D\u2026" : "\u9000\u51FA\u767B\u5F55"
-            }
-          )
-        ] }) : (
-          // 公众号与其它平台统一：都走扫码登录（公众号扫的是后台会话，用于发布+数据）
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
-            "button",
-            {
-              className: `btn btn-block ${a.supported ? "btn-primary" : ""}`,
-              disabled: !a.supported || busy === a.platform || busy === a.platform + ":mp",
-              onClick: () => a.backend === "wechat-oa" ? handleMpLogin(a) : handleLogin(a),
-              children: busy === a.platform || busy === a.platform + ":mp" ? "\u542F\u52A8\u4E2D\u2026" : "\u767B\u5F55"
-            }
-          )
-        ) })
-      ] }, a.platform);
-    }) }),
+        rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12.5, color: "var(--text-secondary)", padding: "10px 0 2px" }, children: platform === "wechat-oa" ? "\u516C\u4F17\u53F7\u6682\u53EA\u652F\u6301\u4E00\u4E2A\u8D26\u53F7\uFF1A\u586B AppID/AppSecret \u51ED\u8BC1\u540E\u81EA\u52A8\u5EFA\u6863\u3002" : "\u8FD8\u6CA1\u6709\u8D26\u53F7\uFF1A\u70B9\u53F3\u4E0A\u89D2\u300C\u6DFB\u52A0\u8D26\u53F7\u300D\uFF0C\u767B\u5F55\u540E\u81EA\u52A8\u51FA\u73B0\u5728\u8FD9\u91CC\u3002" }) : rows.map(renderRow)
+      ] }, platform);
+    }),
     /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(DeconstructSources, {}),
-    qr && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "overlay", onClick: closeQr, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+    loginTarget && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "overlay", onClick: closeLogin, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
       "div",
       {
         className: "modal",
-        style: { width: 360, maxWidth: "100%", textAlign: "center" },
+        style: { width: 380, maxWidth: "100%", textAlign: "center" },
         onClick: (e) => e.stopPropagation(),
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
-            "\u767B\u5F55 ",
-            qr.name
+          !qr && !direct && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
+              "\u767B\u5F55\u300C",
+              loginTarget.name,
+              "\u300D"
+            ] }),
+            loginTarget.backend === "wechat-oa" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginBottom: 14 }, children: "\u516C\u4F17\u53F7\u53D1\u5E03\u8D70 AppID \u51ED\u8BC1\uFF1B\u6570\u636E\u4E2D\u5FC3\u53D6\u6570\u8D70\u540E\u53F0\u626B\u7801\u3002" }),
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-primary", style: { flex: 1 }, onClick: () => {
+                  setLoginTarget(null);
+                  openCred(loginTarget);
+                }, children: "\u914D\u7F6E\u51ED\u8BC1" }),
+                /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                  "button",
+                  {
+                    className: "btn",
+                    style: { flex: 1 },
+                    disabled: busy === loginTarget.id + ":mp",
+                    onClick: () => void handleMpLogin(loginTarget),
+                    children: "\u767B\u5F55\u540E\u53F0"
+                  }
+                )
+              ] })
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 14 }, children: [
+                loginTarget.backend !== "biliup" && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                  "button",
+                  {
+                    className: "btn btn-primary",
+                    style: { flex: 1 },
+                    disabled: busy === loginTarget.id,
+                    onClick: () => void handleLogin(loginTarget, "direct"),
+                    children: busy === loginTarget.id ? "\u542F\u52A8\u4E2D\u2026" : "\u{1FA9F} \u6253\u5F00\u6D4F\u89C8\u5668\u7A97\u53E3\uFF08\u63A8\u8350\uFF09"
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                  "button",
+                  {
+                    className: `btn ${loginTarget.backend === "biliup" ? "btn-primary" : ""}`,
+                    style: { flex: 1 },
+                    disabled: busy === loginTarget.id,
+                    onClick: () => void handleLogin(loginTarget, "qr"),
+                    children: "\u626B\u7801\u767B\u5F55"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12, color: "var(--text-secondary)", marginTop: 12, lineHeight: 1.7, textAlign: "left" }, children: loginTarget.backend === "biliup" ? "B\u7AD9\u8D70 TV \u7AEF\u626B\u7801\uFF1A\u51FA\u4E8C\u7EF4\u7801\u540E\u7528\u624B\u673A B\u7AD9 App \u626B\u7801\u786E\u8BA4\u3002" : "\u63A8\u8350\u300C\u6253\u5F00\u6D4F\u89C8\u5668\u7A97\u53E3\u300D\uFF1A\u771F\u5B9E\u6D4F\u89C8\u5668\u91CC\u4EBA\u5DE5\u767B\u5F55\uFF0C\u98CE\u63A7\u6700\u7A33\uFF1B\u626B\u7801\u4E3A\u65E0\u5934\u6D4F\u89C8\u5668\u51FA\u4E8C\u7EF4\u7801\uFF0C\u53D7\u5E73\u53F0\u98CE\u63A7\u5F71\u54CD\u8F83\u5927\u3002" })
+            ] }),
+            loginErr && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 12.5, marginTop: 10 }, children: loginErr })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: {
-            fontSize: 13,
-            marginBottom: 14,
-            color: qr.state === "success" ? "var(--green)" : ["error", "expired"].includes(qr.state) ? "var(--red)" : "var(--text-secondary)"
-          }, children: [
-            STATE_LABEL[qr.state] || qr.state,
-            qr.message ? ` \u2014 ${qr.message}` : ""
+          qr && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
+              "\u767B\u5F55 ",
+              qr.title || qr.account.name
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: {
+              fontSize: 13,
+              marginBottom: 14,
+              color: qr.state === "success" ? "var(--green)" : ["error", "expired"].includes(qr.state) ? "var(--red)" : "var(--text-secondary)"
+            }, children: [
+              STATE_LABEL[qr.state] || qr.state,
+              qr.message ? ` \u2014 ${qr.message}` : ""
+            ] }),
+            qr.state === "sms_required" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { padding: "6px 4px 2px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: {
+                fontSize: 13,
+                marginBottom: 10,
+                color: /错误|过期|失败|重新|未找到|未完成|不正确|失效/.test(qr.message || "") ? "var(--red)" : "var(--text-secondary)"
+              }, children: qr.message || "\u5E73\u53F0\u98CE\u63A7\u8981\u6C42\u77ED\u4FE1\u9A8C\u8BC1\uFF0C\u9A8C\u8BC1\u7801\u5DF2\u53D1\u5230\u4F60\u624B\u673A\uFF0C\u8BF7\u8F93\u5165\uFF1A" }),
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                "input",
+                {
+                  value: smsCode,
+                  onChange: (e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 8)),
+                  onKeyDown: (e) => {
+                    if (e.key === "Enter") void submitSms();
+                  },
+                  placeholder: "\u77ED\u4FE1\u9A8C\u8BC1\u7801",
+                  inputMode: "numeric",
+                  autoFocus: true,
+                  style: {
+                    width: "100%",
+                    boxSizing: "border-box",
+                    textAlign: "center",
+                    letterSpacing: 6,
+                    fontSize: 20,
+                    padding: "10px 12px",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8
+                  }
+                }
+              ),
+              smsErr && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 12, marginTop: 6 }, children: smsErr }),
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                "button",
+                {
+                  className: "btn btn-primary btn-block",
+                  style: { marginTop: 12 },
+                  disabled: smsBusy,
+                  onClick: () => void submitSms(),
+                  children: smsBusy ? "\u63D0\u4EA4\u4E2D\u2026" : "\u63D0\u4EA4\u9A8C\u8BC1\u7801"
+                }
+              )
+            ] }) : qr.state === "qr_ready" && qr.qr ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("img", { className: "qr-img", src: `${mediaUrl(qr.qr)}?v=${qr.qrTs || qrNonce}`, alt: "\u767B\u5F55\u4E8C\u7EF4\u7801" }) : qr.state === "scanned" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "spinner" }),
+              "\u626B\u7801\u6210\u529F\uFF0C\u6B63\u5728\u8DF3\u8F6C\u9A8C\u8BC1\u2026\uFF08\u9996\u6B21\u53EF\u80FD\u7B49\u5341\u51E0\u79D2\uFF09"
+            ] }) : qr.state === "verifying" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "spinner" }),
+              "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\uFF0C\u767B\u5F55\u4E2D\u2026"
+            ] }) : qr.state === "success" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 48, padding: 40 }, children: "\u2705" }) : ["error", "expired"].includes(qr.state) ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { fontSize: 13, color: "var(--red)", padding: 30 }, children: [
+              qr.message || "\u767B\u5F55\u5931\u8D25",
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("br", {}),
+              "\u53EF\u5173\u95ED\u540E\u91CD\u8BD5\uFF08\u6216\u6362\u5E72\u51C0 IP\uFF09\u3002"
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "spinner" }),
+              "\u51C6\u5907\u4E8C\u7EF4\u7801\u2026"
+            ] })
           ] }),
-          qr.state === "sms_required" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { padding: "6px 4px 2px" }, children: [
+          direct && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
+              "\u767B\u5F55 ",
+              direct.account.name
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 30, margin: "10px 0 6px" }, children: "\u{1FA9F}" }),
             /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: {
               fontSize: 13,
-              marginBottom: 10,
-              color: /错误|过期|失败|重新|未找到|未完成|不正确|失效/.test(qr.message || "") ? "var(--red)" : "var(--text-secondary)"
-            }, children: qr.message || "\u5E73\u53F0\u98CE\u63A7\u8981\u6C42\u77ED\u4FE1\u9A8C\u8BC1\uFF0C\u9A8C\u8BC1\u7801\u5DF2\u53D1\u5230\u4F60\u624B\u673A\uFF0C\u8BF7\u8F93\u5165\uFF1A" }),
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
-              "input",
-              {
-                value: smsCode,
-                onChange: (e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 8)),
-                onKeyDown: (e) => {
-                  if (e.key === "Enter") submitSms();
-                },
-                placeholder: "\u77ED\u4FE1\u9A8C\u8BC1\u7801",
-                inputMode: "numeric",
-                autoFocus: true,
-                style: {
-                  width: "100%",
-                  boxSizing: "border-box",
-                  textAlign: "center",
-                  letterSpacing: 6,
-                  fontSize: 20,
-                  padding: "10px 12px",
-                  border: "1px solid var(--border)",
-                  borderRadius: 8
-                }
-              }
-            ),
-            smsErr && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 12, marginTop: 6 }, children: smsErr }),
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+              marginBottom: 8,
+              lineHeight: 1.7,
+              color: direct.verdict === "ok" ? "var(--green)" : direct.verdict === "no" ? "var(--red)" : "var(--text-secondary)"
+            }, children: direct.verdict === "ok" ? "\u2705 \u5DF2\u68C0\u6D4B\u5230\u767B\u5F55\u6001" : direct.verdict === "no" ? "\u8FD8\u6CA1\u6709\u68C0\u6D4B\u5230\u767B\u5F55\u6001\uFF1A\u8BF7\u5728\u7A97\u53E3\u91CC\u5B8C\u6210\u767B\u5F55\u540E\uFF0C\u518D\u70B9\u4E00\u6B21\u300C\u6821\u9A8C\u767B\u5F55\u6001\u300D\u3002" : direct.message || "\u8BF7\u5728\u6253\u5F00\u7684\u7A97\u53E3\u4E2D\u767B\u5F55\uFF0C\u5B8C\u6210\u540E\u70B9\u300C\u6821\u9A8C\u767B\u5F55\u6001\u300D\u3002" }),
+            direct.verdict !== "ok" && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
               "button",
               {
                 className: "btn btn-primary btn-block",
-                style: { marginTop: 12 },
-                disabled: smsBusy,
-                onClick: submitSms,
-                children: smsBusy ? "\u63D0\u4EA4\u4E2D\u2026" : "\u63D0\u4EA4\u9A8C\u8BC1\u7801"
+                style: { marginTop: 10 },
+                disabled: direct.checking,
+                onClick: () => verifyDirect(direct.account),
+                children: direct.checking ? "\u6821\u9A8C\u4E2D\u2026\uFF08\u8D77\u6D4F\u89C8\u5668\u5B9E\u6D4B\uFF0C\u7EA6\u51E0\u79D2\uFF09" : "\u6821\u9A8C\u767B\u5F55\u6001"
               }
-            )
-          ] }) : qr.state === "window_login" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { padding: "18px 6px", textAlign: "left", fontSize: 13, lineHeight: 1.7 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 30, textAlign: "center", marginBottom: 10 }, children: "\u{1FA9F}" }),
-            qr.message || "\u8BF7\u5728\u5F39\u51FA\u7684\u6D4F\u89C8\u5668\u7A97\u53E3\u91CC\u5B8C\u6210\u767B\u5F55\u3002",
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("br", {}),
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { style: { color: "var(--text-secondary)" }, children: "\u5B8C\u6210\u540E\u8FD9\u91CC\u4F1A\u81EA\u52A8\u68C0\u6D4B\u5230\u767B\u5F55\u6210\u529F\uFF1B\u671F\u95F4\u4E0D\u8981\u5173\u95ED\u90A3\u4E2A\u7A97\u53E3\u3002" })
-          ] }) : qr.state === "qr_ready" && qr.qr ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("img", { className: "qr-img", src: `${mediaUrl(qr.qr)}?v=${qr.qrTs || qrNonce}`, alt: "\u767B\u5F55\u4E8C\u7EF4\u7801" }) : qr.state === "scanned" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "spinner" }),
-            "\u626B\u7801\u6210\u529F\uFF0C\u6B63\u5728\u8DF3\u8F6C\u9A8C\u8BC1\u2026\uFF08\u9996\u6B21\u53EF\u80FD\u7B49\u5341\u51E0\u79D2\uFF09"
-          ] }) : qr.state === "verifying" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "spinner" }),
-            "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\uFF0C\u767B\u5F55\u4E2D\u2026"
-          ] }) : qr.state === "success" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 48, padding: 40 }, children: "\u2705" }) : ["error", "expired"].includes(qr.state) ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { fontSize: 13, color: "var(--red)", padding: 30 }, children: [
-            qr.message || "\u767B\u5F55\u5931\u8D25",
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("br", {}),
-            "\u53EF\u5173\u95ED\u540E\u91CD\u8BD5\uFF08\u6216\u6362\u5E72\u51C0 IP\uFF09\u3002"
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "spinner" }),
-            "\u51C6\u5907\u4E8C\u7EF4\u7801\u2026"
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12, color: "var(--text-secondary)", marginTop: 12, lineHeight: 1.7, textAlign: "left" }, children: "\u7A97\u53E3\u53EF\u4EE5\u4E00\u76F4\u5F00\u7740\uFF1A\u53D1\u5E03\u65F6\u4F1A\u81EA\u52A8\u9644\u8EAB\u8FD9\u4E2A\u7A97\u53E3\uFF0C\u4F60\u53EF\u968F\u65F6\u63D2\u624B\u9A8C\u8BC1\u7801/\u77ED\u4FE1\u3002\u767B\u5F55\u6001\u4FDD\u5B58\u5728\u672C\u5730\uFF0C\u5173\u6389\u7A97\u53E3\u4E5F\u4E0D\u4E22\u3002" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn", onClick: closeQr, children: qr.state === "success" ? "\u5B8C\u6210" : "\u5173\u95ED" }) })
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn", onClick: closeLogin, children: qr?.state === "success" || direct?.verdict === "ok" ? "\u5B8C\u6210" : "\u5173\u95ED" }) })
         ]
       }
     ) }),
+    addTarget && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "overlay", onClick: () => {
+      setAddTarget(null);
+      setAddErr("");
+    }, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "modal", style: { width: 360, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
+        "\u6DFB\u52A0",
+        addTarget.label,
+        "\u8D26\u53F7"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginBottom: 12, lineHeight: 1.6 }, children: "\u8D77\u4E2A\u597D\u8BA4\u7684\u540D\u5B57\uFF08\u5982\u300C\u4E3B\u53F7\u300D\u300C\u5C0F\u53F7 A\u300D\uFF09\u3002\u6BCF\u4E2A\u8D26\u53F7\u6709\u72EC\u7ACB\u767B\u5F55\u6001\uFF0C\u53EF\u7ED1\u5B9A\u4E0D\u540C\u753B\u50CF\u3002" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        "input",
+        {
+          className: "field",
+          value: addName,
+          autoFocus: true,
+          placeholder: "\u8D26\u53F7\u540D\u5B57",
+          onChange: (e) => setAddName(e.target.value),
+          onKeyDown: (e) => {
+            if (e.key === "Enter") void submitAdd();
+          }
+        }
+      ),
+      addErr && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 12.5, marginTop: 8 }, children: addErr }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 14, justifyContent: "flex-end" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-sm", onClick: () => {
+          setAddTarget(null);
+          setAddErr("");
+        }, children: "\u53D6\u6D88" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm btn-primary",
+            disabled: addBusy || !addName.trim(),
+            onClick: () => void submitAdd(),
+            children: addBusy ? "\u521B\u5EFA\u4E2D\u2026" : "\u521B\u5EFA\u5E76\u767B\u5F55"
+          }
+        )
+      ] })
+    ] }) }),
     cred && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "overlay", onClick: closeCred, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
       /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
         "\u914D\u7F6E ",
@@ -10137,7 +10594,7 @@ function AccountsPage() {
       ),
       credErr && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 12.5, marginTop: 8 }, children: credErr }),
       /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 16 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-primary", style: { flex: 1 }, disabled: credBusy, onClick: submitCred, children: credBusy ? "\u9A8C\u8BC1\u4E2D\u2026" : "\u4FDD\u5B58\u5E76\u9A8C\u8BC1" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-primary", style: { flex: 1 }, disabled: credBusy, onClick: () => void submitCred(), children: credBusy ? "\u9A8C\u8BC1\u4E2D\u2026" : "\u4FDD\u5B58\u5E76\u9A8C\u8BC1" }),
         /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn", onClick: closeCred, children: "\u5173\u95ED" })
       ] })
     ] }) })
@@ -10890,6 +11347,7 @@ function BreakdownPage({ persona, onNavigate, remote }) {
       job.srt ? `- \u5B57\u5E55\u6587\u4EF6\uFF1A${job.srt}\uFF08\u53E3\u64AD\u5168\u6587\uFF0C\u5FC5\u8BFB\uFF09` : "",
       job.framesError ? `- \u6CE8\u610F\uFF1A\u62BD\u5E27\u5931\u8D25\uFF08${job.framesError}\uFF09\uFF0C\u672C\u6B21\u53EA\u9760\u5B57\u5E55\u62C6\u89E3` : ""
     ].filter(Boolean).join("\n");
+    const roster = await rosterPrompt();
     const prompt = `\u4F60\u662F\u7206\u6B3E\u5185\u5BB9\u62C6\u89E3\u4E13\u5BB6\u3002\u7D20\u6750\u5DF2\u7531\u6D41\u6C34\u7EBF\u91C7\u96C6\u5B8C\u6210\uFF0C\u76F4\u63A5\u57FA\u4E8E\u4EE5\u4E0B\u7D20\u6750\u505A\u62C6\u89E3${visionModel ? `\uFF08\u672C\u4F1A\u8BDD\u5DF2\u5207\u5230\u89C6\u89C9\u6A21\u578B ${visionModel.split("::")[1]}\uFF0C\u52A1\u5FC5 Read \u770B\u5E27\u5F15\u7528\u753B\u9762\u8BC1\u636E\uFF09` : ""}\uFF1A
 ${assets}
 
@@ -10900,8 +11358,7 @@ ${assets}
 4. **\u4E3A\u4EC0\u4E48\u4F1A\u706B**\uFF1A\u60C5\u7EEA/\u5171\u9E23/\u5B9E\u7528/\u4E89\u8BAE\u70B9
 5. **\u53EF\u590D\u5236\u6A21\u677F**\uFF1A\u628A\u5957\u8DEF\u62BD\u8C61\u6210\u80FD\u76F4\u63A5\u5957\u7528\u7684\u7ED3\u6784\u6846\u67B6
 6. **\u501F\u8FD9\u4E2A\u5957\u8DEF${persona ? `\u3001\u7ED3\u5408\u6211\u7684\u753B\u50CF\u300C${persona}\u300D` : ""}\u53EF\u505A\u7684 3 \u4E2A\u9009\u9898**
-
-\u3010\u5B8C\u6210\u540E\u5FC5\u987B\u6267\u884C\u3011
+${roster}${roster ? "\n" : ""}\u3010\u5B8C\u6210\u540E\u5FC5\u987B\u6267\u884C\u3011
 a) \u628A\u4E0A\u9762 1-6 \u70B9\u7684\u5B8C\u6574 Markdown \u62A5\u544A\u5199\u5165 outputs/_deconstruct/${job.id}/report.md\uFF1B
 b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C\u5728\u6700\u524D\u63D2\u5165\u4E00\u6761\uFF1A
 {"id":"<12\u4F4D\u968F\u673Ahex>","title":${JSON.stringify(ideaTitle)},"note":"<\u5B8C\u6574\u62A5\u544AMarkdown>","source":"\u7206\u6B3E\u62C6\u89E3","status":"pending","deconstruct":"${job.id}","created":<\u5F53\u524Dunix\u79D2>}\uFF0C

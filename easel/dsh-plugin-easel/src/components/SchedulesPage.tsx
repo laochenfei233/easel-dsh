@@ -4,6 +4,7 @@
 // 时机表单只做四种形状（仅一次/每天/每周/每 N 小时或分钟）；cron 任务只读展示。
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { createScheduledTask, type ScheduledTiming } from '../lib/api';
+import { fetchRoster, platformLabel, type RosterAccount } from '../lib/roster';
 import type { PageProps } from '../lib/shell';
 import { IconChevron, IconClock, IconEdit, IconPlus, IconRefresh, IconTrash } from './icons';
 
@@ -220,7 +221,8 @@ export default function SchedulesPage({
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [query, setQuery] = useState('');
   const [toast, setToast] = useState('');
-  const [form, setForm] = useState<null | { title: string; prompt: string; timing: TimingDraft; sessionId: string }>(null);
+  const [form, setForm] = useState<null | { title: string; prompt: string; timing: TimingDraft; sessionId: string; accountId: string }>(null);
+  const [rosterList, setRosterList] = useState<RosterAccount[]>([]);
   const [detail, setDetail] = useState<ScheduleEntry | null>(null);
   const [detailBusy, setDetailBusy] = useState(false);
   const [editingTiming, setEditingTiming] = useState<TimingDraft | null>(null);
@@ -302,10 +304,15 @@ export default function SchedulesPage({
     }
     setDetailBusy(true);
     try {
+      // 关联账号不进调度引擎：直接追加到提示词（模型可见 ⟺ 日志可见，prompt 即权威）。
+      const linked = rosterList.find(a => a.id === form.accountId);
+      const persona = linked?.persona ? `，画像「${linked.persona}」` : '';
+      const promptBody = linked === undefined ? form.prompt.trim()
+        : `${form.prompt.trim()}\n\n目标账号：${platformLabel(linked.platform)}「${linked.name}」（账号 id：${linked.id}${persona}）`;
       await createScheduledTask({
         sessionId: form.sessionId,
         title: form.title.trim(),
-        prompt: form.prompt.trim(),
+        prompt: promptBody,
         timeZone: localZone(),
         timing: {
           kind: form.timing.kind,
@@ -447,9 +454,12 @@ export default function SchedulesPage({
           <h1 className="page-title"><IconClock size={21} /> 定时任务</h1>
           <p className="page-subtitle">到点自动把任务内容发给所选会话——每日简报、周更初稿、素材巡检都交给它。</p>
         </div>
-        <button className="btn btn-sm btn-primary" onClick={() => setForm({
-          title: '', prompt: '', timing: { ...EMPTY_TIMING }, sessionId: sessionOptions[0]?.id ?? '',
-        })}><IconPlus size={13} /> 新建任务</button>
+        <button className="btn btn-sm btn-primary" onClick={() => {
+          void fetchRoster().then(setRosterList);
+          setForm({
+            title: '', prompt: '', timing: { ...EMPTY_TIMING }, sessionId: sessionOptions[0]?.id ?? '', accountId: '',
+          });
+        }}><IconPlus size={13} /> 新建任务</button>
       </div>
 
       {nextUp !== undefined && (
@@ -526,6 +536,15 @@ export default function SchedulesPage({
             <select className="field" value={form.sessionId} onChange={e => setForm({ ...form, sessionId: e.target.value })}>
               {sessionOptions.length === 0 && <option value="">（暂无可用会话，先新建一个对话）</option>}
               {sessionOptions.map(s => <option key={s.id} value={s.id}>{s.title}</option>)}
+            </select>
+            <label className="field-label">关联发布账号（可选）</label>
+            <select className="field" value={form.accountId} onChange={e => setForm({ ...form, accountId: e.target.value })}>
+              <option value="">不关联</option>
+              {rosterList.map(a => (
+                <option key={a.id} value={a.id}>
+                  {platformLabel(a.platform)}「{a.name}」{a.persona ? `（画像：${a.persona}）` : ''}
+                </option>
+              ))}
             </select>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
               <button className="btn btn-sm" onClick={() => setForm(null)}>取消</button>

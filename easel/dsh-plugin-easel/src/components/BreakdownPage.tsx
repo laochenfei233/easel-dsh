@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { pushTask } from '../lib/task';
+import { rosterPrompt } from '../lib/roster';
 import { fetchOutputContent } from '../lib/api';
 import { renderMarkdown } from '../lib/sanitize';
 import { IconFire, IconIdea, IconSkills } from './icons';
@@ -198,6 +199,7 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
       job.srt ? `- 字幕文件：${job.srt}（口播全文，必读）` : '',
       job.framesError ? `- 注意：抽帧失败（${job.framesError}），本次只靠字幕拆解` : '',
     ].filter(Boolean).join('\n');
+    const roster = await rosterPrompt();
     const prompt =
       `你是爆款内容拆解专家。素材已由流水线采集完成，直接基于以下素材做拆解` +
       `${visionModel ? `（本会话已切到视觉模型 ${visionModel.split('::')[1]}，务必 Read 看帧引用画面证据）` : ''}：\n` +
@@ -208,7 +210,8 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
       `3. **结构套路**：分段/节奏/信息编排\n` +
       `4. **为什么会火**：情绪/共鸣/实用/争议点\n` +
       `5. **可复制模板**：把套路抽象成能直接套用的结构框架\n` +
-      `6. **借这个套路${persona ? `、结合我的画像「${persona}」` : ''}可做的 3 个选题**\n\n` +
+      `6. **借这个套路${persona ? `、结合我的画像「${persona}」` : ''}可做的 3 个选题**\n` +
+      `${roster}${roster ? '\n' : ''}` +
       `【完成后必须执行】\n` +
       `a) 把上面 1-6 点的完整 Markdown 报告写入 outputs/_deconstruct/${job.id}/report.md；\n` +
       `b) 读取 outputs/_ideas.json（不存在当 []），在最前插入一条：\n` +

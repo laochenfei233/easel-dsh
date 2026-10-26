@@ -4,6 +4,7 @@ import {
 } from '../lib/api';
 import type { AccountItem, OutputFile } from '../lib/api';
 import { pushTask } from '../lib/task';
+import { rosterPrompt } from '../lib/roster';
 import { loadPublishDraft, savePublishDraft } from '../lib/store';
 import { renderMarkdown } from '../lib/sanitize';
 import { IconPublish, IconCopy, IconCheck, IconCalendar, IconSkills, IconEdit, IconStop, IconTrash } from './icons';
@@ -168,6 +169,7 @@ export default function PublishPage({ persona, onNavigate }: PublishPageProps) {
   // 报告写 outputs/_adapt/<batch>.md，回合静默后页面读回展示。
   const runPrecheck = async (): Promise<string> => {
     const batch = `precheck-${Date.now().toString(36)}.md`;
+    const roster = await rosterPrompt();
     const prompt =
       `你是社媒发布审核助手。对下面这条待发内容做三项检查，用简洁中文分点输出：\n` +
       `1. **合规风险**：是否含极限词/医疗功效/敏感或违规表述，列出问题词+替换建议；无则写"未见明显风险"。\n` +
@@ -177,6 +179,7 @@ export default function PublishPage({ persona, onNavigate }: PublishPageProps) {
         : `3. **人设一致性**：未选择画像，注明"未选择画像，已跳过"。\n`) +
       `最后一行给「✅可发 / ⚠️建议修改」结论。\n` +
       `完成后把完整预检报告写入 outputs/_adapt/${batch}（Markdown）。除该文件外不要写其它文件。\n\n` +
+      `${roster}${roster ? '\n' : ''}` +
       `待检内容：\n标题：${title}\n正文：${body}`;
     const handle = await pushTask(prompt, { open: false });
     checkCtl.current = handle.abort;
