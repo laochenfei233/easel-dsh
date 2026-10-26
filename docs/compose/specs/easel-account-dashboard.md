@@ -1,14 +1,22 @@
 ---
 feature: easel-account-dashboard
-status: in-progress
+status: delivered
 updated: 2026-10-26
 branch: feat/easel-account-dashboard
-commits: # filled at delivery
+commits: d91e3a4153..486bc033bf
 ---
 
 # 工作台创作数据：账号切换 + 全览
 
 ## Report
+
+**What was built** — 归因归档按账号隔离：`outputs/_analytics/<accountId>.jsonl`，默认账号 id 就是平台 key，既有 `<platform>.jsonl` 无需迁移；`account_stats.py fetch` 新增 `--history-key`，并新增只读的 `history` 子命令（复用 `growth_windows`，不起浏览器，返回 latest/growth/points/ageDays）。宿主新增 `GET /easel/api/analytics/overview`（注册在 `analytics/platforms` 之后、`analytics/:p` 之前），逐账号 spawn `history` 并用 `Promise.all` 汇总；详情 `GET /api/analytics/:p?account=<id>` 把账号 id 作为归档键写入。公众号由 `weixin_mp_stats.py` 写同一目录、因此同样进全览；B 站 `biliup stats` 不写归档，全览如实标记。
+
+工作台「创作数据」卡改为两态：默认**全览**（每个账号一张卡：平台 + 画像徽标 + 账号名 + 粉丝大数 + 当前窗口增长 + 迷你走势 + 获赞/关注/采集时间），chips 可在「全览」与任一账号间切换；详情沿用原三栏（概览与多窗口增长 / 近 7 日环比 / 最新笔记），标题带「平台·账号名」。账号清单直接来自 overview，不再叠加 `/api/accounts` 与 `/api/analytics/platforms`；未登录账号灰虚线并跳账号页，未采集/不归档各有独立文案。顺带修掉两处既有类型缺陷（`PersonaFile` 未声明、`DashboardPage` 从并不存在的 `./Sidebar` 导入 `Page`）。
+
+**Verification** — 插件 `node --test test/*.test.js`：**267 pass / 0 fail**（新增 `test/analytics-overview.test.js` 5 例：归档按账号隔离、公众号归档可读、子进程失败只降级该行、字面量路由优先、详情传账号 id 作归档键、陈旧 id 严格 400）；`python account_stats.py selftest` 通过；`node build.mjs` 重打包 client.js；对 `DashboardPage.tsx` 手动 `tsc --noEmit --strict` 零诊断（插件无自带类型门）；仓库 `pnpm run typecheck` 5/5。视觉：Playwright + 假 API 独立预览页（1280×1000 全览/详情、430×900 窄屏），无 pageerror、横向溢出 0。独立复审两轮：首轮 2 MAJOR（公众号归档被误判为不存在并对外显示假文案；B 站 whoami 跳过误用 backend 值导致回归），修复后复审用真脚本端到端验证闭环，裁决 SHIP；第二轮另指出「失败隔离测试守卫写错、永不触发」，已修并用临时回退证明该测试会变红。
+
+**Journey log** — ① 归档键复用注册表「默认账号 id = 平台 key」的巧劲，让既有 `<platform>.jsonl` 零迁移；② 想当然地把公众号归入「不写归档」，复审直接找到 `weixin_mp_stats.py` 里的 `record_snapshot("wechat-oa")`——跨脚本的写入点必须核实，不能从平台分类推断；③ 同理 `backend` 是枚举（`biliup`）不是平台 key（`bilibili`），跳过逻辑写错字段就静默失效；④ 新增的失败隔离测试最初断言「有数据行恰好 3 行」，但失败分支守卫写错了键名，绿的是空归档兜底——测试名不副实比没有测试更危险，需要回退验证；⑤ `--help`/docstring/README/spec 与实现同批更新，避免「读归档不校验平台」这类放宽无处可查。
 
 - Workspace: worktree `.worktrees/easel-account-dashboard`，分支 `feat/easel-account-dashboard`，base = `feat/easel-multi-account` head `d91e3a4153`（栈式分支；多账户功能尚未合并 master）。
 
@@ -73,17 +81,17 @@ commits: # filled at delivery
 
 ## Tasks
 
-- [ ] T1: `account_stats.py`：`--history-key`（fetch）+ `history` 子命令（复用 growth_windows，输出 latest/growth/points/ageDays）+ selftest 断言（默认键=平台、显式键隔离、无历史时空结果） (depends: none)
-- [ ] T2: `automation.js`：详情 `apiAnalytics` 传 `--history-key <account.id>`；新增 `apiAnalyticsOverview` + 路由（字面量先于 `:p`）+ `ARCHIVED_ANALYTICS` 平台集 (depends: T1)
-- [ ] T3: 前端 `api.ts` 类型与 `fetchAnalyticsOverview`；`DashboardPage` 账号 chips/全览/详情按账号 + 缓存键与 whoami 自愈迁移 (depends: T2)
-- [ ] T4: CSS：`.ana-acct` 卡、网格、迷你走势图、灰显 chip (depends: T3)
-- [ ] T5: 验证：插件 node --test、account_stats selftest、client.js 重打包、typecheck；复审 (depends: T3, T4)
+- [x] T1: `account_stats.py`：`--history-key`（fetch）+ `history` 子命令（复用 growth_windows，输出 latest/growth/points/ageDays）+ selftest 断言（默认键=平台、显式键隔离、无历史时空结果） (depends: none)
+- [x] T2: `automation.js`：详情 `apiAnalytics` 传 `--history-key <account.id>`；新增 `apiAnalyticsOverview` + 路由（字面量先于 `:p`）+ `ARCHIVED_ANALYTICS` 平台集 (depends: T1)
+- [x] T3: 前端 `api.ts` 类型与 `fetchAnalyticsOverview`；`DashboardPage` 账号 chips/全览/详情按账号 + 缓存键与 whoami 自愈迁移 (depends: T2)
+- [x] T4: CSS：`.ana-acct` 卡、网格、迷你走势图、灰显 chip (depends: T3)
+- [x] T5: 验证：插件 node --test、account_stats selftest、client.js 重打包、typecheck；复审 (depends: T3, T4)
 
 ## [S4] Acceptance
 
-- [ ] 同平台两个账号的归档各自落 `_analytics/<accountId>.jsonl`；默认账号继续写既有 `<platform>.jsonl`（升级后历史不丢、不需迁移）
-- [ ] 详情抓取带 `?account=<id>` 时，增长对比读的是该账号自己的历史
-- [ ] 全览一次返回所有归因平台账号的最新快照与增长窗口，不启动浏览器（公众号读 `_analytics/wechat-oa.jsonl`，B 站标记未归档）
-- [ ] 工作台创作数据卡片默认展示全览；可一键切到任一账号详情，切回全览保留数据
-- [ ] 未登录账号在全览/切换中可辨识并指向账号页；无账号时保留原空态
-- [ ] 插件测试全绿；`account_stats.py selftest` 通过；client.js 已重打包
+- [x] 同平台两个账号的归档各自落 `_analytics/<accountId>.jsonl`；默认账号继续写既有 `<platform>.jsonl`（升级后历史不丢、不需迁移）
+- [x] 详情抓取带 `?account=<id>` 时，增长对比读的是该账号自己的历史
+- [x] 全览一次返回所有归因平台账号的最新快照与增长窗口，不启动浏览器（公众号读 `_analytics/wechat-oa.jsonl`，B 站标记未归档）
+- [x] 工作台创作数据卡片默认展示全览；可一键切到任一账号详情，切回全览保留数据
+- [x] 未登录账号在全览/切换中可辨识并指向账号页；无账号时保留原空态
+- [x] 插件测试全绿；`account_stats.py selftest` 通过；client.js 已重打包
