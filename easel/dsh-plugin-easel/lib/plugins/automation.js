@@ -84,7 +84,7 @@ async function apiLoginSms(c) {
   if (!(platform in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
   const body = await c.body()
   const registry = await loadRegistry(c.settings)
-  const account = resolveAccount(registry, platform, typeof body?.account === 'string' ? body.account : '')
+  const account = resolveAccountStrict(registry, platform, typeof body?.account === 'string' ? body.account : '')
   if (account === null) throw new ApiError(400, '该平台还没有账号，请先登录一次')
   return writeSmsCode(c, '_login', account.id, body)
 }
@@ -93,7 +93,7 @@ async function apiPublishStatus(c) {
   const platform = c.params.p
   if (!(platform in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
   const registry = await loadRegistry(c.settings)
-  const account = resolveAccount(registry, platform, c.query.get('account') ?? '')
+  const account = resolveAccountStrict(registry, platform, c.query.get('account') ?? '')
   const key = account !== null ? account.id : platform
   const raw = await readJsonFile(join(c.settings.projectRoot, 'outputs', '_publish', `${key}.json`), null)
   const state = raw !== null && typeof raw === 'object' && typeof raw.state === 'string' ? raw.state : 'unknown'
@@ -106,7 +106,7 @@ async function apiPublishSms(c) {
   if (!(platform in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
   const body = await c.body()
   const registry = await loadRegistry(c.settings)
-  const account = resolveAccount(registry, platform, typeof body?.account === 'string' ? body.account : '')
+  const account = resolveAccountStrict(registry, platform, typeof body?.account === 'string' ? body.account : '')
   if (account === null) throw new ApiError(400, '该平台还没有账号，请先登录一次')
   return writeSmsCode(c, '_publish', account.id, body)
 }
@@ -184,7 +184,7 @@ async function apiLogout(c) {
   if (cfg === undefined) throw new ApiError(404, '未知平台')
   const body = await c.body().catch(() => ({}))
   const registry = await loadRegistry(c.settings)
-  const account = resolveAccount(registry, platform, typeof body?.account === 'string' ? body.account : '')
+  const account = resolveAccountStrict(registry, platform, typeof body?.account === 'string' ? body.account : '')
   if (account === null) throw new ApiError(404, '该平台还没有可登出的账号')
   const deleted = await logoutAccountFiles(c.settings, account, cfg)
   return { json: { ok: true, deleted } }
@@ -240,7 +240,7 @@ async function cdpAlive(port) {
 }
 
 /** 账号直启实例的 CDP 端点；内存表没有时从登录标记恢复（宿主重启后窗口可能还开着）。 */
-async function accountCdpEndpoint(settings, account) {
+export async function accountCdpEndpoint(settings, account) {
   const inst = directInstances.get(account.id)
   if (inst !== undefined) {
     if (await cdpAlive(inst.port)) return `http://127.0.0.1:${inst.port}`
@@ -253,6 +253,13 @@ async function accountCdpEndpoint(settings, account) {
     return `http://127.0.0.1:${port}`
   }
   return ''
+}
+
+/** 账号解析（路由层）：显式 id 必须精确命中平台内条目——陈旧 id 不许静默回落默认账号；
+ * 空 id 取平台默认账号（第一条目）。 */
+export function resolveAccountStrict(registry, platform, accountId) {
+  if (!accountId) return resolveAccount(registry, platform, '')
+  return registry.accounts.find(account => account.platform === platform && account.id === accountId) ?? null
 }
 
 /** 目标账号的浏览器定位参数：直启实例活着 → 附身（用户可插手验证码）；否则用自己的 profile 无头跑。 */
@@ -417,7 +424,7 @@ async function apiLoginStatus(c) {
   const platform = c.params.p
   if (!(platform in LOGIN_RUNNERS)) throw new ApiError(404, '未知平台')
   const registry = await loadRegistry(c.settings)
-  const account = resolveAccount(registry, platform, c.query.get('account') ?? '')
+  const account = resolveAccountStrict(registry, platform, c.query.get('account') ?? '')
   if (account === null) return { json: { mode: 'qr', state: 'unknown', message: '', qr: '', qrTs: 0 } }
   const s = await loginStatusData(c.settings, account.id)
   if (s.state === 'success') clearWhoamiCache(account.id)
@@ -433,7 +440,7 @@ async function ensureLoginAccount(settings, platform, body) {
   const registry = await loadRegistry(settings)
   const wanted = typeof body?.account === 'string' ? body.account.trim() : ''
   if (wanted) {
-    const found = resolveAccount(registry, platform, wanted)
+    const found = resolveAccountStrict(registry, platform, wanted)
     if (found === null) throw new ApiError(404, `账号「${wanted}」不存在`)
     return { registry, account: found }
   }
@@ -508,12 +515,13 @@ async function apiLoginStart(c) {
   const { registry, account } = await ensureLoginAccount(c.settings, platform, body)
   const loginDir = join(c.settings.projectRoot, 'outputs', '_login')
   await mkdir(loginDir, { recursive: true })
+  if (mode === 'direct') return directLoginStart(c, registry, account)
+  // 先探活再清标记：标记里的 port/pid 是窗口开着时的唯一恢复依据，扫前删掉就再也附身不上。
+  const live = await accountCdpEndpoint(c.settings, account)
+  if (live) throw new ApiError(409, '该账号的登录窗口还开着：请在窗口里完成登录后点「校验登录态」，或先关掉窗口再扫码')
   for (const suffix of ['.png', '.json', '.code']) {
     try { await unlink(join(loginDir, `${account.id}${suffix}`)) } catch { /* 本来就不在 */ }
   }
-  if (mode === 'direct') return directLoginStart(c, registry, account)
-  const live = await accountCdpEndpoint(c.settings, account)
-  if (live) throw new ApiError(409, '该账号的登录窗口还开着：请在窗口里完成登录后点「校验登录态」，或先关掉窗口再扫码')
   const py = c.settings.python
   const scripts = SHARED_SCRIPTS(c.settings)
   const timeout = 240
@@ -550,7 +558,7 @@ async function apiWhoami(c) {
     return { json: { loggedIn: await accountLoggedIn(c.settings, { id: platform }, cfg), name: (await wechatWebAccount(c.settings)).name || '微信公众号', avatar: '' } }
   }
   const registry = await loadRegistry(c.settings)
-  const account = resolveAccount(registry, platform, c.query.get('account') ?? '')
+  const account = resolveAccountStrict(registry, platform, c.query.get('account') ?? '')
   if (account === null) return { json: { loggedIn: false, name: '', avatar: '' } }
   const hit = whoamiCache.get(account.id)
   if (hit !== undefined && Date.now() - hit.at < WHOAMI_TTL_MS) return { json: hit.data }
@@ -585,8 +593,16 @@ async function apiWhoami(c) {
   }
   whoamiCache.set(account.id, { at: Date.now(), data })
   if (cfg.backend !== 'biliup') {
-    if (data.loggedIn) await writeLoginMarker(c.settings, account.id, 'success', data.name || '')
-    else { try { await unlink(join(c.settings.projectRoot, 'outputs', '_login', `${account.id}.json`)) } catch { /* 不在 */ } }
+    if (data.loggedIn) {
+      // 覆写状态但保留标记里的直启 port/pid：宿主重启后靠它恢复附身（状态协议，spec S2）。
+      const prev = await readJsonFile(join(c.settings.projectRoot, 'outputs', '_login', `${account.id}.json`), null)
+      const port = prev !== null && typeof prev === 'object' ? Number(prev.port) : NaN
+      const extras = Number.isInteger(port) && port > 0 ? { port, pid: Number(prev.pid) || 0 } : {}
+      await writeLoginMarker(c.settings, account.id, 'success', data.name || '', extras)
+    } else if (await accountCdpEndpoint(c.settings, account) === '') {
+      // 未登录且直启窗口不在 → 清标记；窗口还开着时不动它（window-open + port/pid 是恢复权威）。
+      try { await unlink(join(c.settings.projectRoot, 'outputs', '_login', `${account.id}.json`)) } catch { /* 不在 */ }
+    }
   }
   return { json: data }
 }
@@ -814,7 +830,7 @@ async function apiAnalytics(c) {
   const platform = c.params.p
   if (!ANALYTICS_PLATFORMS.has(platform)) throw new ApiError(404, '该平台暂不支持数据抓取')
   const registry = await loadRegistry(c.settings)
-  const account = resolveAccount(registry, platform, c.query.get('account') ?? '')
+  const account = resolveAccountStrict(registry, platform, c.query.get('account') ?? '')
   if (account === null) throw new ApiError(400, '该平台还没有账号，请先在账号页登录')
   const py = c.settings.python
   const scripts = SHARED_SCRIPTS(c.settings)
@@ -859,18 +875,18 @@ async function writePublishStatus(settings, key, state, message = '') {
 }
 
 /** 抖音式异步发布的后台执行：脚本自写状态文件；结束后兜底补终态 + 日志 + 回流排期。 */
-async function runPublishBg(settings, key, cmd, title, body, cfg, codeFile) {
+export async function runPublishBg(settings, key, cmd, title, body, cfg, codeFile, account = null) {
   const r = await runCapture(cmd, { cwd: settings.projectRoot, env: await runnerEnv(settings, { publish: true }), timeout: 900_000 })
   const ok = r.code === 0
   await appendPublishLog(settings, key, '(async)', cmd, r)
-  const detail = r.timedOut ? '发布超时（>900s）' : '\n'.join(((r.stderr || r.stdout || '').trim().split(/\r?\n/).filter(part => part.trim())).slice(-4))
+  const detail = r.timedOut ? '发布超时（>900s）' : ((r.stderr || r.stdout || '').trim().split(/\r?\n/).filter(part => part.trim())).slice(-4).join('\n')
   const current = await readJsonFile(join(settings.projectRoot, 'outputs', '_publish', `${key}.json`), null)
   const currentState = current !== null && typeof current === 'object' ? current.state : 'unknown'
   if (currentState !== 'success' && currentState !== 'error') {
     await writePublishStatus(settings, key, ok ? 'success' : 'error', ok ? '发布成功' : (detail || '发布失败'))
   }
   try { await unlink(codeFile) } catch { /* 不在 */ }
-  if (ok) await recordPublishedSchedule(settings, title, cfg.name, body)
+  if (ok) await recordPublishedSchedule(settings, title, cfg.name, body, account)
 }
 
 /** 成功发布回流排期（与 web/app.py 同 schema；脚本侧自动记录已由 EASEL_CALENDAR_AUTORECORD=0 关掉）。 */
@@ -926,7 +942,7 @@ async function apiPublish(c) {
   }
   const title = reqTitle.trim() || reqBody.trim().slice(0, 20)
   const registry = await loadRegistry(c.settings)
-  const account = resolveAccount(registry, platform, typeof body?.account === 'string' ? body.account : '')
+  const account = resolveAccountStrict(registry, platform, typeof body?.account === 'string' ? body.account : '')
   if (account === null && platform !== 'wechat-oa') throw new ApiError(400, '该平台还没有账号，请先在账号页登录')
   const browserArgs = account !== null ? await accountBrowserArgs(c.settings, account) : []
   const py = c.settings.python

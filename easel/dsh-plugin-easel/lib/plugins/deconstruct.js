@@ -14,8 +14,7 @@ import { parsePlatform, sourceStatus, writeCookie } from '../sourcedata.js'
 import {
   ApiError, isFile, readEnvFile, readJsonFile, writeJsonFile,
 } from '../../index.js'
-import { SHARED_SCRIPTS, accountBrowserArgs, loadRegistry, runCapture, runnerEnv } from './automation.js'
-import { resolveAccount } from '../accounts.js'
+import { SHARED_SCRIPTS, accountBrowserArgs, loadRegistry, resolveAccountStrict, runCapture, runnerEnv } from './automation.js'
 
 // ---- 语音转字幕（POST /easel/api/asr：ffmpeg 分段 + mimo ASR；核心在 lib/asr.js）----
 
@@ -144,7 +143,7 @@ async function apiCookiesImport(c) {
   ]
   // 从指定小红书账号（缺省默认账号）的登录态导出；直启窗口开着就附身，避免 profile 锁冲突。
   const registry = await loadRegistry(c.settings)
-  const account = resolveAccount(registry, 'xiaohongshu', typeof body?.account === 'string' ? body.account : '')
+  const account = resolveAccountStrict(registry, 'xiaohongshu', typeof body?.account === 'string' ? body.account : '')
   if (account !== null) cmd.push(...await accountBrowserArgs(c.settings, account))
   const proc = await runCapture(cmd, { cwd: c.settings.projectRoot, env: await runnerEnv(c.settings), timeout: 120_000 })
   let cookie = ''
