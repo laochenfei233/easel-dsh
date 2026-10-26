@@ -1,4 +1,4 @@
-; Bundled Easel installer/uninstaller hooks.
+﻿; Bundled Easel installer/uninstaller hooks.
 ;
 ; Layout contract (easel-dsh-layout): the program lives directly in
 ; %LOCALAPPDATA%\Easel-dsh; user data lives in <Documents>\Easel-dsh by
@@ -25,6 +25,12 @@
 ; executable lives under runtime\ — the flat root and the pre-alpha.32 app\
 ; subtree alike. Matches are by executable path, never by image name, so other
 ; node applications are untouched.
+
+; The uninstall confirm page's data checkbox label. Defined here rather than in
+; the template because this file carries the UTF-8 BOM makensis needs to decode
+; a non-ASCII literal; the rendered template stays ASCII so its encoding cannot
+; depend on how the bundler writes it.
+!define EASEL_DATA_CHECKBOX_LABEL "同时删除 Easel 数据目录（工作区、会话、凭据）"
 
 !macro EASEL_STOP_RUNTIME
   InitPluginsDir

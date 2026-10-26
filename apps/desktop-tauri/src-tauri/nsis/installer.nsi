@@ -468,7 +468,13 @@ Function un.ConfirmShow ; Add add a `Delete app data` check box
   IntOp $5 $5 / 96
   IntOp $6 $6 / 96
   IntOp $7 $7 / 96
-  System::Call 'user32::CreateWindowEx(i r3, w "${__NSD_CheckBox_CLASS}", w "$(deleteAppData)", i ${__NSD_CheckBox_STYLE}, i r4, i r5, i r6, i r7, p r1, i0, i0, i0) i .s'
+  ; The checkbox is the only consent for deleting user data; it starts
+  ; unchecked, so the default uninstall keeps the data root and this profile.
+  ; The label comes from the hooks include (ASCII fallback when absent).
+  !ifndef EASEL_DATA_CHECKBOX_LABEL
+    !define EASEL_DATA_CHECKBOX_LABEL "$(deleteAppData)"
+  !endif
+  System::Call 'user32::CreateWindowEx(i r3, w "${__NSD_CheckBox_CLASS}", w "${EASEL_DATA_CHECKBOX_LABEL}", i ${__NSD_CheckBox_STYLE}, i r4, i r5, i r6, i r7, p r1, i0, i0, i0) i .s'
   Pop $DeleteAppDataCheckbox
   SendMessage $HWNDPARENT ${WM_GETFONT} 0 0 $1
   SendMessage $DeleteAppDataCheckbox ${WM_SETFONT} $1 1
