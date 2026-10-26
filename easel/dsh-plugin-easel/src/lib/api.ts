@@ -110,6 +110,12 @@ export interface ProfileBuildResponse {
   log?: string;
 }
 
+/** 画像六维文件（/api/persona/:name/files；缺文件时 content 为空串）。 */
+export interface PersonaFile {
+  filename: string;
+  content: string;
+}
+
 export function fetchPersonaFiles(name: string): Promise<{ name: string; files: PersonaFile[] }> {
   return request(`/api/persona/${encodeURIComponent(name)}/files`);
 }
@@ -595,10 +601,42 @@ export function fetchAnalyticsPlatforms(): Promise<AnalyticsPlatform[]> {
   return request<AnalyticsPlatform[]>('/api/analytics/platforms');
 }
 
-/** 抓某平台已登录账号的创作数据（后端起 headless 浏览器，数秒）。account 缺省 = 默认账号。 */
+/** 抓某平台账号的创作数据（后端起 headless 浏览器，数秒）。account 缺省 = 默认账号。 */
 export function fetchAccountAnalytics(platform: string, account?: string): Promise<AccountAnalytics> {
   const q = account ? `?account=${encodeURIComponent(account)}` : '';
   return request<AccountAnalytics>(`/api/analytics/${encodeURIComponent(platform)}${q}`);
+}
+
+/** 归档快照点（全览走势图与增长对比的原始数据）。 */
+export interface AnalyticsPoint {
+  ts: number;
+  followers: number | null;
+  likes: number | null;
+  posts: number | null;
+}
+
+export type AnalyticsGrowth = Record<'last' | 'day' | 'week' | 'month' | 'year',
+  { followers: number | null; likes: number | null; posts: number | null; since_days: number | null } | null>;
+
+export interface AnalyticsOverviewRow {
+  id: string;
+  platform: string;
+  name: string;
+  persona: string;
+  backend: string;
+  loggedIn: boolean;
+  /** false = 该平台不写归档（B站/公众号），latest/growth/points 恒空。 */
+  archived: boolean;
+  latest: AnalyticsPoint | null;
+  growth: AnalyticsGrowth | null;
+  points: AnalyticsPoint[];
+  /** 距最后采集的天数；无归档时 null。 */
+  ageDays: number | null;
+}
+
+/** 全览：每个归因平台账号的最新归档快照与增长（读归档，不启浏览器）。 */
+export function fetchAnalyticsOverview(): Promise<AnalyticsOverviewRow[]> {
+  return request<AnalyticsOverviewRow[]>('/api/analytics/overview');
 }
 
 /** 回填短信验证码（登录风控短信墙）：提交后 runner 读走填码继续登录。account 缺省 = 平台默认账号。 */

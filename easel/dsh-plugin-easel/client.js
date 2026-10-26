@@ -521,7 +521,15 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
 }.easel-scope .ana-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 20px; align-items: start; }.easel-scope .ana-col { min-width: 0; }.easel-scope .ana-id { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-overview { display: flex; gap: 8px; }.easel-scope .ana-stat { flex: 1; text-align: center; padding: 10px 4px; background: var(--surface-2); border-radius: 12px; }.easel-scope .ana-stat-val { font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }.easel-scope .ana-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }.easel-scope .ana-stat-delta { font-size: 11px; font-weight: 600; margin-top: 5px; font-variant-numeric: tabular-nums; }.easel-scope .ana-muted { color: var(--text-tertiary) !important; font-weight: 400; }.easel-scope .ana-wins { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 14px; }.easel-scope .ana-win { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border);
   background: var(--surface); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); }.easel-scope .ana-win:hover { border-color: var(--border-strong); color: var(--text); }.easel-scope .ana-win.on { background: var(--accent-soft); border-color: transparent; color: var(--accent-end); font-weight: 600; }.easel-scope .ana-wins-note { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; line-height: 1.5; }.easel-scope .ana-sub { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }.easel-scope .ana-metrics { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }.easel-scope .ana-metric { text-align: center; padding: 8px 4px; background: var(--surface-2); border-radius: 10px; }.easel-scope .ana-metric-val { font-size: 16px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }.easel-scope .ana-metric-label { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }.easel-scope .ana-metric-vs { font-size: 10px; font-weight: 600; margin-top: 3px; }.easel-scope .ana-notes { display: flex; flex-direction: column; gap: 6px; }.easel-scope .ana-note { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: 9px;
-  background: var(--surface-2); font-size: 12.5px; color: var(--text); text-decoration: none; transition: all var(--t-fast); }.easel-scope .ana-note:hover { background: var(--accent-soft); color: var(--accent-end); }.easel-scope .ana-note-cover { width: 34px; height: 34px; border-radius: 7px; object-fit: cover; flex-shrink: 0; background: var(--surface); }.easel-scope .ana-note-cover-ph { display: flex; align-items: center; justify-content: center; font-size: 15px; }.easel-scope .ana-note-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }.easel-scope .ana-note-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note-stat { font-size: 11px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note:hover .ana-note-stat { color: var(--accent-end); }.easel-scope .ana-note-go { flex-shrink: 0; color: var(--text-tertiary); }.easel-scope .ana-note:hover .ana-note-go { color: var(--accent-end); }/* ============ \u5185\u5BB9\u5E93\u753B\u5ECA ============ */.easel-scope .gallery-page { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .gallery-head { max-width: 1160px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }.easel-scope .gallery-filters { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1160px; margin: 14px auto 0; }.easel-scope .gallery-grid { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }.easel-scope .gcard { padding: 0; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }.easel-scope .gcard-thumb { aspect-ratio: 4/3; background: var(--surface-2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }.easel-scope .gcard-thumb img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-thumb video { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-ph { color: var(--text-tertiary); display: flex; flex-direction: column; align-items: center; gap: 6px; }.easel-scope .gcard-kind { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: rgba(24,24,48,0.55); color: #fff; }.easel-scope .gcard-meta { padding: 10px 12px; }.easel-scope .gcard-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .gcard-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }/* \u5185\u5BB9\u5E93\u9762\u5305\u5C51 */.easel-scope .crumb { cursor: pointer; color: var(--text-secondary); }.easel-scope .crumb:hover { color: var(--accent-start); }.easel-scope .crumb-sep { color: var(--text-tertiary); margin: 0 2px; font-weight: 400; }/* ============ \u9009\u9898\u5E93\u770B\u677F ============ */.easel-scope .kanban { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }.easel-scope .kanban-col { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; min-height: 200px; }.easel-scope .kanban-col-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text-secondary); padding: 2px 4px 10px; }.easel-scope .kanban-dot { width: 9px; height: 9px; border-radius: 3px; }.easel-scope .kanban-count { color: var(--text-tertiary); font-weight: 500; }.easel-scope .kanban-list { display: flex; flex-direction: column; gap: 10px; }.easel-scope .kanban-empty { color: var(--text-tertiary); font-size: 12.5px; padding: 12px 4px; }.easel-scope .idea-card { position: relative; padding: 13px 14px; }.easel-scope .idea-card-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 2px; }.easel-scope .idea-card:hover .idea-card-actions { display: flex; }.easel-scope .idea-title { font-size: 14px; font-weight: 600; line-height: 1.45; padding-right: 40px; }.easel-scope .idea-note { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 7px;
+  background: var(--surface-2); font-size: 12.5px; color: var(--text); text-decoration: none; transition: all var(--t-fast); }.easel-scope .ana-note:hover { background: var(--accent-soft); color: var(--accent-end); }.easel-scope .ana-note-cover { width: 34px; height: 34px; border-radius: 7px; object-fit: cover; flex-shrink: 0; background: var(--surface); }.easel-scope .ana-note-cover-ph { display: flex; align-items: center; justify-content: center; font-size: 15px; }.easel-scope .ana-note-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }.easel-scope .ana-note-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note-stat { font-size: 11px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note:hover .ana-note-stat { color: var(--accent-end); }.easel-scope .ana-note-go { flex-shrink: 0; color: var(--text-tertiary); }.easel-scope .ana-note:hover .ana-note-go { color: var(--accent-end); }/* \u8D26\u53F7 chips\uFF1A\u672A\u767B\u5F55\u4ECD\u53EF\u9009\uFF0C\u4F46\u964D\u8C03\uFF08\u70B9\u5B83\u53BB\u8D26\u53F7\u9875\uFF09 */.easel-scope .ana-plats .chip.ana-chip-off { opacity: .55; border-style: dashed; }.easel-scope .ana-plats .chip.ana-chip-off:hover { opacity: .8; }/* \u5168\u89C8\uFF1A\u6BCF\u4E2A\u8D26\u53F7\u4E00\u5F20\u5361\u3002\u5171\u4EAB\u7684\u7A97\u53E3\u9009\u62E9\u5668\u5728\u7F51\u683C\u4E0A\u65B9\uFF0C\u5361\u7247\u53EA\u627F\u8F7D\u6570\u5B57\u4E0E\u8D70\u52BF\u3002 */.easel-scope .ana-wins-head { margin: 0 0 12px; justify-content: flex-end; }.easel-scope .ana-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }.easel-scope .ana-acct {
+  display: flex; flex-direction: column; align-items: stretch; gap: 3px; text-align: left;
+  padding: 12px 13px 11px; border-radius: 14px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer; font: inherit;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}.easel-scope .ana-acct:hover { border-color: var(--border-strong); box-shadow: 0 4px 14px rgba(24,24,48,.06); }.easel-scope .ana-acct:focus-visible { outline: 2px solid var(--accent-end); outline-offset: 2px; }.easel-scope .ana-acct.off { opacity: .62; border-style: dashed; }.easel-scope .ana-acct-top { display: flex; align-items: center; gap: 6px; min-height: 18px; }.easel-scope .ana-acct-plat { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; color: var(--text-tertiary); text-transform: uppercase; }.easel-scope .ana-acct-name { font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-acct-num { font-size: 24px; font-weight: 700; line-height: 1.15; margin-top: 5px; font-variant-numeric: tabular-nums; }.easel-scope .ana-acct-unit { font-size: 11px; font-weight: 500; color: var(--text-tertiary); margin-left: 5px; }.easel-scope .ana-acct-delta { display: flex; align-items: baseline; gap: 5px; font-size: 11px; font-weight: 600;
+  font-variant-numeric: tabular-nums; min-height: 15px; }.easel-scope .ana-acct-win { font-size: 10.5px; font-weight: 400; color: var(--text-tertiary); }.easel-scope .ana-spark { color: var(--accent-end); margin-top: 6px; width: 100%; height: 26px; opacity: .78; }.easel-scope .ana-acct-sub { font-size: 10.5px; color: var(--text-tertiary); margin-top: 5px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-acct-empty { font-size: 11.5px; color: var(--text-tertiary); line-height: 1.5; margin-top: 8px; min-height: 34px; }/* ============ \u5185\u5BB9\u5E93\u753B\u5ECA ============ */.easel-scope .gallery-page { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .gallery-head { max-width: 1160px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }.easel-scope .gallery-filters { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1160px; margin: 14px auto 0; }.easel-scope .gallery-grid { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }.easel-scope .gcard { padding: 0; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }.easel-scope .gcard-thumb { aspect-ratio: 4/3; background: var(--surface-2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }.easel-scope .gcard-thumb img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-thumb video { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-ph { color: var(--text-tertiary); display: flex; flex-direction: column; align-items: center; gap: 6px; }.easel-scope .gcard-kind { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: rgba(24,24,48,0.55); color: #fff; }.easel-scope .gcard-meta { padding: 10px 12px; }.easel-scope .gcard-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .gcard-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }/* \u5185\u5BB9\u5E93\u9762\u5305\u5C51 */.easel-scope .crumb { cursor: pointer; color: var(--text-secondary); }.easel-scope .crumb:hover { color: var(--accent-start); }.easel-scope .crumb-sep { color: var(--text-tertiary); margin: 0 2px; font-weight: 400; }/* ============ \u9009\u9898\u5E93\u770B\u677F ============ */.easel-scope .kanban { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }.easel-scope .kanban-col { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; min-height: 200px; }.easel-scope .kanban-col-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text-secondary); padding: 2px 4px 10px; }.easel-scope .kanban-dot { width: 9px; height: 9px; border-radius: 3px; }.easel-scope .kanban-count { color: var(--text-tertiary); font-weight: 500; }.easel-scope .kanban-list { display: flex; flex-direction: column; gap: 10px; }.easel-scope .kanban-empty { color: var(--text-tertiary); font-size: 12.5px; padding: 12px 4px; }.easel-scope .idea-card { position: relative; padding: 13px 14px; }.easel-scope .idea-card-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 2px; }.easel-scope .idea-card:hover .idea-card-actions { display: flex; }.easel-scope .idea-title { font-size: 14px; font-weight: 600; line-height: 1.45; padding-right: 40px; }.easel-scope .idea-note { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 7px;
   display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }.easel-scope .idea-foot { display: flex; align-items: center; gap: 4px; margin-top: 11px; flex-wrap: wrap; }.easel-scope .idea-links { display: flex; align-items: center; gap: 4px; margin-top: 7px; }.easel-scope .idea-link { font-size: 11.5px; color: var(--accent-end); background: none; border: none; padding: 2px 4px; cursor: pointer; text-decoration: none; }.easel-scope .idea-link:hover { text-decoration: underline; }.easel-scope .idea-body-preview { max-height: 64vh; overflow: auto; padding: 6px 2px; font-size: 13px; line-height: 1.7; }.easel-scope .idea-act { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 8px; border-radius: 7px;
   border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); }.easel-scope .idea-act:hover { color: var(--text); border-color: var(--border-strong); }.easel-scope .idea-act.next { margin-left: auto; color: var(--accent-end); }.easel-scope .idea-act.next:hover { background: var(--accent-soft); border-color: transparent; }/* \u70ED\u70B9\u6536\u85CF\u6309\u94AE */.easel-scope .trend-save { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; display: inline-flex; align-items: center;
   padding: 5px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-tertiary); cursor: pointer; }.easel-scope .trend-item:hover .trend-save { opacity: 1; }.easel-scope .trend-save:hover { color: var(--accent-end); background: var(--accent-soft); border-color: transparent; }/* ============ \u53D1\u5E03\u4E2D\u5FC3 ============ */.easel-scope .publish-page { display: flex; height: 100%; overflow: hidden; }.easel-scope .publish-editor { width: 46%; min-width: 400px; max-width: 620px; overflow-y: auto; padding: 28px 28px 60px; border-right: 1px solid var(--border); }.easel-scope .publish-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }.easel-scope .publish-previews { flex: 1; overflow-y: auto; padding: 28px 28px 60px; display: flex; flex-direction: column; gap: 14px; background: var(--surface-2); }.easel-scope .pv-card { padding: 0; overflow: hidden; }.easel-scope .pv-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); }.easel-scope .pv-plat { font-size: 13px; font-weight: 700; }.easel-scope .pv-count { font-size: 12px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }.easel-scope .pv-count.over { color: var(--red); font-weight: 700; }.easel-scope .pv-body { padding: 14px; }.easel-scope .pv-title { font-size: 15px; font-weight: 650; margin-bottom: 8px; }.easel-scope .pv-title.over { color: var(--red); }.easel-scope .pv-text { font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; color: var(--text); word-break: break-word; }.easel-scope .pv-ph { color: var(--text-tertiary); }.easel-scope .pv-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; border-top: 1px solid var(--border); background: var(--bg-elev); }.easel-scope .pv-hint { font-size: 11.5px; color: var(--text-tertiary); }.easel-scope .pv-copy { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); flex-shrink: 0; }.easel-scope .pv-copy:hover { color: var(--text); border-color: var(--border-strong); }/* \u5E73\u53F0\u98CE\u683C\u5FAE\u8C03 */.easel-scope .pv-xiaohongshu .pv-title { color: #ff2e4d; }.easel-scope .pv-douyin { }.easel-scope .pv-weibo .pv-text { }@media (max-width: 900px) {.easel-scope .publish-page { flex-direction: column; }.easel-scope .publish-editor { width: 100%; max-width: none; border-right: none; border-bottom: 1px solid var(--border); }}/* \u53D1\u5E03\u4E2D\u5FC3 AI\u7248\u5FBD\u6807 + \u7206\u6B3E\u62C6\u89E3 */.easel-scope .pv-badge { margin-left: 8px; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-end); }.easel-scope .pv-badge-ok { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }.easel-scope .pv-pubstate { margin: 8px 0 2px; font-size: 12px; padding: 6px 10px; border-radius: 8px; display: flex; align-items: center; gap: 6px; white-space: pre-wrap; word-break: break-word; }.easel-scope .pv-pubstate.publishing { background: var(--accent-soft); color: var(--accent-end); }.easel-scope .pv-pubstate.ok { background: color-mix(in srgb, var(--green) 15%, transparent); color: var(--green); }.easel-scope .pv-pubstate.fail { background: color-mix(in srgb, var(--red) 12%, transparent); color: var(--red); max-height: 120px; overflow: auto; }/* \u5A92\u4F53\u9644\u4EF6\u9009\u62E9 */.easel-scope .media-chip { position: relative; width: 46px; height: 46px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid var(--accent-end); flex-shrink: 0; }.easel-scope .media-chip img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .media-chip .media-vid { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 20px; background: var(--bg-subtle, #eee); }.easel-scope .media-chip .media-x { position: absolute; top: 0; right: 2px; color: #fff; font-weight: 800; text-shadow: 0 0 3px #000; }.easel-scope .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; margin-top: 10px; max-height: 260px; overflow: auto; padding: 4px; border: 1px solid var(--border); border-radius: 10px; }.easel-scope .media-cell { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; background: var(--bg-subtle, #f0f0f0); }.easel-scope .media-cell.sel { border-color: var(--accent-end); }.easel-scope .media-cell img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .media-cell .media-vid { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 22px; text-align: center; font-size: 11px; }.easel-scope .media-cell .media-check { position: absolute; top: 3px; right: 4px; background: var(--accent-end); color: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; }.easel-scope .breakdown-body { max-width: 900px; margin: 16px auto 0; }/* \u53D1\u5E03\u4E2D\u5FC3\uFF1A\u9002\u914D\u8FDB\u5EA6\u63D0\u793A + \u9884\u89C8\u5B8C\u6574\u663E\u793A */.easel-scope .adapt-hint { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12.5px; color: var(--text-secondary); }.easel-scope .pv-card { overflow: visible; }.easel-scope .pv-text { max-height: none; }.easel-scope .publish-saved-note { margin-top: 10px; font-size: 11.5px; color: var(--text-tertiary); }/* ============ \u5B50\u5DE5\u5177\u9876\u90E8\u5C0F\u5BFC\u822A ============ */.easel-scope .page-host { flex: 1; min-height: 0; display: flex; flex-direction: column; }.easel-scope .page-host > * { flex: 1; min-height: 0; }.easel-scope .subnav {
@@ -1552,6 +1560,9 @@ function fetchAccountAnalytics(platform, account) {
   const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
   return request(`/api/analytics/${encodeURIComponent(platform)}${q2}`);
 }
+function fetchAnalyticsOverview() {
+  return request("/api/analytics/overview");
+}
 function submitLoginSms(platform, code, account) {
   return request(`/api/login/${encodeURIComponent(platform)}/sms`, {
     method: "POST",
@@ -1620,6 +1631,43 @@ function verifyStale(platforms, opts = {}) {
   );
 }
 
+// src/lib/roster.ts
+var PLATFORM_LABELS = {
+  xiaohongshu: "\u5C0F\u7EA2\u4E66",
+  kuaishou: "\u5FEB\u624B",
+  "weixin-channels": "\u5FAE\u4FE1\u89C6\u9891\u53F7",
+  zhihu: "\u77E5\u4E4E",
+  bilibili: "B\u7AD9",
+  douyin: "\u6296\u97F3",
+  "wechat-oa": "\u5FAE\u4FE1\u516C\u4F17\u53F7"
+};
+var platformLabel = (platform) => PLATFORM_LABELS[platform] ?? platform;
+async function fetchRoster() {
+  const accounts = await fetchAccounts().catch(() => []);
+  return accounts.map((account) => ({
+    id: account.id,
+    platform: account.platform,
+    name: account.name,
+    persona: account.persona || ""
+  }));
+}
+function renderRosterPrompt(accounts) {
+  if (accounts.length === 0) return "";
+  const lines = accounts.map((account) => {
+    const label = platformLabel(account.platform);
+    const persona = account.persona ? `\uFF0C\u753B\u50CF\u300C${account.persona}\u300D\uFF08profiles/${account.persona}/ \u4E0B\u7684\u516D\u7EF4\u6587\u4EF6\uFF09` : "\uFF0C\u672A\u7ED1\u5B9A\u753B\u50CF";
+    return `- ${label}\u300C${account.name}\u300D\uFF08\u8D26\u53F7 id\uFF1A${account.id}${persona}\uFF09`;
+  });
+  return `
+
+\u3010\u53EF\u7528\u53D1\u5E03\u8D26\u53F7\u3011
+${lines.join("\n")}
+\u6D89\u53CA\u53D1\u5E03/\u63A8\u9001\u65F6\u660E\u786E\u76EE\u6807\u8D26\u53F7\uFF08\u8D26\u53F7 id \u6216\u540D\u5B57\uFF09\uFF1B\u7528\u6237\u6CA1\u6307\u5B9A\u5C31\u5148\u786E\u8BA4\uFF0C\u6216\u6309\u753B\u50CF\u8D34\u5408\u5EA6\u7ED9\u5EFA\u8BAE\u540E\u518D\u6267\u884C\uFF1B\u7ED9\u6307\u5B9A\u8D26\u53F7\u5199\u6587\u6848\u65F6\u6309\u5176\u753B\u50CF\u8C03\u6574\u8BED\u6C14\u4E0E\u9009\u9898\u3002`;
+}
+async function rosterPrompt() {
+  return renderRosterPrompt(await fetchRoster());
+}
+
 // src/components/DashboardPage.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
 function fmtNum(n) {
@@ -1631,6 +1679,29 @@ function fmtNum(n) {
 function growthInfo(n) {
   if (n == null || n === 0) return null;
   return n > 0 ? { text: `\u25B2+${fmtNum(n)}`, color: "var(--trend-up)" } : { text: `\u25BC${fmtNum(Math.abs(n))}`, color: "var(--trend-down)" };
+}
+var WIN = [
+  ["last", "\u8F83\u4E0A\u6B21"],
+  ["day", "\u8F83\u6628\u65E5"],
+  ["week", "\u8F83\u4E0A\u5468"],
+  ["month", "\u8F83\u4E0A\u6708"],
+  ["year", "\u8F83\u53BB\u5E74"]
+];
+function Sparkline({ points }) {
+  const vals = points.map((p) => p.followers).filter((v2) => typeof v2 === "number");
+  if (vals.length < 2) return null;
+  const min = Math.min(...vals);
+  const span = Math.max(...vals) - min || 1;
+  const w2 = 104;
+  const h = 26;
+  const step = w2 / (vals.length - 1);
+  const path = vals.map((v2, i) => `${i === 0 ? "M" : "L"}${(i * step).toFixed(1)},${(h - 2 - (v2 - min) / span * (h - 6)).toFixed(1)}`).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("svg", { className: "ana-spark", viewBox: `0 0 ${w2} ${h}`, preserveAspectRatio: "none", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("path", { d: path, fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinejoin: "round", strokeLinecap: "round", vectorEffect: "non-scaling-stroke" }) });
+}
+function ageLabel(days) {
+  if (days == null) return "";
+  if (days < 1) return "\u4ECA\u5929\u91C7\u96C6";
+  return `${Math.floor(days)} \u5929\u524D\u91C7\u96C6`;
 }
 var STATUS_LABEL = { idea: "\u9009\u9898", draft: "\u8349\u7A3F", scheduled: "\u5F85\u53D1", published: "\u5DF2\u53D1" };
 function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTopic }) {
@@ -1648,6 +1719,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
       return {};
     }
   });
+  const [anaOverview, setAnaOverview] = (0, import_react2.useState)("loading");
   const [anaWin, setAnaWin] = (0, import_react2.useState)("week");
   const [whoamiMap, setWhoamiMap] = (0, import_react2.useState)(() => getWhoamiCache());
   (0, import_react2.useEffect)(() => {
@@ -1657,37 +1729,48 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
     });
     fetchOutputs().then(setOutputs).catch(() => {
     });
-    fetchAccounts().then(setAccounts).catch(() => {
-    });
     fetchIdeas().then(setIdeas).catch(() => {
     });
-    fetchAnalyticsPlatforms().then((ps) => {
-      setAnaPlats(ps);
-      const cache = getWhoamiCache();
-      const isLog = (p) => p.loggedIn || !!cache[p.platform]?.loggedIn;
-      const first = ps.find(isLog);
-      if (first) setAnaSel((s) => s || first.platform);
-      const API_BASED = /* @__PURE__ */ new Set(["bilibili", "wechat-oa"]);
-      verifyStale(ps.filter((p) => !API_BASED.has(p.platform)).map((p) => p.platform), {
-        onUpdate: (platform, r) => {
-          setWhoamiMap((m2) => ({ ...m2, [platform]: r }));
-          if (r.loggedIn) setAnaSel((s) => s || platform);
-        }
-      });
-    }).catch(() => {
+    fetchAccounts().then(setAccounts).catch(() => {
     });
+    fetchAnalyticsPlatforms().then(setAnaPlats).catch(() => {
+    });
+    fetchAnalyticsOverview().then((rows) => {
+      setAnaOverview(rows);
+      const verify = rows.filter((r) => r.backend !== "bilibili" && r.backend !== "wechat-oa");
+      const byId = new Map(verify.map((r) => [r.id, r]));
+      verifyStale(verify.map((r) => r.id), {
+        resolve: (id) => ({ platform: byId.get(id)?.platform ?? id, account: id }),
+        onUpdate: (id, r) => setWhoamiMap((m2) => ({ ...m2, [id]: r }))
+      });
+    }).catch(() => setAnaOverview("error"));
   }, []);
-  const runAna = (platform) => {
-    setAnaSel(platform);
-    setAnaData((d2) => ({ ...d2, [platform]: "loading" }));
-    fetchAccountAnalytics(platform).then((r) => setAnaData((d2) => {
-      const next = { ...d2, [platform]: r };
-      try {
-        localStorage.setItem("easel_analytics", JSON.stringify(next));
-      } catch {
-      }
-      return next;
-    })).catch(() => setAnaData((d2) => ({ ...d2, [platform]: "error" })));
+  const runAna = (account) => {
+    setAnaSel(account.id);
+    setAnaData((d2) => ({ ...d2, [account.id]: "loading" }));
+    fetchAccountAnalytics(account.platform, account.id).then((r) => {
+      setAnaData((d2) => {
+        const next = { ...d2, [account.id]: r };
+        try {
+          localStorage.setItem("easel_analytics", JSON.stringify(next));
+        } catch {
+        }
+        return next;
+      });
+      setAnaOverview((rows) => Array.isArray(rows) ? rows.map((row) => row.id === account.id ? {
+        ...row,
+        loggedIn: r.loggedIn,
+        archived: row.archived,
+        latest: { ts: r.fetched_at, followers: r.followers, likes: r.likes, posts: r.posts },
+        growth: r.growth,
+        points: [...row.points, { ts: r.fetched_at, followers: r.followers, likes: r.likes, posts: r.posts }].slice(-20),
+        ageDays: 0
+      } : row) : rows);
+    }).catch(() => setAnaData((d2) => ({ ...d2, [account.id]: "error" })));
+  };
+  const reloadOverview = () => {
+    setAnaOverview("loading");
+    fetchAnalyticsOverview().then(setAnaOverview).catch(() => setAnaOverview("error"));
   };
   const hour = (/* @__PURE__ */ new Date()).getHours();
   const greet = hour < 6 ? "\u591C\u6DF1\u4E86" : hour < 12 ? "\u4E0A\u5348\u597D" : hour < 14 ? "\u4E2D\u5348\u597D" : hour < 18 ? "\u4E0B\u5348\u597D" : "\u665A\u4E0A\u597D";
@@ -1812,57 +1895,54 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "badge", children: g.meta?.platform || (g.type === "dir" ? `${g.fileCount ?? 0} \u6587\u4EF6` : "\u5355\u6587\u4EF6") })
         ] }, g.name))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card dash-card dash-card-wide", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "dash-card-head", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(IconAccounts, { size: 16 }),
-            " \u521B\u4F5C\u6570\u636E"
-          ] }),
-          anaSel && anaData[anaSel] && anaData[anaSel] !== "loading" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "dash-more", onClick: () => runAna(anaSel), children: "\u5237\u65B0 \u2192" })
-        ] }),
-        (() => {
-          const logged = anaPlats.filter((p) => p.loggedIn || whoamiMap[p.platform]?.loggedIn);
-          if (anaPlats.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u52A0\u8F7D\u4E2D / \u9700\u914D\u7F6E\u4EE3\u7406" });
-          if (logged.length === 0) {
-            return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: "\u53BB\u8D26\u53F7\u9875\u767B\u5F55\u540E\uFF0C\u8FD9\u91CC\u770B\u5404\u5E73\u53F0\u7C89\u4E1D / \u83B7\u8D5E / \u5173\u6CE8\u3001\u589E\u957F\u8D8B\u52BF\u4E0E\u6700\u65B0\u7B14\u8BB0 \u2192" });
-          }
-          const d2 = anaSel ? anaData[anaSel] : void 0;
-          const WIN = [
-            ["last", "\u8F83\u4E0A\u6B21"],
-            ["day", "\u8F83\u6628\u65E5"],
-            ["week", "\u8F83\u4E0A\u5468"],
-            ["month", "\u8F83\u4E0A\u6708"],
-            ["year", "\u8F83\u53BB\u5E74"]
-          ];
-          return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-plats", children: logged.map((p) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-              "button",
-              {
-                className: `chip ${anaSel === p.platform ? "active" : ""}`,
-                onClick: () => runAna(p.platform),
-                children: p.name
-              },
-              p.platform
-            )) }),
-            !d2 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u70B9\u4E0A\u65B9\u5E73\u53F0\u67E5\u770B\u8BE5\u8D26\u53F7\u6570\u636E" }),
-            d2 === "loading" && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "loading", style: { padding: "28px 0" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "spinner" }),
-              "\u6293\u53D6\u4E2D\u2026\uFF08\u8D77\u6D4F\u89C8\u5668\uFF0C\u7EA6\u6570\u79D2\uFF09"
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card dash-card dash-card-wide", children: (() => {
+        const anaKeys = new Set(anaPlats.map((p) => p.platform));
+        const order12 = (platform) => anaPlats.findIndex((p) => p.platform === platform);
+        const anaAccounts = accounts.filter((a) => anaKeys.has(a.platform)).sort((a, b2) => order12(a.platform) - order12(b2.platform) || a.name.localeCompare(b2.name, "zh"));
+        const isLogged = (a) => a.loggedIn || !!whoamiMap[a.id]?.loggedIn;
+        const sel = anaSel ? anaAccounts.find((a) => a.id === anaSel) : void 0;
+        const d2 = anaSel ? anaData[anaSel] : void 0;
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "dash-card-head", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(IconAccounts, { size: 16 }),
+              " \u521B\u4F5C\u6570\u636E"
             ] }),
-            d2 === "error" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", style: { color: "var(--red)" }, children: "\u6293\u53D6\u5931\u8D25\uFF08\u672A\u767B\u5F55 / \u9700\u771F\u673A\u6821\u51C6\uFF09\uFF0C\u70B9\u5E73\u53F0\u91CD\u8BD5" }),
-            d2 && d2 !== "loading" && d2 !== "error" && (!d2.loggedIn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: "\u8BE5\u5E73\u53F0\u767B\u5F55\u6001\u5DF2\u5931\u6548\uFF0C\u53BB\u8D26\u53F7\u9875\u91CD\u767B \u2192" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-body", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-main", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-id", children: d2.nickname ? `@${d2.nickname}` : d2.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-overview", children: [["\u7C89\u4E1D", "followers"], ["\u83B7\u8D5E", "likes"], ["\u5173\u6CE8", "following"]].map(([label, key]) => {
-                  const w2 = d2.growth?.[anaWin] ?? null;
-                  const g = w2 ? growthInfo(w2[key]) : null;
-                  return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-stat", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-val", children: fmtNum(d2[key]) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-label", children: label }),
-                    g ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta", style: { color: g.color }, children: g.text }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta ana-muted", children: "\u2014" })
-                  ] }, key);
-                }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins", children: WIN.map(([k2, lab]) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+            anaSel === "" && anaOverview !== "loading" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "dash-more", onClick: reloadOverview, children: "\u91CD\u8BFB\u5F52\u6863 \u2192" }),
+            anaSel !== "" && d2 !== void 0 && d2 !== "loading" && sel !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "dash-more", onClick: () => runAna(sel), children: "\u5237\u65B0 \u2192" })
+          ] }),
+          anaPlats.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u52A0\u8F7D\u4E2D / \u9700\u914D\u7F6E\u4EE3\u7406" }),
+          anaPlats.length > 0 && anaAccounts.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: "\u53BB\u8D26\u53F7\u9875\u767B\u5F55\u540E\uFF0C\u8FD9\u91CC\u770B\u6BCF\u4E2A\u8D26\u53F7\u7684\u7C89\u4E1D / \u83B7\u8D5E / \u5173\u6CE8\u3001\u589E\u957F\u8D8B\u52BF\u4E0E\u6700\u65B0\u7B14\u8BB0 \u2192" }),
+          anaAccounts.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-plats", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: `chip ${anaSel === "" ? "active" : ""}`, onClick: () => setAnaSel(""), children: "\u5168\u89C8" }),
+              anaAccounts.map((a) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                "button",
+                {
+                  className: `chip ${anaSel === a.id ? "active" : ""} ${isLogged(a) ? "" : "ana-chip-off"}`,
+                  title: isLogged(a) ? `${platformLabel(a.platform)}\u300C${a.name}\u300D` : `${platformLabel(a.platform)}\u300C${a.name}\u300D\u672A\u767B\u5F55\uFF0C\u53BB\u8D26\u53F7\u9875\u767B\u5F55`,
+                  onClick: () => isLogged(a) ? runAna(a) : onNavigate("accounts"),
+                  children: [
+                    platformLabel(a.platform),
+                    "\xB7",
+                    a.name
+                  ]
+                },
+                a.id
+              ))
+            ] }),
+            anaSel === "" && (() => {
+              if (anaOverview === "loading") {
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "loading", style: { padding: "24px 0" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "spinner" }),
+                  "\u8BFB\u5F52\u6863\u2026"
+                ] });
+              }
+              if (anaOverview === "error") {
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", style: { color: "var(--red)" }, children: "\u8BFB\u53D6\u5F52\u6863\u5931\u8D25\uFF0C\u70B9\u300C\u91CD\u8BFB\u5F52\u6863\u300D\u91CD\u8BD5" });
+              }
+              return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins ana-wins-head", children: WIN.map(([k2, lab]) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
                   "button",
                   {
                     className: `ana-win ${anaWin === k2 ? "on" : ""}`,
@@ -1871,39 +1951,127 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
                   },
                   k2
                 )) }),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins-note", children: d2.growth?.[anaWin]?.since_days != null ? `\u5BF9\u6BD4 ${d2.growth[anaWin].since_days} \u5929\u524D\u7684\u5FEB\u7167` : "\u6682\u65E0\u8BE5\u65F6\u6BB5\u5386\u53F2\u5FEB\u7167\uFF0C\u591A\u5237\u65B0\u51E0\u6B21\u5373\u53EF\u79EF\u7D2F\u5BF9\u6BD4" })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-metrics", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-sub", children: "\u8FD1 7 \u65E5 \xB7 \u73AF\u6BD4" }),
-                (d2.metrics ?? []).length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8BE5\u5E73\u53F0\u672A\u63D0\u4F9B\u8FD1 7 \u65E5\u6307\u6807" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metrics", children: (d2.metrics ?? []).map((m2) => {
-                  const vs = m2.vs ?? "";
-                  const up = vs.startsWith("+");
-                  const has = vs && vs !== "-";
-                  return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-metric", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metric-val", children: m2.value }),
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metric-label", children: m2.label }),
-                    has && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-metric-vs", style: { color: up ? "var(--trend-up)" : "var(--trend-down)" }, children: [
-                      "\u73AF\u6BD4",
-                      vs
-                    ] })
-                  ] }, m2.label);
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-grid", children: anaAccounts.map((a) => {
+                  const row = anaOverview.find((r) => r.id === a.id);
+                  const logged = isLogged(a);
+                  const g = growthInfo(row?.growth?.[anaWin]?.followers ?? null);
+                  return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                    "button",
+                    {
+                      className: `ana-acct ${logged ? "" : "off"}`,
+                      title: logged ? `\u67E5\u770B${platformLabel(a.platform)}\u300C${a.name}\u300D\u8BE6\u60C5` : "\u672A\u767B\u5F55\uFF0C\u53BB\u8D26\u53F7\u9875\u767B\u5F55",
+                      onClick: () => logged ? runAna(a) : onNavigate("accounts"),
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-acct-top", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-plat", children: platformLabel(a.platform) }),
+                          a.persona !== "" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "badge", children: a.persona })
+                        ] }),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-name", children: a.name }),
+                        row !== void 0 && row.latest !== null ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-acct-num", children: [
+                            fmtNum(row.latest.followers),
+                            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-unit", children: "\u7C89\u4E1D" })
+                          ] }),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-delta", children: g ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { style: { color: g.color }, children: g.text }),
+                            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-win", children: WIN.find(([k2]) => k2 === anaWin)?.[1] })
+                          ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-muted", children: "\u65E0\u5BF9\u6BD4\u57FA\u7EBF" }) }),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkline, { points: row.points }),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-acct-sub", children: [
+                            "\u83B7\u8D5E ",
+                            fmtNum(row.latest.likes),
+                            " \xB7 ",
+                            ageLabel(row.ageDays)
+                          ] })
+                        ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-empty", children: row?.archived === false ? "\u8BE5\u5E73\u53F0\u4E0D\u5199\u5F52\u6863 \xB7 \u70B9\u5F00\u5B9E\u65F6\u6293\u53D6" : logged ? "\u5C1A\u672A\u91C7\u96C6 \xB7 \u70B9\u5F00\u6293\u4E00\u6B21" : "\u672A\u767B\u5F55 \xB7 \u53BB\u8D26\u53F7\u9875" })
+                      ]
+                    },
+                    a.id
+                  );
                 }) })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-notes", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-sub", children: "\u6700\u65B0\u7B14\u8BB0" }),
-                (d2.notes ?? []).length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8BE5\u8D26\u53F7\u6682\u65E0\u53EF\u8BFB\u53D6\u7684\u5DF2\u53D1\u5E03\u7B14\u8BB0" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-notes", children: (d2.notes ?? []).slice(0, 6).map((n, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("a", { className: "ana-note", href: n.url, target: "_blank", rel: "noreferrer", title: n.title, children: [
-                  n.cover ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("img", { className: "ana-note-cover", src: n.cover, alt: "", referrerPolicy: "no-referrer" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-cover ana-note-cover-ph", children: "\u{1F4DD}" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-note-main", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-title", children: n.title || "(\u65E0\u6807\u9898)" }),
-                    n.stat && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-stat", children: n.stat })
+              ] });
+            })(),
+            anaSel !== "" && (() => {
+              if (sel === void 0) return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8D26\u53F7\u5DF2\u4E0D\u5B58\u5728\uFF0C\u70B9\u300C\u5168\u89C8\u300D\u5237\u65B0" });
+              if (d2 === void 0) return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u70B9\u4E0A\u65B9\u8D26\u53F7\u67E5\u770B\u8BE5\u8D26\u53F7\u6570\u636E" });
+              if (d2 === "loading") {
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "loading", style: { padding: "28px 0" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "spinner" }),
+                  "\u6293\u53D6\u4E2D\u2026\uFF08\u8D77\u6D4F\u89C8\u5668\uFF0C\u7EA6\u6570\u79D2\uFF09"
+                ] });
+              }
+              if (d2 === "error") {
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", style: { color: "var(--red)" }, children: "\u6293\u53D6\u5931\u8D25\uFF08\u672A\u767B\u5F55 / \u9700\u771F\u673A\u6821\u51C6\uFF09\uFF0C\u70B9\u300C\u5237\u65B0\u300D\u91CD\u8BD5" });
+              }
+              if (!d2.loggedIn) {
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: [
+                  platformLabel(sel.platform),
+                  "\u300C",
+                  sel.name,
+                  "\u300D\u767B\u5F55\u6001\u5DF2\u5931\u6548\uFF0C\u53BB\u8D26\u53F7\u9875\u91CD\u767B \u2192"
+                ] });
+              }
+              return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-body", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-main", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-id", children: [
+                    platformLabel(sel.platform),
+                    "\u300C",
+                    sel.name,
+                    "\u300D",
+                    d2.nickname ? ` \xB7 @${d2.nickname}` : ""
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-go", children: "\u2197" })
-                ] }, i)) })
-              ] })
-            ] }))
-          ] });
-        })()
-      ] })
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-overview", children: [["\u7C89\u4E1D", "followers"], ["\u83B7\u8D5E", "likes"], ["\u5173\u6CE8", "following"]].map(([label, key]) => {
+                    const w2 = d2.growth?.[anaWin] ?? null;
+                    const g = w2 ? growthInfo(w2[key]) : null;
+                    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-stat", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-val", children: fmtNum(d2[key]) }),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-label", children: label }),
+                      g ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta", style: { color: g.color }, children: g.text }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta ana-muted", children: "\u2014" })
+                    ] }, key);
+                  }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins", children: WIN.map(([k2, lab]) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                    "button",
+                    {
+                      className: `ana-win ${anaWin === k2 ? "on" : ""}`,
+                      onClick: () => setAnaWin(k2),
+                      children: lab
+                    },
+                    k2
+                  )) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins-note", children: d2.growth?.[anaWin]?.since_days != null ? `\u5BF9\u6BD4 ${d2.growth[anaWin].since_days} \u5929\u524D\u7684\u5FEB\u7167` : "\u6682\u65E0\u8BE5\u65F6\u6BB5\u5386\u53F2\u5FEB\u7167\uFF0C\u591A\u5237\u65B0\u51E0\u6B21\u5373\u53EF\u79EF\u7D2F\u5BF9\u6BD4" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-metrics", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-sub", children: "\u8FD1 7 \u65E5 \xB7 \u73AF\u6BD4" }),
+                  (d2.metrics ?? []).length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8BE5\u5E73\u53F0\u672A\u63D0\u4F9B\u8FD1 7 \u65E5\u6307\u6807" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metrics", children: (d2.metrics ?? []).map((m2) => {
+                    const vs = m2.vs ?? "";
+                    const up = vs.startsWith("+");
+                    const has = vs && vs !== "-";
+                    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-metric", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metric-val", children: m2.value }),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metric-label", children: m2.label }),
+                      has && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-metric-vs", style: { color: up ? "var(--trend-up)" : "var(--trend-down)" }, children: [
+                        "\u73AF\u6BD4",
+                        vs
+                      ] })
+                    ] }, m2.label);
+                  }) })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-notes", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-sub", children: "\u6700\u65B0\u7B14\u8BB0" }),
+                  (d2.notes ?? []).length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8BE5\u8D26\u53F7\u6682\u65E0\u53EF\u8BFB\u53D6\u7684\u5DF2\u53D1\u5E03\u7B14\u8BB0" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-notes", children: (d2.notes ?? []).slice(0, 6).map((n, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("a", { className: "ana-note", href: n.url, target: "_blank", rel: "noreferrer", title: n.title, children: [
+                    n.cover ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("img", { className: "ana-note-cover", src: n.cover, alt: "", referrerPolicy: "no-referrer" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-cover ana-note-cover-ph", children: "\u{1F4DD}" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-note-main", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-title", children: n.title || "(\u65E0\u6807\u9898)" }),
+                      n.stat && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-stat", children: n.stat })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-go", children: "\u2197" })
+                  ] }, i)) })
+                ] })
+              ] });
+            })()
+          ] })
+        ] });
+      })() })
     ] })
   ] });
 }
@@ -7348,45 +7516,6 @@ __export(schedules_exports, {
 
 // src/components/SchedulesPage.tsx
 var import_react6 = require("react");
-
-// src/lib/roster.ts
-var PLATFORM_LABELS = {
-  xiaohongshu: "\u5C0F\u7EA2\u4E66",
-  kuaishou: "\u5FEB\u624B",
-  "weixin-channels": "\u5FAE\u4FE1\u89C6\u9891\u53F7",
-  zhihu: "\u77E5\u4E4E",
-  bilibili: "B\u7AD9",
-  douyin: "\u6296\u97F3",
-  "wechat-oa": "\u5FAE\u4FE1\u516C\u4F17\u53F7"
-};
-var platformLabel = (platform) => PLATFORM_LABELS[platform] ?? platform;
-async function fetchRoster() {
-  const accounts = await fetchAccounts().catch(() => []);
-  return accounts.map((account) => ({
-    id: account.id,
-    platform: account.platform,
-    name: account.name,
-    persona: account.persona || ""
-  }));
-}
-function renderRosterPrompt(accounts) {
-  if (accounts.length === 0) return "";
-  const lines = accounts.map((account) => {
-    const label = platformLabel(account.platform);
-    const persona = account.persona ? `\uFF0C\u753B\u50CF\u300C${account.persona}\u300D\uFF08profiles/${account.persona}/ \u4E0B\u7684\u516D\u7EF4\u6587\u4EF6\uFF09` : "\uFF0C\u672A\u7ED1\u5B9A\u753B\u50CF";
-    return `- ${label}\u300C${account.name}\u300D\uFF08\u8D26\u53F7 id\uFF1A${account.id}${persona}\uFF09`;
-  });
-  return `
-
-\u3010\u53EF\u7528\u53D1\u5E03\u8D26\u53F7\u3011
-${lines.join("\n")}
-\u6D89\u53CA\u53D1\u5E03/\u63A8\u9001\u65F6\u660E\u786E\u76EE\u6807\u8D26\u53F7\uFF08\u8D26\u53F7 id \u6216\u540D\u5B57\uFF09\uFF1B\u7528\u6237\u6CA1\u6307\u5B9A\u5C31\u5148\u786E\u8BA4\uFF0C\u6216\u6309\u753B\u50CF\u8D34\u5408\u5EA6\u7ED9\u5EFA\u8BAE\u540E\u518D\u6267\u884C\uFF1B\u7ED9\u6307\u5B9A\u8D26\u53F7\u5199\u6587\u6848\u65F6\u6309\u5176\u753B\u50CF\u8C03\u6574\u8BED\u6C14\u4E0E\u9009\u9898\u3002`;
-}
-async function rosterPrompt() {
-  return renderRosterPrompt(await fetchRoster());
-}
-
-// src/components/SchedulesPage.tsx
 var import_jsx_runtime10 = require("react/jsx-runtime");
 var TIMING_KINDS = [
   { key: "at", label: "\u4EC5\u4E00\u6B21" },

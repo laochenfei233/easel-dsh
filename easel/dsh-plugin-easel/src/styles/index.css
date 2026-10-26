@@ -1047,6 +1047,36 @@ textarea.field { resize: vertical; min-height: 90px; }
 .ana-note-go { flex-shrink: 0; color: var(--text-tertiary); }
 .ana-note:hover .ana-note-go { color: var(--accent-end); }
 
+/* 账号 chips：未登录仍可选，但降调（点它去账号页） */
+.ana-plats .chip.ana-chip-off { opacity: .55; border-style: dashed; }
+.ana-plats .chip.ana-chip-off:hover { opacity: .8; }
+
+/* 全览：每个账号一张卡。共享的窗口选择器在网格上方，卡片只承载数字与走势。 */
+.ana-wins-head { margin: 0 0 12px; justify-content: flex-end; }
+.ana-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }
+.ana-acct {
+  display: flex; flex-direction: column; align-items: stretch; gap: 3px; text-align: left;
+  padding: 12px 13px 11px; border-radius: 14px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer; font: inherit;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+.ana-acct:hover { border-color: var(--border-strong); box-shadow: 0 4px 14px rgba(24,24,48,.06); }
+.ana-acct:focus-visible { outline: 2px solid var(--accent-end); outline-offset: 2px; }
+.ana-acct.off { opacity: .62; border-style: dashed; }
+.ana-acct-top { display: flex; align-items: center; gap: 6px; min-height: 18px; }
+.ana-acct-plat { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; color: var(--text-tertiary); text-transform: uppercase; }
+.ana-acct-name { font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ana-acct-num { font-size: 24px; font-weight: 700; line-height: 1.15; margin-top: 5px; font-variant-numeric: tabular-nums; }
+.ana-acct-unit { font-size: 11px; font-weight: 500; color: var(--text-tertiary); margin-left: 5px; }
+.ana-acct-delta { display: flex; align-items: baseline; gap: 5px; font-size: 11px; font-weight: 600;
+  font-variant-numeric: tabular-nums; min-height: 15px; }
+.ana-acct-win { font-size: 10.5px; font-weight: 400; color: var(--text-tertiary); }
+.ana-spark { color: var(--accent-end); margin-top: 6px; width: 100%; height: 26px; opacity: .78; }
+.ana-acct-sub { font-size: 10.5px; color: var(--text-tertiary); margin-top: 5px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ana-acct-empty { font-size: 11.5px; color: var(--text-tertiary); line-height: 1.5; margin-top: 8px; min-height: 34px; }
+
 /* ============ 内容库画廊 ============ */
 .gallery-page { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }
 .gallery-head { max-width: 1160px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
