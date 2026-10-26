@@ -418,6 +418,11 @@ test('output and media reads refuse host-owned state but keep legit previews', a
   // sidecar holds a live capability.
   writeFileSync(join(root, 'outputs', '_ideas.json.tmp'), '[]', 'utf8')
   writeFileSync(join(root, 'outputs', '.easel-api.json.123.456.tmp'), '{"runnerToken":"x"}', 'utf8')
+  // 多账户注册表与 per-account B站 cookie：注册表只有引用，但 cookie 是真凭据。
+  writeFileSync(join(root, 'outputs', '_accounts.json'), '{"version":1,"accounts":[]}', 'utf8')
+  mkdirSync(join(root, 'outputs', '_accounts', 'bilibili-x1'), { recursive: true })
+  writeFileSync(join(root, 'outputs', '_accounts', 'bilibili-x1', 'cookies.json'),
+    JSON.stringify({ cookie_info: { cookies: [{ name: 'SESSDATA', value: 'DUMMY' }] } }), 'utf8')
 
   const forbidden = [
     ['GET', 'output/_deconstruct/cookies.json'],
@@ -429,10 +434,14 @@ test('output and media reads refuse host-owned state but keep legit previews', a
     ['GET', 'output/analytics/accounts.json'],
     ['GET', 'output/_ideas.json.tmp'],
     ['GET', 'media/.easel-api.json.123.456.tmp'],
+    ['GET', 'output/_accounts.json'],
+    ['GET', 'media/_accounts/bilibili-x1/cookies.json'],
+    ['GET', 'output/_accounts/bilibili-x1/cookies.json'],
     // Windows and APFS resolve this to the same file; the guard compares case-insensitively.
     ['GET', 'output/_DECONSTRUCT/COOKIES.JSON'],
     ['GET', 'media/_EASEL_API.JSON'],
     ['GET', 'media/_LOGIN/XHS.CODE'],
+    ['GET', 'media/_ACCOUNTS/BILIBILI-X1/COOKIES.JSON'],
   ]
   for (const [method, path] of forbidden) {
     await assert.rejects(call(method, path), error => error.status === 403, `${method} ${path} is refused`)
