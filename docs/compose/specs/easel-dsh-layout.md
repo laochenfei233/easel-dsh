@@ -294,11 +294,13 @@ dsh-plugin-easel 客户端注册。内容：当前根、默认根、是否默认
   `%LOCALAPPDATA%\Easel`、`~/.easel`、`<data_root>\home\node_modules`，再递归
   删指针里的 `dataRoot`，并清理遗留的 `<install>\data` 和
   `%USERPROFILE%\Easel-dsh`。递归删除只针对带 `.easel-data.json` /
-  `.layout-v2.json` 标记、非盘符根、非 reparse point 的目录，防止被改坏的指针
-  变成任意路径删除；绝不能对 junction 用 `RMDir /r`。macOS/Linux 没有安装器：
-  删 app 后数据保留，用户自行删除。
-- 数据询问文案改为「是否同时删除 Easel 数据目录（工作区、会话、账号画像）？」，
-  默认否；`$UpdateMode <> 1` 才询问。
+  `.layout-v2.json` 标记、或同时含 `home\` 与 `workspace\` 的目录（且非盘符
+  根、非 reparse point），防止被改坏的指针变成任意路径删除；绝不能对
+  junction 用 `RMDir /r`。macOS/Linux 没有安装器：删 app 后数据保留，用户
+  自行删除。
+- 删数据是显式选择：用卸载器确认页（第一页）自带的「Delete the application
+  data」复选框，默认不勾；只有勾选且 `$UpdateMode <> 1` 才执行删除。被动/静默
+  卸载与 `/UPDATE` 会跳过该页，因此不会删数据（复选框状态为空按保留处理）。
 
 ### 路径长度
 

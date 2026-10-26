@@ -9,6 +9,10 @@
 ; Pre-layout installs kept data in %LOCALAPPDATA%\Easel + %USERPROFILE%\.easel;
 ; the legacy roots and junctions are cleaned here.
 ;
+; Uninstalling keeps user data. Deletion runs only when the confirm page's
+; stock "delete application data" checkbox is ticked, which silent and
+; /UPDATE uninstalls never reach; the checkbox starts unchecked.
+;
 ; The shell is tray-resident and spawns the dsh web server from its runtime
 ; directory. Tauri's CheckIfAppIsRunning only terminates the shell binary; a
 ; forced kill never runs RunEvent::Exit, so the node child keeps serving from
@@ -71,10 +75,12 @@
   ${If} ${FileExists} "$INSTDIR\app\*"
     RMDir /r "$INSTDIR\app"
   ${EndIf}
-  ; A /UPDATE uninstall is the old uninstaller running as part of an upgrade:
-  ; the data prompt must not appear, and user data must never be deleted.
+  ; Data survives unless the uninstaller's confirm-page checkbox was ticked.
+  ; That page is skipped for /UPDATE (an upgrade must never delete data) and
+  ; for passive runs, so an unattended or silent uninstall keeps everything.
+  ; The checkbox is the stock Tauri one, created unchecked.
   ${If} $UpdateMode <> 1
-    MessageBox MB_YESNO|MB_ICONQUESTION|MB_DEFBUTTON2 "是否同时删除 Easel 数据目录？$\n$\n默认在「文档」下的 Easel-dsh；若已在设置里改过位置，按记录的位置删除。$\n$\n其中包含工作区（outputs、项目）和 dsh home（会话、账号画像、凭据）。选择「否」保留数据。" IDNO easel_data_keep
+  ${AndIf} $DeleteAppDataCheckboxState = 1
       InitPluginsDir
       FileOpen $0 "$PLUGINSDIR\remove-easel-data.ps1" w
       ; Links first: a junction must lose only its entry, never its target.
@@ -98,7 +104,8 @@
       FileWrite $0 '  if (-not (Test-Path -LiteralPath $$path)) { return $$false }$\r$\n'
       FileWrite $0 '  $$item = Get-Item -LiteralPath $$path -Force -ErrorAction SilentlyContinue$\r$\n'
       FileWrite $0 '  if (-not $$item -or ($$item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { return $$false }$\r$\n'
-      FileWrite $0 '  return (Test-Path -LiteralPath (Join-Path $$path $\".easel-data.json$\")) -or (Test-Path -LiteralPath (Join-Path $$path $\".layout-v2.json$\"))$\r$\n'
+      FileWrite $0 '  if ((Test-Path -LiteralPath (Join-Path $$path $\".easel-data.json$\")) -or (Test-Path -LiteralPath (Join-Path $$path $\".layout-v2.json$\"))) { return $$true }$\r$\n'
+      FileWrite $0 '  return (Test-Path -LiteralPath (Join-Path $$path $\"home$\")) -and (Test-Path -LiteralPath (Join-Path $$path $\"workspace$\"))$\r$\n'
       FileWrite $0 '}$\r$\n'
       FileWrite $0 '$$targets = @()$\r$\n'
       FileWrite $0 'if (Test-EaselRoot $$dataRoot) { $$targets += $$dataRoot }$\r$\n'
@@ -116,6 +123,5 @@
       FileClose $0
       nsExec::ExecToLog 'powershell -NoProfile -ExecutionPolicy Bypass -File "$PLUGINSDIR\remove-easel-data.ps1"'
       Pop $0
-    easel_data_keep:
   ${EndIf}
 !macroend
