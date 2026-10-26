@@ -263,12 +263,18 @@ def growth_windows(history: list[dict], current: dict) -> dict:
     return out
 
 
-def _history_path(platform: str) -> Path:
-    return ANALYTICS_DIR / f"{platform}.jsonl"
+def _history_key(key: str | None, platform: str) -> str:
+    """归档键：账号 id（多账户）；缺省 = 平台 key（默认账号的 id 恰好也是平台 key，存量文件零迁移）。"""
+    return key or platform
 
 
-def load_history(platform: str) -> list[dict]:
-    p = _history_path(platform)
+def _history_path(key: str) -> Path:
+    return ANALYTICS_DIR / f"{key}.jsonl"
+
+
+def load_history(key: str) -> list[dict]:
+    """读某归档键的全部快照（调用方先经 _history_key 归一）。"""
+    p = _history_path(key)
     if not p.is_file():
         return []
     out = []
@@ -326,16 +332,16 @@ def should_record(history: list[dict], snap: dict) -> bool:
     return any(last.get(k) != snap.get(k) for k in ("followers", "likes", "posts"))
 
 
-def record_snapshot(platform: str, snap: dict) -> None:
+def record_snapshot(key: str, snap: dict) -> None:
     """数据较上一条有变化才追加；写入前做分层保留 compaction（老数据自动稀疏化，文件永不膨胀）。"""
-    h = load_history(platform)
+    h = load_history(key)
     if not should_record(h, snap):
         return
     h.append(snap)
     h = compact(h, snap["ts"])
     ANALYTICS_DIR.mkdir(parents=True, exist_ok=True)
     body = "\n".join(json.dumps(x, ensure_ascii=False) for x in h)
-    _history_path(platform).write_text(body + ("\n" if body else ""), encoding="utf-8")
+    _history_path(key).write_text(body + ("\n" if body else ""), encoding="utf-8")
 
 
 # --------------------------------------------------------------------------- #
@@ -840,10 +846,11 @@ def cmd_fetch(a) -> int:
 
     now = int(time.time())
     snap = {"ts": now, "followers": s["followers"], "likes": s["likes"], "posts": s["posts"]}
-    history = load_history(a.platform)
+    key = _history_key(a.history_key, a.platform)
+    history = load_history(key)
     growth = growth_windows(history, snap)
     if any(snap[k] is not None for k in ("followers", "likes", "posts")):
-        record_snapshot(a.platform, snap)
+        record_snapshot(key, snap)
 
     out = {
         "platform": a.platform, "name": PLATFORMS[a.platform]["name"],
@@ -858,6 +865,38 @@ def cmd_fetch(a) -> int:
             {"key": "following", "label": "关注", "value": s["following"]},
         ],
         "growth": growth, "fetched_at": now,
+    }
+    print(json.dumps(out, ensure_ascii=False))
+    return 0
+
+
+def cmd_history(a) -> int:
+    """只读归档（不起浏览器）：给工作台全览供数。growth 语义与 fetch 完全一致。"""
+    if a.platform not in PLATFORMS:
+        _die(f"未知平台：{a.platform}（支持：{', '.join(PLATFORMS)}）")
+    key = _history_key(a.history_key, a.platform)
+    history = load_history(key)
+    if not history:
+        print(json.dumps({
+            "platform": a.platform, "historyKey": key,
+            "latest": None, "growth": None, "points": [], "ageDays": None,
+        }, ensure_ascii=False))
+        return 0
+    latest = history[-1]
+    # fetch 的 growth 是在 append 之前算的（last=对上一条），这里同样把 latest 排除在基线外。
+    growth = growth_windows(history[:-1], latest)
+    out = {
+        "platform": a.platform,
+        "historyKey": key,
+        "latest": {
+            "ts": latest.get("ts"),
+            "followers": latest.get("followers"),
+            "likes": latest.get("likes"),
+            "posts": latest.get("posts"),
+        },
+        "growth": growth,
+        "points": history[-20:],
+        "ageDays": round((int(time.time()) - latest.get("ts", 0)) / 86400, 1),
     }
     print(json.dumps(out, ensure_ascii=False))
     return 0
@@ -946,6 +985,12 @@ def cmd_selftest(_a) -> int:
             assert c.get(f), f"{k} 缺 {f}"
         assert set(c["overview"]) >= {"followers", "likes"}
     assert _proxy("xiaohongshu", None, None) is None and _proxy("douyin", "http://x:1", False) == "http://x:1"
+    # 归档键（多账户）：缺省 = 平台（默认账号的 id 也是平台 key，存量文件零迁移）；显式键互相隔离
+    assert _history_key(None, "douyin") == "douyin"
+    assert _history_key("douyin-x1", "douyin") == "douyin-x1"
+    assert _history_path("douyin") == ANALYTICS_DIR / "douyin.jsonl"
+    assert _history_path("douyin-x1") != _history_path("douyin")
+    assert _history_key("", "douyin") == "douyin", "空串按缺省处理"
     # 账号参数化（browser_session）：--profile-dir / --cdp-endpoint 解析契约
     browser_session.selftest_args()
     assert browser_session.pick_profile(None, _profile_dir("zhihu", None)) == _profile_dir("zhihu", None), \
@@ -977,7 +1022,12 @@ def main() -> int:
     pf.add_argument("--proxy", help="外网代理（默认按平台：xhs 直连、其它走 env）")
     pf.add_argument("--no-proxy", action="store_true", help="强制直连")
     pf.add_argument("--headed", action="store_true", help="有头模式（首次校准）")
+    pf.add_argument("--history-key", help="归档键（多账户用账号 id；缺省 = 平台）")
     pf.set_defaults(func=cmd_fetch)
+    hz = sub.add_parser("history", help="读归档快照与增长（不起浏览器）→ JSON")
+    hz.add_argument("--platform", required=True, help=f"平台：{', '.join(PLATFORMS)}")
+    hz.add_argument("--history-key", help="归档键（多账户用账号 id；缺省 = 平台）")
+    hz.set_defaults(func=cmd_history)
     sub.add_parser("selftest", help="离线自检").set_defaults(func=cmd_selftest)
     a = ap.parse_args()
     if not getattr(a, "func", None):
