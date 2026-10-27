@@ -11441,7 +11441,8 @@ function BreakdownPage({ persona, onNavigate, remote }) {
       const res = await fetch("/easel/api/deconstruct", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url, asrModel: asrModel.split("::")[1] })
+        // 完整 provider::model：宿主按服务商解析「设置→模型」里配置的凭据。
+        body: JSON.stringify({ url, asrModel: asrModel || void 0 })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "\u91C7\u96C6\u4EFB\u52A1\u521B\u5EFA\u5931\u8D25");

@@ -36,7 +36,8 @@ async function apiAsr(c) {
   if (!(await isFile(input))) throw new ApiError(404, `文件不存在：${rawPath}`)
   // 刷新技能侧发现文件（apply 时服务可能尚未绑定端口，调用时补写最准）。
   await writeApiDiscovery(c.settings.projectRoot, webServerPort, c.settings.basePath, c.settings.runnerToken).catch(() => {})
-  // 凭据：dsh 模型管理凭据插件侧读不到（本插件只注入 webServer）→ 环境变量 / 项目 .env（进程环境优先）。
+  // 凭据：技能路由保持环境变量 / 项目 .env（进程环境优先）；拆解任务可带
+  // provider::model 走 dsh 模型管理凭据（见 deconstructTranscribe）。
   const env = await readEnvFile(join(c.settings.projectRoot, '.env'))
   for (const key of ['MIMO_API_KEY', 'MIMO_BASE_URL', 'MIMO_ASR_MODEL']) {
     if (process.env[key] !== undefined) env[key] = process.env[key]
@@ -63,9 +64,62 @@ async function apiAsr(c) {
 
 // ---- 拆解采集（spec easel-breakdown-fullpage：宿主直驱 下载→抽帧→ASR，状态落 job.json）----
 
-/** 组装一次带模型覆盖的转写闭包（凭据来源与 apiAsr 同一注册表）。 */
+// 宿主 cordis 上下文（apply 时捕获）：`provider::model` 的凭据从这里解析。
+let hostCtx = null
+
+/**
+ * 从 dsh 模型管理解析一个服务商路由下的 ASR 凭据，与「设置→模型」同一注册表：
+ * 路由表来自 `ctx.llm`，Base URL 与 `apiKeyEnv` 读自 settings 命名空间的
+ * 服务商 profile，密钥经 `ctx.credentials` 解析（与 session-controller 的
+ * modelCatalog / hasProviderApiKey 同一条读取链）。
+ * @param ctx - 宿主 cordis 上下文；缺 llm/settings/credentials 的部署返回失败。
+ * @param providerId - 模型目录的 provider 组 id（llm 路由键）。
+ * @param modelId - 该路由下的模型 id，原样作为 ASR 请求的 model。
+ * @returns `{ ok: true, credentials }`（`credentials` 即 transcribeToSubtitle 的
+ *   `{ apiKey, baseUrl, model }`）或 `{ ok: false, reason }`（面向用户的失败原因）。
+ */
+export async function resolveDshAsrCredentials(ctx, providerId, modelId) {
+  const llm = ctx?.get?.('llm')
+  const settings = ctx?.get?.('settings')
+  const credentials = ctx?.get?.('credentials')
+  if (llm === undefined || settings === undefined || credentials === undefined) {
+    return { ok: false, reason: '宿主未提供模型管理服务（llm/settings/credentials）' }
+  }
+  const route = llm.listConfigurableProviders().find(row => row.provider === providerId)
+  if (route === undefined) return { ok: false, reason: `服务商「${providerId}」不在模型管理目录中` }
+  let profile = settings.describe({ redactSecrets: true }).find(row => row.ns === route.settingsNs)?.value
+  for (const key of route.settingsPath) {
+    profile = typeof profile === 'object' && profile !== null ? Reflect.get(profile, key) : undefined
+  }
+  if (typeof profile !== 'object' || profile === null) {
+    return { ok: false, reason: `服务商「${providerId}」尚未配置` }
+  }
+  const ref = profile.apiKeyEnv
+  const resolved = typeof ref === 'string' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(ref)
+    ? await credentials.resolve(ref)
+    : undefined
+  if (typeof resolved?.value !== 'string' || resolved.value === '') {
+    return { ok: false, reason: `服务商「${providerId}」的 API Key 未配置` }
+  }
+  const baseUrl = String(profile.baseURL ?? '').trim().replace(/\/+$/, '')
+  if (baseUrl === '') return { ok: false, reason: `服务商「${providerId}」未配置 Base URL` }
+  return { ok: true, credentials: { apiKey: resolved.value, baseUrl, model: modelId } }
+}
+
+/**
+ * 组装一次带模型覆盖的转写闭包。`provider::model`（拆解页模型目录的选择）走
+ * dsh 模型管理凭据；裸 model id（在途旧任务）保持既有 MIMO_* env 路径。
+ */
 function deconstructTranscribe(c) {
   return async ({ input, format, projectRoot, model }) => {
+    const split = typeof model === 'string' ? model.indexOf('::') : -1
+    if (split > 0) {
+      const resolved = await resolveDshAsrCredentials(hostCtx, model.slice(0, split), model.slice(split + 2))
+      if (!resolved.ok) {
+        throw new Error(`无法用所选模型 ${model} 转写：${resolved.reason}（可在 设置→模型 处理，或改选其他模型）`)
+      }
+      return transcribeToSubtitle({ input, format, projectRoot, credentials: resolved.credentials })
+    }
     const env = await readEnvFile(join(c.settings.projectRoot, '.env'))
     for (const key of ['MIMO_API_KEY', 'MIMO_BASE_URL', 'MIMO_ASR_MODEL']) {
       if (process.env[key] !== undefined) env[key] = process.env[key]
@@ -185,6 +239,7 @@ export const inject = ['easelApi', 'webServer']
  */
 export function apply(ctx) {
   webServerPort = ctx.webServer?.port ?? null
+  hostCtx = ctx
   void writeApiDiscovery(ctx.easelApi.settings.projectRoot, webServerPort, ctx.easelApi.settings.basePath,
     ctx.easelApi.runnerToken)
     .catch(() => {})

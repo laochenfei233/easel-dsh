@@ -172,7 +172,8 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
       const res = await fetch('/easel/api/deconstruct', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ url, asrModel: asrModel.split('::')[1] }),
+        // 完整 provider::model：宿主按服务商解析「设置→模型」里配置的凭据。
+        body: JSON.stringify({ url, asrModel: asrModel || undefined }),
       });
       const data = await res.json() as DeconstructJob & { message?: string };
       if (!res.ok) throw new Error(data.message ?? '采集任务创建失败');
