@@ -187,7 +187,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Build Tauri app and upload to Release
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Updater artifacts are signed (bundle.createUpdaterArtifacts); without the
