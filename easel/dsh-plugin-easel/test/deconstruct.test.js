@@ -113,6 +113,7 @@ function stubCtx({
   routes = [{ provider: 'my-gateway', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'my-gateway'] }],
   profile,
   resolveValue,
+  resolvedRefs = [],
 } = {}) {
   return {
     get(name) {
@@ -121,7 +122,12 @@ function stubCtx({
         return { describe: () => [{ ns: 'llm-pi-ai', value: { providers: { 'my-gateway': profile } } }] }
       }
       if (name === 'credentials') {
-        return { resolve: async () => resolveValue === undefined ? undefined : { value: resolveValue, source: 'file' } }
+        return {
+          resolve: async ref => {
+            resolvedRefs.push(ref)
+            return resolveValue === undefined ? undefined : { value: resolveValue, source: 'file' }
+          },
+        }
       }
       return undefined
     },
@@ -131,12 +137,15 @@ function stubCtx({
 const CONFIGURED_PROFILE = { apiKeyEnv: 'MY_ASR_KEY', baseURL: 'https://gw.example/v1/' }
 
 test('resolveDshAsrCredentials walks route → settings profile → credential and trims the base URL', async () => {
+  const resolvedRefs = []
   const resolved = await resolveDshAsrCredentials(
-    stubCtx({ profile: CONFIGURED_PROFILE, resolveValue: 'sk-test' }), 'my-gateway', 'asr-x')
+    stubCtx({ profile: CONFIGURED_PROFILE, resolveValue: 'sk-test', resolvedRefs }), 'my-gateway', 'asr-x')
   assert.deepEqual(resolved, {
     ok: true,
     credentials: { apiKey: 'sk-test', baseUrl: 'https://gw.example/v1', model: 'asr-x' },
   })
+  // 解析用的 ref 必须来自 profile 的 apiKeyEnv，而不是别的来源。
+  assert.deepEqual(resolvedRefs, ['MY_ASR_KEY'])
 })
 
 test('resolveDshAsrCredentials reports the missing piece, not a generic failure', async () => {
