@@ -329,9 +329,12 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
             采集与拆解需要可用模型。
           </p>
         )}
-        {!anyModalitiesDeclared && models.length > 0 && (
+        {visionModel !== '' && models.length > 0 && !models.some(entry =>
+          `${entry.provider}::${entry.model.id}` === visionModel
+          && entry.model.inputModalities?.includes('image') === true) && (
           <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', margin: '8px 0 0' }}>
-            模型未标注视觉能力：请自行确认所选视觉模型支持图像输入，否则看帧拆解会退化。
+            所选视觉模型未标注图像输入：若网关实际支持看图，可在 设置→模型 展开该模型行勾选「图像」，
+            下拉里它会排到前面；未标注时看帧拆解可能退化或失败。
           </p>
         )}
 
