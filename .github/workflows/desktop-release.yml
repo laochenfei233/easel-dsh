@@ -3,7 +3,10 @@ name: desktop-release
 # Builds the Tauri desktop shell for Windows (x64 + arm64), macOS (arm64 +
 # Intel x64) and Linux, bundles the per-platform Node runtime + dsh closure
 # (scripts/bundle-runtime.mjs) and uploads the installers to a GitHub Release.
-# Each architecture row is its own job and artifact.
+# Each architecture row is its own job and artifact. The Release body comes
+# from the matching CHANGELOG.md section; macOS packages ride the same
+# Release unsigned (noted in the changelog) and stay out of latest.json,
+# which drives the in-app updater.
 #
 # Trigger: manual dispatch, or pushing a tag `v*` (the tauri-action creates
 # or updates the Release for that tag).
@@ -150,16 +153,40 @@ jobs:
           mv pnpm-workspace.yaml pnpm-workspace.yaml.bak
           node -e 'const fs=require("fs");const p="package.json";const j=JSON.parse(fs.readFileSync(p,"utf8"));delete j.workspaces;fs.writeFileSync(p,JSON.stringify(j,null,2)+"\n")'
 
-      - name: Build Tauri app
-        if: matrix.platform == 'macos-latest'
-        working-directory: apps/desktop-tauri
+      # The Release body is the matching CHANGELOG.md section (the heading
+      # `## <date> · <version>` up to the next `## `), so release copy is
+      # written where the changelog lives. A dispatch run without a matching
+      # section falls back to the short static blurb.
+      - name: Extract release notes from the changelog
+        id: notes
+        shell: bash
         env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
-        run: pnpm tauri build --verbose ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          VERSION="${REF_NAME#v}"
+          body=$(VERSION="$VERSION" node -e '
+            const fs = require("fs");
+            const version = process.env.VERSION;
+            const lines = fs.readFileSync("CHANGELOG.md", "utf8").split(/\r?\n/);
+            const start = lines.findIndex((line) => line.startsWith("## ") && line.includes("· " + version));
+            if (start !== -1) {
+              let end = lines.length;
+              for (let i = start + 1; i < lines.length; i++) {
+                if (lines[i].startsWith("## ")) { end = i; break; }
+              }
+              process.stdout.write(lines.slice(start + 1, end).join("\n").trim());
+            }
+          ')
+          if [ -z "$body" ]; then
+            body='Tauri 桌面客户端，内置 Node 运行时与 dsh（四预设 standard / minimal / code / cordis 完整保留）。首次启动向导默认安装插件中心与 Windows 终端检测，可选 IM 频道（企微/飞书/钉钉/微信/QQ）等插件。'
+          fi
+          {
+            echo "body<<__NOTES_DELIMITER__"
+            echo "$body"
+            echo "__NOTES_DELIMITER__"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Build Tauri app and upload to Release
-        if: matrix.platform != 'macos-latest'
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -174,12 +201,13 @@ jobs:
           # — a macro our forked installer.nsi does not include, failing NSIS bundling.
           tauriScript: pnpm tauri
           tagName: v__VERSION__
-          releaseName: 'DeepSeek Harness Desktop v__VERSION__'
-          releaseBody: |
-            Tauri 桌面客户端，内置 Node 运行时与 dsh（四预设 standard / minimal / code / cordis 完整保留）。
-            首次启动向导默认安装插件中心与 Windows 终端检测，可选 IM 频道（企微/飞书/钉钉/微信/QQ）等插件。
+          releaseName: 'v__VERSION__'
+          releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: true
           prerelease: false
+          # macOS installers join the Release unsigned, but stay out of
+          # latest.json: the in-app updater path has no macOS verification yet.
+          includeUpdaterJson: ${{ matrix.platform != 'macos-latest' }}
           args: --verbose ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
 
       - name: Upload build artifacts
