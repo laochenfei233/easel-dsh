@@ -26,6 +26,14 @@ llm/settings/credentials 同进程，`hasProviderApiKey`（session-controller/ca
 就是现成的读取链模板，照抄即可。设置页的 credential-ref 字段不被 `redactSecrets`
 遮蔽（只遮 `role('secret')`），所以 ref 名可以从红action后的 describe 输出里读。
 
+**跟进（2026-10-27，视觉下拉排除自定义模型）** — 用户反馈视觉模型下拉看不到设置页的
+自定义模型。根因：手填模型在 pi-ai 物化时默认声明 `input: ['text']`
+（llm-pi-ai/catalog.ts `declaredInput(entry.input) ?? … ?? request.defaultInput`），
+而拆解页视觉下拉在目录里任一模型声明过 modalities 时只保留声明了 `image` 的——
+自定义模型被整体排除，「声明图像才能当视觉模型」的勾选又埋在设置页模型行的展开区。
+修法：视觉下拉不再隐藏未声明图像的模型，声明图像的排前（optgroup 按服务商分组，
+组内排序生效）；选错纯文本模型会在对话回合上游报可见错误，好过永远选不了。
+
 ## [S1] Problem
 
 爆款拆解页的「语音转写模型」下拉来自 dsh 模型目录（与 设置→模型 同一份数据），用户在

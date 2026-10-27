@@ -11506,8 +11506,10 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
   const captureReady = job?.stage === "ready";
   const currentStage = job ? stageIndex(job.stage) : -1;
   const models = flattenCatalog(catalog);
-  const anyModalitiesDeclared = models.some((entry) => entry.model.inputModalities !== void 0);
-  const visionModels = models.filter((entry) => !anyModalitiesDeclared || (entry.model.inputModalities?.includes("image") ?? false));
+  const visionModels = [
+    ...models.filter((entry) => entry.model.inputModalities?.includes("image") === true),
+    ...models.filter((entry) => entry.model.inputModalities?.includes("image") !== true)
+  ];
   const gatePlatform = preflight ? PLATFORM_NAMES[preflight.platform] ?? preflight.platform : "";
   const modelSelect = (value, onChange, allowEmpty, emptyLabel, list, disabled) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
     "select",

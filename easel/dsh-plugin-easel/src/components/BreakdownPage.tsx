@@ -247,9 +247,13 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
   const captureReady = job?.stage === 'ready';
   const currentStage = job ? stageIndex(job.stage) : -1;
   const models = flattenCatalog(catalog);
-  const anyModalitiesDeclared = models.some(entry => entry.model.inputModalities !== undefined);
-  const visionModels = models.filter(entry =>
-    !anyModalitiesDeclared || (entry.model.inputModalities?.includes('image') ?? false));
+  // 视觉下拉不隐藏未声明图像输入的模型：设置页手填的自定义模型默认物化成纯文本
+  // （图像勾选在模型行展开区），但声明缺失不代表网关不收图——隐藏会让自定义视觉
+  // 模型永远选不了。声明图像的排前，选错文本模型会在对话回合上游报可见错误。
+  const visionModels = [
+    ...models.filter(entry => entry.model.inputModalities?.includes('image') === true),
+    ...models.filter(entry => entry.model.inputModalities?.includes('image') !== true),
+  ];
   const gatePlatform = preflight ? PLATFORM_NAMES[preflight.platform] ?? preflight.platform : '';
 
   const modelSelect = (
