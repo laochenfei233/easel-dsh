@@ -160,10 +160,11 @@ jobs:
       - name: Extract release notes from the changelog
         id: notes
         shell: bash
-        env:
-          REF_NAME: ${{ github.ref_name }}
         run: |
-          VERSION="${REF_NAME#v}"
+          # The version comes from tauri.conf.json, not the ref: a dispatch
+          # run is on master, a tag push on v<version>, and the tauri-action
+          # derives the Release tag from the config version either way.
+          VERSION=$(node -e 'process.stdout.write(require("./apps/desktop-tauri/src-tauri/tauri.conf.json").version)')
           body=$(VERSION="$VERSION" node -e '
             const fs = require("fs");
             const version = process.env.VERSION;
