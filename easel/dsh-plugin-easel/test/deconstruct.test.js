@@ -103,3 +103,72 @@ test('fetch stage records the real video title from the downloader metadata line
     rmSync(root, { recursive: true, force: true })
   }
 })
+
+// ---- 拆解 ASR 凭据解析（provider::model → 设置→模型 同一注册表）----
+
+import { resolveDshAsrCredentials } from '../lib/plugins/deconstruct.js'
+
+/** 组一个只含 llm/settings/credentials 三个桩服务的宿主 ctx。 */
+function stubCtx({
+  routes = [{ provider: 'my-gateway', settingsNs: 'llm-pi-ai', settingsPath: ['providers', 'my-gateway'] }],
+  profile,
+  resolveValue,
+  resolvedRefs = [],
+} = {}) {
+  return {
+    get(name) {
+      if (name === 'llm') return { listConfigurableProviders: () => routes }
+      if (name === 'settings') {
+        return { describe: () => [{ ns: 'llm-pi-ai', value: { providers: { 'my-gateway': profile } } }] }
+      }
+      if (name === 'credentials') {
+        return {
+          resolve: async ref => {
+            resolvedRefs.push(ref)
+            return resolveValue === undefined ? undefined : { value: resolveValue, source: 'file' }
+          },
+        }
+      }
+      return undefined
+    },
+  }
+}
+
+const CONFIGURED_PROFILE = { apiKeyEnv: 'MY_ASR_KEY', baseURL: 'https://gw.example/v1/' }
+
+test('resolveDshAsrCredentials walks route → settings profile → credential and trims the base URL', async () => {
+  const resolvedRefs = []
+  const resolved = await resolveDshAsrCredentials(
+    stubCtx({ profile: CONFIGURED_PROFILE, resolveValue: 'sk-test', resolvedRefs }), 'my-gateway', 'asr-x')
+  assert.deepEqual(resolved, {
+    ok: true,
+    credentials: { apiKey: 'sk-test', baseUrl: 'https://gw.example/v1', model: 'asr-x' },
+  })
+  // 解析用的 ref 必须来自 profile 的 apiKeyEnv，而不是别的来源。
+  assert.deepEqual(resolvedRefs, ['MY_ASR_KEY'])
+})
+
+test('resolveDshAsrCredentials reports the missing piece, not a generic failure', async () => {
+  const cases = [
+    { ctx: stubCtx({ routes: [] }), provider: 'my-gateway', reason: /不在模型管理目录中/ },
+    { ctx: stubCtx({ profile: undefined }), provider: 'my-gateway', reason: /尚未配置/ },
+    { ctx: stubCtx({ profile: { baseURL: 'https://gw.example/v1' } }), provider: 'my-gateway', reason: /API Key 未配置/ },
+    { ctx: stubCtx({ profile: { apiKeyEnv: 'MY_ASR_KEY', baseURL: ' ' }, resolveValue: 'sk-test' }), provider: 'my-gateway', reason: /Base URL/ },
+    { ctx: stubCtx({ profile: CONFIGURED_PROFILE, resolveValue: undefined }), provider: 'my-gateway', reason: /API Key 未配置/ },
+    { ctx: {}, provider: 'my-gateway', reason: /模型管理服务/ },
+  ]
+  for (const { ctx, provider, reason } of cases) {
+    const resolved = await resolveDshAsrCredentials(ctx, provider, 'asr-x')
+    assert.equal(resolved.ok, false, `${provider} with the case above must fail`)
+    assert.match(resolved.reason, reason)
+  }
+})
+
+test('resolveDshAsrCredentials ignores an apiKeyEnv outside the reference grammar', async () => {
+  const resolved = await resolveDshAsrCredentials(
+    stubCtx({ profile: { apiKeyEnv: 'not a ref', baseURL: 'https://gw.example/v1' } }),
+    'my-gateway', 'asr-x',
+  )
+  assert.equal(resolved.ok, false)
+  assert.match(resolved.reason, /API Key 未配置/)
+})

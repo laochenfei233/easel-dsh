@@ -172,7 +172,8 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
       const res = await fetch('/easel/api/deconstruct', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ url, asrModel: asrModel.split('::')[1] }),
+        // 完整 provider::model：宿主按服务商解析「设置→模型」里配置的凭据。
+        body: JSON.stringify({ url, asrModel: asrModel || undefined }),
       });
       const data = await res.json() as DeconstructJob & { message?: string };
       if (!res.ok) throw new Error(data.message ?? '采集任务创建失败');
@@ -246,9 +247,13 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
   const captureReady = job?.stage === 'ready';
   const currentStage = job ? stageIndex(job.stage) : -1;
   const models = flattenCatalog(catalog);
-  const anyModalitiesDeclared = models.some(entry => entry.model.inputModalities !== undefined);
-  const visionModels = models.filter(entry =>
-    !anyModalitiesDeclared || (entry.model.inputModalities?.includes('image') ?? false));
+  // 视觉下拉不隐藏未声明图像输入的模型：设置页手填的自定义模型默认物化成纯文本
+  // （图像勾选在模型行展开区），但声明缺失不代表网关不收图——隐藏会让自定义视觉
+  // 模型永远选不了。声明图像的排前，选错文本模型会在对话回合上游报可见错误。
+  const visionModels = [
+    ...models.filter(entry => entry.model.inputModalities?.includes('image') === true),
+    ...models.filter(entry => entry.model.inputModalities?.includes('image') !== true),
+  ];
   const gatePlatform = preflight ? PLATFORM_NAMES[preflight.platform] ?? preflight.platform : '';
 
   const modelSelect = (
@@ -324,9 +329,12 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
             采集与拆解需要可用模型。
           </p>
         )}
-        {!anyModalitiesDeclared && models.length > 0 && (
+        {visionModel !== '' && models.length > 0 && !models.some(entry =>
+          `${entry.provider}::${entry.model.id}` === visionModel
+          && entry.model.inputModalities?.includes('image') === true) && (
           <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', margin: '8px 0 0' }}>
-            模型未标注视觉能力：请自行确认所选视觉模型支持图像输入，否则看帧拆解会退化。
+            所选视觉模型未标注图像输入：若网关实际支持看图，可在 设置→模型 展开该模型行勾选「图像」，
+            下拉里它会排到前面；未标注时看帧拆解可能退化或失败。
           </p>
         )}
 
