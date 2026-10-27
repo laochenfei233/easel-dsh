@@ -1,0 +1,39 @@
+{
+  "changelog": "CHANGELOG.md",
+  "heading_format": "## {date} \u00b7 {version}",
+  "group_by_type": false,
+  "tag_format": "v{version}",
+  "versioning": {
+    "format": "{major}.{minor}.{patch}-alpha.{hotfix}",
+    "bump_rules": {
+      "breaking": "major",
+      "added": "minor",
+      "default": "patch"
+    },
+    "zero_major": true
+  },
+  "version_files": [
+    "apps/desktop-tauri/src-tauri/tauri.conf.json",
+    "apps/desktop-tauri/src-tauri/Cargo.toml"
+  ],
+  "whats_new_path": null,
+  "skip_types": [
+    "build",
+    "chore",
+    "ci",
+    "docs",
+    "refactor",
+    "style",
+    "test",
+    "tests"
+  ],
+  "ignore": [
+    "^Merge (pull request|branch|remote-tracking branch) ",
+    "^chore\\(release\\)",
+    "^Release v?\\d+\\.\\d+",
+    "^v?\\d+(\\.\\d+)+\\S*$",
+    "\\[(skip|no) changelog\\]"
+  ],
+  "normalize": [],
+  "baseline": "v0.2.1-alpha.37"
+}
