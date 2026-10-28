@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -167,5 +167,73 @@ test('fetchFollowing attaches the cookie only on allowed hosts, across redirect 
   } finally {
     await inside.close()
     await outside.close()
+  }
+})
+
+test('pickStagedChannelsFile takes the newest wxdl_ video newer than since', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'vf-sph-'))
+  try {
+    const now = Date.now()
+    // 本机 Node v24 的 utimesSync 毫秒数字 EINVAL，只认 Date/秒——统一 Date 形态。
+    writeFileSync(join(dir, 'wxdl_旧视频_1080P.mp4'), 'old')
+    utimesSync(join(dir, 'wxdl_旧视频_1080P.mp4'), new Date(now - 60_000), new Date(now - 60_000))
+    writeFileSync(join(dir, '别人的文件.mp4'), 'not-the-downloaders')
+    writeFileSync(join(dir, 'wxdl_真香现场_720P.mp4'), 'new-720')
+    utimesSync(join(dir, 'wxdl_真香现场_720P.mp4'), new Date(now - 5_000), new Date(now - 5_000))
+    writeFileSync(join(dir, 'wxdl_更新的视频_1080P.mp4'), 'new-1080')
+    utimesSync(join(dir, 'wxdl_更新的视频_1080P.mp4'), new Date(now - 1_000), new Date(now - 1_000))
+
+    const hit = await pickStagedChannelsFile(dir, now)
+    assert.equal(hit.name, 'wxdl_更新的视频_1080P.mp4')
+    assert.equal(hit.size, 8, 'size rides along for the stability recheck')
+    // 旧下载与下载器之外的视频文件都不拾取。
+    assert.equal(await pickStagedChannelsFile(dir, now + 30_000), null)
+    assert.equal(await pickStagedChannelsFile(join(dir, 'missing-dir'), now), null)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('sph link picks up a staged downloader file end to end', () => {
+  const staging = mkdtempSync(join(tmpdir(), 'vf-sph-stage-'))
+  const batch = mkdtempSync(join(tmpdir(), 'vf-sph-batch-'))
+  try {
+    writeFileSync(join(staging, 'wxdl_真香现场_1080P.mp4'), 'fake-video-bytes')
+    const proc = spawnSync(process.execPath, [join(HERE, 'video_fetch.mjs'), batch,
+      '看这个视频 https://channels.weixin.qq.com/web/pages/feed?profile=1'], {
+      encoding: 'utf8', windowsHide: true,
+      env: { ...process.env, EASEL_CHANNELS_DIR: staging, EASEL_CHANNELS_WAIT: '5' },
+    })
+    assert.equal(proc.status, 0, proc.stderr)
+    const meta = JSON.parse(proc.stdout.trim().split('\n').pop())
+    assert.equal(meta.platform, 'sph')
+    assert.equal(meta.title, '真香现场')
+    assert.match(meta.file, /video\.mp4$/)
+    assert.equal(readFileSync(join(batch, 'video.mp4'), 'utf8'), 'fake-video-bytes')
+    // 复制而非移动：staging 原件保留。
+    assert.equal(readFileSync(join(staging, 'wxdl_真香现场_1080P.mp4'), 'utf8'), 'fake-video-bytes')
+  } finally {
+    rmSync(staging, { recursive: true, force: true })
+    rmSync(batch, { recursive: true, force: true })
+  }
+})
+
+test('sph link fails with exit 2 when nothing new lands within the wait window', () => {
+  const staging = mkdtempSync(join(tmpdir(), 'vf-sph-timeout-'))
+  const batch = mkdtempSync(join(tmpdir(), 'vf-sph-batch2-'))
+  try {
+    writeFileSync(join(staging, 'wxdl_陈年旧视频.mp4'), 'stale')
+    utimesSync(join(staging, 'wxdl_陈年旧视频.mp4'), new Date(Date.now() - 60_000), new Date(Date.now() - 60_000))
+    const proc = spawnSync(process.execPath, [join(HERE, 'video_fetch.mjs'), batch,
+      'https://channels.weixin.qq.com/web/pages/feed?profile=1'], {
+      encoding: 'utf8', windowsHide: true, timeout: 30_000,
+      env: { ...process.env, EASEL_CHANNELS_DIR: staging, EASEL_CHANNELS_WAIT: '1' },
+    })
+    assert.equal(proc.status, 2, proc.stdout)
+    assert.match(proc.stderr, /等待超时/)
+    assert.match(proc.stderr, /wxdl_/)
+  } finally {
+    rmSync(staging, { recursive: true, force: true })
+    rmSync(batch, { recursive: true, force: true })
   }
 })
