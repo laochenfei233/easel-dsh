@@ -1,16 +1,49 @@
 ---
 feature: easel-breakdown-channels
-status: designed
+status: delivered
 updated: 2026-10-28
 branch: feat/easel-breakdown-channels
-commits: （交付时填写）
+commits: b54ca67ee1..5ffd6ea997
 ---
 
 # 爆款拆解 · 微信视频号接入（sidecar 下载器 + 微信登录门控）
 
 ## Report
 
-（交付时填写）
+**What was built** — 爆款拆解链路接入微信视频号：贴 `channels.weixin.qq.com` 链接时，
+preflight（识别步）才做微信登录/下载器探测（**启动与页面加载零探测**，用户拍板），
+未登录被拦在门控卡片上引导登录、登录后重按开始继续；创建任务时守卫微信已登录并
+自动拉起 sidecar 下载器（wx_channels_download），下载子进程注入 staging 目录；
+video_fetch 的 sph 路径不发网络请求，轮询 Downloads 里 `wxdl_*` 新文件（1.5s 字节
+稳定性复核防半截文件），命中复制进 batch，后续抽帧/转写/拆解照旧。工具未安装的
+机器上整条链路给出安装指引（不做 runtime pin，分发另行拍板）。
+
+**Verification** —
+
+- `node --test video_fetch.test.mjs` → 14/14（sph 判定与 mp.weixin 排除、
+  pickStagedChannelsFile 单测、真脚本 e2e 命中（复制非移动+meta）、超时退出码 2、
+  既有 fetchFollowing/parseApolloState 回归）
+- `node video_fetch.mjs --selftest` → ok（含 sph 用例）
+- 插件测试逐文件全跑 → 28 文件 0 失败（channels 4、local-api 33 含 3 条新用例、
+  sourcedata/deconstruct 13）
+- 真机：`detectWeChat()` 对托盘驻留的微信 4.x 报 `{running:true, loggedIn:true}`
+  （隐藏主窗分类正确）；主检出 dev 回退能发现 `dist/tools` 侧工具；esbuild 过
+- 独立复审两轮：首轮 FIX（staging 目录错配 critical、机器敏感测试、拾取竞态、
+  测试缺失）→ 全部修复 → 复审者本机复测 14/14 → SHIP
+
+**Journey log** —
+
+- 微信 4.x 登录检测无公开 API，真机实证拿到关键事实：主窗类
+  `Qt51514QWindowIcon`+标题「微信」在托盘驻留时**隐藏不销毁**——「隐藏主窗=已登录」
+  成为分类基石；登录窗无独立类名，用可见尺寸区分（~350×500 vs 主窗）。
+- PowerShell 探针首跑误报未运行：PS 转义符是反引号，`"{\"...\"}"` 解析崩溃 →
+  execFile 拒绝 → fail-closed 吞掉真因；改单引号串后真机复测通过。
+- staging 目录错配（复审 critical）：T5 只改了 filenameTemplate 忘了 download.dir，
+  插件轮询 `<exe>/downloads` 而工具落 Downloads——修在插件侧（stagingDir=用户
+  Downloads，与工具缺省 config 同源），三处假设归一。
+- 本机 Node v24 `utimesSync` 毫秒数字 EINVAL（Date/秒形态可用）——测试统一 Date。
+- cwd 漂移事故复发：三条 sph 测试追加到了主检出、git restore 时丢失，worktree 里
+  只剩 unused imports——复审抓出后补回；教训：跨仓操作一律绝对路径或 `git -C`。
 
 ## [S1] Problem
 
@@ -61,7 +94,7 @@ job 状态机（fetch/frames/asr/ready 原样）。
     `platform:'sph'`，title 取文件名去 `wxdl_` 前缀与 `_<spec>` 后缀，duration 0
     （SKILL 第 3 步 ffprobe 会拿到真实时长）；
   - 全程 stderr 引导：「在微信 PC 端打开该视频，点播放器下方的下载按钮」。
-- 导出纯函数 `pickStagedChannelsFile(dir, sinceMs)` 供单测。
+- 导出纯函数 `pickStagedChannelsFile(dir, since)` 供单测。
 
 ### 插件 lib/channels.js（T2）
 
@@ -114,8 +147,6 @@ job 状态机（fetch/frames/asr/ready 原样）。
   并登录」；停在登录界面 → 「请在微信里登录」；已登录 ✓）+ 下载器三态（未安装 →
   指引安装路径；未启动 → 说明创建任务时会自动拉起；运行中 ✓）。用户登录后重新
   点「开始采集」即继续（preflight 放行）。
-- sph 任务在 fetch 阶段时提示：「在微信里打开该视频，点播放器下方的「下载」，
-  流水线会自动拾取（wxdl_ 开头文件，最长等 8 分钟）」。
 
 ### 工具配置与文档（T5）
 
@@ -128,7 +159,7 @@ job 状态机（fetch/frames/asr/ready 原样）。
 
 ## [S3] Scope
 
-**In**：video_fetch sph 平台（staging 拾取 + 等待）、lib/channels.js（微信登录检测/
+**In**：video_fetch.mjs sph 平台（staging 拾取 + 等待）、lib/channels.js（微信登录检测/
 工具发现/启动/状态）、channels 两条路由 + preflight/create 分支、BreakdownPage
 视频号卡片、工具 config `wxdl_` 前缀、SKILL/EASEL-META/dist README 文档、
 单测与真机验证。
@@ -139,41 +170,42 @@ sph 进 sourceStatus/设置页 cookie 表单。
 
 ## Tasks
 
-- [ ] T1: video_fetch.mjs——detectPlatform sph + fetchSph（staging 拾取/等待窗口/
+- [x] T1: video_fetch.mjs——detectPlatform sph + fetchSph（staging 拾取/等待窗口/
       复制/meta）+ EASEL_CHANNELS_DIR/WAIT + pickStagedChannelsFile 导出 + selftest
       + 测试（depends: none）
-- [ ] T2: lib/channels.js——detectWeChat（PowerShell 脚本 + mac pgrep）+
+- [x] T2: lib/channels.js——detectWeChat（PowerShell 脚本 + mac pgrep）+
       classifyWeChatWindows 纯函数 + findChannelsTool + downloaderRunning +
       launchChannelsTool(deps) + 测试（depends: none）
-- [ ] T3: sourcedata parsePlatform sph + 路由（channels/status、channels/launch、
+- [x] T3: sourcedata parsePlatform sph + 路由（channels/status、channels/launch、
       preflight sph 分支、create sph 守卫与 env 注入、run() env 透传）+ 测试
       （depends: T2）
-- [ ] T4: BreakdownPage——PLATFORM_NAMES/副标题/视频号门控卡片/fetch 阶段提示
+- [x] T4: BreakdownPage——PLATFORM_NAMES/副标题/视频号门控卡片/fetch 阶段提示
       （depends: T3）
-- [ ] T5: config.yaml filenameTemplate + dist README + SKILL.md + EASEL-META
+- [x] T5: config.yaml filenameTemplate + dist README + SKILL.md + EASEL-META
       （depends: T1）
-- [ ] T6: 验证——全部单测绿、selftest、真机：微信探针（本机 4.x 应报已登录）、
+- [x] T6: 验证——全部单测绿、selftest、真机：微信探针（本机 4.x 应报已登录）、
       staging 拾取 e2e（放 wxdl_ 文件 → 跑 sph 链接 → batch/video.mp4 + meta）、
       超时路径退出码 2（depends: T1–T5）
 
 ## [S4] Acceptance
 
-- [ ] `detectPlatform('https://channels.weixin.qq.com/...')` → `'sph'`；
+- [x] `detectPlatform('https://channels.weixin.qq.com/...')` → `'sph'`；
       `mp.weixin.qq.com` 仍为 generic（单测）
-- [ ] `pickStagedChannelsFile` 取 mtime ≥ since 的最新 `wxdl_*` 视频，忽略旧文件
-      与非 wxdl_ 文件（单测）
-- [ ] 真机 e2e：staging 放 `wxdl_测试.mp4` → `node video_fetch.mjs <batch>
-      <channels链接>`（EASEL_CHANNELS_WAIT=2）→ 退出码 0，batch/video.mp4 为
+- [x] `pickStagedChannelsFile` 取 mtime ≥ since 的最新 `wxdl_*` 视频，忽略旧文件
+      与非 wxdl_ 文件（video_fetch.test.mjs 单测，含 size 字段断言）
+- [x] 真机 e2e：staging 放 `wxdl_测试.mp4` → `node video_fetch.mjs <batch>
+      <channels链接>`（EASEL_CHANNELS_WAIT=5）→ 退出码 0，batch/video.mp4 为
       复制件，stdout meta `platform:'sph'`；无新文件等待超时 → 退出码 2 且
-      stderr 含 staging 路径指引
-- [ ] `classifyWeChatWindows`：4.x 隐藏主窗 → 已登录；可见小窗 → 登录界面；
+      stderr 含 staging 路径指引（video_fetch.test.mjs 两条真脚本用例）
+- [x] `classifyWeChatWindows`：4.x 隐藏主窗 → 已登录；可见小窗 → 登录界面；
       可见大窗 → 已登录；3.x 两类名 → 对应态；空窗口列表 → 未登录（单测）
-- [ ] `POST channels/launch` 在微信未登录/未运行时 400 且不 spawn 工具
+- [x] `POST channels/launch` 在微信未登录/未运行时 400 且不 spawn 工具
       （deps 注入单测）；已运行（2022 开放）时 no-op
-- [ ] `POST deconstruct/preflight` 对 sph 返回 `channels` 段且 blocked 判定正确
-      （单测或 local-api 测试）
-- [ ] 真机微信探针：本机微信托盘驻留状态下 `detectWeChat()` 报
-      `{running:true, loggedIn:true}`（运行记录）
-- [ ] BreakdownPage 出现视频号卡片与三态文案；页面加载/插件启动路径**无**微信探测
-      （esbuild 过 + 代码走查）
-- [ ] 回归：插件全量测试绿；快手/抖音/小红书路径不回退（selftest 全过）
+- [x] `POST deconstruct/preflight` 对 sph 返回 `channels` 段且 blocked 判定正确
+      （local-api 33 用例含 3 条新用例）
+- [x] 真机微信探针：本机微信托盘驻留状态下 `detectWeChat()` 报
+      `{running:true, loggedIn:true}`（提交 3899133d17 记录）
+- [x] BreakdownPage 出现视频号卡片与三态文案；页面加载/插件启动路径**无**微信探测
+      （esbuild 过 + 复审走查确认唯二 useEffect 均为既有逻辑）
+- [x] 回归：插件全量测试绿（28 文件 0 失败）；快手/抖音/小红书路径不回退
+      （selftest 全过）
