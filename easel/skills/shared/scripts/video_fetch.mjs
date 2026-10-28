@@ -20,7 +20,7 @@ import { lookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
 import { extname, resolve } from 'node:path'
 import { pipeline } from 'node:stream/promises'
-import { Readable } from 'node:stream'
+import { Readable, Transform } from 'node:stream'
 import { spawnSync } from 'node:child_process'
 import { pathToFileURL } from 'node:url'
 
@@ -104,6 +104,40 @@ export function detectPlatform(raw) {
 const MAX_REDIRECTS = 6
 const REDIRECT_STATUS = new Set([301, 302, 303, 307, 308])
 
+// 安全不变量：分享链接指向的远端不可信，体量必须封顶——下载写盘 2 GiB、
+// 页面/feed 文本 16 MiB。超限固定报错，不回显远端内容。
+const MAX_DOWNLOAD_BYTES = 2 * 1024 ** 3
+const MAX_TEXT_BYTES = 16 * 1024 ** 2
+
+/** 读响应体为文本；超过 maxBytes 即固定报错——页面/feed 的体量不该也无法更大。 */
+export async function readBodyText(response, maxBytes = MAX_TEXT_BYTES) {
+  if (response.body === null) return ''
+  const decoder = new TextDecoder()
+  let text = ''
+  let bytes = 0
+  for await (const chunk of response.body) {
+    bytes += chunk.byteLength ?? chunk.length
+    if (bytes > maxBytes) throw new Error(`响应体超过 ${maxBytes} 字节上限`)
+    text += decoder.decode(chunk, { stream: true })
+  }
+  return text + decoder.decode()
+}
+
+/** 计数 Transform：累计字节超过 maxBytes 即报错，掐断下载流。 */
+export function limitedStream(maxBytes = MAX_DOWNLOAD_BYTES) {
+  let written = 0
+  return new Transform({
+    transform(chunk, _encoding, callback) {
+      written += chunk.length
+      if (written > maxBytes) {
+        callback(new Error(`响应体超过 ${maxBytes} 字节上限`))
+        return
+      }
+      callback(null, chunk)
+    },
+  })
+}
+
 /**
  * GET/POST 并手动跟随重定向；返回 (最终 URL, body 文本)。
  *
@@ -134,7 +168,7 @@ export async function fetchFollowing(rawUrl, { cookie = null, allowHosts = null,
       redirect: 'manual',
       signal: AbortSignal.timeout((options.timeout ?? 30) * 1000),
     })
-    if (!REDIRECT_STATUS.has(response.status)) return [current.href, await response.text()]
+    if (!REDIRECT_STATUS.has(response.status)) return [current.href, await readBodyText(response)]
     const location = response.headers.get('location')
     await response.body?.cancel()
     if (location === null) throw new Error(`HTTP ${response.status} 没有 Location`)
@@ -143,8 +177,8 @@ export async function fetchFollowing(rawUrl, { cookie = null, allowHosts = null,
   throw new Error('重定向次数过多')
 }
 
-/** 流式下载到 dest（大文件不占内存）；只允许公开地址，逐跳校验。 */
-async function download(rawUrl, headers, dest) {
+/** 流式下载到 dest（大文件不占内存）；只允许公开地址，逐跳校验。体量封顶见 MAX_DOWNLOAD_BYTES。 */
+export async function download(rawUrl, headers, dest, { maxBytes = MAX_DOWNLOAD_BYTES } = {}) {
   let current = parseHttpUrl(rawUrl)
   for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
     await assertPublicDestination(current)
@@ -153,7 +187,17 @@ async function download(rawUrl, headers, dest) {
     })
     if (!REDIRECT_STATUS.has(response.status)) {
       if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      await pipeline(Readable.fromWeb(response.body), createWriteStream(dest))
+      const declared = Number(response.headers.get('content-length') ?? '')
+      if (Number.isInteger(declared) && declared > maxBytes) {
+        await response.body?.cancel()
+        throw new Error(`响应体超过 ${maxBytes} 字节上限`)
+      }
+      try {
+        await pipeline(Readable.fromWeb(response.body), limitedStream(maxBytes), createWriteStream(dest))
+      } catch (error) {
+        await rm(dest, { force: true }) // 半成品不留盘
+        throw error
+      }
       return
     }
     const location = response.headers.get('location')
