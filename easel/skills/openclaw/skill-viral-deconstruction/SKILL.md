@@ -1,8 +1,8 @@
 ---
 name: viral-deconstruction
 description: >-
-  爆款视频深度拆解：下载抖音/小红书/快手/B站/YouTube 视频，抽帧+语音转写后看画面听口播，
-  产出钩子、结构、火因与可复制模板的六点拆解，选题自动入选题库。
+  爆款视频深度拆解：下载抖音/小红书/快手/B站/YouTube/微信视频号视频，抽帧+语音转写后
+  看画面听口播，产出钩子、结构、火因与可复制模板的六点拆解，选题自动入选题库。
   当用户说"拆解这个视频""爆款拆解""视频链接拆解""这条视频为什么火"或贴了视频链接
   要求拆解时使用。纯文本拆解无需本技能。
 layer: attribute
@@ -22,9 +22,10 @@ faster-whisper 转写口播 → 视觉模型看帧 → 按时间轴合并素材 
 | 依赖 | 检查 | 缺失时的指引 |
 |------|------|--------------|
 | 视觉模型 | 当前会话模型能否读图（用 Read 试读一张任意图片/帧后即知） | 让用户在 **dsh 设置 → 模型管理** 配置一个视觉模型（自定义 OpenAI 兼容 provider，如火山方舟 `https://ark.cn-beijing.volces.com/api/v3` + `doubao-seed-2-1-*`；GLM-4V / Qwen-VL 等均可，模型自选），并在对话里把模型切过去后继续 |
-| yt-dlp | `yt-dlp --version`（B站/YouTube/通用站点需要；抖音/小红书/快手走内置原生路径不需要） | `pip install yt-dlp` |
+| yt-dlp | `yt-dlp --version`（B站/YouTube/通用站点需要；抖音/小红书/快手/视频号走内置路径不需要） | `pip install yt-dlp` |
 | ffmpeg | `ffmpeg -version` | `winget install ffmpeg` 或 https://ffmpeg.org/download.html |
 | 小红书 cookie | `outputs/_deconstruct/cookies.json` 里有无 `"xhs"` 字段 | 让用户把网页版小红书的请求 Cookie 粘贴进该文件（`{"xhs": "粘贴到这里"}`）；**抖音/快手不需要 cookie**（快手被风控时可让用户填网页版游客 cookie 到 `"kuaishou"` 字段） |
+| 视频号（仅 sph 链接） | 微信 PC 端是否运行且已登录；下载器是否运行（管理页 `127.0.0.1:2022` 通不通） | 未登录 → 让用户在微信里登录；下载器没跑 → 启动 `dist/tools/wx-channels-download/wx_video_download.exe`（首次需管理员装证书）。**视频号链接必须先过这一步再继续** |
 | mimo ASR | `MIMO_API_KEY` 已配置（.env 或环境变量）；dsh 壳在跑（`outputs/_easel_api.json` 存在） | 在项目 `.env` 写 `MIMO_API_KEY=<key>`（转写走本地路由 + mimo-v2.5-asr 云端，零本地模型） |
 
 长视频限制：超过 10 分钟的视频抽帧/转写耗时不可控，先向用户确认再继续。
@@ -46,6 +47,10 @@ node skills/shared/scripts/video_fetch.mjs outputs/_deconstruct/<batch>/ <用户
 ```
 
 - 脚本 stdout 输出一行元信息 JSON（title/author/duration_sec/file/url），记下来写进 source.md。
+- 视频号链接（channels.weixin.qq.com）→ 脚本不发网络请求，转而**轮询下载器产物**：
+  确认下载器在跑、微信已登录后，让用户在微信 PC 端打开该视频点「下载」按钮，
+  脚本拾取到 `wxdl_*` 新文件会自动复制进 batch（默认等 8 分钟，stderr 有进度）。
+  等待期间每 1–2 分钟提醒一次用户去点下载。
 - 退出码 2（下载失败）→ 告诉用户可手动把视频文件放进
   `outputs/_deconstruct/<batch>/`（mp4/mov/webm 均可），放好后重跑同一条命令，
   脚本检测到文件会跳过下载。
