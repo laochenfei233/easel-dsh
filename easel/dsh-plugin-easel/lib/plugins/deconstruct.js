@@ -9,7 +9,7 @@ import { basename, dirname, extname, join, relative, resolve, sep } from 'node:p
 import { homedir } from 'node:os'
 import { randomBytes } from 'node:crypto'
 import { AsrError, transcribeToSubtitle, resolveMimoCredentials, writeApiDiscovery } from '../asr.js'
-import { createDeconstruct, deconstructBusy, readDeconstruct } from '../deconstruct.js'
+import { createDeconstruct, deconstructBusy, readDeconstruct, resumeDeconstruct } from '../deconstruct.js'
 import { parsePlatform, sourceStatus, writeCookie } from '../sourcedata.js'
 import {
   ApiError, isFile, readEnvFile, readJsonFile, writeJsonFile,
@@ -156,6 +156,18 @@ async function apiDeconstructGet(c) {
   return { json: job }
 }
 
+// 断点续跑（spec easel-upstream-adoptions S2.1）：以 job.json 为检查点，只补
+// 缺失段；响应形状与 POST deconstruct 一致（续跑启动时的 job 快照）。
+async function apiDeconstructRetry(c) {
+  const existing = await readDeconstruct(c.settings.projectRoot, c.params.id)
+  if (existing === undefined) throw new ApiError(404, `拆解任务不存在：${c.params.id}`)
+  if (deconstructBusy(c.settings.projectRoot)) {
+    throw new ApiError(409, '已有拆解采集在运行，请等它完成或失败后再重试')
+  }
+  const job = await resumeDeconstruct(c.settings.projectRoot, c.params.id, deconstructTranscribe(c))
+  return { json: job }
+}
+
 // 拆解数据源门控：各平台登录/cookie 状态（绝不回显 cookie 明文）与 cookie 写入
 //（spec easel-breakdown-fullpage 设计增补：设置页表单 + BreakdownPage preflight 共用）。
 async function apiSourceStatus(c) {
@@ -227,6 +239,7 @@ export const DECONSTRUCT_ROUTES = [
   ['POST', ['deconstruct', 'preflight'], apiDeconstructPreflight],
   ['POST', ['deconstruct'], apiDeconstructCreate],
   ['GET', ['deconstruct', ':id'], apiDeconstructGet],
+  ['POST', ['deconstruct', ':id', 'retry'], apiDeconstructRetry],
 ]
 
 export const name = 'easel-deconstruct'
