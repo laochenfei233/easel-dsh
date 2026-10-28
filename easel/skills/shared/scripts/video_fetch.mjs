@@ -1,10 +1,12 @@
-// video_fetch.mjs — 爆款拆解视频下载（yt-dlp 打底 + 抖音/小红书/快手原生路径）。Node ≥22。
+// video_fetch.mjs — 爆款拆解视频下载（yt-dlp 打底 + 抖音/小红书/快手/视频号路径）。Node ≥22。
 //
 // usage: node video_fetch.mjs <batch_dir> <分享文案或链接...>
 //
 // 平台路由：抖音走移动端 Feed 接口原生路径（yt-dlp 抖音实测不可用）、
 // 小红书走笔记页 `__INITIAL_STATE__` 原生路径（yt-dlp 不支持）、
 // 快手走详情页 `__APOLLO_STATE__` 原生路径（免登录），
+// 视频号走 staging 拾取（wx_channels_download 下载器在微信里点下载，
+// 本脚本轮询拾取 wxdl_* 新文件，spec easel-breakdown-channels），
 // YouTube/B站/TikTok/其余站点走 yt-dlp。batch_dir 里已有视频文件则跳过下载
 // （支持「手动放文件」流程）。stdout 只输出一行元信息 JSON，日志走 stderr。
 //
@@ -12,13 +14,15 @@
 //
 // cookie：outputs/_deconstruct/cookies.json，形如 {"xhs": "k=v; k2=v2"}
 // （值也可为 dict，自动拼 Cookie 头）。抖音走移动端 Feed 接口免 cookie；
-// 小红书必须手动填登录 cookie；快手免登录，可选填网页版游客 cookie。
+// 小红书必须手动填登录 cookie；快手免登录，可选填网页版游客 cookie；
+// 视频号免 cookie（登录态在微信客户端里，由微信登录门控保证）。
 
 import { strict as assert } from 'node:assert'
-import { createWriteStream, statSync } from 'node:fs'
+import { createWriteStream, copyFileSync, statSync } from 'node:fs'
 import { mkdir, readFile, readdir, rm } from 'node:fs/promises'
 import { lookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
+import { homedir } from 'node:os'
 import { extname, resolve } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import { Readable } from 'node:stream'
@@ -56,6 +60,8 @@ const PLATFORM_HOSTS = {
   douyin: ['douyin.com', 'iesdouyin.com'],
   xhs: ['xiaohongshu.com', 'xhslink.com'],
   kuaishou: ['kuaishou.com', 'kuaishou.cn', 'chenzhongtech.com'],
+  // 精确到 channels 子域：mp.weixin.qq.com（公众号）不是视频号。
+  sph: ['channels.weixin.qq.com'],
 }
 
 /**
@@ -99,6 +105,7 @@ export function detectPlatform(raw) {
   if (hostMatches(url, PLATFORM_HOSTS.douyin)) return 'douyin'
   if (hostMatches(url, PLATFORM_HOSTS.xhs)) return 'xhs'
   if (hostMatches(url, PLATFORM_HOSTS.kuaishou)) return 'kuaishou'
+  if (hostMatches(url, PLATFORM_HOSTS.sph)) return 'sph'
   return 'generic'
 }
 
@@ -397,6 +404,79 @@ async function fetchKuaishou(url, cookie, batch) {
   }
 }
 
+// ---------- 视频号 staging 拾取路径 ----------
+
+// wx_channels_download 下载器的产物命名锚点（其 config.yaml filenameTemplate
+// 带 wxdl_ 前缀）。视频号视频流带签名且加密，必须经微信客户端 + 下载器代理
+// 才能拿到直链并解密，所以本路径不发任何网络请求，只轮询拾取新文件。
+const CHANNELS_PREFIX = 'wxdl_'
+const CHANNELS_POLL_MS = 2_000
+const CHANNELS_MTIME_SLACK_MS = 15_000
+
+/**
+ * staging 目录里 mtime ≥ since 的最新 wxdl_* 视频文件；没有返回 null。
+ * @param dir - 下载器落盘目录（EASEL_CHANNELS_DIR 或用户 Downloads）。
+ * @param since - 只认这个时刻（毫秒）之后落盘的文件，旧下载不拾取。
+ */
+export async function pickStagedChannelsFile(dir, since) {
+  let entries
+  try {
+    entries = await readdir(dir)
+  } catch {
+    return null
+  }
+  const candidates = entries.filter(name => name.startsWith(CHANNELS_PREFIX)
+    && VIDEO_EXTS.has(extname(name).toLowerCase()))
+  let picked = null
+  for (const name of candidates) {
+    const full = resolve(dir, name)
+    try {
+      const stat = statSync(full)
+      if (stat.mtimeMs < since - CHANNELS_MTIME_SLACK_MS) continue
+      if (picked === null || stat.mtimeMs > picked.mtimeMs) picked = { path: full, name, mtimeMs: stat.mtimeMs }
+    } catch { /* 拾取瞬间被移走的文件按不存在处理 */ }
+  }
+  return picked
+}
+
+/** 文件名回推标题：`wxdl_真香现场_1080P.mp4` → `真香现场`。 */
+function stagedTitle(name) {
+  return name.slice(CHANNELS_PREFIX.length).replace(/\.[^.]+$/, '').replace(/_[^_]*$/, '')
+}
+
+/**
+ * 视频号路径：轮询下载器 staging 目录等新文件（用户在微信里点「下载」），
+ * 命中后复制进 batch。微信登录门控由宿主 preflight/create 负责，这里只认文件。
+ * @param batch - 批次目录。
+ * @param env - 进程环境（EASEL_CHANNELS_DIR / EASEL_CHANNELS_WAIT）。
+ */
+async function fetchSph(batch, env = process.env) {
+  const dir = env.EASEL_CHANNELS_DIR || resolve(homedir(), 'Downloads')
+  const waitSec = Number(env.EASEL_CHANNELS_WAIT) > 0 ? Number(env.EASEL_CHANNELS_WAIT) : 480
+  const since = Date.now()
+  log(`视频号走下载器拾取：在微信 PC 端打开该视频，点播放器下方的「下载」按钮；` +
+    `监听 ${dir} 里的 wxdl_* 新文件（最长等 ${Math.round(waitSec / 60)} 分钟）`)
+  const deadline = since + waitSec * 1000
+  while (Date.now() < deadline) {
+    const hit = await pickStagedChannelsFile(dir, since)
+    if (hit !== null) {
+      const dest = resolve(batch, 'video.mp4')
+      copyFileSync(hit.path, dest)
+      log(`拾取到下载器产物：${hit.name}`)
+      return {
+        platform: 'sph',
+        title: stagedTitle(hit.name),
+        author: '',
+        duration_sec: 0,
+        file: dest, url: '',
+      }
+    }
+    await new Promise(r => setTimeout(r, CHANNELS_POLL_MS))
+  }
+  throw new Error(`等待超时：staging 目录 ${dir} 里一直没有新的 wxdl_* 文件` +
+    `（确认下载器在运行、微信已登录，或手动把视频放入批次目录后重跑）`)
+}
+
 // ---------- 通用 yt-dlp 路径 ----------
 
 /**
@@ -458,6 +538,9 @@ export async function selftest() {
   assert.equal(detectPlatform('https://v.kuaishou.com/GH7abcD'), 'kuaishou')
   assert.equal(detectPlatform('https://www.kuaishou.com/short-video/3xkpubc9def'), 'kuaishou')
   assert.equal(detectPlatform('https://www.chenzhongtech.com/fw/photo/3xkpubc9def'), 'kuaishou')
+  assert.equal(detectPlatform('https://channels.weixin.qq.com/web/pages/feed?profile=1'), 'sph')
+  // 公众号域不是视频号。
+  assert.equal(detectPlatform('https://mp.weixin.qq.com/s/abc123'), 'generic')
   // 主机名子串不算平台：Cookie 只认解析后的主机与点边界后缀。
   assert.equal(detectPlatform('https://attacker.example?xiaohongshu.com'), 'generic')
   assert.equal(detectPlatform('https://evil-xiaohongshu.com/note'), 'generic')
@@ -509,6 +592,7 @@ async function main(argv) {
     if (platform === 'douyin') meta = await fetchDouyin(url, batch)
     else if (platform === 'xhs') meta = await fetchXhs(url, cookies.xhs ?? '', batch)
     else if (platform === 'kuaishou') meta = await fetchKuaishou(url, cookies.kuaishou ?? '', batch)
+    else if (platform === 'sph') meta = await fetchSph(batch)
     else meta = await fetchGeneric(url, batch)
   } catch (exc) { // 网络失败/字段变更/风控 → 统一按下载失败降级
     die(EX_DOWNLOAD, `下载失败（${exc.constructor.name}）：${exc.message}。` +

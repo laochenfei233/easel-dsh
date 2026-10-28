@@ -2,11 +2,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, rmSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { splitUrls, detectPlatform, cookiesFile, parseHttpUrl, fetchFollowing, isPrivateAddress, parseApolloState } from './video_fetch.mjs'
+import { splitUrls, detectPlatform, cookiesFile, parseHttpUrl, fetchFollowing, isPrivateAddress, parseApolloState, pickStagedChannelsFile } from './video_fetch.mjs'
 import { createServer } from 'node:http'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -26,7 +26,13 @@ test('detectPlatform routes douyin/xhs/kuaishou and everything else to generic',
   assert.equal(detectPlatform('https://www.kuaishou.com/short-video/3xkpubc9def'), 'kuaishou')
   assert.equal(detectPlatform('https://kuaishou.cn/short-video/3xkpubc9def'), 'kuaishou')
   assert.equal(detectPlatform('https://www.chenzhongtech.com/fw/photo/3xkpubc9def'), 'kuaishou')
+  assert.equal(detectPlatform('https://channels.weixin.qq.com/web/pages/feed?profile=1'), 'sph')
   assert.equal(detectPlatform('https://www.bilibili.com/video/BV1GJ411x7h7/'), 'generic')
+})
+
+test('the weixin platform match is scoped to the channels subdomain', () => {
+  assert.equal(detectPlatform('https://mp.weixin.qq.com/s/abc123'), 'generic')
+  assert.equal(detectPlatform('https://evil-channels.weixin.qq.com.evil.example/feed'), 'generic')
 })
 
 test('the platform decision reads the parsed host, not the share text', () => {
