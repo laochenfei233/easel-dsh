@@ -391,6 +391,52 @@ test('transcribeToSubtitle keeps the default landing spot and honors outDir/outS
   }
 })
 
+// ── 错误响应不回显原始响应体：只透传官方错误字段，原文进服务端日志 ──
+
+test('gateway errors surface only official error fields, never the raw response body', {
+  skip: !hasFfmpeg ? 'needs ffmpeg' : false,
+}, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-asr-echo-'))
+  try {
+    const wav = join(root, 'talk.wav')
+    writeToneSilenceToneWav(wav)
+    const rejectWith = fetchImpl => transcribeToSubtitle({
+      input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl,
+    }).then(() => { throw new Error('must reject') }, error => error)
+
+    // JSON 响应体：mimo 官方 error.message 字段透传；体内容其余部分不回显。
+    const official = await rejectWith(
+      async () => new Response(JSON.stringify({ error: { message: '配额不足', secret_marker: 'SHOULD-NOT-ECHO' } }), { status: 429 }))
+    assert.ok(official instanceof AsrError && official.status === 502)
+    assert.match(official.message, /HTTP 429/)
+    assert.match(official.message, /配额不足/, 'the official mimo error field reaches the operator')
+    assert.ok(!official.message.includes('SHOULD-NOT-ECHO'), 'the raw body must not be echoed')
+
+    // 非 JSON 响应体（网关 HTML 等）：固定文案，原文不进错误信息。
+    const html = await rejectWith(
+      async () => new Response('<html>502 secret_marker</html>', { status: 502 }))
+    assert.ok(html instanceof AsrError && html.status === 502)
+    assert.match(html.message, /HTTP 502/)
+    assert.match(html.message, /响应体非 JSON/)
+    assert.ok(!html.message.includes('secret_marker'), 'the raw body must not be echoed')
+
+    // 2xx 但响应非 JSON：固定文案，原文不回显。
+    const garbage = await rejectWith(async () => new Response('not json secret_marker', { status: 200 }))
+    assert.ok(garbage instanceof AsrError && garbage.status === 502)
+    assert.match(garbage.message, /返回非 JSON/)
+    assert.ok(!garbage.message.includes('secret_marker'), 'the raw body must not be echoed')
+
+    // 2xx JSON 但缺 choices：固定文案，原文不回显。
+    const noChoices = await rejectWith(
+      async () => new Response(JSON.stringify({ secret_marker: 'SHOULD-NOT-ECHO' }), { status: 200 }))
+    assert.ok(noChoices instanceof AsrError && noChoices.status === 502)
+    assert.match(noChoices.message, /缺少 choices/)
+    assert.ok(!noChoices.message.includes('SHOULD-NOT-ECHO'), 'the raw body must not be echoed')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
 // ── 分段级检查点（T2）：失败留 sidecar，重跑只补缺失段 ────────────────
 
 test('a failed segment keeps completed ones in the sidecar and a retry transcribes only the missing one', {

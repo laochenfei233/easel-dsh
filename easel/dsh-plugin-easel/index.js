@@ -2482,8 +2482,11 @@ async function serveApi(api, req, res) {
   try {
     result = await dispatchLocalApi(settings, req.method ?? 'GET', segments, query, readJson, req.headers, api.snapshot())
   } catch (error) {
+    // 非 ApiError 的意外错误不回显给客户端（message 可能带远端响应体/内部细节），
+    // 全量进服务端日志；响应固定文案。
+    if (!(error instanceof ApiError)) console.error('easel api:', error)
     const status = error instanceof ApiError ? error.status : 500
-    const detail = error instanceof ApiError ? error.detail : `本地 API 错误：${error?.message ?? error}`
+    const detail = error instanceof ApiError ? error.detail : '本地 API 错误'
     sendJson(res, status, { detail })
     return
   }

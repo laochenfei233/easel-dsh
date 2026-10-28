@@ -315,23 +315,30 @@ async function transcribeSegment(credentials, wavPath, { timeoutMs = 120_000, fe
     throw new AsrError(502, `mimo ASR 请求失败：${error?.cause?.message ?? error?.message ?? error}`)
   }
   const text = await answer.text()
+  // 错误路径不把原始响应体回显给用户（可能是网关 HTML 页或带敏感头的代理报错）：
+  // 只透传 mimo 官方错误字段（error.message / message），原文 head 进服务端日志。
   if (!answer.ok) {
-    let detail = text.slice(0, 300)
+    let detail = '响应体非 JSON，详见服务端日志'
     try {
       const parsed = JSON.parse(text)
-      detail = parsed?.error?.message ?? parsed?.message ?? detail
-    } catch { /* 非 JSON → 用原文 */ }
+      const message = parsed?.error?.message ?? parsed?.message
+      if (typeof message === 'string' && message !== '') detail = message
+      else detail = '响应体未含错误说明，详见服务端日志'
+    } catch { /* 非 JSON → 固定文案 */ }
+    console.error(`easel asr: mimo ASR HTTP ${answer.status} 响应体：${text.slice(0, 300)}`)
     throw new AsrError(502, `mimo ASR 调用失败（HTTP ${answer.status}）：${detail}`)
   }
   let body
   try {
     body = JSON.parse(text)
   } catch {
-    throw new AsrError(502, `mimo ASR 返回非 JSON：${text.slice(0, 300)}`)
+    console.error(`easel asr: mimo ASR 非 JSON 响应体：${text.slice(0, 300)}`)
+    throw new AsrError(502, 'mimo ASR 返回非 JSON（详见服务端日志）')
   }
   const content = body?.choices?.[0]?.message?.content
   if (typeof content !== 'string') {
-    throw new AsrError(502, `mimo ASR 响应缺少 choices[0].message.content：${text.slice(0, 300)}`)
+    console.error(`easel asr: mimo ASR 缺少 choices 的响应体：${text.slice(0, 300)}`)
+    throw new AsrError(502, 'mimo ASR 响应缺少 choices[0].message.content（详见服务端日志）')
   }
   const billed = Number(body?.usage?.seconds)
   return { text: content, billedSeconds: Number.isFinite(billed) ? billed : null }
