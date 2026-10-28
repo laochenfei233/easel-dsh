@@ -304,4 +304,55 @@ describe('JsonRpcLineTransport', () => {
 
     b.close()
   })
+
+  it('fails pending requests and detaches when an inbound line exceeds the buffer limit', async () => {
+    const input = new PassThrough()
+    const output = new PassThrough()
+    const transport = new JsonRpcLineTransport(input, output, 16)
+    const requests: string[] = []
+    transport.onRequest(async (method) => {
+      requests.push(method)
+      return null
+    })
+    transport.start()
+    const pending = transport.request('blocked', {})
+    const rejection = expect(pending).rejects.toThrow('JSON-RPC line exceeds the 16-char buffer limit')
+
+    input.write('{"jsonrpc":"2.0","id":"late"') // no newline; exceeds 16 chars with the buffered tail
+    await rejection
+
+    input.write('\n{"jsonrpc":"2.0","id":"x","method":"ping"}\n')
+    await new Promise(resolve => setTimeout(resolve, 10))
+
+    expect(requests).toEqual([])
+  })
+
+  it('fails when chunks accumulate into an oversized line', async () => {
+    const input = new PassThrough()
+    const output = new PassThrough()
+    const transport = new JsonRpcLineTransport(input, output, 16)
+    transport.start()
+    const pending = transport.request('blocked', {})
+    const rejection = expect(pending).rejects.toThrow('JSON-RPC line exceeds the 16-char buffer limit')
+
+    input.write('{"jsonrpc":') // 11 chars, still buffered under the limit
+    await new Promise(resolve => setTimeout(resolve, 10))
+    input.write('"id":"late","method":"tick"') // crosses 16 chars without a newline
+    await rejection
+  })
+
+  it('still handles frames under a lowered buffer limit', async () => {
+    const input = new PassThrough()
+    const output = new PassThrough()
+    const transport = new JsonRpcLineTransport(input, output, 128)
+    const notifications: string[] = []
+    transport.onNotification((method) => { notifications.push(method) })
+    transport.start()
+
+    input.write('{"jsonrpc":"2.0","method":"tick"}\n')
+    await new Promise(resolve => setTimeout(resolve, 10))
+
+    expect(notifications).toEqual(['tick'])
+    transport.close()
+  })
 })
