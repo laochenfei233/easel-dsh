@@ -104,6 +104,65 @@ test('fetch stage records the real video title from the downloader metadata line
   }
 })
 
+// ---- SRT 落位（T3）：字幕落批次目录，job.srt 存项目相对路径 ----
+
+/** 轮询 job.json 到目标 stage（流水线是 fire-and-forget，状态异步落盘）。 */
+async function pollJob(file, stages) {
+  const deadline = Date.now() + 10_000
+  let state
+  while (Date.now() < deadline) {
+    try {
+      state = JSON.parse(readFileSync(file, 'utf8'))
+    } catch { /* 尚未写出或半截读：轮询重试 */ }
+    if (stages.includes(state?.stage)) return state
+    await new Promise(resolve => setTimeout(resolve, 100))
+  }
+  return state
+}
+
+test('deconstruct lands its SRT in the batch directory and records the relative path', async () => {
+  const root = mkdtempSync(join(import.meta.dirname, '.tmp-srt-'))
+  try {
+    mkdirSync(join(root, 'skills', 'shared', 'scripts'), { recursive: true })
+    writeFileSync(
+      join(root, 'skills', 'shared', 'scripts', 'video_fetch.mjs'),
+      `import { writeFileSync, mkdirSync } from 'node:fs'\n`
+        + `import { join } from 'node:path'\n`
+        + `const [batchRel] = process.argv.slice(2)\n`
+        + `mkdirSync(batchRel, { recursive: true })\n`
+        + `writeFileSync(join(batchRel, 'video.mp4'), 'x')\n`
+        + `process.exit(0)\n`,
+    )
+    let seen
+    const job = createDeconstruct({
+      projectRoot: root,
+      url: 'https://v.douyin.com/fake/',
+      transcribe: async ({ input, outDir, outStem }) => {
+        seen = { input, outDir, outStem }
+        // 按 transcribeToSubtitle 的 outDir/outStem 语义模拟落位。
+        const file = `${outDir}/${outStem}.srt`
+        mkdirSync(join(root, outDir), { recursive: true })
+        writeFileSync(join(root, file), '1\n00:00:00,000 --> 00:00:01,000\nhi\n', 'utf8')
+        return { file, segments: [], seconds: 1 }
+      },
+    })
+
+    const state = await pollJob(join(root, 'outputs', '_deconstruct', job.id, 'job.json'), ['ready', 'failed'])
+
+    assert.equal(state?.stage, 'ready', `pipeline must settle ready, got ${JSON.stringify(state)}`)
+    assert.equal(seen?.outDir, `outputs/_deconstruct/${job.id}`, 'transcribe must be pointed at the batch dir')
+    assert.equal(seen?.outStem, job.id, 'transcribe stem must be the job id')
+    assert.ok(seen?.input?.endsWith('video.mp4'), 'transcribe input is the batch video')
+    assert.equal(state?.srt, `outputs/_deconstruct/${job.id}/${job.id}.srt`,
+      'job.srt must point into the batch directory, not outputs/<stem>')
+    assert.equal(existsSync(join(root, 'outputs', '_deconstruct', job.id, `${job.id}.srt`)), true,
+      'the SRT file exists inside the batch directory')
+    assert.equal(existsSync(join(root, 'outputs', 'fake')), false, 'no SRT lands under outputs/<input stem>')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
 // ---- 拆解 ASR 凭据解析（provider::model → 设置→模型 同一注册表）----
 
 import { resolveDshAsrCredentials } from '../lib/plugins/deconstruct.js'

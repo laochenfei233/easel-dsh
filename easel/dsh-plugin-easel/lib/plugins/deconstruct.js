@@ -111,14 +111,14 @@ export async function resolveDshAsrCredentials(ctx, providerId, modelId) {
  * dsh 模型管理凭据；裸 model id（在途旧任务）保持既有 MIMO_* env 路径。
  */
 function deconstructTranscribe(c) {
-  return async ({ input, format, projectRoot, model }) => {
+  return async ({ input, format, projectRoot, model, outDir, outStem }) => {
     const split = typeof model === 'string' ? model.indexOf('::') : -1
     if (split > 0) {
       const resolved = await resolveDshAsrCredentials(hostCtx, model.slice(0, split), model.slice(split + 2))
       if (!resolved.ok) {
         throw new Error(`无法用所选模型 ${model} 转写：${resolved.reason}（可在 设置→模型 处理，或改选其他模型）`)
       }
-      return transcribeToSubtitle({ input, format, projectRoot, credentials: resolved.credentials })
+      return transcribeToSubtitle({ input, format, projectRoot, credentials: resolved.credentials, outDir, outStem })
     }
     const env = await readEnvFile(join(c.settings.projectRoot, '.env'))
     for (const key of ['MIMO_API_KEY', 'MIMO_BASE_URL', 'MIMO_ASR_MODEL']) {
@@ -130,7 +130,7 @@ function deconstructTranscribe(c) {
       throw new Error('未配置 mimo ASR 凭据：请设置 MIMO_API_KEY（环境变量或项目 .env）；'
         + '可选 MIMO_BASE_URL / MIMO_ASR_MODEL')
     }
-    return transcribeToSubtitle({ input, format, projectRoot, credentials })
+    return transcribeToSubtitle({ input, format, projectRoot, credentials, outDir, outStem })
   }
 }
 

@@ -176,14 +176,18 @@ export function createDeconstruct({ projectRoot, url, asrModel, transcribe }) {
       await writeJob(dir, job)
 
       // 3. 转写：走 lib/asr.js 同一条链（模型由 job.asrModel 覆盖默认 mimo）。
+      // SRT 落批次目录 outputs/_deconstruct/<id>/<id>.srt，多个任务互不覆盖；
+      // result.file 已是项目相对路径，job 直接存它。
       await jobStage(dir, job, 'asr')
       const result = await transcribe({
         input: videoAbs,
         format: 'srt',
         projectRoot,
         model: job.asrModel,
+        outDir: batchRel,
+        outStem: id,
       })
-      job.srt = rel(projectRoot, result.file)
+      job.srt = result.file
       job.seconds = result.seconds
       job.stage = 'ready'
       await writeJob(dir, job)

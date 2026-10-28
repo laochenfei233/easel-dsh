@@ -13,7 +13,8 @@
  *   rejects any extra text part with 400) → segment bounds are the timestamps
  *   → SRT/ASS/TXT/JSON writer ported 1:1 from asr.py (_wrap_line 18-char
  *   Chinese wrapping, _split_long_segment char-proportional timing, ASS header
- *   font size = short side x 0.05) → outputs/<stem>/<stem>.<format>.
+ *   font size = short side x 0.05) → outputs/<stem>/<stem>.<format> (default;
+ *   `outDir`/`outStem` re-route the file, e.g. a deconstruct batch directory).
  *
  * Credentials never live here as defaults: the caller resolves
  * MIMO_BASE_URL / MIMO_API_KEY / MIMO_ASR_MODEL (env, or the project `.env`
@@ -508,6 +509,11 @@ export function renderJson(cues, meta) {
  *   send a language hint.
  * @param options.projectRoot - output base; file lands at
  *   `outputs/<stem>/<stem>.<format>` (asr.py `-o` default behavior).
+ * @param options.outDir - optional output directory, projectRoot-relative with
+ *   forward slashes (default `outputs/<input stem>`).
+ * @param options.outStem - optional output file stem (default the input stem);
+ *   deconstruct passes its batch id so concurrent jobs never overwrite each
+ *   other's subtitles.
  * @param options.credentials - `{ apiKey, baseUrl?, model? }` from
  *   `resolveMimoCredentials`; missing key → 400.
  * @returns `{ file, segments, seconds, meta }` — `file` is projectRoot-relative
@@ -519,6 +525,8 @@ export async function transcribeToSubtitle({
   format = 'srt',
   language,
   projectRoot,
+  outDir,
+  outStem,
   credentials,
   ffmpegBin = 'ffmpeg',
   ffprobeBin = 'ffprobe',
@@ -600,12 +608,13 @@ export async function transcribeToSubtitle({
       content = renderSrt(cues, maxLineChars)
     }
 
-    // 输出 outputs/<输入名>/<输入名>.<format>（对齐 asr.py -o 缺省行为）。
-    const stem = basename(src, extname(src))
-    const relFile = ['outputs', stem, `${stem}.${format}`].join('/')
-    const outAbs = join(projectRoot, 'outputs', stem, `${stem}.${format}`)
-    await mkdir(join(projectRoot, 'outputs', stem), { recursive: true })
-    await writeFile(outAbs, content, 'utf8')
+    // 输出落位：缺省 outputs/<输入名>/<输入名>.<format>（对齐 asr.py -o 缺省
+    // 行为）；deconstruct 传 outDir/outStem 把字幕落进批次目录，任务互不覆盖。
+    const stem = outStem ?? basename(src, extname(src))
+    const dirRel = (outDir ?? ['outputs', stem].join('/')).split('\\').join('/')
+    const relFile = `${dirRel}/${stem}.${format}`
+    await mkdir(join(projectRoot, dirRel), { recursive: true })
+    await writeFile(join(projectRoot, relFile), content, 'utf8')
 
     const round3 = x => Math.round(x * 1000) / 1000
     return {

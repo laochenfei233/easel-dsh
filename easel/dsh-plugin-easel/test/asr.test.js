@@ -324,3 +324,69 @@ test('writeApiDiscovery writes base/basePath, the runner token, and ignores inva
     rmSync(root, { recursive: true, force: true })
   }
 })
+
+// ── 不碰网络的 transcribeToSubtitle 测试底座：合成 wav + 假 fetch ─────
+
+/**
+ * 合成一段「有声-静音-有声」的 16k 单声道 PCM wav：440Hz 正弦约 -12dBFS
+ * （高于 -35dB 噪声门），静音段为数字零，silencedetect 能切出两段语音。
+ */
+function writeToneSilenceToneWav(path, { toneSec = 1, silenceSec = 2, tailSec = 2 } = {}) {
+  const rate = 16_000
+  const samples = (toneSec + silenceSec + tailSec) * rate
+  const pcm = Buffer.alloc(samples * 2)
+  for (let i = 0; i < samples; i++) {
+    const t = i / rate
+    if (t < toneSec || t >= toneSec + silenceSec) {
+      pcm.writeInt16LE(Math.round(Math.sin(2 * Math.PI * 440 * t) * 8000), i * 2)
+    }
+  }
+  const header = Buffer.alloc(44)
+  header.write('RIFF', 0)
+  header.writeUInt32LE(36 + pcm.length, 4)
+  header.write('WAVE', 8)
+  header.write('fmt ', 12)
+  header.writeUInt32LE(16, 16)
+  header.writeUInt16LE(1, 20)
+  header.writeUInt16LE(1, 22)
+  header.writeUInt32LE(rate, 24)
+  header.writeUInt32LE(rate * 2, 28)
+  header.writeUInt16LE(2, 32)
+  header.writeUInt16LE(16, 34)
+  header.write('data', 36)
+  header.writeUInt32LE(pcm.length, 40)
+  writeFileSync(path, Buffer.concat([header, pcm]))
+}
+
+/** mimo chat/completions 成功响应的本地替身（content 即转写文本）。 */
+const asrResponse = text => new Response(
+  JSON.stringify({ choices: [{ message: { content: text } }], usage: { seconds: 1 } }),
+  { status: 200 },
+)
+
+test('transcribeToSubtitle keeps the default landing spot and honors outDir/outStem', {
+  skip: !hasFfmpeg ? 'needs ffmpeg' : false,
+}, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-asr-outdir-'))
+  try {
+    const wav = join(root, 'talk.wav')
+    writeToneSilenceToneWav(wav)
+    const fetchImpl = async () => asrResponse('字幕')
+
+    // 缺省：outputs/<输入名>/<输入名>.<format>（POST /easel/api/asr 的既有落位）。
+    const def = await transcribeToSubtitle({ input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl })
+    assert.equal(def.file, 'outputs/talk/talk.srt')
+    assert.ok(existsSync(join(root, 'outputs', 'talk', 'talk.srt')), 'default landing spot unchanged')
+
+    // 指定 outDir/outStem：字幕落进指定目录（拆解批次目录的用法）。
+    const routed = await transcribeToSubtitle({
+      input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl,
+      outDir: 'outputs/_deconstruct/batch1', outStem: 'batch1',
+    })
+    assert.equal(routed.file, 'outputs/_deconstruct/batch1/batch1.srt')
+    assert.ok(existsSync(join(root, 'outputs', '_deconstruct', 'batch1', 'batch1.srt')),
+      'outDir/outStem re-route the subtitle file')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
