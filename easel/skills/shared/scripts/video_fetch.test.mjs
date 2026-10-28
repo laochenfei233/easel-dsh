@@ -36,6 +36,7 @@ test('the platform decision reads the parsed host, not the share text', () => {
   assert.equal(detectPlatform('https://xiaohongshu.com.evil.example/'), 'generic')
   assert.equal(detectPlatform('https://evil-kuaishou.com/short-video/1'), 'generic')
   assert.equal(detectPlatform('https://kuaishou.com.evil.example/short-video/1'), 'generic')
+  assert.equal(detectPlatform('https://attacker.example?kuaishou.com'), 'generic')
   assert.equal(detectPlatform('javascript:alert(1)'), 'generic')
   assert.equal(detectPlatform('file:///etc/passwd'), 'generic')
 })

@@ -428,7 +428,7 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
 
         {job === null && !capturing && !preflight?.blocked && (
           <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 14 }}>
-            小红书需要登录态（设置里填 cookie 或账号页扫码）；抖音免登录直连。素材与报告归档在
+            小红书需要登录态（设置里填 cookie 或账号页扫码）；抖音/快手免登录直连。素材与报告归档在
             outputs/_deconstruct/&lt;任务id&gt;/ 下。
           </p>
         )}

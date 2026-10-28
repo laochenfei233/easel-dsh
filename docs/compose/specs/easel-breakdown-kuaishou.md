@@ -58,8 +58,10 @@ KS-Downloader 后端机制（source/extract/extractor.py、source/link/examiner.
   2. GET 详情页（`User-Agent: DESKTOP_UA` + `Referer: https://www.kuaishou.com/`）
      → 新增导出纯函数 `parseApolloState(page)`：定位 `window.__APOLLO_STATE__=`，
      截到自移除脚本尾缀或 `</script>`，`JSON.parse`，容错缺键。
-  3. `defaultClient` 里取 `VisionVideoDetailPhoto:<photoId>`（键缺失时按前缀扫描唯一匹配）
-     → `photoUrl` 缺失 = 图集/已删除/风控 → 抛错（退出码 2，沿用「手动放文件」降级）。
+  3. `defaultClient` 里按精确键 `VisionVideoDetailPhoto:<photoId>` 取值（与
+     KS-Downloader 的 web 提取一致；图集等无此键的作品没有 photoUrl，
+     按下载失败降级）→ `photoUrl` 缺失 = 图集/已删除/风控 → 抛错
+     （退出码 2，沿用「手动放文件」降级）。
   4. `download(photoUrl, { DESKTOP_UA, Referer })` → `video.mp4`（经既有公网校验）。
   5. stdout 元信息：`platform: 'kuaishou'`、`title: caption`、`author`、
      `duration_sec`（毫秒→秒）、`file`、`url`。

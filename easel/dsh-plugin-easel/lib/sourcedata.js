@@ -1,7 +1,8 @@
 // 拆解数据源门控（spec easel-breakdown-fullpage 设计增补）：平台判定、
 // cookie 状态与写入。video_fetch.mjs 的既有约定是 outputs/_deconstruct/cookies.json
-// （{platform: Cookie 头字符串}，值也可为 dict）；抖音免 cookie，小红书必需。
-// 扫码登录的状态文件在 outputs/_login/<platform>.json（runner 舰队四件套）。
+// （{platform: Cookie 头字符串}，值也可为 dict）；抖音/快手免 cookie（快手可选
+// 游客 cookie），小红书必需。扫码登录的状态文件在 outputs/_login/<platform>.json
+// （runner 舰队四件套）。
 
 import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'

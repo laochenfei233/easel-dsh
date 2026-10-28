@@ -130,18 +130,30 @@ export async function fetchFollowing(rawUrl, { cookie = null, allowHosts = null,
       if (hostMatches(current, cookie.hosts)) headers.Cookie = cookie.value
       else delete headers.Cookie
     }
-    const response = await fetch(current, {
-      method: options.data === undefined ? 'GET' : 'POST',
-      headers,
-      body: options.data,
-      redirect: 'manual',
-      signal: AbortSignal.timeout((options.timeout ?? 30) * 1000),
-    })
-    if (!REDIRECT_STATUS.has(response.status)) return [current.href, await response.text()]
-    const location = response.headers.get('location')
-    await response.body?.cancel()
-    if (location === null) throw new Error(`HTTP ${response.status} 没有 Location`)
-    current = parseHttpUrl(new URL(location, current).href)
+    const controller = new AbortController()
+    const timer = setTimeout(
+      () => controller.abort(new Error(`请求超时 ${options.timeout ?? 30}s`)),
+      (options.timeout ?? 30) * 1000,
+    )
+    try {
+      const response = await fetch(current, {
+        method: options.data === undefined ? 'GET' : 'POST',
+        headers,
+        body: options.data,
+        redirect: 'manual',
+        signal: controller.signal,
+      })
+      if (!REDIRECT_STATUS.has(response.status)) return [current.href, await response.text()]
+      const location = response.headers.get('location')
+      await response.body?.cancel()
+      if (location === null) throw new Error(`HTTP ${response.status} 没有 Location`)
+      current = parseHttpUrl(new URL(location, current).href)
+    } finally {
+      // 响应体消费完/取消后才解除定时器：die() 的 process.exit 撞上仍未触发的
+      // abort 定时器加连接池套接字时，Windows 会以 libuv 断言崩溃、退出码
+      // 变成 127（Node v24 实测复现）；解除后退出走正常收尾。
+      clearTimeout(timer)
+    }
   }
   throw new Error('重定向次数过多')
 }
@@ -151,18 +163,24 @@ async function download(rawUrl, headers, dest) {
   let current = parseHttpUrl(rawUrl)
   for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
     await assertPublicDestination(current)
-    const response = await fetch(current, {
-      headers, redirect: 'manual', signal: AbortSignal.timeout(120_000),
-    })
-    if (!REDIRECT_STATUS.has(response.status)) {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      await pipeline(Readable.fromWeb(response.body), createWriteStream(dest))
-      return
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(new Error('下载超时 120s')), 120_000)
+    try {
+      const response = await fetch(current, {
+        headers, redirect: 'manual', signal: controller.signal,
+      })
+      if (!REDIRECT_STATUS.has(response.status)) {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        await pipeline(Readable.fromWeb(response.body), createWriteStream(dest))
+        return
+      }
+      const location = response.headers.get('location')
+      await response.body?.cancel()
+      if (location === null) throw new Error(`HTTP ${response.status} 没有 Location`)
+      current = parseHttpUrl(new URL(location, current).href)
+    } finally {
+      clearTimeout(timer) // 同 fetchFollowing：别让未触发的 abort 定时器送 process.exit 上路
     }
-    const location = response.headers.get('location')
-    await response.body?.cancel()
-    if (location === null) throw new Error(`HTTP ${response.status} 没有 Location`)
-    current = parseHttpUrl(new URL(location, current).href)
   }
   throw new Error('重定向次数过多')
 }

@@ -32,6 +32,7 @@ test('sourceStatus reports cookie presence without leaking values', async () => 
     const status = await sourceStatus(root)
     const xhs = status.platforms.find(p => p.platform === 'xhs')
     const douyin = status.platforms.find(p => p.platform === 'douyin')
+    const kuaishou = status.platforms.find(p => p.platform === 'kuaishou')
     assert.deepEqual(
       xhs,
       { platform: 'xhs', authRequired: true, cookieSet: true, loggedIn: true },
@@ -40,6 +41,11 @@ test('sourceStatus reports cookie presence without leaking values', async () => 
       douyin,
       { platform: 'douyin', authRequired: false, cookieSet: false, loggedIn: false },
     )
+    assert.deepEqual(
+      kuaishou,
+      { platform: 'kuaishou', authRequired: false, cookieSet: false, loggedIn: false },
+    )
+    assert.equal(status.platforms.length, 5)
     assert.equal(JSON.stringify(status).includes('secret'), false)
   } finally {
     rmSync(root, { recursive: true, force: true })
