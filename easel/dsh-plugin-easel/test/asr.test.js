@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -386,6 +386,102 @@ test('transcribeToSubtitle keeps the default landing spot and honors outDir/outS
     assert.equal(routed.file, 'outputs/_deconstruct/batch1/batch1.srt')
     assert.ok(existsSync(join(root, 'outputs', '_deconstruct', 'batch1', 'batch1.srt')),
       'outDir/outStem re-route the subtitle file')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+// ── 分段级检查点（T2）：失败留 sidecar，重跑只补缺失段 ────────────────
+
+test('a failed segment keeps completed ones in the sidecar and a retry transcribes only the missing one', {
+  skip: !hasFfmpeg ? 'needs ffmpeg' : false,
+}, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-asr-partial-'))
+  try {
+    const wav = join(root, 'talk.wav')
+    writeToneSilenceToneWav(wav)
+    const sidecarPath = join(root, 'talk.asr-partial.json')
+
+    // 第一次运行：段 0 成功、段 1 失败 → sidecar 只留段 0，字幕不落盘。
+    let calls = 0
+    const flaky = async () => {
+      calls += 1
+      if (calls === 2) throw new Error('boom: gateway error on segment 1')
+      return asrResponse('第一段')
+    }
+    await assert.rejects(
+      transcribeToSubtitle({ input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl: flaky }),
+      error => error instanceof AsrError && error.status === 502,
+    )
+    assert.equal(calls, 2, 'both segments were attempted before the failure')
+    assert.ok(existsSync(sidecarPath), 'the failed run keeps its sidecar for the retry')
+    const saved = JSON.parse(readFileSync(sidecarPath, 'utf8'))
+    const stat = statSync(wav)
+    assert.deepEqual(saved.src, { mtimeMs: Math.round(stat.mtimeMs), size: stat.size },
+      'the sidecar records the rounded mtimeMs + size identity of the input')
+    assert.equal(saved.segments.length, 1, 'only the completed segment is checkpointed')
+    assert.equal(saved.segments[0].index, 0)
+    assert.equal(saved.segments[0].text, '第一段')
+    assert.equal(typeof saved.segments[0].start, 'number')
+    assert.equal(typeof saved.segments[0].end, 'number')
+    assert.equal(existsSync(join(root, 'outputs', 'talk', 'talk.srt')), false, 'no subtitle is written on failure')
+
+    // 重跑：计数假 fetch 证明段 0 未重调，只有段 1 补转；成功后 sidecar 清理。
+    const retried = []
+    const retry = async (_url, opts) => {
+      retried.push(JSON.parse(String(opts.body)).messages[0].content[0].input_audio.data.length)
+      return asrResponse('第二段')
+    }
+    const result = await transcribeToSubtitle({ input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl: retry })
+    assert.equal(retried.length, 1, 'only the missing segment goes back to the gateway')
+    assert.ok(!existsSync(sidecarPath), 'the sidecar is removed once every segment has succeeded')
+    assert.equal(result.file, 'outputs/talk/talk.srt')
+    assert.deepEqual(result.segments.map(seg => seg.text), ['第一段', '第二段'],
+      'reused and newly transcribed text both land in the subtitle')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('a sidecar whose src identity no longer matches is ignored and rebuilt', {
+  skip: !hasFfmpeg ? 'needs ffmpeg' : false,
+}, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-asr-identity-'))
+  try {
+    const wav = join(root, 'talk.wav')
+    writeToneSilenceToneWav(wav)
+    // 伪造一份旧 sidecar：src 身份（mtimeMs+size）对不上 → 整体忽略，不许复用。
+    writeFileSync(join(root, 'talk.asr-partial.json'), JSON.stringify({
+      src: { mtimeMs: 1, size: 2 },
+      segments: [{ index: 0, start: 0, end: 1, text: '过期分段' }],
+    }))
+    let fetched = 0
+    const fetchImpl = async () => {
+      fetched += 1
+      return asrResponse('新分段')
+    }
+    const result = await transcribeToSubtitle({ input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl })
+    assert.equal(fetched, 2, 'both segments are re-transcribed for the new input')
+    assert.ok(!result.segments.some(seg => seg.text === '过期分段'), 'stale sidecar text never reaches the subtitle')
+    assert.ok(!existsSync(join(root, 'talk.asr-partial.json')), 'the completed run cleans the ignored sidecar')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('a missing input cleans up its orphaned sidecar and answers 404', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-asr-partial-gone-'))
+  try {
+    const wav = join(root, 'talk.wav')
+    writeToneSilenceToneWav(wav)
+    const sidecarPath = join(root, 'talk.asr-partial.json')
+    writeFileSync(sidecarPath, JSON.stringify({ src: { mtimeMs: 1, size: 2 }, segments: [] }))
+    rmSync(wav)
+    await assert.rejects(
+      transcribeToSubtitle({ input: wav, projectRoot: root, credentials: { apiKey: 'k' } }),
+      error => error instanceof AsrError && error.status === 404,
+    )
+    assert.equal(existsSync(sidecarPath), false, 'the orphaned sidecar is cleaned up with its input')
   } finally {
     rmSync(root, { recursive: true, force: true })
   }
