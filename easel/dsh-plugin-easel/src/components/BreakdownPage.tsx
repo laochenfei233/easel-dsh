@@ -97,6 +97,8 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
   const [gateChecking, setGateChecking] = useState(false);
   const [job, setJob] = useState<DeconstructJob | null>(null);
   const [capturing, setCapturing] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [retryNote, setRetryNote] = useState('');
   const [analyzeState, setAnalyzeState] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [report, setReport] = useState('');
   const abortRef = useRef<(() => void) | null>(null);
@@ -183,6 +185,28 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
       setJob({ id: '', url, stage: 'failed', error: String((error as Error).message ?? error) });
     } finally {
       setCapturing(false);
+    }
+  };
+
+  /** 从失败处继续：以 job.json 为检查点只补缺失段（spec easel-upstream-adoptions S2.1）。 */
+  const retryCapture = async () => {
+    if (!job?.id || retrying || capturing) return;
+    setRetrying(true);
+    setRetryNote('');
+    try {
+      const res = await fetch(`/easel/api/deconstruct/${job.id}/retry`, { method: 'POST' });
+      const data = await res.json() as DeconstructJob & { detail?: string; message?: string };
+      if (res.status === 409) {
+        setRetryNote(data.detail ?? '已有拆解采集在运行，请等它完成或失败后再重试');
+        return;
+      }
+      if (!res.ok) throw new Error(data.detail ?? data.message ?? '续跑启动失败');
+      setJob(data);
+      void poll(data.id);
+    } catch (error) {
+      setRetryNote(String((error as Error).message ?? error));
+    } finally {
+      setRetrying(false);
     }
   };
 
@@ -377,7 +401,19 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
               {(capturing || (!captureReady && !captureFailed)) && <span className="loading" style={{ padding: 0 }}><div className="spinner" /></span>}
             </div>
             {captureFailed && (
-              <p style={{ fontSize: 13, color: 'var(--red)', margin: '10px 0 0' }}>{job.error}</p>
+              <>
+                <p style={{ fontSize: 13, color: 'var(--red)', margin: '10px 0 0' }}>{job.error}</p>
+                {job.id !== '' && (
+                  <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button className="btn btn-sm" disabled={retrying || capturing} onClick={retryCapture}>
+                      {retrying ? '续跑中…' : '从失败处继续'}
+                    </button>
+                    {retryNote && (
+                      <span style={{ fontSize: 12.5, color: 'var(--amber, #d97706)' }}>{retryNote}</span>
+                    )}
+                  </div>
+                )}
+              </>
             )}
             {captureReady && (
               <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', margin: '10px 0 0' }}>

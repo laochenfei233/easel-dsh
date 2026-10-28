@@ -11373,6 +11373,8 @@ function BreakdownPage({ persona, onNavigate, remote }) {
   const [gateChecking, setGateChecking] = (0, import_react15.useState)(false);
   const [job, setJob] = (0, import_react15.useState)(null);
   const [capturing, setCapturing] = (0, import_react15.useState)(false);
+  const [retrying, setRetrying] = (0, import_react15.useState)(false);
+  const [retryNote, setRetryNote] = (0, import_react15.useState)("");
   const [analyzeState, setAnalyzeState] = (0, import_react15.useState)("idle");
   const [report, setReport] = (0, import_react15.useState)("");
   const abortRef = (0, import_react15.useRef)(null);
@@ -11452,6 +11454,26 @@ function BreakdownPage({ persona, onNavigate, remote }) {
       setJob({ id: "", url, stage: "failed", error: String(error.message ?? error) });
     } finally {
       setCapturing(false);
+    }
+  };
+  const retryCapture = async () => {
+    if (!job?.id || retrying || capturing) return;
+    setRetrying(true);
+    setRetryNote("");
+    try {
+      const res = await fetch(`/easel/api/deconstruct/${job.id}/retry`, { method: "POST" });
+      const data = await res.json();
+      if (res.status === 409) {
+        setRetryNote(data.detail ?? "\u5DF2\u6709\u62C6\u89E3\u91C7\u96C6\u5728\u8FD0\u884C\uFF0C\u8BF7\u7B49\u5B83\u5B8C\u6210\u6216\u5931\u8D25\u540E\u518D\u91CD\u8BD5");
+        return;
+      }
+      if (!res.ok) throw new Error(data.detail ?? data.message ?? "\u7EED\u8DD1\u542F\u52A8\u5931\u8D25");
+      setJob(data);
+      void poll(data.id);
+    } catch (error) {
+      setRetryNote(String(error.message ?? error));
+    } finally {
+      setRetrying(false);
     }
   };
   const startAnalyze = async () => {
@@ -11617,7 +11639,13 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
           captureFailed && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { style: { fontSize: 13, color: "var(--red)" }, children: "\u2715 \u91C7\u96C6\u5931\u8D25" }),
           (capturing || !captureReady && !captureFailed) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "loading", style: { padding: 0 }, children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "spinner" }) })
         ] }),
-        captureFailed && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 13, color: "var(--red)", margin: "10px 0 0" }, children: job.error }),
+        captureFailed && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 13, color: "var(--red)", margin: "10px 0 0" }, children: job.error }),
+          job.id !== "" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { marginTop: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "btn btn-sm", disabled: retrying || capturing, onClick: retryCapture, children: retrying ? "\u7EED\u8DD1\u4E2D\u2026" : "\u4ECE\u5931\u8D25\u5904\u7EE7\u7EED" }),
+            retryNote && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { style: { fontSize: 12.5, color: "var(--amber, #d97706)" }, children: retryNote })
+          ] })
+        ] }),
         captureReady && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", margin: "10px 0 0" }, children: [
           job.title && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("span", { style: { display: "block", color: "var(--text)", marginBottom: 2 }, children: [
             "\u300A",
