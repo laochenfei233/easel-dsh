@@ -67,7 +67,8 @@ const WINDOWS_PROBE = [
   '}',
   "'@",
   '$p = Get-Process -Name Weixin,WeChat -ErrorAction SilentlyContinue;',
-  'if (-not $p) { [Console]::Out.Write("{\\"running\\":false}"); exit 0 }',
+  // PowerShell 的转义符是反引号，反斜杠不是——JSON 走单引号串。
+  "if (-not $p) { [Console]::Out.Write('{\"running\":false}'); exit 0 }",
   '$rows = [WxEnum]::List([uint32[]]@($p.Id));',
   '$out = @{ running = $true; windows = @($rows) } | ConvertTo-Json -Compress -Depth 3;',
   '[Console]::Out.Write($out)',
