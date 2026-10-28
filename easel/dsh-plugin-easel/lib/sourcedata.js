@@ -44,7 +44,8 @@ async function platformLoggedIn(projectRoot, platform) {
 /**
  * 从分享链接/口令文本判平台。只认拆解流水线真实支持的域：
  * 抖音（含 v.douyin.com 短链与口令文本）、小红书（xiaohongshu/xhslink）、
- * 快手（kuaishou/chenzhongtech，免登录）；
+ * 快手（kuaishou/chenzhongtech，免登录）、视频号（channels.weixin.qq.com，
+ * 走下载器 + 微信登录门控，不走 cookies.json）；
  * bilibili/youtube 免登录直连；认不出按 'other'（免登录，让下载器自己报错）。
  */
 export function parsePlatform(raw) {
@@ -52,6 +53,7 @@ export function parsePlatform(raw) {
   if (/douyin|iesdouyin|amemv|snssdk/i.test(text)) return 'douyin'
   if (/xiaohongshu|xhslink/i.test(text)) return 'xhs'
   if (/kuaishou|chenzhongtech/i.test(text)) return 'kuaishou'
+  if (/channels\.weixin\.qq\.com/i.test(text)) return 'sph'
   if (/bilibili|b23\.tv/i.test(text)) return 'bili'
   if (/youtube|youtu\.be/i.test(text)) return 'youtube'
   return 'other'

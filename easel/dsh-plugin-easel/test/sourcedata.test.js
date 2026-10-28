@@ -10,6 +10,8 @@ test('parsePlatform recognizes the pipeline-supported domains from share text', 
   assert.equal(parsePlatform('https://www.xiaohongshu.com/explore/1'), 'xhs')
   assert.equal(parsePlatform('快手 https://v.kuaishou.com/GH7abcD'), 'kuaishou')
   assert.equal(parsePlatform('https://www.chenzhongtech.com/fw/photo/3xabc'), 'kuaishou')
+  assert.equal(parsePlatform('https://channels.weixin.qq.com/web/pages/feed?profile=1'), 'sph')
+  assert.equal(parsePlatform('https://mp.weixin.qq.com/s/abc'), 'other')
   assert.equal(parsePlatform('https://www.bilibili.com/video/BV1x'), 'bili')
   assert.equal(parsePlatform('https://youtu.be/abc'), 'youtube')
   assert.equal(parsePlatform('https://example.com/video'), 'other')

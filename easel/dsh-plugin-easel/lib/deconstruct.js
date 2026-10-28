@@ -63,10 +63,14 @@ async function writeJob(dir, job) {
   await writeFile(join(dir, 'job.json'), JSON.stringify(job, null, 2), 'utf8')
 }
 
-/** 跑一条命令到结束；超时杀进程。返回 {code, stdout, stderr}。 */
-function run(cmd, args, cwd, timeout) {
+/** 跑一条命令到结束；超时杀进程。extraEnv 合并进继承的进程环境。返回 {code, stdout, stderr}。 */
+function run(cmd, args, cwd, timeout, extraEnv) {
   return new Promise((resolveRun, rejectRun) => {
-    const child = spawn(cmd, args, { cwd, windowsHide: true })
+    const child = spawn(cmd, args, {
+      cwd,
+      windowsHide: true,
+      ...(extraEnv ? { env: { ...process.env, ...extraEnv } } : {}),
+    })
     const stdoutChunks = []
     let stdoutBytes = 0
     let stderr = ''
@@ -116,8 +120,9 @@ function run(cmd, args, cwd, timeout) {
 /**
  * 创建并启动一次拆解采集。返回创建时的 job 快照（stage=fetch）。
  * @param deps.transcribe - lib/asr.js 的 transcribeToSubtitle（由 index.js 注入，避免循环依赖）。
+ * @param deps.fetchEnv - 仅注入下载子进程的环境变量（如视频号 staging 目录）。
  */
-export function createDeconstruct({ projectRoot, url, asrModel, transcribe }) {
+export function createDeconstruct({ projectRoot, url, asrModel, transcribe, fetchEnv }) {
   const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
   const dir = deconstructDir(projectRoot, id)
   if (dir === null) throw new Error(`invalid deconstruct id: ${id}`)
@@ -144,6 +149,7 @@ export function createDeconstruct({ projectRoot, url, asrModel, transcribe }) {
         ['skills/shared/scripts/video_fetch.mjs', batchRel, url],
         projectRoot,
         10 * 60_000,
+        fetchEnv,
       )
       if (fetch.code !== 0) {
         throw new Error(`视频下载失败（退出码 ${fetch.code}）：${fetch.stderr.split('\n').slice(-3).join(' ').trim() || '见对话内技能说明'}`)
