@@ -644,6 +644,10 @@ describe('pressure measurement and retention', () => {
 
   it('gates pressure on the reserve the routed envelope records', async () => {
     const ctx = createContext(1_000)
+    const triggers: unknown[] = []
+    ctx.logger.info = ((format: string, ...params: unknown[]) => {
+      if (format === 'compaction (trigger): %o') triggers.push(params[0])
+    }) as typeof ctx.logger.info
     const compact = service({ auto: false, thresholdRatio: 0.8, retainRatio: 0.1 }, ctx)
     const session = conversation(4)
     const measured = ctx.tokenMeter.measure(session).totalTokens
@@ -652,6 +656,7 @@ describe('pressure measurement and retention', () => {
     // gate the reserve-free deployment uses stays closed.
     expect(measured).toBeLessThan(800)
     await expect(compactIfNeeded(compact, session)).resolves.toBeNull()
+    expect(triggers).toEqual([])
 
     // The output reservation lowers the threshold below the measured history.
     const maxTokens = 1_000 - measured + 1
@@ -660,6 +665,12 @@ describe('pressure measurement and retention', () => {
       reason: 'change',
     })
     await expect(compactIfNeeded(compact, session)).resolves.not.toBeNull()
+    expect(triggers).toEqual([{
+      contextWindow: 1_000,
+      thresholdTokens: measured - 1,
+      totalTokens: measured,
+      trigger: 'pressure',
+    }])
   })
 
   it('falls back to the adapter request cap when the envelope records no reserve', async () => {
@@ -691,17 +702,24 @@ describe('pressure measurement and retention', () => {
       id: model,
       name: model,
     }))
+    const triggers: unknown[] = []
+    ctx.logger.info = ((format: string, ...params: unknown[]) => {
+      if (format === 'compaction (trigger): %o') triggers.push(params[0])
+    }) as typeof ctx.logger.info
     const compact = service(compactConfig, ctx)
     const session = conversation(4)
     session.append('request/header', {
       header: { config: { provider: 'unknown-context', model: 'model' } },
       reason: 'resume',
     })
+    const measured = ctx.tokenMeter.measure(session).totalTokens
 
     await expect(compactIfNeeded(compact, session, 'pressure'))
       .rejects.toThrow(/no context capacity for unknown-context\/model/)
+    expect(triggers).toEqual([])
     await expect(compactIfNeeded(compact, session, 'context-overflow'))
       .resolves.not.toBeNull()
+    expect(triggers).toEqual([{ totalTokens: measured, trigger: 'context-overflow' }])
   })
 
   it('declines forced overflow when the whole surface is one indivisible tool pair', async () => {
@@ -1702,6 +1720,12 @@ describe('automatic listener and loader composition', () => {
 
   it('compacts before a step above threshold using the durable routed model and remains idle below it', async () => {
     const ctx = createContext()
+    const triggers: unknown[] = []
+    const resultLines: string[] = []
+    ctx.logger.info = ((format: string, ...params: unknown[]) => {
+      if (format === 'compaction (trigger): %o') triggers.push(params[0])
+      else resultLines.push(format)
+    }) as typeof ctx.logger.info
     const compact = new TestCompactionEngine(ctx, {
       headroomTokens: 0,
       maxTokens: 8192,
@@ -1709,13 +1733,22 @@ describe('automatic listener and loader composition', () => {
       retainTokens: 180,
     })
     const pressured = conversation(4)
+    const measured = ctx.tokenMeter.measure(pressured).totalTokens
     await preStep(ctx, agent(pressured, 'unconfigured-agent-fallback'))
     expect(pressured.snapshotEvents().some(event => event.type === 'compaction/summary')).toBe(true)
+    expect(triggers).toEqual([{
+      contextWindow: 1_000,
+      thresholdTokens: 500,
+      totalTokens: measured,
+      trigger: 'pressure',
+    }])
+    expect(resultLines).toEqual([expect.stringContaining('compaction (step pressure): shadowed ')])
 
     const small = conversation(1)
     await preStep(ctx, agent(small, MODEL))
     expect(small.snapshotEvents().some(event => event.type === 'compaction/start')).toBe(false)
     expect(compact.calls).toHaveLength(1)
+    expect(triggers).toHaveLength(1)
   })
 
   it('skips pre-step pressure when the step signal is already aborted', async () => {
