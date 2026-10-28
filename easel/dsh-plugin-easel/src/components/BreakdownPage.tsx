@@ -64,6 +64,7 @@ const FETCH_STAGES: Array<{ key: DeconstructJob['stage']; label: string }> = [
 const PLATFORM_NAMES: Record<string, string> = {
   douyin: '抖音',
   xhs: '小红书',
+  kuaishou: '快手',
   bili: 'B站',
   youtube: 'YouTube',
   other: '通用链接',
@@ -293,7 +294,7 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
         <div>
           <h1 className="page-title"><IconFire size={21} /> 爆款拆解</h1>
           <p className="page-subtitle">
-            贴一条视频链接（抖音/小红书/B站/…），流水线自动下载、抽帧、转写字幕，再由 AI
+            贴一条视频链接（抖音/小红书/快手/B站/…），流水线自动下载、抽帧、转写字幕，再由 AI
             结合画面与口播拆出钩子、结构、火的原因与可复制模板，报告存档并自动入库选题库。
           </p>
         </div>
