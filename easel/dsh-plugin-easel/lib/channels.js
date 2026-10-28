@@ -5,6 +5,7 @@
 import { spawn } from 'node:child_process'
 import { existsSync, statSync } from 'node:fs'
 import { createConnection } from 'node:net'
+import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -131,25 +132,31 @@ const EXE_BY_PLATFORM = { win32: 'wx_video_download.exe', darwin: 'wx_video_down
  * 定位下载器安装：settings.channelsDownloader（cordis.yml config，可为 exe 或目录）→
  * env EASEL_CHANNELS_DOWNLOADER → 开发态回退（本模块上溯三级到仓库根的
  * dist/tools/wx-channels-download，同 build.mjs「解析而非假设」先例）。
+ * 配置了却不存在按未安装处理（misconfiguration fails loud：不静默改走回退，
+ * 状态接口会带着指引报出来）。staging 目录固定用户 Downloads——与工具缺省
+ * config（download.dir: %UserDownloads%）一致，`wxdl_` 前缀是拾取锚点；
+ * 用户自改落盘目录时用 EASEL_CHANNELS_DIR 覆盖。
  * @returns {installed, exe, dir, stagingDir} 未安装时只有 installed:false。
  */
 export function findChannelsTool(settings, { platform = process.platform, moduleDir = dirname(fileURLToPath(import.meta.url)) } = {}) {
   const exeName = EXE_BY_PLATFORM[platform]
   if (exeName === undefined) return { installed: false }
-  const candidates = []
   const configured = settings?.channelsDownloader ?? process.env.EASEL_CHANNELS_DOWNLOADER
-  if (configured) candidates.push(configured)
-  candidates.push(resolve(moduleDir, '..', '..', '..', 'dist', 'tools', 'wx-channels-download'))
+  const candidates = configured ? [configured] : [resolve(moduleDir, '..', '..', '..', 'dist', 'tools', 'wx-channels-download')]
   for (const candidate of candidates) {
     // 配置值可以是 exe 文件本身，也可以是安装目录（补平台二进制名）。
     const base = resolve(candidate)
     const exe = existsSync(base) && statSync(base).isFile() ? base : join(base, exeName)
     if (existsSync(exe)) {
-      const dir = dirname(exe)
-      return { installed: true, exe, dir, stagingDir: join(dir, 'downloads') }
+      return { installed: true, exe, dir: dirname(exe), stagingDir: stagingDir() }
     }
   }
   return { installed: false }
+}
+
+/** 下载器产物落盘目录：工具缺省 config 的 %UserDownloads%。 */
+export function stagingDir(home = homedir()) {
+  return join(home, 'Downloads')
 }
 
 /** 下载器管理页是否已监听（TCP 探测 127.0.0.1，500ms 内连不上按未运行）。 */

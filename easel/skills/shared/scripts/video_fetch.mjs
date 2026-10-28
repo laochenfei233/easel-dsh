@@ -433,7 +433,9 @@ export async function pickStagedChannelsFile(dir, since) {
     try {
       const stat = statSync(full)
       if (stat.mtimeMs < since - CHANNELS_MTIME_SLACK_MS) continue
-      if (picked === null || stat.mtimeMs > picked.mtimeMs) picked = { path: full, name, mtimeMs: stat.mtimeMs }
+      if (picked === null || stat.mtimeMs > picked.mtimeMs) {
+        picked = { path: full, name, mtimeMs: stat.mtimeMs, size: stat.size }
+      }
     } catch { /* 拾取瞬间被移走的文件按不存在处理 */ }
   }
   return picked
@@ -460,15 +462,24 @@ async function fetchSph(batch, env = process.env) {
   while (Date.now() < deadline) {
     const hit = await pickStagedChannelsFile(dir, since)
     if (hit !== null) {
-      const dest = resolve(batch, 'video.mp4')
-      copyFileSync(hit.path, dest)
-      log(`拾取到下载器产物：${hit.name}`)
-      return {
-        platform: 'sph',
-        title: stagedTitle(hit.name),
-        author: '',
-        duration_sec: 0,
-        file: dest, url: '',
+      // 落盘稳定性：隔 1.5s 字节数不变才算下载完成，避免复制到写了一半的文件
+      //（下载器若不落临时名再改名，final name 会先于完成出现）。
+      await new Promise(r => setTimeout(r, 1500))
+      let stable = null
+      try {
+        stable = statSync(hit.path)
+      } catch { /* 文件消失（被改名/移动）→ 回到轮询等下一个形态 */ }
+      if (stable !== null && stable.size === hit.size) {
+        const dest = resolve(batch, 'video.mp4')
+        copyFileSync(hit.path, dest)
+        log(`拾取到下载器产物：${hit.name}`)
+        return {
+          platform: 'sph',
+          title: stagedTitle(hit.name),
+          author: '',
+          duration_sec: 0,
+          file: dest, url: '',
+        }
       }
     }
     await new Promise(r => setTimeout(r, CHANNELS_POLL_MS))

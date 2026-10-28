@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   classifyWeChatWindows, parseWeChatProbe, findChannelsTool, launchChannelsTool,
@@ -66,12 +66,17 @@ test('findChannelsTool prefers the configured path and tolerates dir or exe spel
     const found = findChannelsTool(settings, { moduleDir: join(repo, 'lib') })
     assert.equal(found.installed, true)
     assert.equal(found.exe, join(dir, 'wx_video_download.exe'))
-    assert.equal(found.stagingDir, join(dir, 'downloads'))
+    // staging 跟随工具缺省落盘配置（%UserDownloads%），不随 exe 目录走。
+    assert.equal(found.stagingDir, join(homedir(), 'Downloads'))
     // 直接给 exe 也认。
     const settingsExe = { channelsDownloader: join(dir, 'wx_video_download.exe') }
     assert.equal(findChannelsTool(settingsExe, { moduleDir: join(repo, 'lib') }).exe, join(dir, 'wx_video_download.exe'))
-    // 没配置且开发回退落空 → 未安装。
+    // 没配置且开发回退落空 → 未安装；配置了但不存在 → 同样未安装（不静默回退）。
     assert.deepEqual(findChannelsTool({}, { moduleDir: join(repo, 'lib') }), { installed: false })
+    assert.deepEqual(
+      findChannelsTool({ channelsDownloader: join(repo, 'missing-tools') }, { moduleDir: repo }),
+      { installed: false },
+    )
     // 环境变量兜底。
     const prev = process.env.EASEL_CHANNELS_DOWNLOADER
     process.env.EASEL_CHANNELS_DOWNLOADER = dir

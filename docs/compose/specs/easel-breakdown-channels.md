@@ -51,10 +51,12 @@ job 状态机（fetch/frames/asr/ready 原样）。
 - `detectPlatform` 增 `sph: ['channels.weixin.qq.com']`（点边界后缀，天然排除
   `mp.weixin.qq.com` 公众号域）。
 - `fetchSph(batch)`（离线，不发网络请求）：
-  - staging 目录 = `EASEL_CHANNELS_DIR` 环境变量，缺省 `%USERPROFILE%\Downloads`；
-  - 等待窗口 = `EASEL_CHANNELS_WAIT` 秒（插件传 480；缺省 480；测试传 1），
-    每 2s 轮询，找 `wxdl_*` 且扩展名在 VIDEO_EXTS、mtime ≥ 启动时刻-15s 的新文件，
-    取最新；窗口内没有 → 退出码 2 + 指引（含 staging 路径与已存在的 wxdl_ 文件数）；
+  - staging 目录 = `EASEL_CHANNELS_DIR` 环境变量，缺省 `%USERPROFILE%\Downloads`
+    （与下载器缺省 `download.dir: %UserDownloads%` 一致；插件侧 stagingDir 同源）；
+  - 等待窗口 = `EASEL_CHANNELS_WAIT` 秒（缺省 480；测试传 1），每 2s 轮询，
+    找 `wxdl_*` 且扩展名在 VIDEO_EXTS、mtime ≥ 启动时刻-15s 的新文件，取最新；
+    命中后隔 1.5s 复核字节数，不变才算下载完成（防半截文件），仍在变就继续轮询；
+    窗口内没有 → 退出码 2 + 指引（含 staging 路径与已存在的 wxdl_ 文件数）；
   - 命中 → **复制**（不动用户原件）到 `batch/video.mp4`；stdout 元信息
     `platform:'sph'`，title 取文件名去 `wxdl_` 前缀与 `_<spec>` 后缀，duration 0
     （SKILL 第 3 步 ffprobe 会拿到真实时长）；
@@ -77,7 +79,9 @@ job 状态机（fetch/frames/asr/ready 原样）。
   读 config `channelsDownloader` / env `EASEL_CHANNELS_DOWNLOADER`）→
   开发态回退 `<repo>/dist/tools/wx-channels-download/wx_video_download.exe`
   （从 `import.meta.url` 上溯三级，同 build.mjs resolveDshRoot 的「解析而非假设」
-  先例）→ 都没有 `{installed:false}`。
+  先例）→ 都没有 `{installed:false}`。配置了却不存在按未安装处理
+  （misconfiguration fails loud，不静默改走回退）；stagingDir 固定用户
+  Downloads，与工具缺省 `download.dir: %UserDownloads%` 同源。
 - `downloaderRunning()`：TCP 连 `127.0.0.1:2022`（config api.port 缺省值）。
 - `launchChannelsTool(deps)`：守卫①工具已安装 ②**微信已登录**（用户拍板：启动前
   先检测）→ 已运行直接返回 → 否则 `spawn(exe, {detached, windowsHide, stdio:'ignore'})`
