@@ -240,19 +240,39 @@ export function createDeconstruct({ projectRoot, url, asrModel, transcribe }) {
   return job
 }
 
+/** 同一项目已有采集在跑时由 resumeDeconstruct 在占锁点同步抛出；路由层转 409。 */
+export class DeconstructBusyError extends Error {
+  constructor() {
+    super('已有拆解采集在运行')
+    this.name = 'DeconstructBusyError'
+  }
+}
+
 /**
- * 从旧 job 断点续跑一次拆解采集（段级检查点见 runPipeline）。锁语义与
- * createDeconstruct 一致：本身不查 busy，由路由层用 deconstructBusy 给 409。
+ * 从旧 job 断点续跑一次拆解采集（段级检查点见 runPipeline）。占锁发生在任何
+ * await 之前（与 createDeconstruct 的同步窗口同强），并发 retry 不会双双绕过
+ * busy 检查。
  * @returns 续跑启动时的 job 快照（stage 已重置为 fetch）。
+ * @throws {DeconstructBusyError} 已有采集在跑（路由层转 409）。
  * @throws 任务不存在或 job.id 非法时抛出带明确原因的错误（路由层转 404）。
  */
 export async function resumeDeconstruct(projectRoot, id, transcribe) {
+  if (running.has(projectRoot)) throw new DeconstructBusyError()
+  running.add(projectRoot)
   const job = await readDeconstruct(projectRoot, id)
-  if (job === undefined) throw new Error(`拆解任务不存在：${id}`)
-  if (deconstructDir(projectRoot, job.id) === null) throw new Error(`拆解任务 id 非法：${job.id}`)
-  // 上次失败的 stage/error 不带进这次续跑；各段入口按产物存在性重新推进。
-  job.stage = 'fetch'
-  delete job.error
+  const dir = deconstructDir(projectRoot, job?.id ?? '')
+  try {
+    if (job === undefined) throw new Error(`拆解任务不存在：${id}`)
+    if (dir === null) throw new Error(`拆解任务 id 非法：${job.id}`)
+    // 上次失败的 stage/error 不带进这次续跑；各段入口按产物存在性重新推进。
+    job.stage = 'fetch'
+    delete job.error
+    // 启动前先落一次盘：轮询端不会闪见上一轮的 failed 态。
+    await writeJob(dir, job)
+  } catch (error) {
+    running.delete(projectRoot)
+    throw error
+  }
   void runPipeline(projectRoot, job, transcribe).catch(() => {})
   // 返回快照而非活引用：流水线从现在起会持续改写 job，路由的响应不能跟着抖。
   return { ...job }

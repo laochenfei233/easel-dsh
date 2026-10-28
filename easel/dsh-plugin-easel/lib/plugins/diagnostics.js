@@ -21,8 +21,10 @@ export function createDiagnosticsRoutes(ctx) {
       let info
       try {
         info = await llm.resolveModelInfo(provider, model)
-      } catch {
-        // llm 抛 LlmError（未注册服务商/未知模型）：不是网关故障，收拢为 404 语义。
+      } catch (error) {
+        // llm 抛 LlmError（未注册服务商/未知模型）收拢为 404 语义；其他错误
+        // （如走远端发现时的瞬时网关故障）不应伪装成「模型不存在」，记日志留痕。
+        console.error('easel diagnostics:', error)
         throw new ApiError(404, `无法解析模型 ${provider}/${model}`)
       }
       return {

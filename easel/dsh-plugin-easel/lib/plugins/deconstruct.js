@@ -9,7 +9,7 @@ import { basename, dirname, extname, join, relative, resolve, sep } from 'node:p
 import { homedir } from 'node:os'
 import { randomBytes } from 'node:crypto'
 import { AsrError, transcribeToSubtitle, resolveMimoCredentials, writeApiDiscovery } from '../asr.js'
-import { createDeconstruct, deconstructBusy, readDeconstruct, resumeDeconstruct } from '../deconstruct.js'
+import { createDeconstruct, DeconstructBusyError, deconstructBusy, readDeconstruct, resumeDeconstruct } from '../deconstruct.js'
 import { parsePlatform, sourceStatus, writeCookie } from '../sourcedata.js'
 import {
   ApiError, isFile, readEnvFile, readJsonFile, writeJsonFile,
@@ -161,10 +161,17 @@ async function apiDeconstructGet(c) {
 async function apiDeconstructRetry(c) {
   const existing = await readDeconstruct(c.settings.projectRoot, c.params.id)
   if (existing === undefined) throw new ApiError(404, `拆解任务不存在：${c.params.id}`)
-  if (deconstructBusy(c.settings.projectRoot)) {
-    throw new ApiError(409, '已有拆解采集在运行，请等它完成或失败后再重试')
+  let job
+  try {
+    job = await resumeDeconstruct(c.settings.projectRoot, c.params.id, deconstructTranscribe(c))
+  } catch (error) {
+    // busy 由 resumeDeconstruct 在占锁点同步抛出：检查到占锁之间没有 await，
+    // 并发 retry 不会双双绕过 409。
+    if (error instanceof DeconstructBusyError) {
+      throw new ApiError(409, '已有拆解采集在运行，请等它完成或失败后再重试')
+    }
+    throw error
   }
-  const job = await resumeDeconstruct(c.settings.projectRoot, c.params.id, deconstructTranscribe(c))
   return { json: job }
 }
 
