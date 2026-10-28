@@ -6,7 +6,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { splitUrls, detectPlatform, cookiesFile, parseHttpUrl, fetchFollowing, isPrivateAddress } from './video_fetch.mjs'
+import { splitUrls, detectPlatform, cookiesFile, parseHttpUrl, fetchFollowing, isPrivateAddress, parseApolloState } from './video_fetch.mjs'
 import { createServer } from 'node:http'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
@@ -18,10 +18,14 @@ test('splitUrls extracts links from noisy share text and strips tail punctuation
   assert.deepEqual(splitUrls('没有链接'), [])
 })
 
-test('detectPlatform routes douyin/xhs and everything else to generic', () => {
+test('detectPlatform routes douyin/xhs/kuaishou and everything else to generic', () => {
   assert.equal(detectPlatform('https://v.douyin.com/iRNBho6/'), 'douyin')
   assert.equal(detectPlatform('https://www.iesdouyin.com/share/video/123'), 'douyin')
   assert.equal(detectPlatform('http://xhslink.com/a2bC，快看'), 'xhs')
+  assert.equal(detectPlatform('https://v.kuaishou.com/GH7abcD'), 'kuaishou')
+  assert.equal(detectPlatform('https://www.kuaishou.com/short-video/3xkpubc9def'), 'kuaishou')
+  assert.equal(detectPlatform('https://kuaishou.cn/short-video/3xkpubc9def'), 'kuaishou')
+  assert.equal(detectPlatform('https://www.chenzhongtech.com/fw/photo/3xkpubc9def'), 'kuaishou')
   assert.equal(detectPlatform('https://www.bilibili.com/video/BV1GJ411x7h7/'), 'generic')
 })
 
@@ -30,8 +34,37 @@ test('the platform decision reads the parsed host, not the share text', () => {
   assert.equal(detectPlatform('https://attacker.example?xiaohongshu.com'), 'generic')
   assert.equal(detectPlatform('https://evil-xiaohongshu.com/note'), 'generic')
   assert.equal(detectPlatform('https://xiaohongshu.com.evil.example/'), 'generic')
+  assert.equal(detectPlatform('https://evil-kuaishou.com/short-video/1'), 'generic')
+  assert.equal(detectPlatform('https://kuaishou.com.evil.example/short-video/1'), 'generic')
   assert.equal(detectPlatform('javascript:alert(1)'), 'generic')
   assert.equal(detectPlatform('file:///etc/passwd'), 'generic')
+})
+
+test('parseApolloState extracts the photo detail and author from a detail page', () => {
+  const photoId = '3xkpubc9def'
+  const page = `<!doctype html><html><body><script>window.__APOLLO_STATE__=${JSON.stringify({
+    defaultClient: {
+      [`VisionVideoDetailPhoto:${photoId}`]: {
+        __typename: 'VisionVideoDetailPhoto', id: photoId, photoUrl: 'https://public.example/video.mp4',
+        caption: '真香现场', duration: 98500, viewCount: 12345,
+      },
+      'VisionVideoDetailAuthor:eid9': { __typename: 'VisionVideoDetailAuthor', id: 'eid9', name: '老王' },
+    },
+  })};(function(){var s;(s=document.currentScript||document.scripts[document.scripts.length-1]).parentNode.removeChild(s);}());</script></body></html>`
+  const client = parseApolloState(page).defaultClient
+  const photo = client[`VisionVideoDetailPhoto:${photoId}`]
+  assert.equal(photo.photoUrl, 'https://public.example/video.mp4')
+  assert.equal(photo.caption, '真香现场')
+  assert.equal(photo.duration, 98500)
+  const author = Object.entries(client).find(([key]) => key.startsWith('VisionVideoDetailAuthor:'))?.[1]
+  assert.equal(author.name, '老王')
+})
+
+test('parseApolloState tolerates missing or corrupted payloads', () => {
+  assert.equal(parseApolloState('<html><body>风控页，没有脚本</body></html>'), null)
+  assert.equal(parseApolloState('<script>window.__APOLLO_STATE__={"defaultClient":broken</script>'), null)
+  assert.equal(parseApolloState('<script>window.__APOLLO_STATE__=null;</script>'), null)
+  assert.equal(parseApolloState('<script>window.__APOLLO_STATE__=123;</script>'), null)
 })
 
 test('parseHttpUrl refuses non-http(s) and credentialed links', () => {

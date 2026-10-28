@@ -1,9 +1,10 @@
-// video_fetch.mjs — 爆款拆解视频下载（yt-dlp 打底 + 抖音/小红书原生路径）。Node ≥22。
+// video_fetch.mjs — 爆款拆解视频下载（yt-dlp 打底 + 抖音/小红书/快手原生路径）。Node ≥22。
 //
 // usage: node video_fetch.mjs <batch_dir> <分享文案或链接...>
 //
 // 平台路由：抖音走移动端 Feed 接口原生路径（yt-dlp 抖音实测不可用）、
-// 小红书走笔记页 `__INITIAL_STATE__` 原生路径（yt-dlp 不支持），
+// 小红书走笔记页 `__INITIAL_STATE__` 原生路径（yt-dlp 不支持）、
+// 快手走详情页 `__APOLLO_STATE__` 原生路径（免登录），
 // YouTube/B站/TikTok/其余站点走 yt-dlp。batch_dir 里已有视频文件则跳过下载
 // （支持「手动放文件」流程）。stdout 只输出一行元信息 JSON，日志走 stderr。
 //
@@ -11,7 +12,7 @@
 //
 // cookie：outputs/_deconstruct/cookies.json，形如 {"xhs": "k=v; k2=v2"}
 // （值也可为 dict，自动拼 Cookie 头）。抖音走移动端 Feed 接口免 cookie；
-// 小红书必须手动填登录 cookie。
+// 小红书必须手动填登录 cookie；快手免登录，可选填网页版游客 cookie。
 
 import { strict as assert } from 'node:assert'
 import { createWriteStream, statSync } from 'node:fs'
@@ -54,6 +55,7 @@ export function splitUrls(text) {
 const PLATFORM_HOSTS = {
   douyin: ['douyin.com', 'iesdouyin.com'],
   xhs: ['xiaohongshu.com', 'xhslink.com'],
+  kuaishou: ['kuaishou.com', 'kuaishou.cn', 'chenzhongtech.com'],
 }
 
 /**
@@ -96,6 +98,7 @@ export function detectPlatform(raw) {
   }
   if (hostMatches(url, PLATFORM_HOSTS.douyin)) return 'douyin'
   if (hostMatches(url, PLATFORM_HOSTS.xhs)) return 'xhs'
+  if (hostMatches(url, PLATFORM_HOSTS.kuaishou)) return 'kuaishou'
   return 'generic'
 }
 
@@ -318,6 +321,64 @@ async function fetchXhs(url, cookie, batch) {
   }
 }
 
+// ---------- 快手原生路径 ----------
+
+/**
+ * 从快手详情页 HTML 提取 `window.__APOLLO_STATE__` 的 JSON。
+ * 脚本内容以页面自移除片段 `;(function(){...}());` 或 `</script>` 结尾，
+ * JSON 里正常不会出现这两种序列；解析失败按没有数据处理。
+ * @param page - 详情页 HTML 文本。
+ * @returns 解析后的 Apollo 缓存对象；页面没有该脚本或 JSON 损坏时返回 null。
+ */
+export function parseApolloState(page) {
+  const marker = 'window.__APOLLO_STATE__='
+  const start = page.indexOf(marker)
+  if (start < 0) return null
+  let text = page.slice(start + marker.length)
+  const stop = text.search(/;\(function|<\/script>/)
+  if (stop >= 0) text = text.slice(0, stop)
+  try {
+    const state = JSON.parse(text)
+    return state !== null && typeof state === 'object' ? state : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 快手 web 详情页路径：`__APOLLO_STATE__` 的 GraphQL 缓存里 `photoUrl` 就是
+ * 无水印 mp4。游客态可取，cookie 可选（风控收紧时填网页版游客 cookie）；
+ * 图集作品没有 VisionVideoDetailPhoto 键，按下载失败降级。
+ * @param url - 已校验的快手链接（短链或详情页）。
+ * @param cookie - cookies.json 的 "kuaishou" 值，可为空串。
+ */
+async function fetchKuaishou(url, cookie, batch) {
+  const hint = cookie ? '' :
+    '；也可在 outputs/_deconstruct/cookies.json 填 "kuaishou" 网页版游客 cookie 后重试'
+  const [final, page] = await fetchFollowing(url, {
+    headers: { 'User-Agent': DESKTOP_UA, Referer: 'https://www.kuaishou.com/' },
+    cookie: cookie ? { value: cookie, hosts: PLATFORM_HOSTS.kuaishou } : null,
+    allowHosts: PLATFORM_HOSTS.kuaishou,
+  })
+  const m = final.match(/\/(?:short-video|fw\/photo)\/([\w-]+)/)
+  if (!m) throw new Error(`无法从链接解析作品 id：${final}`)
+  const client = parseApolloState(page)?.defaultClient ?? {}
+  const photo = client[`VisionVideoDetailPhoto:${m[1]}`] ?? null
+  const photoUrl = typeof photo?.photoUrl === 'string' && photo.photoUrl ? photo.photoUrl : ''
+  if (!photoUrl) throw new Error(`详情页没有视频地址（可能是图集/已删除/风控）${hint}`)
+  const author = Object.entries(client)
+    .find(([key]) => key.startsWith('VisionVideoDetailAuthor:'))?.[1] ?? null
+  const dest = resolve(batch, 'video.mp4')
+  await download(photoUrl, { 'User-Agent': DESKTOP_UA, Referer: 'https://www.kuaishou.com/' }, dest)
+  return {
+    platform: 'kuaishou',
+    title: typeof photo.caption === 'string' ? photo.caption : '',
+    author: typeof author?.name === 'string' ? author.name : '',
+    duration_sec: Math.floor((Number(photo.duration) || 0) / 1000),
+    file: dest, url: final,
+  }
+}
+
 // ---------- 通用 yt-dlp 路径 ----------
 
 /**
@@ -376,9 +437,13 @@ export async function selftest() {
   assert.equal(detectPlatform('http://xhslink.com/a2bC，快看'), 'xhs')
   assert.equal(detectPlatform('https://www.bilibili.com/video/BV1GJ411x7h7/'), 'generic')
   assert.equal(detectPlatform('https://www.xiaohongshu.com/explore/abc123'), 'xhs')
+  assert.equal(detectPlatform('https://v.kuaishou.com/GH7abcD'), 'kuaishou')
+  assert.equal(detectPlatform('https://www.kuaishou.com/short-video/3xkpubc9def'), 'kuaishou')
+  assert.equal(detectPlatform('https://www.chenzhongtech.com/fw/photo/3xkpubc9def'), 'kuaishou')
   // 主机名子串不算平台：Cookie 只认解析后的主机与点边界后缀。
   assert.equal(detectPlatform('https://attacker.example?xiaohongshu.com'), 'generic')
   assert.equal(detectPlatform('https://evil-xiaohongshu.com/note'), 'generic')
+  assert.equal(detectPlatform('https://evil-kuaishou.com/short-video/1'), 'generic')
   assert.equal(detectPlatform('javascript:alert(1)'), 'generic')
   assert.equal(parseHttpUrl('https://www.xiaohongshu.com/explore/abc').hostname, 'www.xiaohongshu.com')
   assert.throws(() => parseHttpUrl('file:///etc/passwd'))
@@ -425,6 +490,7 @@ async function main(argv) {
   try {
     if (platform === 'douyin') meta = await fetchDouyin(url, batch)
     else if (platform === 'xhs') meta = await fetchXhs(url, cookies.xhs ?? '', batch)
+    else if (platform === 'kuaishou') meta = await fetchKuaishou(url, cookies.kuaishou ?? '', batch)
     else meta = await fetchGeneric(url, batch)
   } catch (exc) { // 网络失败/字段变更/风控 → 统一按下载失败降级
     die(EX_DOWNLOAD, `下载失败（${exc.constructor.name}）：${exc.message}。` +
