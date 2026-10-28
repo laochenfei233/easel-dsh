@@ -1,7 +1,7 @@
 ---
 name: viral-deconstruction
 description: >-
-  爆款视频深度拆解：下载抖音/小红书/B站/YouTube 视频，抽帧+语音转写后看画面听口播，
+  爆款视频深度拆解：下载抖音/小红书/快手/B站/YouTube 视频，抽帧+语音转写后看画面听口播，
   产出钩子、结构、火因与可复制模板的六点拆解，选题自动入选题库。
   当用户说"拆解这个视频""爆款拆解""视频链接拆解""这条视频为什么火"或贴了视频链接
   要求拆解时使用。纯文本拆解无需本技能。
@@ -22,9 +22,9 @@ faster-whisper 转写口播 → 视觉模型看帧 → 按时间轴合并素材 
 | 依赖 | 检查 | 缺失时的指引 |
 |------|------|--------------|
 | 视觉模型 | 当前会话模型能否读图（用 Read 试读一张任意图片/帧后即知） | 让用户在 **dsh 设置 → 模型管理** 配置一个视觉模型（自定义 OpenAI 兼容 provider，如火山方舟 `https://ark.cn-beijing.volces.com/api/v3` + `doubao-seed-2-1-*`；GLM-4V / Qwen-VL 等均可，模型自选），并在对话里把模型切过去后继续 |
-| yt-dlp | `yt-dlp --version`（B站/YouTube/通用站点需要；抖音/小红书走内置原生路径不需要） | `pip install yt-dlp` |
+| yt-dlp | `yt-dlp --version`（B站/YouTube/通用站点需要；抖音/小红书/快手走内置原生路径不需要） | `pip install yt-dlp` |
 | ffmpeg | `ffmpeg -version` | `winget install ffmpeg` 或 https://ffmpeg.org/download.html |
-| 小红书 cookie | `outputs/_deconstruct/cookies.json` 里有无 `"xhs"` 字段 | 让用户把网页版小红书的请求 Cookie 粘贴进该文件（`{"xhs": "粘贴到这里"}`）；**抖音不需要 cookie** |
+| 小红书 cookie | `outputs/_deconstruct/cookies.json` 里有无 `"xhs"` 字段 | 让用户把网页版小红书的请求 Cookie 粘贴进该文件（`{"xhs": "粘贴到这里"}`）；**抖音/快手不需要 cookie**（快手被风控时可让用户填网页版游客 cookie 到 `"kuaishou"` 字段） |
 | mimo ASR | `MIMO_API_KEY` 已配置（.env 或环境变量）；dsh 壳在跑（`outputs/_easel_api.json` 存在） | 在项目 `.env` 写 `MIMO_API_KEY=<key>`（转写走本地路由 + mimo-v2.5-asr 云端，零本地模型） |
 
 长视频限制：超过 10 分钟的视频抽帧/转写耗时不可控，先向用户确认再继续。
