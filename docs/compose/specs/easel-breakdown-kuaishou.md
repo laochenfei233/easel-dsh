@@ -1,16 +1,55 @@
 ---
 feature: easel-breakdown-kuaishou
-status: designed
+status: delivered
 updated: 2026-10-28
 branch: feat/easel-breakdown-kuaishou
-commits: （交付时填写）
+commits: 7539b7f780..83cbe07359
 ---
 
 # 爆款拆解 · 快手下载路径（同作者下载器调研落地）
 
 ## Report
 
-（交付时填写）
+**What was built** — 爆款拆解下载链路（video_fetch.mjs）新增快手原生路径：短链
+（`v.kuaishou.com`/`f/`）逐跳跟随到详情页（钉在快手三域），解析
+`window.__APOLLO_STATE__` 的 GraphQL 缓存取 `VisionVideoDetailPhoto:<id>.photoUrl`
+无水印 mp4。免登录（cookies.json 可选 `"kuaishou"` 游客 cookie），图集/失效沿用
+退出码 2 的「手动放文件」降级。蓝本 KS-Downloader（GPL-3.0，仅参考接口行为，
+独立实现零复制），与抖音/小红书原生路径同款做法。插件侧 `parsePlatform`/
+`sourceStatus` 认快手（`authRequired=false`），BreakdownPage 平台名/副标题/门控
+文案补快手；SKILL.md 与 EASEL-META 同步（含致谢）。
+
+**Verification** —
+
+- `node video_fetch.mjs --selftest` → `selftest ok`（含 kuaishou 判定与
+  `evil-kuaishou.com` 负例）
+- `node --test video_fetch.test.mjs` → 10/10（含 parseApolloState fixture 与
+  `attacker.example?kuaishou.com` 负例）
+- `node --test sourcedata.test.js` → 3/3（含快手行 deep-equal + 行数 5）
+- 插件全量 27 个测试文件逐个跑 → 270 tests / 0 fail
+- 真实链接端到端：`v.kuaishou.com/onRLuG` → `video.mp4` 644908 字节，
+  ffprobe `mov,mp4…, 10.96s`，stdout 元信息 JSON 齐全（platform=kuaishou/
+  title/author/duration_sec=10/file/url）；无 cookie 直连成功
+- 失败路径：死链 6/6 稳定退出码 2（复审者本机再测 4/4），stderr 含「手动放文件」
+  与游客 cookie 指引；无链接退出码 1；小红书缺 cookie 退出码 3 不回退
+- BreakdownPage.tsx esbuild transform 过（worktree 无 node_modules，client
+  构建以主检出 esbuild 做语法门；改动为 map 条目+字符串字面量）
+
+**Journey log** —
+
+- 同作者调研：JoeanAmier 名下三平台只有快手（KS-Downloader v1.7.0-beta）；
+  TikTokDownloader 无 B站/视频号支持计划 → 范围收窄为快手，B站沿用 yt-dlp
+  （已实测可用），视频号无蓝本不做。
+- GPL-3.0 处置：只读 KS-Downloader 源码学 `__APOLLO_STATE__` 通道与字段，
+  独立实现零复制；EASEL-META 致谢注明。
+- 真实链接样本难寻：热榜 API（60s viki 404、xxapi 要 key）不可用，最终从
+  GitHub issues 搜出公开短链；前两条即「老作品已删」，正好压实了失败降级路径。
+- 复审抓到 Windows 硬伤：`process.exit` 撞未触发的 `AbortSignal.timeout`
+  定时器 + 连接池套接字 → libuv 断言崩溃、退出码 127（概率性，复现稳定）。
+  全部改为手动 AbortController、响应体消费完才 `clearTimeout`，死链 6/6 稳定
+  退出码 2——该坑对抖音/小红书失败路径同样成立，属共享修复。
+- worktree 无 node_modules：插件测试全 stdlib 直跑即可；client 构建跑不了，
+  以主检出 esbuild 做 TSX 语法门（低风险改动）。
 
 ## [S1] Problem
 
@@ -68,6 +107,9 @@ KS-Downloader 后端机制（source/extract/extractor.py、source/link/examiner.
 - cookie：**可选**（免登录）。cookies.json 增加可选 `"kuaishou"` 字段；解析失败且
   未填 cookie 时，stderr 指引「可在 outputs/_deconstruct/cookies.json 填 "kuaishou"
   网页版游客 cookie 后重试」。退出码 3 仍保留给硬性要求登录态的小红书。
+- 超时实现（复审引入）：`fetchFollowing`/`download` 不用 `AbortSignal.timeout`，
+  手动 AbortController + setTimeout，响应体消费完才 `clearTimeout`——
+  `process.exit` 撞未触发定时器 + 连接池会在 Windows 以 libuv 断言崩成退出码 127。
 - `main()` 路由增加 kuaishou 分支；selftest 增加 kuaishou 平台判定用例。
 
 ### 插件侧平台门控（easel/dsh-plugin-easel）
@@ -76,14 +118,14 @@ KS-Downloader 后端机制（source/extract/extractor.py、source/link/examiner.
   `sourceStatus` platforms 数组增加 `'kuaishou'`（`authRequired=false`，快手不在
   `AUTH_REQUIRED`）。`LOGIN_FILE_ALIASES` 不加（缺省 `[platform]` 已覆盖 `_login/kuaishou.json`）。
 - `src/components/BreakdownPage.tsx`：`PLATFORM_NAMES` 增加 `kuaishou: '快手'`；
-  副标题「抖音/小红书/B站/…」补「快手」。preflight 对快手天然不阻断
-  （authRequired=false），无额外改动。
+  副标题与门控文案补快手。preflight 对快手天然不阻断（authRequired=false），
+  无额外改动。
 
 ### 技能文档
 
 - `SKILL.md`：description 平台列表加「快手」；前置表 yt-dlp 行改为
   「B站/YouTube/通用站点需要；抖音/小红书/快手走内置原生路径不需要」；
-  cookie 行补「快手免登录（可选游客 cookie："kuaishou" 字段）」。
+  cookie 行补「抖音/快手不需要 cookie（快手可选游客 cookie："kuaishou" 字段）」。
 - `EASEL-META.md`：致谢区补快手 / KS-Downloader（注明 GPL-3.0、仅参考接口行为、
   未复用代码）；功能描述与自包含行同步。
 
@@ -99,30 +141,30 @@ source-status 已展示 cookieSet 状态）。
 
 ## Tasks
 
-- [ ] T1: video_fetch.mjs——PLATFORM_HOSTS/detectPlatform/fetchKuaishou/
+- [x] T1: video_fetch.mjs——PLATFORM_HOSTS/detectPlatform/fetchKuaishou/
       parseApolloState/main 路由/selftest（depends: none）
-- [ ] T2: video_fetch.test.mjs——kuaishou 平台判定、parseApolloState fixture
+- [x] T2: video_fetch.test.mjs——kuaishou 平台判定、parseApolloState fixture
       解析、hostMatches 负例（depends: T1）
-- [ ] T3: sourcedata.js parsePlatform/sourceStatus + sourcedata.test.js
+- [x] T3: sourcedata.js parsePlatform/sourceStatus + sourcedata.test.js
       （depends: none）
-- [ ] T4: BreakdownPage.tsx PLATFORM_NAMES 与副标题（depends: T3）
-- [ ] T5: SKILL.md + EASEL-META.md 文档（depends: T1）
-- [ ] T6: 验证——插件 node --test 全绿、video_fetch --selftest 与单测绿、
-      插件 client 构建（build.mjs）过、真实快手链接端到端下载（depends: T1–T5）
+- [x] T4: BreakdownPage.tsx PLATFORM_NAMES 与副标题（depends: T3）
+- [x] T5: SKILL.md + EASEL-META.md 文档（depends: T1）
+- [x] T6: 验证——插件 node --test 全绿、video_fetch --selftest 与单测绿、
+      esbuild 语法门过、真实快手链接端到端下载（depends: T1–T5）
 
 ## [S4] Acceptance
 
-- [ ] `detectPlatform` 把 `v.kuaishou.com`/`kuaishou.cn`/`chenzhongtech.com` 链接
+- [x] `detectPlatform` 把 `v.kuaishou.com`/`kuaishou.cn`/`chenzhongtech.com` 链接
       判为 kuaishou；`evil-kuaishou.com`、`attacker.example?kuaishou.com` 仍为
-      generic（单测断言）
-- [ ] `parseApolloState` 从 APOLLO_STATE 页面 fixture 提取 photoUrl/caption/
-      duration/作者名，缺键容错（单测断言）
-- [ ] `parsePlatform('https://v.kuaishou.com/xxx')` 返回 `'kuaishou'`；source-status
-      返回 kuaishou 行且 `authRequired=false`（单测断言）
-- [ ] 快手真实视频链接端到端：下载成功、stdout 元信息 JSON 字段齐全
-      （网络实测，附命令与输出摘要）
-- [ ] 图集/失效链接 → 退出码 2 且 stderr 含「手动放文件」指引；无 cookie 失败时
-      stderr 含游客 cookie 指引
-- [ ] BreakdownPage 出现「快手」平台名与更新后的副标题（构建过 + 代码走查）
-- [ ] 回归：插件 node --test 全绿；抖音/小红书路径与安全断言不回退
-      （selftest 既有用例全过）
+      generic（video_fetch.test.mjs 平台判定用例 + selftest）
+- [x] `parseApolloState` 从 APOLLO_STATE 页面 fixture 提取 photoUrl/caption/
+      duration/作者名，缺键容错（video_fetch.test.mjs 两条用例）
+- [x] `parsePlatform('https://v.kuaishou.com/xxx')` 返回 `'kuaishou'`；source-status
+      返回 kuaishou 行且 `authRequired=false`（sourcedata.test.js deep-equal + 行数 5）
+- [x] 快手真实视频链接端到端：`v.kuaishou.com/onRLuG` → video.mp4（644908 字节，
+      ffprobe 10.96s），stdout 元信息 JSON 字段齐全
+- [x] 图集/失效链接 → 退出码 2（修复后 6/6 稳定，复审者 4/4 复测）且 stderr 含
+      「手动放文件」指引；无 cookie 失败时 stderr 含游客 cookie 指引
+- [x] BreakdownPage 出现「快手」平台名、副标题与门控文案更新（esbuild 过 + 代码走查）
+- [x] 回归：插件 node --test 270/270 全绿；抖音/小红书路径与安全断言不回退
+      （selftest 既有用例全过；小红书缺 cookie 退出码 3 不变）
