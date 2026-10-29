@@ -47,10 +47,12 @@ S2.4 **冲突解法**：机械文件取上游后重建本地项——`pnpm-works
 
 ## [S4] Acceptance
 
-- [ ] `git diff master..HEAD -- <S2.2 排除路径>` 为空（打包面与 master 完全一致）
-- [ ] Easel 特性清单文件在 HEAD 中语义完整（多账户/看板/安全门/拆解/定时任务等关键文件抽查）
-- [ ] `pnpm run typecheck` 通过
-- [ ] `pnpm run build` 通过（junction worktree 已知 PRE-EXISTING 项按记忆处置并标注）
-- [ ] dsh-plugin-easel `node --test` 全绿
-- [ ] 受影响包 vitest 全绿（快照按上游实现更新）
-- [ ] master 以 ff-only 快进到合并头
+- [x] `git diff master..HEAD -- <S2.2 排除路径>` 为空（打包面与 master 完全一致）：`git diff --name-only master..HEAD | grep -E "^apps/desktop/(packaging|publishing|installer|windows-signing)/|^apps/desktop/config/(macos|windows)-packaging/|^apps/desktop/scripts/|^\.github/workflows/(macos|windows)-package\.yml|^\.github/workflows/desktop-publish\.yml" | wc -l` → 0
+- [x] Easel 特性清单文件在 HEAD 中语义完整：uiSidebarPanels、EASEL-DIVERGENCE、SchedulesSettingsSection、assertProxyDestination、already-exists 回退、inputModalities、openSettings 全部在位；`git diff master..HEAD -- easel/` 为空
+- [x] `pnpm run typecheck` 通过（5/5；merge-forward 后复跑 5/5）
+- [x] `pnpm run build` 通过（10/10，含 Desktop bundle 与 Web build）
+- [x] dsh-plugin-easel `node --test` 全绿（270 → merge-forward 后 300 pass / 0 fail）
+- [x] 受影响包 vitest 全绿：web-fetch-http 72、session-controller 1077、ui-sidebar 75（快照按 Easel 品牌 mark 更新）、ui-workspace 512、schedule+account+plugin-manager+sdk 1648、apps/cli 171、compaction+sdk-protocol 191、desktop 行为抽测 77
+- [x] `pnpm run test:snapshot` exit 0（keyless 回放，含上游 510 个 snapshot 变更）
+- [x] `pnpm run hygiene` 19/22，3 项与 master 基线一致（product-use 3 个未挂载 Easel 包、no-unknown-casts 3 个 easel/ 既有项、cordis-config 的 acp symlink），均为 PRE-EXISTING
+- [ ] master 以 ff-only 快进到合并头（待用户拍板；master 在会话期间已被推进到 d9e55f7cce，合并已 merge-forward 覆盖）
