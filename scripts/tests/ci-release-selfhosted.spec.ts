@@ -163,8 +163,10 @@ for (const [file, jobIds] of [['release.yml', ['dependencies', 'pack']], ['relea
   })
 }
 
-it.each(['release-publish.yml', 'release-vendor-publish.yml'])('keeps %s manual and entirely hosted', (file) => {
+it.each(['release-publish.yml', 'release-vendor-publish.yml'])('keeps %s manual and hosted as its failover floor', (file) => {
   const publish = workflow(file)
   expect(Object.keys(publish.on)).toEqual(['workflow_dispatch'])
-  for (const job of Object.values(publish.jobs)) expect(job['runs-on']).toBe(hosted)
+  // Each release lane either names the hosted runner outright or keeps it as the
+  // fallback of the Linux failover switch; neither pins the shared pool.
+  for (const job of Object.values(publish.jobs)) expect(String(job['runs-on'])).toContain(hosted)
 })

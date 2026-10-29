@@ -29,6 +29,7 @@ import * as WebFetchLocal from '@deepseek-ai/dsh-web-fetch-http'
 import LocalSpillStore from '@deepseek-ai/dsh-spill-local'
 import * as SpillPolicy from '@deepseek-ai/dsh-spill-policy'
 import * as ToolWeb from '@deepseek-ai/dsh-tool-web'
+import { publicHttpNetwork } from '../../web-fetch-http/src/network.ts'
 
 type Handler = (req: IncomingMessage, res: ServerResponse) => void
 
@@ -42,6 +43,10 @@ const BODY = 'X'.repeat(4000) // formatted result is well over the policy cap
 const MAX_INLINE_TOKENS = 250 // leaves room for a head/tail preview beside the notice
 
 beforeEach(async () => {
+  // EASEL-DIVERGENCE(easel-security-audit): the retained provider refuses a
+  // hostname that resolves to a non-public address, so the loopback fixture
+  // supplies the public answer the tool path accepts.
+  vi.spyOn(publicHttpNetwork, 'resolve').mockResolvedValue([{ address: '127.0.0.1', family: 4 }])
   handler = (_req, res) => { res.writeHead(200, { 'content-type': 'text/plain' }); res.end(BODY) }
   server = createServer((req, res) => { handler(req, res) })
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))

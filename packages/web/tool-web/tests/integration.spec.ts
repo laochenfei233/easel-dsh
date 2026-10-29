@@ -23,6 +23,7 @@ import * as WebFetchLocal from '@deepseek-ai/dsh-web-fetch-http'
 import * as WebSearchExa from '@deepseek-ai/dsh-web-search-exa'
 import * as ToolWeb from '@deepseek-ai/dsh-tool-web'
 import * as TimeoutPolicy from '@deepseek-ai/dsh-tool-call-timeout-policy'
+import { publicHttpNetwork } from '../../web-fetch-http/src/network.ts'
 
 const testToolSignal = new AbortController().signal
 
@@ -37,6 +38,10 @@ let fiber: Awaited<ReturnType<Context['plugin']>>
 const agent = { id: SessionId('tool-web-integration') } as Agent
 
 beforeEach(async () => {
+  // EASEL-DIVERGENCE(easel-security-audit): the retained provider refuses a
+  // hostname that resolves to a non-public address, so the loopback fixture
+  // supplies the public answer the tool path accepts.
+  vi.spyOn(publicHttpNetwork, 'resolve').mockResolvedValue([{ address: '127.0.0.1', family: 4 }])
   handler = (_req, res) => { res.writeHead(200, { 'content-type': 'text/html' }); res.end('<h1>Hello</h1><p>World</p>') }
   server = createServer((req, res) => { handler(req, res) })
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
