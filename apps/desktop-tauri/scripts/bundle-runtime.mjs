@@ -217,8 +217,15 @@ function extract(archive, dest) {
   step(`extract ${archive}`);
   if (archive.endsWith('.zip')) {
     // Windows ships bsdtar which reads zip archives; PowerShell's
-    // Expand-Archive is not available in every environment.
-    extractTar(['-xf', archive, '-C', dest]);
+    // Expand-Archive is not available in every environment. Linux's tar is
+    // GNU tar and cannot read zip at all, so POSIX hosts use unzip.
+    // shortcut: POSIX zip extraction requires unzip on the builder; move to a
+    // JS inflater if a supported image ever lacks it.
+    if (process.platform === 'win32') {
+      extractTar(['-xf', archive, '-C', dest]);
+    } else {
+      execFileSync('unzip', ['-q', '-o', archive, '-d', dest], { stdio: 'inherit' });
+    }
   } else {
     extractTar(['-xJf', archive, '-C', dest]);
   }
@@ -1321,8 +1328,9 @@ function writeLibtvTree({ binary, skillDir }, version) {
 /**
  * Stage the bundled LibTV CLI and its published agent skill into
  * runtime/libtv. Downloads land in a scratch dir and the staged tree is
- * replaced only after the archive, executable and skill tree all verify, so a
- * failed run never leaves a half-staged bundle.
+ * replaced only after the archive, executable and skill tree all verify: a
+ * failed download or check leaves the previous tree untouched, and a copy
+ * that dies mid-way leaves a partial tree the next run rejects and restages.
  */
 async function stageLibtv() {
   const { target, exe } = libtvTarget();

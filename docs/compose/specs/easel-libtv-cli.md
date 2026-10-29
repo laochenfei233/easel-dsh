@@ -39,7 +39,7 @@ runtime/libtv/
 - `skillZipSha256`（zip 传输校验）与 `skillTreeSha256`（解压后整树摘要，算法与 `treeSha256` 相同）。
 - `files.<target>`：`zip` 文件名 + `zipSha256` + `cliSha256`（解压出的可执行文件摘要）。
 
-platform target 映射：`windows-amd64` → `libtv-windows-amd64.zip`，`darwin-arm64` → `libtv-macos-arm64.zip`，`darwin-amd64` → `libtv-macos-x64.zip`，`linux-amd64` → `libtv-linux-x64.zip`。缺 pin 直接报错，与 dreamina 一致。
+platform target 映射：`windows-amd64` → `libtv-windows-amd64.zip`，`windows-arm64` → `libtv-windows-arm64.zip`，`darwin-arm64` → `libtv-macos-arm64.zip`，`darwin-amd64` → `libtv-macos-x64.zip`，`linux-amd64` → `libtv-linux-x64.zip`。缺 pin 直接报错，与 dreamina 一致。发布矩阵（`desktop-release.yml` 的 Windows x64/arm64、macOS arm64/x64、Linux x64）全部有对应 pin。
 
 ### S2.3 staging
 
@@ -47,7 +47,8 @@ platform target 映射：`windows-amd64` → `libtv-windows-amd64.zip`，`darwin
 
 1. 目标平台已有完整 staged 树 → 校验 `VERSION`、可执行文件 sha256、skill 整树 sha256 后跳过。
 2. 否则依次尝试 `DSH_DESKTOP_LIBTV_REUSE` 与本机已装 Easel 的 `runtime/libtv` 复用，复用前同样校验。
-3. 否则下载平台 zip 与 skill zip 到 scratch，解压、校验可执行文件与 skill 整树，最后用 `writeLibtvTree()` 原子替换 staged 目录（失败不留半成品）。
+3. 否则下载平台 zip 与 skill zip 到 scratch，解压、校验可执行文件与 skill 整树，最后用 `writeLibtvTree()` 替换 staged 目录。下载或校验失败不动旧树；复制中途失败留下的残树会被下次运行判为不完整并重做。
+4. Windows 用随系统 bsdtar 解 zip；POSIX（Linux 的 GNU tar 读不了 zip）改用 `unzip`，macOS 与 Linux CI 镜像均自带。
 4. `--only libtv` 可单独重跑；`manifest.json` 增加 `libtv: {libtv: version}` 与 `pinned.libtv`，`verified.libtv` 记录本轮是否真的对过 pin。
 
 ### S2.4 agent PATH
@@ -77,7 +78,7 @@ bundled 根 rank 600、`trustedHost` 直读安装目录；用户 `~/.agents/skil
 
 - In scope：
   - `runtime/libtv` 的 build-time staging、pin 与 manifest。
-  - `libtv` 的 agent PATH 注入与 bundled skill 注册（Windows/macOS/Linux x64·arm64 打包矩阵内）。
+  - `libtv` 的 agent PATH 注入与 bundled skill 注册（发布矩阵：Windows x64/arm64、macOS arm64/x64、Linux x64）。
   - `apps/desktop-tauri` 三份 README 与 spec。
 - Out of scope：
   - TapNow 预置接入（调研结论见下，官方无 CLI/skill 包，只有 MCP connector）。
