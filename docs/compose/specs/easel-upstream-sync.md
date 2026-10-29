@@ -28,6 +28,8 @@ S2.2 **排除面（用户指令：本地打包不进）**：上游桌面打包/�
 
 S2.3 **Easel 特性保留清单（冲突裁决基准，两边语义并保）**：多账户注册表与 runner 参数化/CDP 直启、账号看板归档与全览、mac 会话 loopback 代理、单工作区与立项/拆解页、插件市场退役（上游 plugin-market 包为纯新增、保持惰性不注册）、热点雷达、内容日历、定时任务（rail order）、设置备份、隔空传送、爆款拆解（ASR 凭据链/快手/视频号）、安全加固（connection 门、runnerToken、video_fetch 加固、runtime-inputs 摘要 pin）、canonicalPath 工作区归属、数据根选择、更新源。上游 rc.3/rc.4 的 7 条破坏性变更按升级指南迁移 Easel 侧消费者（尤其 ModelListingCache/settings/changed/badges/resolveText 对模型下拉与账号页的签名要求）。
 
+S2.2a **排除面的自洽例外（2026-10-29 修订）**：`apps/desktop/scripts/runtime-patch-policy.ts` 保持本地版本，但必须分类合并后 workspace 的全部 `patchedDependencies`——否则 `prepareRuntimePatches` 直接抛错、Desktop runtime 计划无法生成。本次补入 `@botiverse/oar@0.67.0`、`@earendil-works/pi-ai@1.3.0`、`lexical@0.49.0`、两个 Markdown parser patch，并把本地既有的 `esbuild@0.25.12` 一并分类（该 spec 此前在 master 上就是红的）。这是让保留脚本适应新依赖集的最小适配，不吸收上游打包/发布功能。
+
 S2.4 **冲突解法**：机械文件取上游后重建本地项——`pnpm-workspace.yaml`/`package.json`（并集，保 desktop-tauri 与 Easel 工作区条目）、`pnpm-lock.yaml`（取上游 + `pnpm install` 重对账）、`THIRD_PARTY_NOTICES.md`（并集）。语义文件逐个双语义并保；快照文件随实现走。vendor 按上游（vendoring policy 的 sync 语义）。docs/AGENTS.md 冲突取并集（Easel 章节不丢）。
 
 ## [S3] Scope
@@ -47,12 +49,15 @@ S2.4 **冲突解法**：机械文件取上游后重建本地项——`pnpm-works
 
 ## [S4] Acceptance
 
-- [x] `git diff master..HEAD -- <S2.2 排除路径>` 为空（打包面与 master 完全一致）：`git diff --name-only master..HEAD | grep -E "^apps/desktop/(packaging|publishing|installer|windows-signing)/|^apps/desktop/config/(macos|windows)-packaging/|^apps/desktop/scripts/|^\.github/workflows/(macos|windows)-package\.yml|^\.github/workflows/desktop-publish\.yml" | wc -l` → 0
+- [x] `git diff master..HEAD -- <S2.2 排除路径>` 仅剩 S2.2a 的 `runtime-patch-policy.ts`（打包/发布功能面与 master 一致）：`git diff --name-only master..HEAD | grep -E "^apps/desktop/(packaging|publishing|installer|windows-signing)/|^apps/desktop/config/(macos|windows)-packaging/|^apps/desktop/scripts/|^\.github/workflows/(macos|windows)-package\.yml|^\.github/workflows/desktop-publish\.yml" | wc -l` → 0
 - [x] Easel 特性清单文件在 HEAD 中语义完整：uiSidebarPanels、EASEL-DIVERGENCE、SchedulesSettingsSection、assertProxyDestination、already-exists 回退、inputModalities、openSettings 全部在位；`git diff master..HEAD -- easel/` 为空
 - [x] `pnpm run typecheck` 通过（5/5；merge-forward 后复跑 5/5）
 - [x] `pnpm run build` 通过（10/10，含 Desktop bundle 与 Web build）
 - [x] dsh-plugin-easel `node --test` 全绿（270 → merge-forward 后 300 pass / 0 fail）
 - [x] 受影响包 vitest 全绿：web-fetch-http 72、session-controller 1077、ui-sidebar 75（快照按 Easel 品牌 mark 更新）、ui-workspace 512、schedule+account+plugin-manager+sdk 1648、apps/cli 171、compaction+sdk-protocol 191、desktop 行为抽测 77
 - [x] `pnpm run test:snapshot` exit 0（keyless 回放，含上游 510 个 snapshot 变更）
+- [x] `pnpm run typecheck`（5/5）与 `pnpm run build:check`（2/2）在全部修复后复跑通过
+- [x] 全量 `pnpm run test` 的 439 项失败已分类：36 项与 master 基线一致（含 lan-handoff、`@easel-dsh` 版本族、agent-instructions、cordis/tools catalog）；并发 flake 单跑即绿（app-boot 5666、easel-backup 100、build.spec 20 等）；Windows 上 git/ssh 5s 超时命中未启用的 `experimental/client-ui-forge`（26）与 `plugin-market/repository-cache`（4），其源码与上游逐字一致
+- [x] 合并引入的 8 处真实契约缺口已修：THIRD_PARTY_NOTICES 重生成、run-gates/ci-workflow/ci-release-selfhosted 三个 spec 与实现对齐、ui-theme hover 守卫（Easel CSS）、tool-web 两个 spec 的 loopback 夹具、desktop patch 分类
 - [x] `pnpm run hygiene` 19/22，3 项与 master 基线一致（product-use 3 个未挂载 Easel 包、no-unknown-casts 3 个 easel/ 既有项、cordis-config 的 acp symlink），均为 PRE-EXISTING
 - [ ] master 以 ff-only 快进到合并头（待用户拍板；master 在会话期间已被推进到 d9e55f7cce，合并已 merge-forward 覆盖）
