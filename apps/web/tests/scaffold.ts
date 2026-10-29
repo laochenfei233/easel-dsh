@@ -1571,11 +1571,18 @@ export async function readPersistedEvents(scaffold: WebScaffold, id: SessionId):
 const ARIA_AGE =
   /(?:now|\d+min|\d+h|\d+d|\d+mo|\d+y|刚刚|\d+分钟|\d+小时|\d+天|\d+个月|\d+年)(?=")/g
 
+// The blank-session hero greets by the viewer's day period, so its copy
+// changes four times a day; the goldens pin the greeting's presence, not its
+// time of day.
+const HERO_GREETING =
+  /(?:上午|中午|下午|晚上)好，有什么可以帮到你的吗？|Good (?:morning|afternoon|evening), how can I help you\?/g
+
 function normalizeAria(snapshot: string, workspaceCwd: string, age: boolean): string {
   // The session heading renders the workspace's basename, not the full
   // path, so both spellings must collapse to the token.
   const base = workspaceCwd.split('/').pop()!
   return (age ? snapshot.replace(ARIA_AGE, '{{age}}') : snapshot)
+    .replace(HERO_GREETING, '{{greeting}}')
     .split(workspaceCwd).join('{{cwd}}')
     .split(base).join('{{workspace}}')
     .replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, '{{uuid}}')
