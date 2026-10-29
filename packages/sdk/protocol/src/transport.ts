@@ -55,12 +55,21 @@ interface PendingRequest {
 }
 
 /**
+ * Upper bound on one accumulated inbound line, in decoded chars. Resource
+ * guard: a peer streaming newline-free data must fail the transport instead of
+ * growing memory without limit.
+ */
+export const DEFAULT_MAX_LINE_CHARS = 64 * 1024 * 1024
+
+/**
  * Line-delimited endpoint over caller-owned streams. {@link start} attaches
  * listeners; {@link close} detaches them and rejects pending requests without
  * destroying the streams. Closure, input end, and input errors permanently reject
  * later outbound requests with the first failure; start does not reset that failure.
  * Missing request handlers return `-32601`; handler
- * failures return `-32603`. Notifications without a handler are dropped.
+ * failures return `-32603`. Notifications without a handler are dropped. An
+ * inbound line exceeding the buffer limit detaches the transport and rejects
+ * pending requests with a fixed error; the line is never echoed.
  */
 export class JsonRpcLineTransport implements JsonRpcTransportPeer {
   private buffer = ''
@@ -74,6 +83,7 @@ export class JsonRpcLineTransport implements JsonRpcTransportPeer {
   constructor(
     private readonly input: Readable,
     private readonly output: Writable,
+    private readonly maxLineChars: number = DEFAULT_MAX_LINE_CHARS,
   ) {}
 
   /** Attach the input listeners and begin reading frames. Idempotent. */
@@ -90,10 +100,14 @@ export class JsonRpcLineTransport implements JsonRpcTransportPeer {
    * {@link start}; starting again does not reset the request failure.
    */
   close(): void {
+    this.detachInput()
+    this.failPending(new Error('JSON-RPC transport closed'))
+  }
+
+  private detachInput(): void {
     this.input.off('data', this.onData)
     this.input.off('error', this.onInputError)
     this.input.off('end', this.onInputEnd)
-    this.failPending(new Error('JSON-RPC transport closed'))
   }
 
   /**
@@ -180,7 +194,14 @@ export class JsonRpcLineTransport implements JsonRpcTransportPeer {
 
   private readonly onData = (chunk: Buffer | string): void => {
     this.buffer += typeof chunk === 'string' ? chunk : this.decoder.write(chunk)
+    if (this.buffer.length > this.maxLineChars) return this.failOversizedLine()
     this.drainLines()
+  }
+
+  private failOversizedLine(): void {
+    this.detachInput()
+    this.buffer = ''
+    this.failPending(new Error(`JSON-RPC line exceeds the ${this.maxLineChars}-char buffer limit`))
   }
 
   private drainLines(): void {
@@ -200,6 +221,7 @@ export class JsonRpcLineTransport implements JsonRpcTransportPeer {
 
   private readonly onInputEnd = (): void => {
     this.buffer += this.decoder.end()
+    if (this.buffer.length > this.maxLineChars) return this.failOversizedLine()
     this.drainLines()
     this.failPending(new Error('JSON-RPC input closed'))
   }

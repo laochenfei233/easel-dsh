@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -320,6 +320,214 @@ test('writeApiDiscovery writes base/basePath, the runner token, and ignores inva
     assert.ok(written.updatedAt)
     assert.equal(await writeApiDiscovery(root, 0, '/easel'), false)
     assert.equal(await writeApiDiscovery(root, undefined, '/easel'), false)
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+// ── 不碰网络的 transcribeToSubtitle 测试底座：合成 wav + 假 fetch ─────
+
+/**
+ * 合成一段「有声-静音-有声」的 16k 单声道 PCM wav：440Hz 正弦约 -12dBFS
+ * （高于 -35dB 噪声门），静音段为数字零，silencedetect 能切出两段语音。
+ */
+function writeToneSilenceToneWav(path, { toneSec = 1, silenceSec = 2, tailSec = 2 } = {}) {
+  const rate = 16_000
+  const samples = (toneSec + silenceSec + tailSec) * rate
+  const pcm = Buffer.alloc(samples * 2)
+  for (let i = 0; i < samples; i++) {
+    const t = i / rate
+    if (t < toneSec || t >= toneSec + silenceSec) {
+      pcm.writeInt16LE(Math.round(Math.sin(2 * Math.PI * 440 * t) * 8000), i * 2)
+    }
+  }
+  const header = Buffer.alloc(44)
+  header.write('RIFF', 0)
+  header.writeUInt32LE(36 + pcm.length, 4)
+  header.write('WAVE', 8)
+  header.write('fmt ', 12)
+  header.writeUInt32LE(16, 16)
+  header.writeUInt16LE(1, 20)
+  header.writeUInt16LE(1, 22)
+  header.writeUInt32LE(rate, 24)
+  header.writeUInt32LE(rate * 2, 28)
+  header.writeUInt16LE(2, 32)
+  header.writeUInt16LE(16, 34)
+  header.write('data', 36)
+  header.writeUInt32LE(pcm.length, 40)
+  writeFileSync(path, Buffer.concat([header, pcm]))
+}
+
+/** mimo chat/completions 成功响应的本地替身（content 即转写文本）。 */
+const asrResponse = text => new Response(
+  JSON.stringify({ choices: [{ message: { content: text } }], usage: { seconds: 1 } }),
+  { status: 200 },
+)
+
+test('transcribeToSubtitle keeps the default landing spot and honors outDir/outStem', {
+  skip: !hasFfmpeg ? 'needs ffmpeg' : false,
+}, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-asr-outdir-'))
+  try {
+    const wav = join(root, 'talk.wav')
+    writeToneSilenceToneWav(wav)
+    const fetchImpl = async () => asrResponse('字幕')
+
+    // 缺省：outputs/<输入名>/<输入名>.<format>（POST /easel/api/asr 的既有落位）。
+    const def = await transcribeToSubtitle({ input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl })
+    assert.equal(def.file, 'outputs/talk/talk.srt')
+    assert.ok(existsSync(join(root, 'outputs', 'talk', 'talk.srt')), 'default landing spot unchanged')
+
+    // 指定 outDir/outStem：字幕落进指定目录（拆解批次目录的用法）。
+    const routed = await transcribeToSubtitle({
+      input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl,
+      outDir: 'outputs/_deconstruct/batch1', outStem: 'batch1',
+    })
+    assert.equal(routed.file, 'outputs/_deconstruct/batch1/batch1.srt')
+    assert.ok(existsSync(join(root, 'outputs', '_deconstruct', 'batch1', 'batch1.srt')),
+      'outDir/outStem re-route the subtitle file')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+// ── 错误响应不回显原始响应体：只透传官方错误字段，原文进服务端日志 ──
+
+test('gateway errors surface only official error fields, never the raw response body', {
+  skip: !hasFfmpeg ? 'needs ffmpeg' : false,
+}, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-asr-echo-'))
+  try {
+    const wav = join(root, 'talk.wav')
+    writeToneSilenceToneWav(wav)
+    const rejectWith = fetchImpl => transcribeToSubtitle({
+      input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl,
+    }).then(() => { throw new Error('must reject') }, error => error)
+
+    // JSON 响应体：mimo 官方 error.message 字段透传；体内容其余部分不回显。
+    const official = await rejectWith(
+      async () => new Response(JSON.stringify({ error: { message: '配额不足', secret_marker: 'SHOULD-NOT-ECHO' } }), { status: 429 }))
+    assert.ok(official instanceof AsrError && official.status === 502)
+    assert.match(official.message, /HTTP 429/)
+    assert.match(official.message, /配额不足/, 'the official mimo error field reaches the operator')
+    assert.ok(!official.message.includes('SHOULD-NOT-ECHO'), 'the raw body must not be echoed')
+
+    // 非 JSON 响应体（网关 HTML 等）：固定文案，原文不进错误信息。
+    const html = await rejectWith(
+      async () => new Response('<html>502 secret_marker</html>', { status: 502 }))
+    assert.ok(html instanceof AsrError && html.status === 502)
+    assert.match(html.message, /HTTP 502/)
+    assert.match(html.message, /响应体非 JSON/)
+    assert.ok(!html.message.includes('secret_marker'), 'the raw body must not be echoed')
+
+    // 2xx 但响应非 JSON：固定文案，原文不回显。
+    const garbage = await rejectWith(async () => new Response('not json secret_marker', { status: 200 }))
+    assert.ok(garbage instanceof AsrError && garbage.status === 502)
+    assert.match(garbage.message, /返回非 JSON/)
+    assert.ok(!garbage.message.includes('secret_marker'), 'the raw body must not be echoed')
+
+    // 2xx JSON 但缺 choices：固定文案，原文不回显。
+    const noChoices = await rejectWith(
+      async () => new Response(JSON.stringify({ secret_marker: 'SHOULD-NOT-ECHO' }), { status: 200 }))
+    assert.ok(noChoices instanceof AsrError && noChoices.status === 502)
+    assert.match(noChoices.message, /缺少 choices/)
+    assert.ok(!noChoices.message.includes('SHOULD-NOT-ECHO'), 'the raw body must not be echoed')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+// ── 分段级检查点（T2）：失败留 sidecar，重跑只补缺失段 ────────────────
+
+test('a failed segment keeps completed ones in the sidecar and a retry transcribes only the missing one', {
+  skip: !hasFfmpeg ? 'needs ffmpeg' : false,
+}, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-asr-partial-'))
+  try {
+    const wav = join(root, 'talk.wav')
+    writeToneSilenceToneWav(wav)
+    const sidecarPath = join(root, 'talk.asr-partial.json')
+
+    // 第一次运行：段 0 成功、段 1 失败 → sidecar 只留段 0，字幕不落盘。
+    let calls = 0
+    const flaky = async () => {
+      calls += 1
+      if (calls === 2) throw new Error('boom: gateway error on segment 1')
+      return asrResponse('第一段')
+    }
+    await assert.rejects(
+      transcribeToSubtitle({ input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl: flaky }),
+      error => error instanceof AsrError && error.status === 502,
+    )
+    assert.equal(calls, 2, 'both segments were attempted before the failure')
+    assert.ok(existsSync(sidecarPath), 'the failed run keeps its sidecar for the retry')
+    const saved = JSON.parse(readFileSync(sidecarPath, 'utf8'))
+    const stat = statSync(wav)
+    assert.deepEqual(saved.src, { mtimeMs: Math.round(stat.mtimeMs), size: stat.size },
+      'the sidecar records the rounded mtimeMs + size identity of the input')
+    assert.equal(saved.segments.length, 1, 'only the completed segment is checkpointed')
+    assert.equal(saved.segments[0].index, 0)
+    assert.equal(saved.segments[0].text, '第一段')
+    assert.equal(typeof saved.segments[0].start, 'number')
+    assert.equal(typeof saved.segments[0].end, 'number')
+    assert.equal(existsSync(join(root, 'outputs', 'talk', 'talk.srt')), false, 'no subtitle is written on failure')
+
+    // 重跑：计数假 fetch 证明段 0 未重调，只有段 1 补转；成功后 sidecar 清理。
+    const retried = []
+    const retry = async (_url, opts) => {
+      retried.push(JSON.parse(String(opts.body)).messages[0].content[0].input_audio.data.length)
+      return asrResponse('第二段')
+    }
+    const result = await transcribeToSubtitle({ input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl: retry })
+    assert.equal(retried.length, 1, 'only the missing segment goes back to the gateway')
+    assert.ok(!existsSync(sidecarPath), 'the sidecar is removed once every segment has succeeded')
+    assert.equal(result.file, 'outputs/talk/talk.srt')
+    assert.deepEqual(result.segments.map(seg => seg.text), ['第一段', '第二段'],
+      'reused and newly transcribed text both land in the subtitle')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('a sidecar whose src identity no longer matches is ignored and rebuilt', {
+  skip: !hasFfmpeg ? 'needs ffmpeg' : false,
+}, async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-asr-identity-'))
+  try {
+    const wav = join(root, 'talk.wav')
+    writeToneSilenceToneWav(wav)
+    // 伪造一份旧 sidecar：src 身份（mtimeMs+size）对不上 → 整体忽略，不许复用。
+    writeFileSync(join(root, 'talk.asr-partial.json'), JSON.stringify({
+      src: { mtimeMs: 1, size: 2 },
+      segments: [{ index: 0, start: 0, end: 1, text: '过期分段' }],
+    }))
+    let fetched = 0
+    const fetchImpl = async () => {
+      fetched += 1
+      return asrResponse('新分段')
+    }
+    const result = await transcribeToSubtitle({ input: wav, projectRoot: root, credentials: { apiKey: 'k' }, fetchImpl })
+    assert.equal(fetched, 2, 'both segments are re-transcribed for the new input')
+    assert.ok(!result.segments.some(seg => seg.text === '过期分段'), 'stale sidecar text never reaches the subtitle')
+    assert.ok(!existsSync(join(root, 'talk.asr-partial.json')), 'the completed run cleans the ignored sidecar')
+  } finally {
+    rmSync(root, { recursive: true, force: true })
+  }
+})
+
+test('a missing input cleans up its orphaned sidecar and answers 404', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'easel-asr-partial-gone-'))
+  try {
+    const wav = join(root, 'talk.wav')
+    writeToneSilenceToneWav(wav)
+    const sidecarPath = join(root, 'talk.asr-partial.json')
+    writeFileSync(sidecarPath, JSON.stringify({ src: { mtimeMs: 1, size: 2 }, segments: [] }))
+    rmSync(wav)
+    await assert.rejects(
+      transcribeToSubtitle({ input: wav, projectRoot: root, credentials: { apiKey: 'k' } }),
+      error => error instanceof AsrError && error.status === 404,
+    )
+    assert.equal(existsSync(sidecarPath), false, 'the orphaned sidecar is cleaned up with its input')
   } finally {
     rmSync(root, { recursive: true, force: true })
   }

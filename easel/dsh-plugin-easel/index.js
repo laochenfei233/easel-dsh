@@ -94,6 +94,9 @@ export function resolveSettings(config) {
     basePath: normalizeBasePath(config.basePath ?? DEFAULT_BASE_PATH),
     // runner 舰队（skills/shared/scripts，B2 起由宿主半直接 spawn）用的解释器。
     python: config.pythonExecutable ?? process.env.EASEL_PYTHON ?? 'python',
+    // 视频号下载器（wx_channels_download）安装目录或 exe 路径；缺省走 lib/channels.js
+    // 的开发态回退。仅视频号拆解链路读取，启动/页面加载不触碰。
+    channelsDownloader: config.channelsDownloader ?? process.env.EASEL_CHANNELS_DOWNLOADER,
   }
 }
 
@@ -2482,8 +2485,11 @@ async function serveApi(api, req, res) {
   try {
     result = await dispatchLocalApi(settings, req.method ?? 'GET', segments, query, readJson, req.headers, api.snapshot())
   } catch (error) {
+    // 非 ApiError 的意外错误不回显给客户端（message 可能带远端响应体/内部细节），
+    // 全量进服务端日志；响应固定文案。
+    if (!(error instanceof ApiError)) console.error('easel api:', error)
     const status = error instanceof ApiError ? error.status : 500
-    const detail = error instanceof ApiError ? error.detail : `本地 API 错误：${error?.message ?? error}`
+    const detail = error instanceof ApiError ? error.detail : '本地 API 错误'
     sendJson(res, status, { detail })
     return
   }

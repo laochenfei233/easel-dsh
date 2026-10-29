@@ -498,3 +498,36 @@ test('route registry: feature plugins extend the table and withdraw it on unmoun
 test('cleanup', () => {
   rmSync(root, { recursive: true, force: true })
 })
+
+// ── 视频号 sidecar 门控（spec easel-breakdown-channels）──
+
+const sphSettings = () => ({ ...settings, channelsDownloader: join(root, 'missing-tools') })
+
+test('channels preflight blocks sph until wechat login and downloader exist', async () => {
+  const result = await dispatchLocalApi(sphSettings(), 'POST', ['deconstruct', 'preflight'],
+    new URLSearchParams(), async () => ({ url: 'https://channels.weixin.qq.com/web/pages/feed?profile=1' }),
+    {}, ALL_ROUTES)
+  assert.equal(result.json.platform, 'sph')
+  assert.equal(result.json.blocked, true, 'tool missing must block')
+  assert.equal(result.json.row, null, 'sph does not join the cookies gate')
+  assert.equal(result.json.channels.tool.installed, false)
+  // 其他平台的识别分支保持现状，不触碰微信探测。
+  const other = await call('POST', 'deconstruct/preflight', { url: 'https://www.bilibili.com/video/BV1x' })
+  assert.equal(other.json.platform, 'bili')
+})
+
+test('channels status reports shape without launching anything', async () => {
+  const result = await dispatchLocalApi(sphSettings(), 'GET', ['channels', 'status'],
+    new URLSearchParams(), async () => ({}), {}, ALL_ROUTES)
+  assert.equal(result.json.tool.installed, false)
+  assert.ok('running' in result.json.wechat)
+  assert.ok('loggedIn' in result.json.wechat)
+})
+
+test('sph create refuses when the downloader is missing, before spawning anything', async () => {
+  await assert.rejects(
+    dispatchLocalApi(sphSettings(), 'POST', ['deconstruct'], new URLSearchParams(),
+      async () => ({ url: 'https://channels.weixin.qq.com/web/pages/feed?profile=1' }), {}, ALL_ROUTES),
+    error => error.status === 400 && /视频号下载器/.test(error.message),
+  )
+})
