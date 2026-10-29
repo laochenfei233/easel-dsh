@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-session-log-import",
   "description": "Host-side session-log import: materializes exported session archives into the mounted persistence and attachment stores",
-  "version": "0.2.1-rc.2",
+  "version": "0.2.2-alpha.2",
   "publishConfig": {
     "access": "public"
   },
