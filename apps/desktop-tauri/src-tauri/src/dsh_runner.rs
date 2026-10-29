@@ -314,6 +314,8 @@ impl DshHandle {
         append_startup_log("spawn_child: easel bundle ready");
         crate::setup::ensure_dreamina_skills(&app)?;
         append_startup_log("spawn_child: dreamina skills ready");
+        crate::setup::ensure_libtv_skills(&app)?;
+        append_startup_log("spawn_child: libtv skills ready");
         crate::setup::ensure_default_plugins(&app)?;
         append_startup_log("spawn_child: default plugins ready");
         let port = match select_port() {
@@ -375,6 +377,11 @@ impl DshHandle {
         // skills from the same staged tree).
         if let Some(dreamina_bin) = crate::setup::dreamina_bin_dir(&app) {
             path_parts.push(dreamina_bin.to_string_lossy().into_owned());
+        }
+        // The bundled LibTV CLI follows the same rule: vendor installs win,
+        // the bundle covers machines without one.
+        if let Some(libtv_bin) = crate::setup::libtv_bin_dir(&app) {
+            path_parts.push(libtv_bin.to_string_lossy().into_owned());
         }
         // join_paths uses the platform separator (";" on Windows, ":" on
         // POSIX); a literal ";" join breaks every PATH lookup in the dsh web

@@ -766,6 +766,69 @@ fn ensure_dreamina_skills_at(staged: &Path, home: &Path) -> Result<(), String> {
     write_patch_rows(&patch_path, &rows)
 }
 
+// ---------------------------------------------------------------------------
+// Bundled LibTV CLI.
+//
+// runtime/libtv is the same arrangement as runtime/dreamina: the vendor's
+// `libtv` canvas CLI in bin/ (PATH last, so an install made through its own
+// install script keeps precedence) and the vendor's whole skill package in
+// skills/libtv-cli. The skill mounts through its own skill-filesystem provider
+// row, registered at the deployment level like the easel and dreamina rows.
+
+/// Content root of the staged LibTV CLI tree, `None` where absent (dev
+/// without staging). `EASEL_LIBTV_DIR` overrides for dev.
+fn runtime_libtv_dir(app: &AppHandle) -> Option<PathBuf> {
+    let skills_marker = |dir: &Path| {
+        dir.join("skills")
+            .join("libtv-cli")
+            .join("SKILL.md")
+            .exists()
+    };
+    if let Ok(dir) = app.path().resource_dir() {
+        let bundled = dir.join("runtime").join("libtv");
+        if skills_marker(&bundled) {
+            return Some(bundled);
+        }
+    }
+    std::env::var("EASEL_LIBTV_DIR")
+        .ok()
+        .map(PathBuf::from)
+        .filter(|dir| skills_marker(dir))
+}
+
+/// Directory of the bundled libtv binary for the spawned dsh PATH.
+pub(crate) fn libtv_bin_dir(app: &AppHandle) -> Option<PathBuf> {
+    runtime_libtv_dir(app)
+        .map(|dir| dir.join("bin"))
+        .filter(|dir| dir.exists())
+}
+
+/// Entry point on the spawn path. No-op wherever the staged tree is absent.
+pub(crate) fn ensure_libtv_skills(app: &AppHandle) -> Result<(), String> {
+    let Some(dir) = runtime_libtv_dir(app) else {
+        return Ok(());
+    };
+    ensure_libtv_skills_at(&dir, &dsh_home())
+}
+
+/// Insert-if-absent registration row for the bundled LibTV skill. A
+/// user-edited insert row (for example disabled) is left as-is.
+fn ensure_libtv_skills_at(staged: &Path, home: &Path) -> Result<(), String> {
+    let profile = profile_web_dir(home);
+    fs::create_dir_all(&profile).map_err(|e| e.to_string())?;
+    let patch_path = profile.join("cordis.patch.yml");
+    let mut rows: Vec<Yaml> = read_patch_rows(&patch_path);
+    let skills_dir = yaml_scalar(staged.join("skills").to_string_lossy().as_ref())?;
+    ensure_bundle_row(
+        &mut rows,
+        "easel-libtv-skills",
+        &format!(
+            "insert:\n  - id: easel-libtv-skills\n    name: '@deepseek-ai/dsh-skill-filesystem'\n    config:\n      providerName: libtv\n      includeDefaultRoots: false\n      bundledSkillDir: {skills_dir}\n"
+        ),
+    )?;
+    write_patch_rows(&patch_path, &rows)
+}
+
 #[cfg(test)]
 mod easel_tests {
     use super::*;
@@ -1079,6 +1142,33 @@ mod easel_tests {
         let patch = patch_text(&home);
         assert!(patch.contains("disabled: true"));
         assert_eq!(patch.matches("id: easel-dreamina-skills").count(), 1);
+    }
+
+    #[test]
+    fn libtv_skills_row_registered_and_idempotent() {
+        let root = temp_dir("libtv");
+        let staged = root.join("runtime").join("libtv");
+        write(&staged.join("skills/libtv-cli/SKILL.md"), "skill");
+        let home = root.join("home");
+
+        ensure_libtv_skills_at(&staged, &home).unwrap();
+
+        let patch = patch_text(&home);
+        assert!(patch.contains("id: easel-libtv-skills"));
+        assert!(patch.contains("providerName: libtv"));
+        assert!(patch.contains("bundledSkillDir"));
+        assert!(patch.contains(staged.join("skills").to_string_lossy().as_ref()));
+        serde_yaml::from_str::<Vec<Yaml>>(&patch).unwrap();
+
+        // A user-edited row (disabled) survives the next start.
+        write(
+            &profile_web_dir(&home).join("cordis.patch.yml"),
+            "- insert:\n    - id: easel-libtv-skills\n      name: '@deepseek-ai/dsh-skill-filesystem'\n      disabled: true\n",
+        );
+        ensure_libtv_skills_at(&staged, &home).unwrap();
+        let patch = patch_text(&home);
+        assert!(patch.contains("disabled: true"));
+        assert_eq!(patch.matches("id: easel-libtv-skills").count(), 1);
     }
 }
 

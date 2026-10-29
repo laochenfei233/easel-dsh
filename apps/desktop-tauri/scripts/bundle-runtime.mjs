@@ -7,6 +7,8 @@
 //     plugins/dsh-win-terminal-inspector/   local Windows-only plugin
 //     dreamina/                     Jimeng (Dreamina) CLI binaries + their
 //                                   published agent skills (all platforms)
+//     libtv/                        LibTV CLI binary + its published agent
+//                                   skill (all platforms)
 //
 // The shell resolves these paths in src-tauri/src/dsh_runner.rs
 // (resolve_runtime). Run from apps/desktop-tauri:
@@ -33,6 +35,7 @@ const DSH_DIR = join(RUNTIME, 'dsh');
 const PLUGINS_DIR = join(RUNTIME, 'plugins');
 const EASEL_DIR = join(RUNTIME, 'easel');
 const DREAMINA_DIR = join(RUNTIME, 'dreamina');
+const LIBTV_DIR = join(RUNTIME, 'libtv');
 
 // Every artifact this script downloads and executes-at-runtime is pinned here
 // by version and digest. A floating version, branch tarball, or unverified
@@ -45,7 +48,7 @@ const INPUTS = JSON.parse(readFileSync(join(ROOT, 'runtime-inputs.json'), 'utf8'
  * stage (`--only`) or a leftover runtime keeps its bytes; the manifest says so
  * instead of claiming a pin that nothing verified.
  */
-const verified = { node: false, plugins: false, dreamina: false };
+const verified = { node: false, plugins: false, dreamina: false, libtv: false };
 
 const args = process.argv.slice(2);
 
@@ -65,7 +68,7 @@ const ARCH = argValue('--arch') ?? (PLATFORM === 'mac' ? 'arm64' : 'x64');
 // Re-stage one step instead of the whole runtime (--only dreamina): a CDN
 // refresh must not pay for the node download or the pnpm deploy again.
 const ONLY = argValue('--only');
-const ONLY_STEPS = new Set(['node', 'dsh', 'plugins', 'easel', 'dreamina']);
+const ONLY_STEPS = new Set(['node', 'dsh', 'plugins', 'easel', 'dreamina', 'libtv']);
 if (ONLY !== undefined && !ONLY_STEPS.has(ONLY)) {
   throw new Error(`--only must be one of ${[...ONLY_STEPS].join(', ')}; got ${ONLY}`);
 }
@@ -1209,6 +1212,187 @@ function dreaminaVersions() {
   }
 }
 
+/**
+ * Target table for the LibTV release archives. The vendor names the macOS
+ * builds `macos-*` and the Windows build `windows-*`; the stage keys follow
+ * the dreamina convention (os-arch).
+ * @returns the runtime-inputs target key and the executable name to stage.
+ */
+function libtvTarget() {
+  const arch = ARCH === 'x64' ? 'amd64' : ARCH;
+  if (PLATFORM === 'win') return { target: `windows-${arch}`, exe: 'libtv.exe' };
+  if (PLATFORM === 'mac') return { target: `darwin-${arch}`, exe: 'libtv' };
+  return { target: `linux-${arch}`, exe: 'libtv' };
+}
+
+/**
+ * Locate a file anywhere inside an extracted archive (the vendor zips wrap
+ * the binary in a per-platform directory).
+ * @param dir - extracted tree root.
+ * @param name - exact file name to find.
+ * @returns the file path, or undefined when the tree does not contain it.
+ */
+function findFile(dir, name) {
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) {
+      const nested = findFile(path, name);
+      if (nested !== undefined) return nested;
+    } else if (entry.name === name) {
+      return path;
+    }
+  }
+  return undefined;
+}
+
+function libtvStagedComplete(exe) {
+  return existsSync(join(LIBTV_DIR, 'VERSION'))
+    && existsSync(join(LIBTV_DIR, 'bin', exe))
+    && existsSync(join(LIBTV_DIR, 'skills', 'libtv-cli', 'SKILL.md'));
+}
+
+// A previously installed desktop runtime keeps the same libtv tree; reuse it
+// offline. DSH_DESKTOP_LIBTV_REUSE overrides the probe.
+function reuseLibtvDir(exe) {
+  const candidates = [];
+  if (process.env.DSH_DESKTOP_LIBTV_REUSE) {
+    candidates.push(process.env.DSH_DESKTOP_LIBTV_REUSE);
+  }
+  if (process.env.LOCALAPPDATA) {
+    candidates.push(join(process.env.LOCALAPPDATA, 'Easel-dsh', 'app', 'runtime', 'libtv'));
+  }
+  if (process.platform === 'darwin') {
+    candidates.push('/Applications/Easel-dsh.app/Contents/Resources/runtime/libtv');
+  }
+  return candidates.find((dir) =>
+    existsSync(join(dir, 'VERSION'))
+    && existsSync(join(dir, 'bin', exe))
+    && existsSync(join(dir, 'skills', 'libtv-cli', 'SKILL.md')));
+}
+
+/**
+ * Assert one staged LibTV tree matches the pins: version record, executable
+ * bytes, and the published skill tree.
+ * @param dir - runtime/libtv (or a reuse source to be copied from).
+ * @param exe - the staged executable file name.
+ * @param pin - INPUTS.libtv.
+ * @param pinned - the per-target entry from pin.files.
+ */
+function verifyStagedLibtv(dir, exe, pin, pinned) {
+  let recorded;
+  try {
+    recorded = JSON.parse(readFileSync(join(dir, 'VERSION'), 'utf8'));
+  } catch {
+    throw new Error(`staged libtv at ${dir} has no readable VERSION`);
+  }
+  if (recorded.libtv !== pin.version) {
+    throw new Error(`staged libtv ${recorded.libtv} does not match the pinned ${pin.version}`);
+  }
+  const binary = join(dir, 'bin', exe);
+  const actual = sha256File(binary);
+  if (actual !== pinned.cliSha256) {
+    throw new Error(`${binary} hashes to ${actual}, not the pinned ${pinned.cliSha256}`);
+  }
+  const skill = join(dir, 'skills', 'libtv-cli');
+  const tree = treeSha256(skill);
+  if (tree !== pin.skillTreeSha256) {
+    throw new Error(`${skill} hashes to ${tree}, not the pinned ${pin.skillTreeSha256}`);
+  }
+}
+
+/**
+ * Write the staged LibTV tree from already-verified sources: the binary, the
+ * vendor's whole skill package, and the version record.
+ * @param parts.binary - the CLI executable to stage.
+ * @param parts.skillDir - the extracted skill package root (SKILL.md at top).
+ * @param version - the pinned CLI version to record.
+ */
+function writeLibtvTree({ binary, skillDir }, version) {
+  rmSync(LIBTV_DIR, { recursive: true, force: true });
+  mkdirSync(join(LIBTV_DIR, 'bin'), { recursive: true });
+  cpSync(binary, join(LIBTV_DIR, 'bin', basename(binary)));
+  if (PLATFORM !== 'win') {
+    chmodSync(join(LIBTV_DIR, 'bin', basename(binary)), 0o755);
+  }
+  cpSync(skillDir, join(LIBTV_DIR, 'skills', 'libtv-cli'), { recursive: true });
+  writeFileSync(join(LIBTV_DIR, 'VERSION'), `${JSON.stringify({ libtv: version }, null, 2)}\n`);
+}
+
+/**
+ * Stage the bundled LibTV CLI and its published agent skill into
+ * runtime/libtv. Downloads land in a scratch dir and the staged tree is
+ * replaced only after the archive, executable and skill tree all verify, so a
+ * failed run never leaves a half-staged bundle.
+ */
+async function stageLibtv() {
+  const { target, exe } = libtvTarget();
+  const pin = INPUTS.libtv;
+  const pinned = pin?.files?.[target];
+  if (pinned === undefined) {
+    throw new Error(`runtime-inputs.json pins no libtv build for ${target}`);
+  }
+  if (libtvStagedComplete(exe)) {
+    verifyStagedLibtv(LIBTV_DIR, exe, pin, pinned);
+    verified.libtv = true;
+    step('libtv CLI already staged, pins verified');
+    return;
+  }
+  const reusable = reuseLibtvDir(exe);
+  if (reusable !== undefined) {
+    verifyStagedLibtv(reusable, exe, pin, pinned);
+    writeLibtvTree({
+      binary: join(reusable, 'bin', exe),
+      skillDir: join(reusable, 'skills', 'libtv-cli'),
+    }, pin.version);
+    verified.libtv = true;
+    step(`libtv CLI reused from ${reusable} (pins verified)`);
+    return;
+  }
+
+  const tmp = join(RUNTIME, '.libtv-tmp');
+  rmSync(tmp, { recursive: true, force: true });
+  mkdirSync(tmp, { recursive: true });
+  try {
+    const archive = join(tmp, pinned.zip);
+    await download(`${pin.baseUrl}/${pinned.zip}`, archive, pinned.zipSha256);
+    const unpacked = join(tmp, 'cli');
+    extract(archive, unpacked);
+    const binary = findFile(unpacked, exe);
+    if (binary === undefined) {
+      throw new Error(`${pinned.zip} contains no ${exe}`);
+    }
+    const actual = sha256File(binary);
+    if (actual !== pinned.cliSha256) {
+      throw new Error(`${exe}: sha256 ${actual} does not match the pinned ${pinned.cliSha256}`);
+    }
+
+    // The skill package is the CLI's agent manual and ships versioned beside
+    // it; the whole tree is staged so SKILL.md's relative links resolve.
+    const skillZip = join(tmp, pin.skillZip);
+    await download(`${pin.baseUrl}/${pin.skillZip}`, skillZip, pin.skillZipSha256);
+    const skillDir = join(tmp, 'skill');
+    extract(skillZip, skillDir);
+    const tree = treeSha256(skillDir);
+    if (tree !== pin.skillTreeSha256) {
+      throw new Error(`libtv skill tree hashes to ${tree}, not the pinned ${pin.skillTreeSha256}`);
+    }
+
+    writeLibtvTree({ binary, skillDir }, pin.version);
+    step(`libtv ${pin.version} (${target}) staged into runtime/libtv`);
+    verified.libtv = true;
+  } finally {
+    rmSync(tmp, { recursive: true, force: true });
+  }
+}
+
+function libtvVersions() {
+  try {
+    return JSON.parse(readFileSync(join(LIBTV_DIR, 'VERSION'), 'utf8'));
+  } catch {
+    return undefined;
+  }
+}
+
 function writeManifest() {
   const manifest = {
     platform: PLATFORM,
@@ -1217,11 +1401,13 @@ function writeManifest() {
     plugins: existsSync(PLUGINS_DIR) ? readdirSync(PLUGINS_DIR) : [],
     easel: existsSync(join(EASEL_DIR, 'VERSION')),
     dreamina: dreaminaVersions(),
+    libtv: libtvVersions(),
     pinned: {
       node: INPUTS.node.version,
       winTerminalInspector: INPUTS.winTerminalInspector?.commit,
       dreamina: INPUTS.dreamina?.version,
       dreaminaCanvas: INPUTS.dreamina?.canvasVersion,
+      libtv: INPUTS.libtv?.version,
     },
     // Only stages the pins were actually compared against in this run.
     verified: { ...verified },
@@ -1330,6 +1516,11 @@ async function main() {
     step(`dreamina step skipped (--only ${ONLY})`);
   } else {
     await stageDreamina();
+  }
+  if (!wants('libtv')) {
+    step(`libtv step skipped (--only ${ONLY})`);
+  } else {
+    await stageLibtv();
   }
   writeManifest();
 }

@@ -1,5 +1,5 @@
 {
-  "$comment": "Pinned sources for everything bundle-runtime.mjs fetches and stages. The script refuses any artifact without a matching entry here, and verifies skipped/reused artifacts too, so a stale runtime cannot ride into an installer. Bump a version only together with its digests. node: sha256 from https://nodejs.org/dist/<version>/SHASUMS256.txt; an already-staged node is checked by its stamp (or `--version` once). winTerminalInspector: codeload tarball at the pinned commit; treeSha256 is sha256 over '<relative path>\\0<bytes>' for every file in path order; a reused installed copy is hashed the same way before use. dreamina: the CDN publishes no digest for the main CLI, so these were recorded from the pinned 1.4.21 release. Its version.json is advisory (mutable URL, checked by parsed version, recorded as the pin) and the canvas CDN's payload.sha256 is a second, same-origin check. Staged/reused trees are verified for both binaries, the main SKILL.md and the canvas skill (the canvas skill directory is copied, not hashed as a tree).",
+  "$comment": "Pinned sources for everything bundle-runtime.mjs fetches and stages. The script refuses any artifact without a matching entry here, and verifies skipped/reused artifacts too, so a stale runtime cannot ride into an installer. Bump a version only together with its digests. node: sha256 from https://nodejs.org/dist/<version>/SHASUMS256.txt; an already-staged node is checked by its stamp (or `--version` once). winTerminalInspector: codeload tarball at the pinned commit; treeSha256 is sha256 over '<relative path>\\0<bytes>' for every file in path order; a reused installed copy is hashed the same way before use. dreamina: the CDN publishes no digest for the main CLI, so these were recorded from the pinned 1.4.21 release. Its version.json is advisory (mutable URL, checked by parsed version, recorded as the pin) and the canvas CDN's payload.sha256 is a second, same-origin check. Staged/reused trees are verified for both binaries, the main SKILL.md and the canvas skill (the canvas skill directory is copied, not hashed as a tree). libtv: the vendor publishes no digest, so both the platform zips and the skill zip are pinned by the bytes recorded from the 1.2.0 release; the extracted executable and the skill tree are hashed again after extraction, and skipped/reused trees are verified the same way.",
   "node": {
     "version": "v22.23.4",
     "sha256": {
@@ -37,6 +37,40 @@
       "linux-amd64": {
         "cliSha256": "0a5fdc262ab44669e7db4ce67e6543ece6daf405804aca3d1d17d1345c146f69",
         "canvasSha256": "feb265ef5057b2d11ff03aafb3a42bf61aa535cc6f35df69711bc2c2a423a9c6"
+      }
+    }
+  },
+  "libtv": {
+    "version": "1.2.0",
+    "baseUrl": "https://liblibai-web-static.liblib.cloud/cli/1.2.0",
+    "skillZip": "libtv-cli-skill.zip",
+    "skillZipSha256": "1701ba84d7fe8144761e1ed1646b1249d03c7b95e379c63a0fcf2e7c7ea3b099",
+    "skillTreeSha256": "5c715f2b4cb2db804f579f0e2be47c21a5a75d88ada579f4707b6fd98638f757",
+    "files": {
+      "windows-amd64": {
+        "zip": "libtv-windows-amd64.zip",
+        "zipSha256": "01e3bdf36c77d224593eef8fbca822aaa98ad79af0094d81d37f4aabf4b42247",
+        "cliSha256": "11aab860442a7f9f8da66732c20fe5d4fddf85af1e93a047db1c2249b49fa487"
+      },
+      "windows-arm64": {
+        "zip": "libtv-windows-arm64.zip",
+        "zipSha256": "d8c81bef96e31eaaa7c4e69bed797c1f9a76014d7d134221e027e195b47ad61c",
+        "cliSha256": "323b2670173152019f56e32fb1def4439533389c9e18ed8df4b68664eb574609"
+      },
+      "darwin-arm64": {
+        "zip": "libtv-macos-arm64.zip",
+        "zipSha256": "a43bfd4fe8faef4454f6446b9e250b5b17d0c237eabfd42e230a4b40bb02b541",
+        "cliSha256": "9ef5e5d1a9958922db93e4e4fc90b5e141ec47f56baf409334351eaec8463b67"
+      },
+      "darwin-amd64": {
+        "zip": "libtv-macos-x64.zip",
+        "zipSha256": "cee6c0d5f4c61255f90106c15395524a3024f6bd2d859fd0e7bcc5ea14bbb586",
+        "cliSha256": "ad8ba519c6f3cfa152ed061bcc49b4e719265fbfb9f1e5530104511f6a57b51a"
+      },
+      "linux-amd64": {
+        "zip": "libtv-linux-x64.zip",
+        "zipSha256": "e94944e5e57e9cdf3d6f6ac2519dc49241a97c04b173bce12757cf7cab03fb62",
+        "cliSha256": "54ace13390f381ddad85bdd8100782ce8f34e61fb47a586b98398277ff875d02"
       }
     }
   }

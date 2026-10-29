@@ -32,7 +32,7 @@ pnpm tauri dev              # from apps/desktop-tauri; dev mode uses PATH node +
 ```
 
 Dev mode needs built CLI artifacts (`pnpm run build`); you can also override runtime resolution with environment variables:
-`DSH_DESKTOP_NODE` (node executable), `DSH_DESKTOP_DSH_BIN` (dsh CLI entry), `DSH_DESKTOP_PLUGINS_DIR` (local plugins directory), `EASEL_BUNDLE_DIR` / `EASEL_DREAMINA_DIR` (staged `runtime/easel` / `runtime/dreamina` trees).
+`DSH_DESKTOP_NODE` (node executable), `DSH_DESKTOP_DSH_BIN` (dsh CLI entry), `DSH_DESKTOP_PLUGINS_DIR` (local plugins directory), `EASEL_BUNDLE_DIR` / `EASEL_DREAMINA_DIR` / `EASEL_LIBTV_DIR` (staged `runtime/easel` / `runtime/dreamina` / `runtime/libtv` trees).
 
 ## Building a release
 
@@ -61,5 +61,6 @@ The shell integrates `tauri-plugin-updater`; Settings → About in the GUI shows
 - Optional plugins: `dsh-better-sidebar`, `dsh-notification`, `dsh-session-context-menu`, `@xmanrui/dsh-im` (WeCom/Feishu/DingTalk/WeChat/QQ and 9 channels), `dsh-lark`, `dsh-qqbot`, `dsh-vision-router`, `graph-memory`, `aegis`
 - Data location: `<Documents>/Easel-dsh` by default (the OS Documents folder, including OneDrive redirection); Settings → Data location can move it. Old paths remain as junctions/symlinks, so existing projects keep working without rewriting project files.
 - Bundled Jimeng CLIs: `dreamina` (image/video generation) and `dreamina-canvas` (collaborative canvas) under `runtime/dreamina/bin`, last on the agent PATH so a CLI installed through its own installer wins, plus the CLIs' published agent skills under `runtime/dreamina/skills` (registered by the `easel-dreamina-skills` row). Staging (`stageDreamina` in `scripts/bundle-runtime.mjs`) fetches them at build time, checksum-verifies the canvas CLI, and can be re-run alone with `--only dreamina`.
+- Bundled LibTV CLI: `libtv` (LibTV canvas projects, nodes, model schemas, uploads and downloads) under `runtime/libtv/bin`, also last on the agent PATH, with the vendor's whole skill package under `runtime/libtv/skills/libtv-cli` (registered by the `easel-libtv-skills` row). `stageLibtv` pins the platform zip, the extracted executable and the skill tree in `runtime-inputs.json`; re-run alone with `--only libtv`.
 
 Plugin install/update/uninstall all go through official dsh mechanisms (`dsh plugin` / the dsh-plugin center); the runtime ships pnpm from the same version family.
