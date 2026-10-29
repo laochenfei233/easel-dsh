@@ -97,10 +97,10 @@ export const ABOUT_STYLES = `
 .eau-dialog-actions { justify-content: flex-end; margin-top: 4px; }
 `
 
-/** The product site the links point at; the deployment belongs to the
- * easel-website spec, and a domain change lands here once it is bought. */
-export const WEBSITE_URL = 'https://laochenfei233.github.io/easel-dsh/'
-export const CHANGELOG_URL = `${WEBSITE_URL}#changelog`
+/** The deployed product site the links point at: `easel.xyern.com` serves the
+ * pages, the download mirror, and the release notes. */
+export const WEBSITE_URL = 'https://easel.xyern.com/'
+export const CHANGELOG_URL = `${WEBSITE_URL}changelog/`
 export const REPO_URL = 'https://github.com/laochenfei233/easel-dsh'
 /** The repository issue tracker the feedback link opens. */
 export const ISSUES_URL = 'https://github.com/laochenfei233/easel-dsh/issues'

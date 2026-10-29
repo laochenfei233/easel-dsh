@@ -48,7 +48,7 @@ CI（`.github/workflows/desktop-release.yml`）在平台矩阵上执行同一流
 
 壳集成 `tauri-plugin-updater`；GUI 的设置 → 关于展示当前版本、手动检查更新、安装发现的新版本。更新清单是 Tauri updater 标准格式的 `{version, notes, pub_date, platforms}` JSON；`.sig` 与清单的生成和分发归发布管道（spec `easel-website.md`）。
 
-- **更新源**：清单端点默认指向产品站的 `updates/latest.json`（`tauri.conf.json` 的 `plugins.updater.endpoints`）。数据根 home 下的 `update-source.json`（形如 `{"endpoints": ["https://…"]}`）存在则整体替换内置列表——内网部署就是这样把更新器指向内部镜像的。坏形文件是响亮的误配置：About 展示原因，启动延迟检查跳过本轮。
+- **更新源**：清单端点默认指向产品站镜像 `https://easel.xyern.com/downloads/updates/latest.json`，回退到 GitHub 每个 Release 附带的更新清单 `…/releases/latest/download/latest.json`；更新器按顺序逐个尝试，任一端可达即可（`tauri.conf.json` 的 `plugins.updater.endpoints`）。数据根 home 下的 `update-source.json`（形如 `{"endpoints": ["https://…"]}`）存在则整体替换内置列表——内网部署就是这样把更新器指向内部镜像的。坏形文件是响亮的误配置：About 展示原因，启动延迟检查跳过本轮。
 - **启动延迟检查**：启动 30 秒后一次 GET；失败记入 `<数据根>/home/update-state.json` 并保持静默。提醒只在「发现的版本比当前新」且「距清单 `pub_date` 满 24 小时」时触发——所有用户看到提醒的时点一致；同一文件的 `notedVersion` 为启动弹窗去重。之后 About 保留常驻的「有新版可用」提示直至升级完成。
 - **安装**：命令先停内置 dsh 进程（updater 之后自行退出壳进程，不走 `RunEvent::Exit`，否则 runtime node 会被安装器甩成孤儿），再下载并以插件的 `basicUi` 模式启动 NSIS 安装器——安装器永远带 `/UPDATE`，与安装器钩子已处理的标记相同，所以应用内路径与手动 `/UPDATE` 收敛为同一次免卸载覆盖安装。
 - **签名**：更新包用 minisign 签名；公钥内置于 `tauri.conf.json`（`plugins.updater.pubkey`），私钥是 GitHub Actions secret（`TAURI_SIGNING_PRIVATE_KEY`）。

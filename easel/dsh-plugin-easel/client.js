@@ -2722,7 +2722,7 @@ __export(ideas_exports, {
 // src/components/IdeasPage.tsx
 var import_react4 = require("react");
 
-// ../../../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3879,7 +3879,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -11349,10 +11349,13 @@ var FETCH_STAGES = [
 var PLATFORM_NAMES = {
   douyin: "\u6296\u97F3",
   xhs: "\u5C0F\u7EA2\u4E66",
+  kuaishou: "\u5FEB\u624B",
+  sph: "\u89C6\u9891\u53F7",
   bili: "B\u7AD9",
   youtube: "YouTube",
   other: "\u901A\u7528\u94FE\u63A5"
 };
+var CHANNELS_URL_RE = /channels\.weixin\.qq\.com/i;
 function stageIndex(stage) {
   const i = FETCH_STAGES.findIndex((item) => item.key === stage);
   return i < 0 ? FETCH_STAGES.length : i;
@@ -11558,7 +11561,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
         /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 21 }),
         " \u7206\u6B3E\u62C6\u89E3"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "page-subtitle", children: "\u8D34\u4E00\u6761\u89C6\u9891\u94FE\u63A5\uFF08\u6296\u97F3/\u5C0F\u7EA2\u4E66/B\u7AD9/\u2026\uFF09\uFF0C\u6D41\u6C34\u7EBF\u81EA\u52A8\u4E0B\u8F7D\u3001\u62BD\u5E27\u3001\u8F6C\u5199\u5B57\u5E55\uFF0C\u518D\u7531 AI \u7ED3\u5408\u753B\u9762\u4E0E\u53E3\u64AD\u62C6\u51FA\u94A9\u5B50\u3001\u7ED3\u6784\u3001\u706B\u7684\u539F\u56E0\u4E0E\u53EF\u590D\u5236\u6A21\u677F\uFF0C\u62A5\u544A\u5B58\u6863\u5E76\u81EA\u52A8\u5165\u5E93\u9009\u9898\u5E93\u3002" })
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "page-subtitle", children: "\u8D34\u4E00\u6761\u89C6\u9891\u94FE\u63A5\uFF08\u6296\u97F3/\u5C0F\u7EA2\u4E66/\u5FEB\u624B/\u89C6\u9891\u53F7/B\u7AD9/\u2026\uFF09\uFF0C\u6D41\u6C34\u7EBF\u81EA\u52A8\u4E0B\u8F7D\u3001\u62BD\u5E27\u3001\u8F6C\u5199\u5B57\u5E55\uFF0C\u518D\u7531 AI \u7ED3\u5408\u753B\u9762\u4E0E\u53E3\u64AD\u62C6\u51FA\u94A9\u5B50\u3001\u7ED3\u6784\u3001\u706B\u7684\u539F\u56E0\u4E0E\u53EF\u590D\u5236\u6A21\u677F\uFF0C\u62A5\u544A\u5B58\u6863\u5E76\u81EA\u52A8\u5165\u5E93\u9009\u9898\u5E93\u3002" })
     ] }) }),
     /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "breakdown-body", children: [
       /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
@@ -11602,7 +11605,24 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
         "\uFF09\u3002\u8BF7\u5728\u300C\u8BBE\u7F6E \u2192 \u6A21\u578B\u300D\u786E\u8BA4\u6A21\u578B\u914D\u7F6E\u540E\u5237\u65B0\u672C\u9875\uFF1B \u91C7\u96C6\u4E0E\u62C6\u89E3\u9700\u8981\u53EF\u7528\u6A21\u578B\u3002"
       ] }),
       visionModel !== "" && models.length > 0 && !models.some((entry) => `${entry.provider}::${entry.model.id}` === visionModel && entry.model.inputModalities?.includes("image") === true) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", margin: "8px 0 0" }, children: "\u6240\u9009\u89C6\u89C9\u6A21\u578B\u672A\u6807\u6CE8\u56FE\u50CF\u8F93\u5165\uFF1A\u82E5\u7F51\u5173\u5B9E\u9645\u652F\u6301\u770B\u56FE\uFF0C\u53EF\u5728 \u8BBE\u7F6E\u2192\u6A21\u578B \u5C55\u5F00\u8BE5\u6A21\u578B\u884C\u52FE\u9009\u300C\u56FE\u50CF\u300D\uFF0C \u4E0B\u62C9\u91CC\u5B83\u4F1A\u6392\u5230\u524D\u9762\uFF1B\u672A\u6807\u6CE8\u65F6\u770B\u5E27\u62C6\u89E3\u53EF\u80FD\u9000\u5316\u6216\u5931\u8D25\u3002" }),
-      preflight?.blocked && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 16, borderColor: "var(--amber, #d97706)" }, children: [
+      preflight?.blocked && (preflight?.channels ? /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 16, borderColor: "var(--amber, #d97706)" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 14 }),
+          " \u89C6\u9891\u53F7\u8FD8\u6CA1\u51C6\u5907\u597D"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)", margin: "8px 0 10px" }, children: "\u62C6\u89E3\u89C6\u9891\u53F7\u89C6\u9891\u9700\u8981\u300C\u5FAE\u4FE1 PC \u7AEF\u5DF2\u767B\u5F55\u300D\u548C\u300C\u89C6\u9891\u53F7\u4E0B\u8F7D\u5668\u300D\uFF0C\u5F53\u524D\u72B6\u6001\uFF1A" }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("ul", { style: { fontSize: 13, color: "var(--text-secondary)", margin: "0 0 10px", paddingLeft: 20, lineHeight: 1.9 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("li", { children: [
+            "\u5FAE\u4FE1\uFF1A",
+            !preflight.channels.wechat.running ? "\u672A\u8FD0\u884C\u2014\u2014\u8BF7\u542F\u52A8\u5FAE\u4FE1\u5E76\u767B\u5F55" : preflight.channels.wechat.loggedIn ? "\u5DF2\u767B\u5F55 \u2713" : "\u5728\u8FD0\u884C\u4F46\u672A\u767B\u5F55\u2014\u2014\u8BF7\u5728\u5FAE\u4FE1\u91CC\u767B\u5F55"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("li", { children: [
+            "\u4E0B\u8F7D\u5668\uFF1A",
+            !preflight.channels.tool.installed ? "\u672A\u5B89\u88C5\u2014\u2014\u628A wx_video_download \u5B89\u88C5\u76EE\u5F55\u586B\u5165\u63D2\u4EF6\u914D\u7F6E channelsDownloader\uFF08\u9996\u6B21\u8BF7\u624B\u52A8\u4EE5\u7BA1\u7406\u5458\u8FD0\u884C\u4E00\u6B21\u88C5\u8BC1\u4E66\uFF09" : preflight.channels.tool.running ? "\u8FD0\u884C\u4E2D \u2713" : "\u5DF2\u5B89\u88C5\uFF0C\u672A\u8FD0\u884C\u2014\u2014\u901A\u8FC7\u95E8\u63A7\u540E\u4F1A\u81EA\u52A8\u62C9\u8D77"
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12, color: "var(--text-tertiary, #9ca3af)", margin: "10px 0 0" }, children: "\u5FAE\u4FE1\u767B\u5F55\u662F\u542F\u52A8\u524D\u7F6E\uFF1A\u8865\u4E0A\u4E4B\u540E\u56DE\u5230\u672C\u9875\u91CD\u65B0\u70B9\u300C\u5F00\u59CB\u91C7\u96C6\u300D\u5373\u53EF\u7EE7\u7EED\u3002" })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 16, borderColor: "var(--amber, #d97706)" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel-title", children: [
           /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 14 }),
           " ",
@@ -11618,7 +11638,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
           /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "btn btn-ghost", onClick: () => onNavigate?.("chat"), children: "\u8BA9 Agent \u5728\u5BF9\u8BDD\u91CC\u767B\u5F55" })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12, color: "var(--text-tertiary, #9ca3af)", margin: "10px 0 0" }, children: "\u5B8C\u6210\u4EFB\u610F\u4E00\u79CD\u540E\u56DE\u5230\u672C\u9875\u91CD\u65B0\u70B9\u300C\u5F00\u59CB\u91C7\u96C6\u300D\u5373\u53EF\uFF1B\u6296\u97F3\u65E0\u9700\u767B\u5F55\u3002" })
-      ] }),
+      ] })),
       job !== null && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 16 }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel-title", children: [
           /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 14 }),
@@ -11639,6 +11659,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
           captureFailed && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { style: { fontSize: 13, color: "var(--red)" }, children: "\u2715 \u91C7\u96C6\u5931\u8D25" }),
           (capturing || !captureReady && !captureFailed) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "loading", style: { padding: 0 }, children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "spinner" }) })
         ] }),
+        job.stage === "fetch" && CHANNELS_URL_RE.test(job.url) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12.5, color: "var(--amber, #d97706)", margin: "10px 0 0" }, children: "\u89C6\u9891\u53F7\u4EFB\u52A1\uFF1A\u8BF7\u5728\u5FAE\u4FE1 PC \u7AEF\u6253\u5F00\u8FD9\u6761\u89C6\u9891\uFF0C\u70B9\u64AD\u653E\u5668\u4E0B\u65B9\u7684\u300C\u4E0B\u8F7D\u300D\u6309\u94AE\uFF1B \u6D41\u6C34\u7EBF\u5728\u7B49\u4E0B\u8F7D\u5668\u4EA7\u7269\uFF08wxdl_ \u5F00\u5934\u7684\u65B0\u6587\u4EF6\uFF0C\u6700\u957F\u7B49 8 \u5206\u949F\uFF09\u3002" }),
         captureFailed && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
           /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 13, color: "var(--red)", margin: "10px 0 0" }, children: job.error }),
           job.id !== "" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { marginTop: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }, children: [
@@ -11692,7 +11713,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
           ] })
         ] })
       ] }),
-      job === null && !capturing && !preflight?.blocked && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginTop: 14 }, children: "\u5C0F\u7EA2\u4E66\u9700\u8981\u767B\u5F55\u6001\uFF08\u8BBE\u7F6E\u91CC\u586B cookie \u6216\u8D26\u53F7\u9875\u626B\u7801\uFF09\uFF1B\u6296\u97F3\u514D\u767B\u5F55\u76F4\u8FDE\u3002\u7D20\u6750\u4E0E\u62A5\u544A\u5F52\u6863\u5728 outputs/_deconstruct/<\u4EFB\u52A1id>/ \u4E0B\u3002" })
+      job === null && !capturing && !preflight?.blocked && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginTop: 14 }, children: "\u5C0F\u7EA2\u4E66\u9700\u8981\u767B\u5F55\u6001\uFF08\u8BBE\u7F6E\u91CC\u586B cookie \u6216\u8D26\u53F7\u9875\u626B\u7801\uFF09\uFF1B\u6296\u97F3/\u5FEB\u624B\u514D\u767B\u5F55\u76F4\u8FDE\uFF1B \u89C6\u9891\u53F7\u9700\u5FAE\u4FE1\u5DF2\u767B\u5F55\u548C\u89C6\u9891\u53F7\u4E0B\u8F7D\u5668\uFF08\u8BC6\u522B\u5230\u89C6\u9891\u53F7\u94FE\u63A5\u65F6\u624D\u4F1A\u68C0\u67E5\uFF09\u3002\u7D20\u6750\u4E0E\u62A5\u544A\u5F52\u6863\u5728 outputs/_deconstruct/<\u4EFB\u52A1id>/ \u4E0B\u3002" })
     ] })
   ] });
 }
@@ -14614,8 +14635,8 @@ var ABOUT_STYLES = `
 .eau-dialog h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--dsw-alias-label-primary); }
 .eau-dialog-actions { justify-content: flex-end; margin-top: 4px; }
 `;
-var WEBSITE_URL = "https://laochenfei233.github.io/easel-dsh/";
-var CHANGELOG_URL = `${WEBSITE_URL}#changelog`;
+var WEBSITE_URL = "https://easel.xyern.com/";
+var CHANGELOG_URL = `${WEBSITE_URL}changelog/`;
 var REPO_URL = "https://github.com/laochenfei233/easel-dsh";
 var ISSUES_URL = "https://github.com/laochenfei233/easel-dsh/issues";
 function AboutSection({ t, update }) {
@@ -14809,9 +14830,9 @@ var EASEL_ABOUT_COPY = {
     lastChecked: "\u4E0A\u6B21\u68C0\u67E5\uFF1A{time}",
     sourceLabel: "\u66F4\u65B0\u6E90",
     sourceDefault: "\u5B98\u65B9\u7AD9\u70B9\uFF08\u4F18\u5148\uFF09",
-    sourceGithub: "GitHub \u955C\u50CF",
+    sourceGithub: "GitHub\uFF08Release\uFF09",
     sourceCustom: "\u81EA\u5B9A\u4E49\u2026",
-    sourceHint: "\u5B98\u65B9\u7AD9\u70B9\u4E0D\u53EF\u7528\u65F6\u81EA\u52A8\u56DE\u9000\u5230\u955C\u50CF\u3002",
+    sourceHint: "\u5B98\u65B9\u7AD9\u70B9\u4E0D\u53EF\u7528\u65F6\u81EA\u52A8\u56DE\u9000\u5230 GitHub\u3002",
     customUrlHint: "\u586B\u5165 latest.json \u5730\u5740\u540E\u70B9\u300C\u4FDD\u5B58\u300D\u3002",
     sourceUnavailable: "\u4E0D\u53EF\u7528",
     customUrlLabel: "\u5730\u5740",
@@ -14845,9 +14866,9 @@ var EASEL_ABOUT_COPY = {
     lastChecked: "Last checked: {time}",
     sourceLabel: "Update source",
     sourceDefault: "Official site (preferred)",
-    sourceGithub: "GitHub mirror",
+    sourceGithub: "GitHub release",
     sourceCustom: "Custom\u2026",
-    sourceHint: "Falls back to the mirror when the official site is unavailable.",
+    sourceHint: "Falls back to GitHub when the official site is unavailable.",
     customUrlHint: "Enter a latest.json URL, then save.",
     sourceUnavailable: "Unavailable",
     customUrlLabel: "URL",
