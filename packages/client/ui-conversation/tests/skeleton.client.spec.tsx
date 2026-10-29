@@ -30,7 +30,7 @@ import { ConversationHeader } from '../src/client/skeleton/ConversationHeader.ts
 import { ConversationMainPanel } from '../src/client/skeleton/ConversationMainPanel.tsx'
 import { ConversationSession, ConversationSessionHeader } from '../src/client/skeleton/ConversationSession.tsx'
 import { conversationPhase } from '../src/client/contract/snapshot.ts'
-import { HeroShell } from '../src/client/skeleton/EmptyHero.tsx'
+import { HeroShell, heroGreetingPeriod } from '../src/client/skeleton/EmptyHero.tsx'
 import type { HeroShellProps } from '../src/client/skeleton/EmptyHero.tsx'
 import './control-row-dom.ts'
 import { InputBar } from '../src/client/skeleton/InputBar.tsx'
@@ -394,7 +394,7 @@ describe('Hero chrome', () => {
   it('renders the English preview badge through the hero locale seat', () => {
     const renderSlot = vi.fn<HeroShellProps['renderSlot']>(() => null)
     const view = render(<HeroShell t={makeTranslate(en, commonEn)} renderSlot={renderSlot} />)
-    expect(view.getByText('Into the Unknown')).toBeTruthy()
+    expect(view.getByText(/how can I help you\?/)).toBeTruthy()
     expect(view.getByText('Preview')).toBeTruthy()
     expect(renderSlot).toHaveBeenCalledOnce()
     expect(renderSlot.mock.calls[0]?.[0]).toBe('conversation.hero.brand.mark')
@@ -405,6 +405,27 @@ describe('Hero chrome', () => {
     expect(brandMarkOwner.size).toBe(34)
     expect(brandMarkOwner.className).toBeTypeOf('string')
     expect(renderSlot.mock.calls[0]?.[2]?.fallback).toBeTruthy()
+  })
+
+  it('buckets the local clock into the four greeting periods', () => {
+    const at = (hour: number): Date => new Date(2026, 0, 5, hour, 30)
+    expect([0, 4, 5, 10, 11, 12, 13, 17, 18, 23].map(hour => heroGreetingPeriod(at(hour)))).toEqual([
+      'evening', 'evening', 'morning', 'morning', 'noon', 'noon', 'afternoon', 'afternoon', 'evening', 'evening',
+    ])
+  })
+
+  it('greets with the period the local clock falls in', () => {
+    vi.useFakeTimers()
+    try {
+      vi.setSystemTime(new Date(2026, 0, 5, 14, 0))
+      const view = render(<HeroShell t={makeTranslate(zh, commonZh)} renderSlot={() => null} />)
+      expect(view.getByTestId('hero-headline').textContent).toBe('下午好，有什么可以帮到你的吗？')
+      // Crossing into the evening re-reads the clock without a remount.
+      act(() => { vi.setSystemTime(new Date(2026, 0, 5, 19, 0)); vi.advanceTimersByTime(60_000) })
+      expect(view.getByTestId('hero-headline').textContent).toBe('晚上好，有什么可以帮到你的吗？')
+    } finally {
+      vi.useRealTimers()
+    }
   })
 })
 
@@ -561,7 +582,7 @@ describe('ConversationRoot resident composer', () => {
     expect(b.view.queryByRole('tablist')).toBeNull()
     expect(b.slotCalls).not.toContain('conversation.session.header.utilities')
     expect(b.slotCalls).not.toContain('conversation.session.header.actions')
-    expect(b.view.getByText('探索未至之境')).toBeTruthy()
+    expect(b.view.getByText(/有什么可以帮到你的吗？/)).toBeTruthy()
     expect(b.view.getByText('预览版')).toBeTruthy()
     expect(b.view.queryByTestId('view-chat')).toBeNull()
     // The same machine-backed textarea is live in the hero, and the
@@ -595,7 +616,7 @@ describe('ConversationRoot resident composer', () => {
     expect(conversationPhase(failed, EMPTY_CONVERSATION_SNAPSHOT)).toBe('engaging')
     const b = mount(failed, undefined, undefined, { summaryBlank: true })
     expect(b.view.container.querySelector('[data-phase]')?.getAttribute('data-phase')).toBe('active')
-    expect(b.view.queryByText('探索未至之境')).toBeNull()
+    expect(b.view.queryByText(/有什么可以帮到你的吗？/)).toBeNull()
   })
 
   it('settling phase: a summary that does not prove the session blank hides the composer while it opens', () => {
@@ -627,7 +648,7 @@ describe('ConversationRoot resident composer', () => {
     // blank the column for the history round-trip.
     const root = b.view.container.querySelector('[data-phase]')
     expect(root?.getAttribute('data-phase')).toBe('hero')
-    expect(b.view.getByText('探索未至之境')).toBeTruthy()
+    expect(b.view.getByText(/有什么可以帮到你的吗？/)).toBeTruthy()
     expect(b.view.getByRole('textbox')).toBeTruthy()
   })
 
