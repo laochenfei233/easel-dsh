@@ -11,6 +11,7 @@ import { randomBytes } from 'node:crypto'
 import { AsrError, transcribeToSubtitle, resolveMimoCredentials, writeApiDiscovery } from '../asr.js'
 import { createDeconstruct, DeconstructBusyError, deconstructBusy, readDeconstruct, resumeDeconstruct } from '../deconstruct.js'
 import { parsePlatform, sourceStatus, writeCookie } from '../sourcedata.js'
+import { detectWeChat, downloaderRunning, findChannelsTool, launchChannelsTool } from '../channels.js'
 import {
   ApiError, isFile, readEnvFile, readJsonFile, writeJsonFile,
 } from '../../index.js'
@@ -141,11 +142,17 @@ async function apiDeconstructCreate(c) {
   if (deconstructBusy(c.settings.projectRoot)) {
     throw new ApiError(409, '已有拆解采集在运行，请等它完成或失败后再开始')
   }
+  // 视频号（spec easel-breakdown-channels）：识别到 sph 才触碰微信检测——
+  // 启动采集前守卫微信登录（用户拍板），并把下载器 staging 目录注入下载子进程。
+  const fetchEnv = parsePlatform(url) === 'sph'
+    ? { EASEL_CHANNELS_DIR: (await ensureChannelsReady(c)).stagingDir }
+    : undefined
   const job = createDeconstruct({
     projectRoot: c.settings.projectRoot,
     url,
     asrModel: typeof body?.asrModel === 'string' ? body.asrModel : undefined,
     transcribe: deconstructTranscribe(c),
+    fetchEnv,
   })
   return { json: job }
 }
@@ -161,9 +168,13 @@ async function apiDeconstructGet(c) {
 async function apiDeconstructRetry(c) {
   const existing = await readDeconstruct(c.settings.projectRoot, c.params.id)
   if (existing === undefined) throw new ApiError(404, `拆解任务不存在：${c.params.id}`)
+  // 视频号任务的重试可能重跑 fetch 段：同样按平台注入 staging 目录（守卫同 create）。
+  const fetchEnv = parsePlatform(existing.url) === 'sph'
+    ? { EASEL_CHANNELS_DIR: (await ensureChannelsReady(c)).stagingDir }
+    : undefined
   let job
   try {
-    job = await resumeDeconstruct(c.settings.projectRoot, c.params.id, deconstructTranscribe(c))
+    job = await resumeDeconstruct(c.settings.projectRoot, c.params.id, deconstructTranscribe(c), fetchEnv)
   } catch (error) {
     // busy 由 resumeDeconstruct 在占锁点同步抛出：检查到占锁之间没有 await，
     // 并发 retry 不会双双绕过 409。
@@ -190,12 +201,50 @@ async function apiCookiesWrite(c) {
   return { json: { ok: true, changed, status: await sourceStatus(c.settings.projectRoot) } }
 }
 
+// ---- 视频号 sidecar（spec easel-breakdown-channels）----
+// 微信登录/下载器状态只在识别到视频号的链路上探测：preflight（识别步）只读，
+// create/launch（启动采集）才允许拉起下载器；页面加载与插件启动不经过这里。
+
+/** 视频号门控快照：微信运行/登录态 + 下载器安装/运行态（只读，不拉起进程）。 */
+async function channelsSnapshot(c) {
+  const [wechat, tool] = [await detectWeChat(), findChannelsTool(c.settings)]
+  const running = tool.installed && await downloaderRunning()
+  return { wechat, tool: { ...tool, running } }
+}
+
+/** create/launch 共用的启动守卫：已安装 → 微信已登录 → 拉起（未运行时）。 */
+async function ensureChannelsReady(c) {
+  const tool = findChannelsTool(c.settings)
+  if (!tool.installed) {
+    throw new ApiError(400, '未找到视频号下载器：把 wx_video_download 安装目录填入插件配置 '
+      + 'channelsDownloader（首次使用请手动以管理员运行一次完成证书安装）')
+  }
+  const launched = await launchChannelsTool(c.settings)
+  if (!launched.ok) throw new ApiError(400, launched.message)
+  return tool
+}
+
+async function apiChannelsStatus(c) {
+  return { json: await channelsSnapshot(c) }
+}
+
+async function apiChannelsLaunch(c) {
+  const tool = await ensureChannelsReady(c)
+  return { json: { ok: true, status: await channelsSnapshot(c), stagingDir: tool.stagingDir } }
+}
+
 // 拆解 preflight：按链接判平台，需要登录态而当前没有时拒绝创建任务。
 async function apiDeconstructPreflight(c) {
   const body = await c.body()
   const url = typeof body?.url === 'string' ? body.url.trim() : ''
   if (!url) throw new ApiError(400, '缺少 url')
   const platform = parsePlatform(url)
+  // 视频号不走 cookies.json 门控：门在微信登录与下载器安装上（识别到才检测）。
+  if (platform === 'sph') {
+    const channels = await channelsSnapshot(c)
+    const blocked = !channels.tool.installed || !channels.wechat.loggedIn
+    return { json: { platform, blocked, row: null, channels } }
+  }
   const status = await sourceStatus(c.settings.projectRoot)
   const row = status.platforms.find(item => item.platform === platform)
   const blocked = row !== undefined && row.authRequired && !row.cookieSet && !row.loggedIn
@@ -243,6 +292,8 @@ export const DECONSTRUCT_ROUTES = [
   ['GET', ['source-status'], apiSourceStatus],
   ['POST', ['cookies'], apiCookiesWrite],
   ['POST', ['cookies', 'import'], apiCookiesImport],
+  ['GET', ['channels', 'status'], apiChannelsStatus],
+  ['POST', ['channels', 'launch'], apiChannelsLaunch],
   ['POST', ['deconstruct', 'preflight'], apiDeconstructPreflight],
   ['POST', ['deconstruct'], apiDeconstructCreate],
   ['GET', ['deconstruct', ':id'], apiDeconstructGet],

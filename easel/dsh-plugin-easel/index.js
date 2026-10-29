@@ -94,6 +94,9 @@ export function resolveSettings(config) {
     basePath: normalizeBasePath(config.basePath ?? DEFAULT_BASE_PATH),
     // runner 舰队（skills/shared/scripts，B2 起由宿主半直接 spawn）用的解释器。
     python: config.pythonExecutable ?? process.env.EASEL_PYTHON ?? 'python',
+    // 视频号下载器（wx_channels_download）安装目录或 exe 路径；缺省走 lib/channels.js
+    // 的开发态回退。仅视频号拆解链路读取，启动/页面加载不触碰。
+    channelsDownloader: config.channelsDownloader ?? process.env.EASEL_CHANNELS_DOWNLOADER,
   }
 }
 

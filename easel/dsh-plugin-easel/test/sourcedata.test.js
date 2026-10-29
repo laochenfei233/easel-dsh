@@ -8,6 +8,10 @@ test('parsePlatform recognizes the pipeline-supported domains from share text', 
   assert.equal(parsePlatform('9.92 复制打开抖音 https://v.douyin.com/m0Brch7gmVQ/'), 'douyin')
   assert.equal(parsePlatform('http://xhslink.com/a/abc'), 'xhs')
   assert.equal(parsePlatform('https://www.xiaohongshu.com/explore/1'), 'xhs')
+  assert.equal(parsePlatform('快手 https://v.kuaishou.com/GH7abcD'), 'kuaishou')
+  assert.equal(parsePlatform('https://www.chenzhongtech.com/fw/photo/3xabc'), 'kuaishou')
+  assert.equal(parsePlatform('https://channels.weixin.qq.com/web/pages/feed?profile=1'), 'sph')
+  assert.equal(parsePlatform('https://mp.weixin.qq.com/s/abc'), 'other')
   assert.equal(parsePlatform('https://www.bilibili.com/video/BV1x'), 'bili')
   assert.equal(parsePlatform('https://youtu.be/abc'), 'youtube')
   assert.equal(parsePlatform('https://example.com/video'), 'other')
@@ -30,6 +34,7 @@ test('sourceStatus reports cookie presence without leaking values', async () => 
     const status = await sourceStatus(root)
     const xhs = status.platforms.find(p => p.platform === 'xhs')
     const douyin = status.platforms.find(p => p.platform === 'douyin')
+    const kuaishou = status.platforms.find(p => p.platform === 'kuaishou')
     assert.deepEqual(
       xhs,
       { platform: 'xhs', authRequired: true, cookieSet: true, loggedIn: true },
@@ -38,6 +43,11 @@ test('sourceStatus reports cookie presence without leaking values', async () => 
       douyin,
       { platform: 'douyin', authRequired: false, cookieSet: false, loggedIn: false },
     )
+    assert.deepEqual(
+      kuaishou,
+      { platform: 'kuaishou', authRequired: false, cookieSet: false, loggedIn: false },
+    )
+    assert.equal(status.platforms.length, 5)
     assert.equal(JSON.stringify(status).includes('secret'), false)
   } finally {
     rmSync(root, { recursive: true, force: true })

@@ -1,9 +1,12 @@
-// video_fetch.mjs — 爆款拆解视频下载（yt-dlp 打底 + 抖音/小红书原生路径）。Node ≥22。
+// video_fetch.mjs — 爆款拆解视频下载（yt-dlp 打底 + 抖音/小红书/快手/视频号路径）。Node ≥22。
 //
 // usage: node video_fetch.mjs <batch_dir> <分享文案或链接...>
 //
 // 平台路由：抖音走移动端 Feed 接口原生路径（yt-dlp 抖音实测不可用）、
-// 小红书走笔记页 `__INITIAL_STATE__` 原生路径（yt-dlp 不支持），
+// 小红书走笔记页 `__INITIAL_STATE__` 原生路径（yt-dlp 不支持）、
+// 快手走详情页 `__APOLLO_STATE__` 原生路径（免登录），
+// 视频号走 staging 拾取（wx_channels_download 下载器在微信里点下载，
+// 本脚本轮询拾取 wxdl_* 新文件，spec easel-breakdown-channels），
 // YouTube/B站/TikTok/其余站点走 yt-dlp。batch_dir 里已有视频文件则跳过下载
 // （支持「手动放文件」流程）。stdout 只输出一行元信息 JSON，日志走 stderr。
 //
@@ -11,13 +14,15 @@
 //
 // cookie：outputs/_deconstruct/cookies.json，形如 {"xhs": "k=v; k2=v2"}
 // （值也可为 dict，自动拼 Cookie 头）。抖音走移动端 Feed 接口免 cookie；
-// 小红书必须手动填登录 cookie。
+// 小红书必须手动填登录 cookie；快手免登录，可选填网页版游客 cookie；
+// 视频号免 cookie（登录态在微信客户端里，由微信登录门控保证）。
 
 import { strict as assert } from 'node:assert'
-import { createWriteStream, statSync } from 'node:fs'
+import { createWriteStream, copyFileSync, statSync } from 'node:fs'
 import { mkdir, readFile, readdir, rm } from 'node:fs/promises'
 import { lookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
+import { homedir } from 'node:os'
 import { extname, resolve } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import { Readable, Transform } from 'node:stream'
@@ -54,6 +59,9 @@ export function splitUrls(text) {
 const PLATFORM_HOSTS = {
   douyin: ['douyin.com', 'iesdouyin.com'],
   xhs: ['xiaohongshu.com', 'xhslink.com'],
+  kuaishou: ['kuaishou.com', 'kuaishou.cn', 'chenzhongtech.com'],
+  // 精确到 channels 子域：mp.weixin.qq.com（公众号）不是视频号。
+  sph: ['channels.weixin.qq.com'],
 }
 
 /**
@@ -96,6 +104,8 @@ export function detectPlatform(raw) {
   }
   if (hostMatches(url, PLATFORM_HOSTS.douyin)) return 'douyin'
   if (hostMatches(url, PLATFORM_HOSTS.xhs)) return 'xhs'
+  if (hostMatches(url, PLATFORM_HOSTS.kuaishou)) return 'kuaishou'
+  if (hostMatches(url, PLATFORM_HOSTS.sph)) return 'sph'
   return 'generic'
 }
 
@@ -161,18 +171,30 @@ export async function fetchFollowing(rawUrl, { cookie = null, allowHosts = null,
       if (hostMatches(current, cookie.hosts)) headers.Cookie = cookie.value
       else delete headers.Cookie
     }
-    const response = await fetch(current, {
-      method: options.data === undefined ? 'GET' : 'POST',
-      headers,
-      body: options.data,
-      redirect: 'manual',
-      signal: AbortSignal.timeout((options.timeout ?? 30) * 1000),
-    })
-    if (!REDIRECT_STATUS.has(response.status)) return [current.href, await readBodyText(response)]
-    const location = response.headers.get('location')
-    await response.body?.cancel()
-    if (location === null) throw new Error(`HTTP ${response.status} 没有 Location`)
-    current = parseHttpUrl(new URL(location, current).href)
+    const controller = new AbortController()
+    const timer = setTimeout(
+      () => controller.abort(new Error(`请求超时 ${options.timeout ?? 30}s`)),
+      (options.timeout ?? 30) * 1000,
+    )
+    try {
+      const response = await fetch(current, {
+        method: options.data === undefined ? 'GET' : 'POST',
+        headers,
+        body: options.data,
+        redirect: 'manual',
+        signal: controller.signal,
+      })
+      if (!REDIRECT_STATUS.has(response.status)) return [current.href, await readBodyText(response)]
+      const location = response.headers.get('location')
+      await response.body?.cancel()
+      if (location === null) throw new Error(`HTTP ${response.status} 没有 Location`)
+      current = parseHttpUrl(new URL(location, current).href)
+    } finally {
+      // 响应体消费完/取消后才解除定时器：die() 的 process.exit 撞上仍未触发的
+      // abort 定时器加连接池套接字时，Windows 会以 libuv 断言崩溃、退出码
+      // 变成 127（Node v24 实测复现）；解除后退出走正常收尾。
+      clearTimeout(timer)
+    }
   }
   throw new Error('重定向次数过多')
 }
@@ -182,28 +204,34 @@ export async function download(rawUrl, headers, dest, { maxBytes = MAX_DOWNLOAD_
   let current = parseHttpUrl(rawUrl)
   for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
     await assertPublicDestination(current)
-    const response = await fetch(current, {
-      headers, redirect: 'manual', signal: AbortSignal.timeout(120_000),
-    })
-    if (!REDIRECT_STATUS.has(response.status)) {
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const declared = Number(response.headers.get('content-length') ?? '')
-      if (Number.isInteger(declared) && declared > maxBytes) {
-        await response.body?.cancel()
-        throw new Error(`响应体超过 ${maxBytes} 字节上限`)
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(new Error('下载超时 120s')), 120_000)
+    try {
+      const response = await fetch(current, {
+        headers, redirect: 'manual', signal: controller.signal,
+      })
+      if (!REDIRECT_STATUS.has(response.status)) {
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        const declared = Number(response.headers.get('content-length') ?? '')
+        if (Number.isInteger(declared) && declared > maxBytes) {
+          await response.body?.cancel()
+          throw new Error(`响应体超过 ${maxBytes} 字节上限`)
+        }
+        try {
+          await pipeline(Readable.fromWeb(response.body), limitedStream(maxBytes), createWriteStream(dest))
+        } catch (error) {
+          await rm(dest, { force: true }) // 半成品不留盘
+          throw error
+        }
+        return
       }
-      try {
-        await pipeline(Readable.fromWeb(response.body), limitedStream(maxBytes), createWriteStream(dest))
-      } catch (error) {
-        await rm(dest, { force: true }) // 半成品不留盘
-        throw error
-      }
-      return
+      const location = response.headers.get('location')
+      await response.body?.cancel()
+      if (location === null) throw new Error(`HTTP ${response.status} 没有 Location`)
+      current = parseHttpUrl(new URL(location, current).href)
+    } finally {
+      clearTimeout(timer) // 同 fetchFollowing：别让未触发的 abort 定时器送 process.exit 上路
     }
-    const location = response.headers.get('location')
-    await response.body?.cancel()
-    if (location === null) throw new Error(`HTTP ${response.status} 没有 Location`)
-    current = parseHttpUrl(new URL(location, current).href)
   }
   throw new Error('重定向次数过多')
 }
@@ -362,6 +390,148 @@ async function fetchXhs(url, cookie, batch) {
   }
 }
 
+// ---------- 快手原生路径 ----------
+
+/**
+ * 从快手详情页 HTML 提取 `window.__APOLLO_STATE__` 的 JSON。
+ * 脚本内容以页面自移除片段 `;(function(){...}());` 或 `</script>` 结尾，
+ * JSON 里正常不会出现这两种序列；解析失败按没有数据处理。
+ * @param page - 详情页 HTML 文本。
+ * @returns 解析后的 Apollo 缓存对象；页面没有该脚本或 JSON 损坏时返回 null。
+ */
+export function parseApolloState(page) {
+  const marker = 'window.__APOLLO_STATE__='
+  const start = page.indexOf(marker)
+  if (start < 0) return null
+  let text = page.slice(start + marker.length)
+  const stop = text.search(/;\(function|<\/script>/)
+  if (stop >= 0) text = text.slice(0, stop)
+  try {
+    const state = JSON.parse(text)
+    return state !== null && typeof state === 'object' ? state : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 快手 web 详情页路径：`__APOLLO_STATE__` 的 GraphQL 缓存里 `photoUrl` 就是
+ * 无水印 mp4。游客态可取，cookie 可选（风控收紧时填网页版游客 cookie）；
+ * 图集作品没有 VisionVideoDetailPhoto 键，按下载失败降级。
+ * @param url - 已校验的快手链接（短链或详情页）。
+ * @param cookie - cookies.json 的 "kuaishou" 值，可为空串。
+ */
+async function fetchKuaishou(url, cookie, batch) {
+  const hint = cookie ? '' :
+    '；也可在 outputs/_deconstruct/cookies.json 填 "kuaishou" 网页版游客 cookie 后重试'
+  const [final, page] = await fetchFollowing(url, {
+    headers: { 'User-Agent': DESKTOP_UA, Referer: 'https://www.kuaishou.com/' },
+    cookie: cookie ? { value: cookie, hosts: PLATFORM_HOSTS.kuaishou } : null,
+    allowHosts: PLATFORM_HOSTS.kuaishou,
+  })
+  const m = final.match(/\/(?:short-video|fw\/photo)\/([\w-]+)/)
+  if (!m) throw new Error(`无法从链接解析作品 id：${final}`)
+  const client = parseApolloState(page)?.defaultClient ?? {}
+  const photo = client[`VisionVideoDetailPhoto:${m[1]}`] ?? null
+  const photoUrl = typeof photo?.photoUrl === 'string' && photo.photoUrl ? photo.photoUrl : ''
+  if (!photoUrl) throw new Error(`详情页没有视频地址（可能是图集/已删除/风控）${hint}`)
+  const author = Object.entries(client)
+    .find(([key]) => key.startsWith('VisionVideoDetailAuthor:'))?.[1] ?? null
+  const dest = resolve(batch, 'video.mp4')
+  await download(photoUrl, { 'User-Agent': DESKTOP_UA, Referer: 'https://www.kuaishou.com/' }, dest)
+  return {
+    platform: 'kuaishou',
+    title: typeof photo.caption === 'string' ? photo.caption : '',
+    author: typeof author?.name === 'string' ? author.name : '',
+    duration_sec: Math.floor((Number(photo.duration) || 0) / 1000),
+    file: dest, url: final,
+  }
+}
+
+// ---------- 视频号 staging 拾取路径 ----------
+
+// wx_channels_download 下载器的产物命名锚点（其 config.yaml filenameTemplate
+// 带 wxdl_ 前缀）。视频号视频流带签名且加密，必须经微信客户端 + 下载器代理
+// 才能拿到直链并解密，所以本路径不发任何网络请求，只轮询拾取新文件。
+const CHANNELS_PREFIX = 'wxdl_'
+const CHANNELS_POLL_MS = 2_000
+const CHANNELS_MTIME_SLACK_MS = 15_000
+
+/**
+ * staging 目录里 mtime ≥ since 的最新 wxdl_* 视频文件；没有返回 null。
+ * @param dir - 下载器落盘目录（EASEL_CHANNELS_DIR 或用户 Downloads）。
+ * @param since - 只认这个时刻（毫秒）之后落盘的文件，旧下载不拾取。
+ */
+export async function pickStagedChannelsFile(dir, since) {
+  let entries
+  try {
+    entries = await readdir(dir)
+  } catch {
+    return null
+  }
+  const candidates = entries.filter(name => name.startsWith(CHANNELS_PREFIX)
+    && VIDEO_EXTS.has(extname(name).toLowerCase()))
+  let picked = null
+  for (const name of candidates) {
+    const full = resolve(dir, name)
+    try {
+      const stat = statSync(full)
+      if (stat.mtimeMs < since - CHANNELS_MTIME_SLACK_MS) continue
+      if (picked === null || stat.mtimeMs > picked.mtimeMs) {
+        picked = { path: full, name, mtimeMs: stat.mtimeMs, size: stat.size }
+      }
+    } catch { /* 拾取瞬间被移走的文件按不存在处理 */ }
+  }
+  return picked
+}
+
+/** 文件名回推标题：`wxdl_真香现场_1080P.mp4` → `真香现场`。 */
+function stagedTitle(name) {
+  return name.slice(CHANNELS_PREFIX.length).replace(/\.[^.]+$/, '').replace(/_[^_]*$/, '')
+}
+
+/**
+ * 视频号路径：轮询下载器 staging 目录等新文件（用户在微信里点「下载」），
+ * 命中后复制进 batch。微信登录门控由宿主 preflight/create 负责，这里只认文件。
+ * @param batch - 批次目录。
+ * @param env - 进程环境（EASEL_CHANNELS_DIR / EASEL_CHANNELS_WAIT）。
+ */
+async function fetchSph(batch, env = process.env) {
+  const dir = env.EASEL_CHANNELS_DIR || resolve(homedir(), 'Downloads')
+  const waitSec = Number(env.EASEL_CHANNELS_WAIT) > 0 ? Number(env.EASEL_CHANNELS_WAIT) : 480
+  const since = Date.now()
+  log(`视频号走下载器拾取：在微信 PC 端打开该视频，点播放器下方的「下载」按钮；` +
+    `监听 ${dir} 里的 wxdl_* 新文件（最长等 ${Math.round(waitSec / 60)} 分钟）`)
+  const deadline = since + waitSec * 1000
+  while (Date.now() < deadline) {
+    const hit = await pickStagedChannelsFile(dir, since)
+    if (hit !== null) {
+      // 落盘稳定性：隔 1.5s 字节数不变才算下载完成，避免复制到写了一半的文件
+      //（下载器若不落临时名再改名，final name 会先于完成出现）。
+      await new Promise(r => setTimeout(r, 1500))
+      let stable = null
+      try {
+        stable = statSync(hit.path)
+      } catch { /* 文件消失（被改名/移动）→ 回到轮询等下一个形态 */ }
+      if (stable !== null && stable.size === hit.size) {
+        const dest = resolve(batch, 'video.mp4')
+        copyFileSync(hit.path, dest)
+        log(`拾取到下载器产物：${hit.name}`)
+        return {
+          platform: 'sph',
+          title: stagedTitle(hit.name),
+          author: '',
+          duration_sec: 0,
+          file: dest, url: '',
+        }
+      }
+    }
+    await new Promise(r => setTimeout(r, CHANNELS_POLL_MS))
+  }
+  throw new Error(`等待超时：staging 目录 ${dir} 里一直没有新的 wxdl_* 文件` +
+    `（确认下载器在运行、微信已登录，或手动把视频放入批次目录后重跑）`)
+}
+
 // ---------- 通用 yt-dlp 路径 ----------
 
 /**
@@ -420,9 +590,16 @@ export async function selftest() {
   assert.equal(detectPlatform('http://xhslink.com/a2bC，快看'), 'xhs')
   assert.equal(detectPlatform('https://www.bilibili.com/video/BV1GJ411x7h7/'), 'generic')
   assert.equal(detectPlatform('https://www.xiaohongshu.com/explore/abc123'), 'xhs')
+  assert.equal(detectPlatform('https://v.kuaishou.com/GH7abcD'), 'kuaishou')
+  assert.equal(detectPlatform('https://www.kuaishou.com/short-video/3xkpubc9def'), 'kuaishou')
+  assert.equal(detectPlatform('https://www.chenzhongtech.com/fw/photo/3xkpubc9def'), 'kuaishou')
+  assert.equal(detectPlatform('https://channels.weixin.qq.com/web/pages/feed?profile=1'), 'sph')
+  // 公众号域不是视频号。
+  assert.equal(detectPlatform('https://mp.weixin.qq.com/s/abc123'), 'generic')
   // 主机名子串不算平台：Cookie 只认解析后的主机与点边界后缀。
   assert.equal(detectPlatform('https://attacker.example?xiaohongshu.com'), 'generic')
   assert.equal(detectPlatform('https://evil-xiaohongshu.com/note'), 'generic')
+  assert.equal(detectPlatform('https://evil-kuaishou.com/short-video/1'), 'generic')
   assert.equal(detectPlatform('javascript:alert(1)'), 'generic')
   assert.equal(parseHttpUrl('https://www.xiaohongshu.com/explore/abc').hostname, 'www.xiaohongshu.com')
   assert.throws(() => parseHttpUrl('file:///etc/passwd'))
@@ -469,6 +646,8 @@ async function main(argv) {
   try {
     if (platform === 'douyin') meta = await fetchDouyin(url, batch)
     else if (platform === 'xhs') meta = await fetchXhs(url, cookies.xhs ?? '', batch)
+    else if (platform === 'kuaishou') meta = await fetchKuaishou(url, cookies.kuaishou ?? '', batch)
+    else if (platform === 'sph') meta = await fetchSph(batch)
     else meta = await fetchGeneric(url, batch)
   } catch (exc) { // 网络失败/字段变更/风控 → 统一按下载失败降级
     die(EX_DOWNLOAD, `下载失败（${exc.constructor.name}）：${exc.message}。` +
