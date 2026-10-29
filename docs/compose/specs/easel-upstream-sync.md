@@ -14,7 +14,7 @@ commits: 7539b7f780..6af5631701
 
 桌面打包/发布/安装/签名面按 S2.2 冻结在合并前状态，唯一例外是 S2.2a 的 patch 分类自洽修复。六份上游破坏性变更（attachment 完整引用、macOS CUA bundle-id 授权、worktree 命名、普通 fork 独立化、PTC 取消语义、session.follow 激活、模型列表缓存签名）由 Easel 侧消费者直接吸收，无遗留适配。
 
-**Verification** — `pnpm run typecheck` 5/5；`pnpm run build`（artifacts+check）10/10；`pnpm run test:snapshot` exit 0；插件 `node --test` 300/300；`pnpm run hygiene` 19/22，三项失败（product-use、no-unknown-casts、cordis-config）与 master 基线逐条一致。定向 vitest 全绿：web-fetch-http+tool-web 179、session-controller 1077、ui-sidebar 75、ui-workspace 512、ui-schedule/account/plugin-manager/sdk-server 1648、apps/cli 171、compaction+sdk-protocol 191、ui-theme+account 554、app-boot 5666、desktop 打包策略 16、easel-backup 100。全量 `pnpm run test` 的 439 项失败已完整分类（见 S4），无未解释项。
+**Verification** — `pnpm run typecheck` 5/5；`pnpm run build`（artifacts+check）10/10；快照回放因 Windows `core.symlinks=false` 在本机不可用（与 master 基线同因，见 S4）；插件 `node --test` 300/300；`pnpm run hygiene` 19/22，三项失败（product-use、no-unknown-casts、cordis-config）与 master 基线逐条一致。定向 vitest 全绿：ui-chat/ui-conversation/ui-primitives 3638、web-fetch-http+tool-web 179、session-controller 1077、ui-sidebar 75、ui-workspace 512、ui-schedule/account/plugin-manager/sdk-server 1648、apps/cli 171、compaction+sdk-protocol 191、ui-theme+account 554、app-boot 5666、desktop 打包策略 16、easel-backup 100。全量 `pnpm run test` 的 439 项失败已完整分类（见 S4），无未解释项。
 
 **Journey log**
 - master 在会话期间被推进到 `d9e55f7cce`（拆解续跑/下载线），合并必须 merge-forward；否则会让产品线丢掉这些提交。
@@ -68,7 +68,7 @@ S2.4 **冲突解法**：机械文件取上游后重建本地项——`pnpm-works
 - [x] `pnpm run build` 通过（10/10，含 Desktop bundle 与 Web build）
 - [x] dsh-plugin-easel `node --test` 全绿（270 → merge-forward 后 300 pass / 0 fail）
 - [x] 受影响包 vitest 全绿：web-fetch-http 72、session-controller 1077、ui-sidebar 75（快照按 Easel 品牌 mark 更新）、ui-workspace 512、schedule+account+plugin-manager+sdk 1648、apps/cli 171、compaction+sdk-protocol 191、desktop 行为抽测 77
-- [x] `pnpm run test:snapshot` exit 0（keyless 回放，含上游 510 个 snapshot 变更）
+- [x] 快照回放：本机不可用且与合并无关——`core.symlinks=false` 使 `snapshots/` 里 14 个 symlink fixture（base 起就存在）在 Windows 上退化为路径文本，profile 装配失败后 SDK 场景走真网络。master 基线同样失败（161 failed / 213），本分支 176 / 231（多出的是上游新增的 ACP/SDK 场景），同 3 个文件失败且 `session-snapshot-corpus` 两边都通过。AGENTS.md 已声明 fixtures 仅在 macOS/Linux 回放。
 - [x] `pnpm run typecheck`（5/5）与 `pnpm run build:check`（2/2）在全部修复后复跑通过
 - [x] 全量 `pnpm run test` 的 439 项失败已分类：36 项与 master 基线一致（含 lan-handoff、`@easel-dsh` 版本族、agent-instructions、cordis/tools catalog）；并发 flake 单跑即绿（app-boot 5666、easel-backup 100、build.spec 20 等）；Windows 上 git/ssh 5s 超时命中未启用的 `experimental/client-ui-forge`（26）与 `plugin-market/repository-cache`（4），其源码与上游逐字一致
 - [x] 合并引入的 8 处真实契约缺口已修：THIRD_PARTY_NOTICES 重生成、run-gates/ci-workflow/ci-release-selfhosted 三个 spec 与实现对齐、ui-theme hover 守卫（Easel CSS）、tool-web 两个 spec 的 loopback 夹具、desktop patch 分类
