@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "workspace:~",
+    "ipaddr.js": "^2.5.0",
     "undici": "8.11.2"
   },
   "devDependencies": {
