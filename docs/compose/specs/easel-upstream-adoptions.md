@@ -4,22 +4,21 @@ status: delivered
 updated: 2026-10-28
 branch: feat/easel-upstream-adoptions
 worktree: .worktrees/easel-upstream-adoptions (base master 7539b7f780, node_modules junction)
-commits: 7539b7f780..41df760321
+commits: 7539b7f780..913af4ed3f
 ---
 
 # Easel Upstream Adoptions（上游参考点 1–3）
 
 ## Report
 
-**What was built** — 参考上游 ZJU-REAL/Easel 三项设计落地：① 拆解采集流水线支持断点续跑——`job.json` 即检查点，`POST /easel/api/deconstruct/:id/retry` 后按产物存在性跳过已完成段（下载/抽帧/ASR），ASR 内部再细到分段级 sidecar（`<stem>.asr-partial.json`，mtimeMs+size 身份校验，重试只补缺失段），SRT 改落批次目录修掉全任务互覆的真 bug，拆解页 failed 态新增「从失败处继续」；② compaction 触发时输出结构化记录（pressure 全四字段 `{contextWindow, thresholdTokens, totalTokens, trigger}`，context-overflow 按其不解析模型容量的既有契约只记 `{totalTokens, trigger}`），easel 新增 `GET /easel/api/diagnostics/context?provider=&model=` 返回有效声明窗口（「可覆盖」内核本已具备，零改动）；③ 资源保护对表——video_fetch 下载 2 GiB/文本 16 MiB 上限（超限固定报错、半成品不留盘），`/easel/api` 兜底与 ASR 错误不再回显内部错误与远端响应体，sdk JSON-RPC 行缓冲 64M 字符上限。
+**What was built** — 参考上游 ZJU-REAL/Easel 三项设计落地：① 拆解采集流水线支持断点续跑——`job.json` 即检查点，`POST /easel/api/deconstruct/:id/retry` 后按产物存在性跳过已完成段（下载/抽帧/ASR），ASR 内部再细到分段级 sidecar（`<stem>.asr-partial.json`，mtimeMs+size 身份校验，重试只补缺失段），SRT 改落批次目录修掉全任务互覆的真 bug，拆解页 failed 态新增「从失败处继续」；② compaction 触发时输出结构化记录（pressure 全四字段 `{contextWindow, thresholdTokens, totalTokens, trigger}`，context-overflow 按其不解析模型容量的既有契约只记 `{totalTokens, trigger}`）——曾一并交付的 easel 诊断路由按用户判断回撤（dsh 原生 ContextMeter/`resolveModelInfo` 已覆盖，「可覆盖」内核本就具备，零改动）；③ 资源保护对表——video_fetch 下载 2 GiB/文本 16 MiB 上限（超限固定报错、半成品不留盘），`/easel/api` 兜底与 ASR 错误不再回显内部错误与远端响应体，sdk JSON-RPC 行缓冲 64M 字符上限。
 
-**Verification** — `easel/dsh-plugin-easel` `node --test` 300/300（基线 270）；`packages/compaction/compaction-basic` vitest 152/152；`packages/sdk/protocol` vitest 22/22；`pnpm run build` run-gates 4 passed（Desktop bundle 门在 junction worktree 环境失败，PRE-EXISTING：`ERR_PNPM_UNSAFE_TASK_RUN_STATE_PATH` + install-lefthook 兄弟 worktree 配置冲突，apps/desktop 未被触碰）；client 编译门 `tsc -b tsconfig.client.json` exit 0（手动绕过 pnpm install 阻塞）。独立评审：12 条验收逐条 PASS（1 条 PARTIAL 已按其契约判可接受）、零 critical、三结论全过；评审建议 1/2/5 已修（`41df760321`）并复跑全绿。
+**Verification** — `easel/dsh-plugin-easel` `node --test` 293/293（基线 270；回撤 T5 前 300/300）；`packages/compaction/compaction-basic` vitest 152/152；`packages/sdk/protocol` vitest 22/22；`pnpm run build` run-gates 4 passed（Desktop bundle 门在 junction worktree 环境失败，PRE-EXISTING：`ERR_PNPM_UNSAFE_TASK_RUN_STATE_PATH` + install-lefthook 兄弟 worktree 配置冲突，apps/desktop 未被触碰）；client 编译门 `tsc -b tsconfig.client.json` exit 0（手动绕过 pnpm install 阻塞）。独立评审：12 条验收逐条 PASS（1 条 PARTIAL 已按其契约判可接受）、零 critical、三结论全过；评审建议 1/2/5 已修（`41df760321`）并复跑全绿；T5 回撤后全量复跑 293/293。
 
 **Journey log**
 
 - 上游「可覆盖」在 dsh 内核已存在（deepseek 每模型 `contextWindow` + 设置页输入框）——设计前先盘点现状砍掉一半范围。
-- sessionId 占用诊断被裁掉：host 半拿活 Session 需引入 sessions store 面，而会话页 ContextMeter 投影已覆盖该需求。
-- 诊断路由的 catch 若不记日志，瞬时网关故障会伪装成「模型不存在」（评审发现后补 `console.error`）。
+- T5 诊断路由按用户判断回撤：dsh 原生 `resolveModelInfo` 与会话页 ContextMeter 投影已覆盖该需求，预使用查询属边际需求，不值得新面。
 - retry 的 busy 检查与占锁之间隔着 await 会构成 TOCTOU——锁的检查与占必须同步完成（create 路由天然同步，resume 最初抄漏了）。
 - 原子 JSON 写现存三处（index.js `writeJsonFile` / asr.js `writeJsonAtomic` / deconstruct.js 内联），收敛为 util 组零依赖工具留待后续。
 
@@ -55,8 +54,7 @@ commits: 7539b7f780..41df760321
 ### S2.4 上下文窗口可诊断
 
 - 内核 `packages/compaction/compaction-basic`：`compactIfNeeded` 实际触发时追加一条结构化日志记录（`ctx.logger.info('compaction (trigger): %o', record)`），与既有 `shadowed …` 结果行并存。pressure 路径记录全四字段 `{contextWindow, thresholdTokens, totalTokens, trigger: 'pressure'}`；context-overflow 路径按其不解析模型容量的既有契约只记 `{totalTokens, trigger: 'context-overflow'}`（补窗口字段需在溢出恢复路径新增可抛错的适配器调用，得不偿失）。
-- easel 插件新增 `GET /easel/api/diagnostics/context?provider=&model=`：host 半用文档化扩展 API `llm.resolveModelInfo(provider, model)`（经 `ctx.get?.('llm')`，对齐 `resolveDshAsrCredentials` 先例）返回该路由的**有效**声明信息（含默认值生效结果）：`{provider, model, contextWindow, defaultMaxTokens}`；缺参 400，llm 服务缺失 409，解析失败 404（被吞错误 `console.error` 留痕）。路由用 `createDiagnosticsRoutes(ctx)` 工厂注册（对齐 `createAutomationRoutes(ctx)` 模式）。
-- 会话占用诊断不另起炉灶：会话页 ContextMeter 已展示 used/window（`contextPressure` 投影），触发时占用由本节内核记录承载。「可覆盖」零改动：deepseek `defaultContextWindow`/`models[].contextWindow` 与产品设置页输入框已具备。
+- easel 侧不加诊断入口（曾加的 `GET /easel/api/diagnostics/context` 按用户判断回撤）：会话页 ContextMeter 已展示 used/window（`contextPressure` 投影），触发时占用由本节内核记录承载；「可覆盖」零改动：deepseek `defaultContextWindow`/`models[].contextWindow` 与产品设置页输入框已具备。
 
 ### S2.5 video_fetch 响应体上限
 
@@ -83,7 +81,6 @@ commits: 7539b7f780..41df760321
 - [x] T2: ASR 分段 sidecar 落盘与复用 (depends: T3)
 - [x] T3: `transcribeToSubtitle` 输出位置参数化，deconstruct 传 jobdir (depends: none)
 - [x] T4: compaction-basic 结构化触发记录 + 测试 (depends: none)
-- [x] T5: `GET /easel/api/diagnostics/context` 路由（provider+model → 有效声明窗口）+ 测试 (depends: none)
 - [x] T6: video_fetch 下载/读上限 + 测试 (depends: none)
 - [x] T7: serveApi 固定文案 + ASR 错误卫生 (depends: T2)
 - [x] T8: sdk transport 64M 字符行上限 + 测试 (depends: none)
@@ -94,7 +91,6 @@ commits: 7539b7f780..41df760321
 - [x] ASR 中断的任务 POST retry 后：video.mp4 与 frames 的 mtime 不变（不重下不重抽），已完成 ASR 分段不重转，仅补缺失段；SRT 落在批次目录且两个任务互不覆盖。
 - [x] 任一分段转写失败 → 整任务 failed；retry 只重跑失败段；全部成功后 sidecar 被清理。
 - [x] compaction 触发时日志含结构化记录（pressure 全四字段；overflow 按 `{totalTokens, trigger}`）。
-- [x] 诊断路由按 provider+model 返回有效声明窗口（含默认值生效结果），缺参 400。
 - [x] video_fetch：Content-Length 超限或流中超 2 GiB → 固定错误、无半成品残留；text 读超 16 MiB → 固定错误。
 - [x] `/easel/api` 未知错误响应为固定文案，不含 `error.message`。
 - [x] sdk transport 超限单行 → 固定协议错误并断开，不回显内容。
