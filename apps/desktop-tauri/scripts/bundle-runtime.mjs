@@ -219,8 +219,10 @@ function extract(archive, dest) {
     // Windows ships bsdtar which reads zip archives; PowerShell's
     // Expand-Archive is not available in every environment. Linux's tar is
     // GNU tar and cannot read zip at all, so POSIX hosts use unzip.
-    // shortcut: POSIX zip extraction requires unzip on the builder; move to a
-    // JS inflater if a supported image ever lacks it.
+    // TODO: POSIX zip extraction requires unzip on the builder. Linux CI
+    // installs it explicitly, the Linux/macOS images ship it, and a missing
+    // binary fails loud. Move to a JS inflater if a supported builder ever
+    // lacks it.
     if (process.platform === 'win32') {
       extractTar(['-xf', archive, '-C', dest]);
     } else {
@@ -1330,7 +1332,8 @@ function writeLibtvTree({ binary, skillDir }, version) {
  * runtime/libtv. Downloads land in a scratch dir and the staged tree is
  * replaced only after the archive, executable and skill tree all verify: a
  * failed download or check leaves the previous tree untouched, and a copy
- * that dies mid-way leaves a partial tree the next run rejects and restages.
+ * that dies mid-way leaves a partial tree without the last-written VERSION
+ * that the next run rejects and restages.
  */
 async function stageLibtv() {
   const { target, exe } = libtvTarget();

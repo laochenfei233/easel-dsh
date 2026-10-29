@@ -1,14 +1,34 @@
 ---
 feature: easel-libtv-cli
-status: in-progress
+status: delivered
 updated: 2026-10-29
 branch: feat/easel-libtv-cli
-commits: acb7f5e8cf..HEAD
+commits: acb7f5e8cf..a4538d1b9a
 ---
 
 # Easel 预置 LibTV CLI（libtv）
 
 ## Report
+
+**What was built** — LibTV 官方 CLI（`libtv` 1.2.0）与其完整 agent skill 包现在随 Easel-dsh 一起打包，agent 开箱可驱动 LibTV 画布。
+
+1. **打包**：`bundle-runtime.mjs` 新增 `stageLibtv()`，构建期把平台 zip 与 skill zip 拉进 `runtime/libtv/`（`bin/libtv(.exe)`、`skills/libtv-cli/**`、`VERSION`），覆盖发布矩阵的五个目标：Windows amd64/arm64、macOS arm64/x64、Linux amd64。`runtime-inputs.json` pin 了 zip、解压出的可执行文件与 skill 整树摘要；缺失 pin、字节不符、架构不符都直接报错。`--only libtv` 可单独重跑，`manifest.json` 增加 `libtv` / `pinned.libtv` / `verified.libtv`。
+2. **解压**：Windows 用系统 bsdtar；POSIX 改用 `unzip`（Linux 的 GNU tar 读不了 zip），两个 Linux 打包 workflow 显式安装 `unzip`。
+3. **agent 可见性**：`dsh_runner.rs` 把 `<runtime>/libtv/bin` 追加在继承 PATH 与 dreamina 之后（vendor 安装脚本装的 `~/.libtv/libtv` 优先）；`setup.rs` 的 `ensure_libtv_skills()` 写入 `easel-libtv-skills` 行，`bundledSkillDir` 指向 staged skill 树，dev 用 `EASEL_LIBTV_DIR` 覆盖。登录不重造：`libtv login web|phone` 由 CLI 自行完成。
+
+**Verification** —
+- PASS `node scripts/bundle-runtime.mjs --platform win --only libtv`：首次下载、校验、落盘 `runtime/libtv`；重跑走 “already staged, pins verified”。
+- PASS 篡改 staged 二进制或 skill 文件后重跑均 exit 1（sha256 / 整树摘要不符）；恢复后重跑回到 skip 路径。
+- PASS `--platform win --arch arm64` 落 windows-arm64；`--platform linux --arch arm64`（无 pin、无矩阵行）报 “pins no libtv build for linux-arm64”。
+- PASS WSL Rocky 9（GNU tar 1.34）：`tar -xf libtv.zip` 报 “This does not look like a tar archive” exit 2；`unzip -q -o` 解出 56 个文件、整树 sha256 = `5c715f2b…`，与 pin 一致。
+- PASS `cargo test --lib`：50 passed / 0 failed，含新增 `libtv_skills_row_registered_and_idempotent`。
+- PASS `verify-translation-pairing`（README 三件套）与 `verify-doc-budgets`（7 份预算文档在限内）；`node --check`、`git diff --check` 通过。
+
+**Journey log** —
+- 首轮平台映射把 Linux 的 `--arch arm64` 静默落成 amd64 包；改为 arch 参与 target 计算后，无 pin 的目标按预期报错。
+- 发布矩阵里的 Windows arm64 是第一轮漏掉的 pin；对照 `desktop-release.yml` 补齐 `windows-arm64`。
+- 复审发现 Linux CI 的 GNU tar 根本读不了 zip，会在 staging 阶段直接断掉 Linux 打包；改为 POSIX 走 `unzip` 并补进两条 apt 安装行。
+- 状态机选择「完整树才 skip、否则校验失败即报错」：同一 `runtime/` 目录换架构构建会明确失败，而不是悄悄打包错架构的二进制。
 
 ## [S1] Problem
 
@@ -47,9 +67,9 @@ platform target 映射：`windows-amd64` → `libtv-windows-amd64.zip`，`window
 
 1. 目标平台已有完整 staged 树 → 校验 `VERSION`、可执行文件 sha256、skill 整树 sha256 后跳过。
 2. 否则依次尝试 `DSH_DESKTOP_LIBTV_REUSE` 与本机已装 Easel 的 `runtime/libtv` 复用，复用前同样校验。
-3. 否则下载平台 zip 与 skill zip 到 scratch，解压、校验可执行文件与 skill 整树，最后用 `writeLibtvTree()` 替换 staged 目录。下载或校验失败不动旧树；复制中途失败留下的残树会被下次运行判为不完整并重做。
-4. Windows 用随系统 bsdtar 解 zip；POSIX（Linux 的 GNU tar 读不了 zip）改用 `unzip`，macOS 与 Linux CI 镜像均自带。
-4. `--only libtv` 可单独重跑；`manifest.json` 增加 `libtv: {libtv: version}` 与 `pinned.libtv`，`verified.libtv` 记录本轮是否真的对过 pin。
+3. 否则下载平台 zip 与 skill zip 到 scratch，解压、校验可执行文件与 skill 整树，最后用 `writeLibtvTree()` 替换 staged 目录。下载或校验失败不动旧树；复制中途失败留下的残树没有最后写入的 `VERSION`，会被下次运行判为不完整并重做。
+4. Windows 用随系统 bsdtar 解 zip；POSIX（Linux 的 GNU tar 读不了 zip）改用 `unzip`，macOS 与 Linux CI 镜像均自带，两个 Linux 打包 workflow 也显式安装。
+5. `--only libtv` 可单独重跑；`manifest.json` 增加 `libtv: {libtv: version}` 与 `pinned.libtv`，`verified.libtv` 记录本轮是否真的对过 pin。
 
 ### S2.4 agent PATH
 
@@ -91,18 +111,19 @@ TapNow 官方目前的 agent 接入形态是 **MCP connector**（`https://mcp.ta
 
 ## Tasks
 
-- [ ] T1: `runtime-inputs.json` 写入 libtv 1.2.0 的四个平台 zip/exe 摘要与 skill 摘要（depends: none）
-- [ ] T2: `bundle-runtime.mjs` 新增 `stageLibtv()`、`--only libtv`、manifest 字段与复用/校验路径（depends: T1）
-- [ ] T3: `setup.rs` 新增 `ensure_libtv_skills()` 与幂等测试，spawn 链路调用（depends: none）
-- [ ] T4: `dsh_runner.rs` 把 `runtime/libtv/bin` 追加到 agent PATH（depends: none）
-- [ ] T5: 三份 README（含 `README.i18n.yaml`）补 libtv 说明（depends: T2/T3/T4）
-- [ ] T6: 本机实跑 `--only libtv` staging、cargo 测试与文档门（depends: T1..T5）
+- [x] T1: `runtime-inputs.json` 写入 libtv 1.2.0 的五个平台 zip/exe 摘要与 skill 摘要（depends: none）
+- [x] T2: `bundle-runtime.mjs` 新增 `stageLibtv()`、`--only libtv`、manifest 字段与复用/校验路径（depends: T1）
+- [x] T3: `setup.rs` 新增 `ensure_libtv_skills()` 与幂等测试，spawn 链路调用（depends: none）
+- [x] T4: `dsh_runner.rs` 把 `runtime/libtv/bin` 追加到 agent PATH（depends: none）
+- [x] T5: 三份 README（含 `README.i18n.yaml`）补 libtv 说明（depends: T2/T3/T4）
+- [x] T6: 本机实跑 `--only libtv` staging、cargo 测试与文档门（depends: T1..T5）
 
 ## [S4] Acceptance
 
-- [ ] `node scripts/bundle-runtime.mjs --platform win --only libtv` 在 Windows 上完成下载、校验并产出 `runtime/libtv/{bin/libtv.exe,skills/libtv-cli/SKILL.md,VERSION}`。
-- [ ] 重跑同一命令走 skipped 路径并重新校验 pin；把 staged 文件改一个字节后重跑会报错。
-- [ ] `runtime/libtv/skills/libtv-cli/SKILL.md` 的 frontmatter 为 `name: libtv-cli`，整树 sha256 与 pin 一致。
-- [ ] Rust 单测覆盖 `ensure_libtv_skills_at`：首次写入 `easel-libtv-skills` 行、二次调用不重复、用户改写的行保持不动。
-- [ ] staged 树存在时 spawn 的 PATH 末尾包含 `runtime/libtv/bin`；树缺席时 setup 与 PATH 注入均为 no-op。
-- [ ] `cargo test --lib` 通过；docs 门（README i18n 配对）通过。
+- [x] `node scripts/bundle-runtime.mjs --platform win --only libtv` 在 Windows 上完成下载、校验并产出 `runtime/libtv/{bin/libtv.exe,skills/libtv-cli/SKILL.md,VERSION}`。
+- [x] 重跑同一命令走 skipped 路径并重新校验 pin；把 staged 文件改一个字节后重跑会报错。
+- [x] `runtime/libtv/skills/libtv-cli/SKILL.md` 的 frontmatter 为 `name: libtv-cli`，整树 sha256 与 pin 一致。
+- [x] Rust 单测覆盖 `ensure_libtv_skills_at`：首次写入 `easel-libtv-skills` 行、二次调用不重复、用户改写的行保持不动。
+- [x] staged 树存在时 spawn 的 PATH 末尾包含 `runtime/libtv/bin`；树缺席时 setup 与 PATH 注入均为 no-op。
+- [x] `cargo test --lib` 通过；docs 门（README i18n 配对）通过。
+- [x] Linux/POSIX 解压路径：WSL 实证 GNU tar 失败、`unzip` 产出与 pin 相同的整树摘要；两个 Linux 打包 workflow 显式安装 `unzip`。
