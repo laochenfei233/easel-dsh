@@ -50,7 +50,6 @@ import {
   readDouyinCookieCache, serializeDouyinCookieCache,
 } from './lib/trends-douyin-activity.js'
 import { discoverCalendars, syncCalendarEvents } from './caldav.js'
-import { createDiagnosticsRoutes } from './lib/plugins/diagnostics.js'
 
 /** Cordis plugin name; also the `name` of this plugin's loader row. */
 export const name = 'easel'
@@ -2919,7 +2918,6 @@ export function apply(ctx, config = {}) {
   const api = createRouteRegistry(settings, ctx.connection, () => ctx.webServer?.port)
   ctx.provide('easelApi', api)
   ctx.effect(() => api.register(CORE_ROUTES), 'easel: core routes')
-  ctx.effect(() => api.register(createDiagnosticsRoutes(ctx)), 'easel: diagnostics routes')
   ctx.effect(() => api.register(createHandoffRoutes(ctx)), 'easel: handoff routes')
   ctx.effect(() => api.register(createAutomationRoutes(ctx)), 'easel: automation task route')
   ctx.effect(() => ctx.webServer.register({
