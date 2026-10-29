@@ -322,7 +322,9 @@ function ProjectRow({
         <span className={css.title}>{label}</span>
       </span>
       <span className={css.rowActions}>
-        {actions !== undefined && workspaceMenuItems.length > 0 && (
+        {/* EASEL-DIVERGENCE(easel-single-workspace D2): single mode keeps the
+            trigger with an emptied menu; only the access gates hide it. */}
+        {actions !== undefined && (workspaceMenuItems.length > 0 || getWorkspaceUIMode() !== 'full') && (
           <Menu
             open={menuOpen}
             onClose={() => { setMenuOpen(false) }}
