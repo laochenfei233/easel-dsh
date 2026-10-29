@@ -17,6 +17,7 @@ patchedDependencies:
   '@fortune-sheet/react@1.0.4': 2932e52e79afcd4ced08cfa123b5eded786c85043da32f622f3e80af6fc96c37
   '@yao-pkg/pkg@6.21.0': 236fb467509b18abae4c09b1727bbe0239e05a6fbb4d35f84fff3821ca2f6771
   app-builder-lib@26.17.0: b70dc2a2a78ffabb80a4f14fafc7c103237f2b0a207e1f296fa1c1387ea29348
+  esbuild@0.25.12: d7b1ad3182b954b8c4ee324448f102930f532796e0cb42a15642671f36385994
   exceljs@4.4.0: c1bf8ac8f319dab382f08e3a669b715e691d46c703ac5a4163eb383fbedd1d48
   lexical@0.49.0: 54c4413db208cf234cb68c6a837f2523d3b319aa17911f1da385af08362e1356
   mdast-util-gfm-autolink-literal@2.0.1: 7fa6fc7927128a45c3f148d31faf388806895e2de39c14a144200edbc1e7aaa0
@@ -924,6 +925,8 @@ importers:
       '@deepseek-ai/dsh-util-workspace-path':
         specifier: workspace:*
         version: link:../../packages/util/workspace-path
+
+  apps/desktop-tauri: {}
 
   apps/plugin-market-generator:
     dependencies:
@@ -2002,6 +2005,19 @@ importers:
       '@deepseek-ai/dsh-home-paths':
         specifier: workspace:*
         version: link:../../util/home-paths
+
+  packages/backup/easel-backup:
+    dependencies:
+      aws4fetch:
+        specifier: ^1.0.20
+        version: 1.0.20
+      fflate:
+        specifier: ^0.8.2
+        version: 0.8.3
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
 
   packages/boot/app-boot:
     dependencies:
@@ -14142,6 +14158,34 @@ importers:
         specifier: ^18.2.0
         version: 18.3.1
 
+  packages/session-query/session-log-import:
+    dependencies:
+      '@deepseek-ai/dsh-session-format':
+        specifier: workspace:*
+        version: link:../../session/session-format
+      fflate:
+        specifier: ^0.8.2
+        version: 0.8.3
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-attachment':
+        specifier: workspace:*
+        version: link:../../attachment/attachment
+      '@deepseek-ai/dsh-attachment-local':
+        specifier: workspace:*
+        version: link:../../attachment/attachment-local
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:*
+        version: link:../../core/session
+      '@deepseek-ai/dsh-session-persistence':
+        specifier: workspace:*
+        version: link:../../session/session-persistence
+      '@deepseek-ai/dsh-session-persistence-jsonl':
+        specifier: workspace:*
+        version: link:../../session/session-persistence-jsonl
+
   packages/session-query/session-query:
     dependencies:
       '@deepseek-ai/dsh-session-format-catalog':
@@ -17034,6 +17078,40 @@ importers:
         specifier: workspace:*
         version: link:../../interaction/user-questions
 
+  packages/transfer/lan-handoff:
+    dependencies:
+      '@deepseek-ai/dsh-brand':
+        specifier: workspace:*
+        version: link:../../util/brand
+      '@deepseek-ai/dsh-home-paths':
+        specifier: workspace:*
+        version: link:../../util/home-paths
+      '@deepseek-ai/dsh-session':
+        specifier: workspace:*
+        version: link:../../core/session
+      '@deepseek-ai/dsh-session-log-export':
+        specifier: workspace:*
+        version: link:../../session-query/session-log-export
+      bonjour-service:
+        specifier: ^1.4.4
+        version: 1.4.4
+      selfsigned:
+        specifier: ^4.0.1
+        version: 4.0.1
+    devDependencies:
+      '@deepseek-ai/cordis':
+        specifier: workspace:~
+        version: link:../../../vendor/cordis
+      '@deepseek-ai/dsh-session-log-import':
+        specifier: workspace:*
+        version: link:../../session-query/session-log-import
+      '@deepseek-ai/dsh-session-query':
+        specifier: workspace:*
+        version: link:../../session-query/session-query
+      '@deepseek-ai/dsh-workspace':
+        specifier: workspace:*
+        version: link:../../workspace/workspace
+
   packages/typert/generator:
     dependencies:
       '@jridgewell/gen-mapping':
@@ -19878,6 +19956,9 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@leichtgewicht/ip-codec@2.0.5':
+    resolution: {integrity: sha512-Vo+PSpZG2/fmgmiNzYK9qWRh8h/CHrwD0mo1h1DzL4yzHNSfWYujGTYsWGreD000gcgmZ7K4Ys6Tx9TxtsKdDw==}
+
   '@lexical/clipboard@0.49.0':
     resolution: {integrity: sha512-AVKj21xH1qU7JAFA/v0hCoafa+Yti1I7cHG+JQIgc/EqCtP8ePeJyIfTPNN/tXskoCdq++HewQoiSXRwwlocVg==}
     peerDependencies:
@@ -21857,6 +21938,9 @@ packages:
   aws4@1.13.2:
     resolution: {integrity: sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==}
 
+  aws4fetch@1.0.20:
+    resolution: {integrity: sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g==}
+
   b4a@1.8.1:
     resolution: {integrity: sha512-aiqre1Nr0B/6DgE2N5vwTc+2/oQZ4Wh1t4NznYY4E00y8LCt6NqdRv81so00oo27D8MVKTpUa/MwUUtBLXCoDw==}
     peerDependencies:
@@ -21965,6 +22049,9 @@ packages:
   body-parser@2.3.0:
     resolution: {integrity: sha512-2cGmJupaNgg+QUwVLAucDuWuoMZ6EX9iHDRswZ5lsNYEmwPaRknMPCLZz07yTzVq/83p4o/wzbDZbBrTvGGTIw==}
     engines: {node: '>=18'}
+
+  bonjour-service@1.4.4:
+    resolution: {integrity: sha512-jCZcVv7eoc4QesRscwEZtSROBen+6LpKAmBIsQYQrsAeVHLyMXWX/t6eIV5KiRZYNUBl8eVqImEEMQ8L5+c/Kw==}
 
   boolean@3.2.0:
     resolution: {integrity: sha512-d0II/GO9uf9lfUHH2BQsjxzRJZBdsjgsBiW4BvhWk/3qoKwQFjIDVN19PfX8F2D/r9PCMTtLWjYVCFrpeYUzsw==}
@@ -22595,6 +22682,10 @@ packages:
 
   dmg-builder@26.17.0:
     resolution: {integrity: sha512-EAw1f2iGkICmUvAVBOjm7v5mxJdB7/+OZSycHFhKBimiTkCXtvkCC6wBKzHo7ZQYi58C2MmwIleRbgRnROlK2Q==}
+
+  dns-packet@5.6.1:
+    resolution: {integrity: sha512-l4gcSouhcgIKRvyy99RNVOgxXiicE+2jZoNmaNmZ6JXiGajBOJAesk1OBlJuM5k2c+eudGdLxDqXuPCKIj6kpw==}
+    engines: {node: '>=6'}
 
   dom-accessibility-api@0.5.16:
     resolution: {integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==}
@@ -24176,6 +24267,10 @@ packages:
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
 
+  multicast-dns@7.2.5:
+    resolution: {integrity: sha512-2eznPJP8z2BFLX50tf0LuODrpINqP1RVIm/CObbTcBRITQgmC/TjcREF1NeTBzIcR5XO/ukWo+YHOjBbFwIupg==}
+    hasBin: true
+
   multistream@4.1.0:
     resolution: {integrity: sha512-J1XDiAmmNpRCBfIWJv+n0ymC4ABcf/Pl+5YvC5B/D2f/2+8PtHvCNxMPKiQcZyi922Hq69J2YOpb1pTywfifyw==}
 
@@ -25279,6 +25374,9 @@ packages:
 
   text-decoder@1.2.7:
     resolution: {integrity: sha512-vlLytXkeP4xvEq2otHeJfSQIRyWxo/oZGEbXrtEEF9Hnmrdly59sUbzZ/QgyWuLYHctCHxFF4tRQZNQ9k60ExQ==}
+
+  thunky@1.1.0:
+    resolution: {integrity: sha512-eHY7nBftgThBqOyHGVN+l8gF0BucP09fMo0oO/Lb0w1OF80dJv+lDVpXG60WMQvkcxAkNybKsrEIE3ZtKGmPrA==}
 
   tiny-async-pool@1.3.0:
     resolution: {integrity: sha512-01EAw5EDrcVrdgyCLgoSPvqznC0sVxDSVeiOz09FUpjh71G79VCqneOr+xvt7T1r76CF6ZZfPjHorN2+d+3mqA==}
@@ -27548,6 +27646,8 @@ snapshots:
   '@koromix/koffi-win32-x64@3.1.1':
     optional: true
 
+  '@leichtgewicht/ip-codec@2.0.5': {}
+
   '@lexical/clipboard@0.49.0(typescript@6.0.3)':
     dependencies:
       '@lexical/extension': 0.49.0(typescript@6.0.3)
@@ -29417,6 +29517,8 @@ snapshots:
 
   aws4@1.13.2: {}
 
+  aws4fetch@1.0.20: {}
+
   b4a@1.8.1: {}
 
   balanced-match@1.0.2: {}
@@ -29510,6 +29612,11 @@ snapshots:
       type-is: 2.1.0
     transitivePeerDependencies:
       - supports-color
+
+  bonjour-service@1.4.4:
+    dependencies:
+      fast-deep-equal: 3.1.3
+      multicast-dns: 7.2.5
 
   boolean@3.2.0:
     optional: true
@@ -30164,6 +30271,10 @@ snapshots:
       - electron-builder-squirrel-windows
       - supports-color
 
+  dns-packet@5.6.1:
+    dependencies:
+      '@leichtgewicht/ip-codec': 2.0.5
+
   dom-accessibility-api@0.5.16: {}
 
   dompurify@3.4.16:
@@ -30351,7 +30462,7 @@ snapshots:
       '@esbuild/win32-ia32': 0.21.5
       '@esbuild/win32-x64': 0.21.5
 
-  esbuild@0.25.12:
+  esbuild@0.25.12(patch_hash=d7b1ad3182b954b8c4ee324448f102930f532796e0cb42a15642671f36385994):
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.25.12
       '@esbuild/android-arm': 0.25.12
@@ -32124,6 +32235,11 @@ snapshots:
 
   ms@2.1.3: {}
 
+  multicast-dns@7.2.5:
+    dependencies:
+      dns-packet: 5.6.1
+      thunky: 1.1.0
+
   multistream@4.1.0:
     dependencies:
       once: 1.4.0
@@ -33364,6 +33480,8 @@ snapshots:
     transitivePeerDependencies:
       - react-native-b4a
 
+  thunky@1.1.0: {}
+
   tiny-async-pool@1.3.0:
     dependencies:
       semver: 5.7.2
@@ -33678,7 +33796,7 @@ snapshots:
 
   vite@6.4.3(@types/node@22.20.1)(jiti@2.7.0)(lightningcss@1.33.0)(tsx@4.23.13)(yaml@2.9.0):
     dependencies:
-      esbuild: 0.25.12
+      esbuild: 0.25.12(patch_hash=d7b1ad3182b954b8c4ee324448f102930f532796e0cb42a15642671f36385994)
       fdir: 6.5.0(picomatch@4.0.4)
       picomatch: 4.0.4
       postcss: 8.5.28
