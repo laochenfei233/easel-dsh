@@ -47,6 +47,7 @@ export async function buildModelCatalog(
           // EASEL-DIVERGENCE(easel-breakdown-fullpage): expose the declared
           // input modalities so vision-capable selectors can filter.
           ...(resolved.inputModalities === undefined ? {} : { inputModalities: resolved.inputModalities }),
+          ...(model.badge === undefined ? {} : { badge: model.badge }),
         }
       }))
       return {
