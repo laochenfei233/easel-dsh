@@ -1,14 +1,27 @@
 ---
 feature: easel-upstream-sync
-status: in-progress
+status: delivered
 updated: 2026-10-29
 branch: feat/easel-upstream-sync
-commits: 7539b7f780..TBD
+commits: 7539b7f780..6af5631701
 ---
 
 # 上游 dsh 同步（0.2.1-rc.2 → 0.2.2-alpha.2）
 
 ## Report
+
+**What was built** — 产品线吸收了上游 dsh 0.2.1-rc.2 → 0.2.2-alpha.2 的 2176 个提交（0.2.1 正式、rc.3、rc.4、0.2.2-alpha.1/.2），并 merge-forward 到会话期间前进的本地 master（含爆款拆解续跑与快手/视频号下载线）。34 个上游冲突全部按双语义并保解决：session-controller 同时暴露 Easel 的 `inputModalities` 与上游的 `model.badge`；ui-sidebar 保留 `uiSidebarPanels` 隐藏服务并吸收上游 panelPins 与八语字典；ui-workspace 行菜单同时受上游 access 快照与 Easel 单工作区过滤约束；ui-schedule 在上游 `whenAccess` 生成器里嫁接设置区卡片；ui-settings-account 保持 Easel「未登录即纯设置按钮」的产品决定；SDK 服务端把上游 setup 语义与 Easel 的 already-exists 回退合并为同一条 resume 路径；web-fetch-http 保留 Easel 安全审计的非公开地址否决（上游有意改为允许任意目标），同时吸收其 charset 容错修复；compaction 把 Easel 的结构化触发记录挂进上游新 switch。
+
+桌面打包/发布/安装/签名面按 S2.2 冻结在合并前状态，唯一例外是 S2.2a 的 patch 分类自洽修复。六份上游破坏性变更（attachment 完整引用、macOS CUA bundle-id 授权、worktree 命名、普通 fork 独立化、PTC 取消语义、session.follow 激活、模型列表缓存签名）由 Easel 侧消费者直接吸收，无遗留适配。
+
+**Verification** — `pnpm run typecheck` 5/5；`pnpm run build`（artifacts+check）10/10；`pnpm run test:snapshot` exit 0；插件 `node --test` 300/300；`pnpm run hygiene` 19/22，三项失败（product-use、no-unknown-casts、cordis-config）与 master 基线逐条一致。定向 vitest 全绿：web-fetch-http+tool-web 179、session-controller 1077、ui-sidebar 75、ui-workspace 512、ui-schedule/account/plugin-manager/sdk-server 1648、apps/cli 171、compaction+sdk-protocol 191、ui-theme+account 554、app-boot 5666、desktop 打包策略 16、easel-backup 100。全量 `pnpm run test` 的 439 项失败已完整分类（见 S4），无未解释项。
+
+**Journey log**
+- master 在会话期间被推进到 `d9e55f7cce`（拆解续跑/下载线），合并必须 merge-forward；否则会让产品线丢掉这些提交。
+- 我一度把 `master..HEAD -- easel/` 的 1832 行缩水误判为合并删文件，实际是 master 前进了——`git diff` 的 base 会随分支移动，必须核对 merge-base 与第一父。
+- 上游把 web-fetch-http 的传输层整体重写并明确「任何目标地址都被允许」，与 Easel 安全审计的逐跳否决正面冲突；裁决是整包保留 Easel 实现、只取 policy.ts，并给上游新测试补回 loopback 解析夹具。
+- `pnpm run test` 全量在这台机器（16 核跑 6600 文件）会产生大量并发超时；判定归属必须逐包单跑，否则会把 flake 记成回归（app-boot、build.spec、easel-backup 都属此类）。
+- 上游 7509c174d9 给 release-publish 加了 `--serial` 却没同步其 spec，`ci-release-selfhosted` 也停在旧 runs-on 断言；两处按实现更新契约，并把放宽后的断言限定在「hosted 仍是回退」这一实质语义上。
 
 ## [S1] Problem
 
