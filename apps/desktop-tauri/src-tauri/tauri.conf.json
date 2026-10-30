@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Easel-dsh",
-  "version": "0.2.1-alpha.37",
+  "version": "0.2.1-alpha.38",
   "identifier": "ai.easel.desktop",
   "build": {
     "frontendDist": "../ui/dist",
@@ -59,7 +59,7 @@
     "updater": {
       "endpoints": [
         "https://easel.xyern.com/downloads/updates/latest.json",
-        "https://laochenfei233.github.io/easel-dsh/updates/latest.json"
+        "https://github.com/laochenfei233/easel-dsh/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEEwOUJCOUZBQTYxOEQwQTUKUldTbDBCaW0rcm1ib0xhRzVDY0ZZcWlQVEp4OXlNandwTWp2WVpPMTRrTVVFTmpXRDBUV1dwencK",
       "windows": {

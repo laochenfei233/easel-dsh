@@ -78,16 +78,18 @@ enum UpdateSource {
 #[derive(Serialize, Clone, Copy, Debug, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum SourceKey {
-    /// No override file: the configured endpoints (official site first, mirror second).
+    /// No override file: the configured endpoints (official site first, GitHub Release manifest last).
     Default,
-    /// The GitHub Pages mirror only.
+    /// The GitHub Release manifest only.
     Github,
     /// A user-provided endpoint.
     Custom,
 }
 
-/// The GitHub Pages mirror endpoint, offered as the fallback source.
-const GITHUB_ENDPOINT: &str = "https://laochenfei233.github.io/easel-dsh/updates/latest.json";
+/// The manifest GitHub publishes with every Release, offered as the fallback
+/// source: that asset exists without a Pages site, which cannot carry
+/// installers (100 MB per file) anyway.
+const GITHUB_ENDPOINT: &str = "https://github.com/laochenfei233/easel-dsh/releases/latest/download/latest.json";
 
 impl std::fmt::Debug for UpdateSource {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -568,8 +570,9 @@ fn snapshot_at(app: &AppHandle) -> UpdateStateSnapshot {
 }
 
 /// Switch the update source from the About page. `default` restores the
-/// configured endpoints (official site first, mirror second), `github` pins the
-/// mirror, and `custom` pins one validated endpoint.
+/// configured endpoints (official site first, GitHub Release manifest last),
+/// `github` pins the GitHub Release manifest, and `custom` pins one validated
+/// endpoint.
 #[tauri::command]
 pub fn easel_set_update_source(app: AppHandle, source: String, url: Option<String>) -> Result<UpdateStateSnapshot, String> {
     let home = crate::setup::dsh_home();
