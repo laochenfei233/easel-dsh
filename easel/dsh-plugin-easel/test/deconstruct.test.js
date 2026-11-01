@@ -209,12 +209,31 @@ test('resolveDshAsrCredentials walks route → settings profile → credential a
   assert.deepEqual(resolvedRefs, ['MY_ASR_KEY'])
 })
 
+test('resolveDshAsrCredentials falls back to the route defaultBaseURL when the profile sets none', async () => {
+  const resolved = await resolveDshAsrCredentials(
+    stubCtx({
+      routes: [{
+        provider: 'my-gateway',
+        settingsNs: 'llm-pi-ai',
+        settingsPath: ['providers', 'my-gateway'],
+        defaultBaseURL: 'https://api.xiaomimimo.com/v1/',
+      }],
+      profile: { apiKeyEnv: 'MY_ASR_KEY' },
+      resolveValue: 'sk-test',
+    }), 'my-gateway', 'mimo-v2.5-asr')
+  assert.deepEqual(resolved, {
+    ok: true,
+    credentials: { apiKey: 'sk-test', baseUrl: 'https://api.xiaomimimo.com/v1', model: 'mimo-v2.5-asr' },
+  })
+})
+
 test('resolveDshAsrCredentials reports the missing piece, not a generic failure', async () => {
   const cases = [
     { ctx: stubCtx({ routes: [] }), provider: 'my-gateway', reason: /不在模型管理目录中/ },
     { ctx: stubCtx({ profile: undefined }), provider: 'my-gateway', reason: /尚未配置/ },
     { ctx: stubCtx({ profile: { baseURL: 'https://gw.example/v1' } }), provider: 'my-gateway', reason: /API Key 未配置/ },
     { ctx: stubCtx({ profile: { apiKeyEnv: 'MY_ASR_KEY', baseURL: ' ' }, resolveValue: 'sk-test' }), provider: 'my-gateway', reason: /Base URL/ },
+    { ctx: stubCtx({ profile: { apiKeyEnv: 'MY_ASR_KEY' }, resolveValue: 'sk-test' }), provider: 'my-gateway', reason: /Base URL/ },
     { ctx: stubCtx({ profile: CONFIGURED_PROFILE, resolveValue: undefined }), provider: 'my-gateway', reason: /API Key 未配置/ },
     { ctx: {}, provider: 'my-gateway', reason: /模型管理服务/ },
   ]

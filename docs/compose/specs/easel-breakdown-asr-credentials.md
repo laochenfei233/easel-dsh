@@ -1,7 +1,7 @@
 ---
 feature: easel-breakdown-asr-credentials
 status: delivered
-updated: 2026-10-27
+updated: 2026-11-01
 branch: feat/easel-asr-credentials
 commits: dffe624804..9c18114138
 ---
@@ -36,6 +36,13 @@ llm/settings/credentials 同进程，`hasProviderApiKey`（session-controller/ca
 「目录未声明视觉能力」提示改为针对所选模型：未标注图像输入时提示去设置页勾选与
 排序后果。复审曾抓到首版漏改提示块条件（悬空引用会让整页崩溃），已随本跟进修复。
 
+**跟进（2026-11-01，Base URL 回退路由默认端点）** — 用户只配 Key 的出厂路由
+（xiaomi）转写仍失败：解析链要求 profile 显式存 `baseURL`，但 llm-pi-ai 注册的
+路由自带 `defaultBaseURL`（`provider-data.generated.ts`，xiaomi 即
+`https://api.xiaomimimo.com/v1`），适配器在 profile 未写 `baseURL` 时本就用它。
+修法：`resolveDshAsrCredentials` 的 Base URL 读取改为
+`profile.baseURL ?? route.defaultBaseURL`，两者皆空才报「未配置 Base URL」。
+
 ## [S1] Problem
 
 爆款拆解页的「语音转写模型」下拉来自 dsh 模型目录（与 设置→模型 同一份数据），用户在
@@ -57,7 +64,8 @@ llm/settings/credentials 同进程，`hasProviderApiKey`（session-controller/ca
   provider 半边在 `ctx.llm.listConfigurableProviders()` 里找路由。
 - **凭据解析链**：与 `hasProviderApiKey` 同构——settings `describe`（redactSecrets，
   credential-ref 字段不被遮蔽）→ 走 `settingsNs`/`settingsPath` 取服务商 profile →
-  `apiKeyEnv` 经 `credentials.resolve` 得密钥、`baseURL` 即端点；导出
+  `apiKeyEnv` 经 `credentials.resolve` 得密钥、Base URL 取 `profile.baseURL`，
+  缺省回退路由 `defaultBaseURL`（2026-11-01 跟进）；导出
   `resolveDshAsrCredentials(ctx, providerId, modelId)`，返回
   `{ ok: true, credentials }` 或 `{ ok: false, reason }`，reason 逐项点名缺失件
   （服务缺失 / 路由不在目录 / 未配置 / Key 未配置 / 无 Base URL）。
@@ -84,7 +92,8 @@ llm/settings/credentials 同进程，`hasProviderApiKey`（session-controller/ca
 
 - [x] 选 `my-gateway::some-asr` 且该服务商在 设置→模型 配好 Key 与 Base URL 时，
   转写请求带 `https://…/v1` + 该 Key + `some-asr`（helper 单测钉住读取链与去尾斜杠）。
-- [x] 服务缺失 / 路由不在目录 / 未配置 / Key 未配置 / Base URL 为空 / `apiKeyEnv`
-  不合 ref 文法六种情形各自返回点名的 `reason`（单测覆盖）。
+- [x] 服务缺失 / 路由不在目录 / 未配置 / Key 未配置 / Base URL 为空且路由无
+  `defaultBaseURL` / `apiKeyEnv` 不合 ref 文法六种情形各自返回点名的 `reason`
+  （单测覆盖；路由默认端点回退另有单测钉住）。
 - [x] 裸 model id 仍走 MIMO_* env 路径（既有测试不回归；270 pass 基线）。
 - [x] 拆解页请求体携带完整 `provider::model`（client.js 重建产物可见）。

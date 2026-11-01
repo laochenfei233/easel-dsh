@@ -70,8 +70,9 @@ let hostCtx = null
 
 /**
  * 从 dsh 模型管理解析一个服务商路由下的 ASR 凭据，与「设置→模型」同一注册表：
- * 路由表来自 `ctx.llm`，Base URL 与 `apiKeyEnv` 读自 settings 命名空间的
- * 服务商 profile，密钥经 `ctx.credentials` 解析（与 session-controller 的
+ * 路由表来自 `ctx.llm`，Base URL 读自 settings 命名空间的服务商 profile
+ * （缺省回退路由 `defaultBaseURL`），`apiKeyEnv` 同读自该 profile，密钥经
+ * `ctx.credentials` 解析（与 session-controller 的
  * modelCatalog / hasProviderApiKey 同一条读取链）。
  * @param ctx - 宿主 cordis 上下文；缺 llm/settings/credentials 的部署返回失败。
  * @param providerId - 模型目录的 provider 组 id（llm 路由键）。
@@ -102,7 +103,9 @@ export async function resolveDshAsrCredentials(ctx, providerId, modelId) {
   if (typeof resolved?.value !== 'string' || resolved.value === '') {
     return { ok: false, reason: `服务商「${providerId}」的 API Key 未配置` }
   }
-  const baseUrl = String(profile.baseURL ?? '').trim().replace(/\/+$/, '')
+  // profile 没写 baseURL 时回退路由默认端点，与适配器自身行为一致
+  // （如 xiaomi 出厂即 https://api.xiaomimimo.com/v1）。
+  const baseUrl = String(profile.baseURL ?? route.defaultBaseURL ?? '').trim().replace(/\/+$/, '')
   if (baseUrl === '') return { ok: false, reason: `服务商「${providerId}」未配置 Base URL` }
   return { ok: true, credentials: { apiKey: resolved.value, baseUrl, model: modelId } }
 }
