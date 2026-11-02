@@ -157,6 +157,19 @@ function rerender(b: ReturnType<typeof mount>, overrides: Partial<WorkspaceBrows
 }
 
 describe('WorkspaceBrowser', () => {
+  it('renders header actions from the extension slot with the column state', () => {
+    const seen: boolean[] = []
+    const renderSlot = ((name: string, owner: { wide?: boolean }) => {
+      if (name !== 'sidebar.workspaces.header.action') return null
+      seen.push(owner.wide === true)
+      return <button type="button" data-testid="header-action">Import</button>
+    }) as WorkspaceBrowserProps['renderSlot']
+    mount({ renderSlot })
+    expect(screen.getByTestId('header-action')).not.toBeNull()
+    expect(seen.length).toBeGreaterThan(0)
+    expect(seen.every(Boolean)).toBe(true)
+  })
+
   it.each(['workspace', 'flat', 'ungrouped'] as const)('keeps %s recency independent of arrival order and saved manual positions', (mode) => {
     localStorage.clear()
     const preferences = createWorkspaceViewStore().create()

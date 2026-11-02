@@ -113,12 +113,33 @@ export interface SessionRowScheduleOwnerProps {
   readonly sessionId: SessionId
 }
 
+/** Owner share of the sidebar header action strip. */
+export interface SidebarHeaderActionOwnerProps {
+  /** True while the browser renders its wide, labelled column. */
+  readonly wide: boolean
+}
+
 declare module '@deepseek-ai/dsh-client-ui-slots' {
   interface SlotMap {
     /** Directory-flow hole under the conversation empty-state picker (declared by the WorkspacePicker entry). */
     'conversation.hero.workspace.directoryFlow': { kind: 'single'; scope: 'root'; owner: DirectoryFlowOwnerProps }
     /** Directory-flow hole under the sidebar browsing region (declared by the WorkspaceBrowser entry). */
     'sidebar.workspaces.directoryFlow': { kind: 'single'; scope: 'root'; owner: DirectoryFlowOwnerProps }
+    /**
+     * One action in the browsing region's header, rendered before the shipped
+     * view-options control. Entries own their icon, label, visibility, and
+     * behavior; the browser supplies only the column state and the ordered
+     * render site. An entry renders one 28px icon button (header controls keep
+     * that geometry and their focus ring inside the cluster), or null when the
+     * action does not apply. Copy comes from the contributing package's locale
+     * namespace.
+     * @example
+     * ctx.slots.inject('sidebar.workspaces.header.action', () => ctx.slots.register(
+     *   { name: 'sidebar.workspaces.header.action', id: 'my-import', order: 10 },
+     *   ({ wide }) => wide ? React.createElement('button', { type: 'button', 'aria-label': 'Import' }, '…') : null,
+     * ))
+     */
+    'sidebar.workspaces.header.action': { kind: 'list'; scope: 'root'; owner: SidebarHeaderActionOwnerProps }
     /**
      * Leading decoration of one Session row, in the 16px cell before the title
      * that the row's own state dot otherwise occupies. A higher-priority state
@@ -469,6 +490,7 @@ export type WorkspaceBrowserProps =
   PropsRuntime<'sidebar.workspaces'>
   & PropsRenderSlots<
     | 'sidebar.workspaces.directoryFlow'
+    | 'sidebar.workspaces.header.action'
     | 'sidebar.workspaces.session.menu.item'
     | 'sidebar.workspaces.session.row.action'
     | 'sidebar.session.row.leading'

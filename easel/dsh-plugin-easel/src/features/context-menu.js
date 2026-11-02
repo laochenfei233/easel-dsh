@@ -15,13 +15,13 @@ import { captureTrendArticle, createIdea, fetchHandoffPaired, pushFileToPeer } f
 import {
   absolutePathFor, draftBlock, fileNameOf, isAbsolutePath, quoteBlock, relativePath, resolveSurface,
 } from '../lib/context-menu-model.js'
+import { showToast } from '../lib/ui-toast'
 
 const STYLE_ID = 'easel-context-menu-style'
 const MENU_CLASS = 'easel-ctx-menu'
 const ITEM_CLASS = 'easel-ctx-menu__item'
 const SEPARATOR_CLASS = 'easel-ctx-menu__separator'
 const HINT_CLASS = 'easel-ctx-menu__hint'
-const TOAST_CLASS = 'easel-ctx-toast'
 
 const CSS = `
 .${MENU_CLASS} {
@@ -81,25 +81,6 @@ const CSS = `
   margin: 4px 6px;
   background: var(--dsw-alias-border-l1, rgba(15, 23, 42, 0.08));
 }
-.${TOAST_CLASS} {
-  position: fixed;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
-  z-index: 2147483000;
-  max-width: min(70vw, 460px);
-  padding: 9px 16px;
-  border-radius: var(--dsw-radius-md, 8px);
-  background: var(--dsw-menu-surface-fill, var(--dsw-alias-bg-elevated, #ffffff));
-  box-shadow: var(--dsw-elevation-prominent, 0 12px 32px rgba(15, 23, 42, 0.2));
-  color: var(--dsw-alias-label-primary, #1f2329);
-  font: var(--dsw-text-body-font, 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif);
-  text-align: center;
-  pointer-events: none;
-}
-.${TOAST_CLASS}--ok { color: var(--dsh-success-text, #0f9d58); }
-.${TOAST_CLASS}--warn { color: var(--dsh-warning-text, #b45309); }
-.${TOAST_CLASS}--error { color: var(--dsh-error-text, #dc2626); }
 `
 
 /** One menu row; separators carry no label. */
@@ -114,12 +95,16 @@ const SEPARATOR = Object.freeze({ separator: true })
 export const plugin = {
   name: 'easel-context-menu',
   inject: [
-    'sessions', 'uiSession', 'uiWorkspace', 'conversation',
-    'remote', 'remote.session',
+    'sessions', 'uiSession', 'uiWorkspace', 'workspaces', 'conversation',
+    'remote', 'remote.session', 'easelProjectArchive', 'locale',
   ],
   apply(ctx) {
+    const extras = {
+      archive: ctx.easelProjectArchive,
+      t: ctx.locale.bind('easel.archive'),
+    }
     ctx.effect(() => installStyles(), 'easel-context-menu: styles')
-    ctx.effect(() => installListener(ctx), 'easel-context-menu: listener')
+    ctx.effect(() => installListener(ctx, extras), 'easel-context-menu: listener')
   },
 }
 
@@ -137,9 +122,10 @@ function installStyles() {
  * Watch every `contextmenu`, claim the three supported surfaces, and close the
  * previous menu before deciding — so a right-click anywhere also dismisses ours.
  * @param ctx - plugin context.
+ * @param extras - archive service and locale copy shared with the project surfaces.
  * @returns disposer removing the listener and any open menu.
  */
-function installListener(ctx) {
+function installListener(ctx, extras) {
   let closeActive = null
   const close = () => {
     if (closeActive === null) return
@@ -159,6 +145,18 @@ function installListener(ctx) {
       close()
       return
     }
+    let items
+    try {
+      items = itemsFor(ctx, surface, extras)
+    } catch (error) {
+      reportError(ctx, error)
+      close()
+      return
+    }
+    if (items === null) {
+      close()
+      return
+    }
     event.preventDefault()
     event.stopPropagation()
     if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation()
@@ -167,7 +165,7 @@ function installListener(ctx) {
       closeActive = showMenu({
         x: event.clientX,
         y: event.clientY,
-        items: itemsFor(ctx, surface),
+        items,
         onClosed: () => { closeActive = null },
         onError: (error) => { reportError(ctx, error) },
       })
@@ -184,14 +182,18 @@ function installListener(ctx) {
 
 /**
  * Build the rows for one surface. File rows may query the OS lazily; every
- * other row is synchronous.
+ * other row is synchronous. Workspace rows return null when the registry has
+ * no matching workspace, which leaves the native menu in place.
  * @param ctx - plugin context.
  * @param surface - the classified gesture.
- * @returns the menu rows.
+ * @param extras - archive service and archive copy.
+ * @returns the menu rows, or null when this surface cannot be served.
  */
-function itemsFor(ctx, surface) {
+function itemsFor(ctx, surface, extras) {
   if (surface.kind === 'file') return fileItems(ctx, surface)
   if (surface.kind === 'trend') return trendItems(surface.trend)
+  if (surface.kind === 'project') return projectItems(ctx, surface, extras)
+  if (surface.kind === 'workspace') return workspaceItems(ctx, surface, extras)
   if (surface.kind === 'editable') return editableItems(surface.element)
   return [
     menuRow('复制', () => copyOrThrow(surface.text)),
@@ -200,6 +202,55 @@ function itemsFor(ctx, surface) {
     menuRow('添加到当前任务', () => addToTask(ctx, surface.text), { disabled: currentInput(ctx) === undefined }),
     menuRow('在辅助对话中提问', () => askInAuxiliaryConversation(ctx, surface.text), { disabled: currentSessionId(ctx) === undefined }),
   ]
+}
+
+/**
+ * Data-location project row: locate the directory and offer the archive action.
+ * @param ctx - plugin context.
+ * @param surface - project surface.
+ * @param extras - archive service and copy.
+ * @returns menu rows.
+ */
+function projectItems(ctx, surface, extras) {
+  const items = [
+    menuRow(extras.t('reveal'), () => revealPathAt(ctx, surface.path)),
+    menuRow(extras.t('copyPath'), () => copyOrThrow(surface.path)),
+  ]
+  const archive = extras.archive
+  if (archive !== undefined && archive.supported() === true && archive.busy() !== true) {
+    items.push(SEPARATOR)
+    items.push(menuRow(extras.t('export'), () => {
+      void archive.startExport(surface.path, surface.name)
+    }))
+  }
+  return items
+}
+
+/**
+ * Sidebar workspace row: resolve the registered workspace, then offer path and
+ * archive actions. Only project directories under projects/ get the export row.
+ * @param ctx - plugin context.
+ * @param surface - workspace surface.
+ * @param extras - archive service and copy.
+ * @returns menu rows, or null when the workspace id is no longer registered.
+ */
+function workspaceItems(ctx, surface, extras) {
+  const items = ctx.workspaces?.list?.getSnapshot?.().items ?? []
+  const workspace = items.find(item => item.workspaceId === surface.workspaceId)
+  if (workspace === undefined) return null
+  const rows = [
+    menuRow(extras.t('reveal'), () => revealPathAt(ctx, workspace.path)),
+    menuRow(extras.t('copyPath'), () => copyOrThrow(workspace.path)),
+  ]
+  const archive = extras.archive
+  if (archive !== undefined && archive.supported() === true
+    && archive.isProject(workspace.path) && archive.busy() !== true) {
+    rows.push(SEPARATOR)
+    rows.push(menuRow(extras.t('export'), () => {
+      void archive.startExport(workspace.path, workspace.title)
+    }))
+  }
+  return rows
 }
 
 // ---- 热点行（spec easel-hotspot-radar D6）：抓正文入库是显式主操作，书签按钮保持轻量 ----
@@ -270,17 +321,8 @@ function openTrendUrl(url) {
 }
 
 /** One transient status line; a failed capture on a ported page has no composer to notify. */
-let contextToastTimer = null
 function contextToast(message, kind) {
-  const previous = document.querySelector(`.${TOAST_CLASS}`)
-  if (previous !== null) previous.remove()
-  if (contextToastTimer !== null) clearTimeout(contextToastTimer)
-  const toast = document.createElement('div')
-  toast.className = `${TOAST_CLASS} ${TOAST_CLASS}--${kind}`
-  toast.setAttribute('role', 'status')
-  toast.textContent = message
-  document.body.append(toast)
-  contextToastTimer = setTimeout(() => toast.remove(), 2600)
+  showToast({ kind, message, duration: 2600, closeLabel: '关闭' })
 }
 
 function messageOf(error) {

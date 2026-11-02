@@ -23,6 +23,10 @@ export const CHAT_NODE_SELECTOR = '[data-chat-node-key]'
 export const PRESENTED_FILE_SELECTOR = '[data-presented-file]'
 /** Hotspot-trend rows in the Easel pages; the attribute carries the row payload as JSON. */
 export const TREND_ROW_SELECTOR = '[data-easel-trend]'
+/** Project rows in the data-location settings card; the attribute is the absolute project directory. */
+export const PROJECT_ROW_SELECTOR = '[data-easel-project]'
+/** Real workspace rows in the sidebar; the row key is `workspace:<workspaceId>`. */
+export const WORKSPACE_ROW_SELECTOR = '[data-row-key^="workspace:"]'
 /** Inline file mentions and presented-file preview buttons carry the path in `title`. */
 export const FILE_LINK_SELECTOR = 'button[title]'
 
@@ -118,6 +122,8 @@ export function trendPayloadOf(element) {
  * @param {Selection | null | undefined} selection - the live selection.
  * @returns {null | { kind: 'file', row?: Element, path: string, root: string | undefined, entry: string, preview: Element | null }
  *   | { kind: 'trend', element: Element, trend: { title: string, url: string, source: string, platform: string, rank?: number, hot?: string } }
+ *   | { kind: 'project', element: Element, path: string, name: string }
+ *   | { kind: 'workspace', element: Element, workspaceId: string }
  *   | { kind: 'editable', element: Element }
  *   | { kind: 'conversation', element: Element, text: string }} the handled surface.
  */
@@ -134,6 +140,28 @@ export function resolveSurface(target, selection) {
         kind: 'file', row, path, root: dataOf(root, 'filesRoot'), entry,
         preview: row.querySelector?.('button') ?? null,
       }
+    }
+  }
+
+  // Project rows in the settings card and workspace rows in the sidebar carry
+  // their identity as data. They win over the row's buttons, whose titles could
+  // otherwise classify as inline file links.
+  const projectRow = target.closest(PROJECT_ROW_SELECTOR)
+  if (projectRow != null) {
+    const path = dataOf(projectRow, 'easelProject')
+    if (typeof path === 'string' && path !== '') {
+      return {
+        kind: 'project', element: projectRow, path,
+        name: dataOf(projectRow, 'easelProjectName') ?? '',
+      }
+    }
+  }
+  const workspaceRow = target.closest(WORKSPACE_ROW_SELECTOR)
+  if (workspaceRow != null) {
+    const key = dataOf(workspaceRow, 'rowKey') ?? ''
+    if (key.startsWith('workspace:')) {
+      const workspaceId = key.slice('workspace:'.length)
+      if (workspaceId !== '') return { kind: 'workspace', element: workspaceRow, workspaceId }
     }
   }
 

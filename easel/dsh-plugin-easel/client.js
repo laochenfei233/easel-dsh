@@ -23,14 +23,14 @@ var __copyProps = (to, from, except, desc) => {
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// src/client.tsx
+// easel/dsh-plugin-easel/src/client.tsx
 var client_exports = {};
 __export(client_exports, {
   default: () => client_default
 });
 module.exports = __toCommonJS(client_exports);
 
-// src/generated/easel-css.js
+// easel/dsh-plugin-easel/src/generated/easel-css.js
 var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .easel-scope {
   color-scheme: dark;
   --bg: #14171e;
@@ -920,10 +920,10 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
     box-shadow: inset 0 0 0 1px var(--border-strong);
   }}`;
 
-// src/lib/shell.tsx
+// easel/dsh-plugin-easel/src/lib/shell.tsx
 var import_react = require("react");
 
-// src/lib/task.ts
+// easel/dsh-plugin-easel/src/lib/task.ts
 var getServices = null;
 var cwdResolver = null;
 function configureTasks(cfg) {
@@ -1027,7 +1027,7 @@ async function resolveHomeWorkspaceId(projectDir) {
   return root ? findWorkspaceByPath(root)?.workspaceId ?? null : null;
 }
 
-// src/lib/shell.tsx
+// easel/dsh-plugin-easel/src/lib/shell.tsx
 function pageKey(view12) {
   return `easel.${view12}`;
 }
@@ -1168,7 +1168,7 @@ function createShellBridge(ctx, t) {
   return { useShellProps, navigate, useTopic, t, refresh: shell.refresh, setPersona: shell.setPersona };
 }
 
-// src/features/dashboard.tsx
+// easel/dsh-plugin-easel/src/features/dashboard.tsx
 var dashboard_exports = {};
 __export(dashboard_exports, {
   Component: () => Component,
@@ -1179,7 +1179,7 @@ __export(dashboard_exports, {
   view: () => view
 });
 
-// src/components/icons.tsx
+// easel/dsh-plugin-easel/src/components/icons.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
 var svg = (size = 18, sw = 1.8) => ({
   width: size,
@@ -1323,10 +1323,10 @@ var IconGithub = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, impor
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M9 18c-4.51 2-5-2-7-2" })
 ] });
 
-// src/components/DashboardPage.tsx
+// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
 var import_react2 = require("react");
 
-// src/lib/api.ts
+// easel/dsh-plugin-easel/src/lib/api.ts
 var BASE = "/easel";
 async function request(url, options) {
   const res = await fetch(`${BASE}${url}`, { cache: "no-store", ...options });
@@ -1580,8 +1580,54 @@ async function fetchStatus() {
 function projectizeTopic(body) {
   return request("/api/projectize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 }
+var ArchiveRequestError = class extends Error {
+  /** Host error code, when the failure body carried one. */
+  code;
+  /**
+   * @param message - displayable detail.
+   * @param code - stable host code.
+   */
+  constructor(message, code) {
+    super(message);
+    this.name = "ArchiveRequestError";
+    this.code = code;
+  }
+};
+async function archiveRequest(path, init) {
+  const headers = {
+    accept: "application/json",
+    ...init?.body === void 0 ? {} : { "content-type": "application/json" },
+    ...init?.headers
+  };
+  const res = await fetch(`${BASE}${path}`, { ...init, headers, cache: "no-store" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const error = data.error;
+    const detail = error?.detail ?? data.detail ?? data.message ?? `\u8BF7\u6C42\u5931\u8D25\uFF08${res.status}\uFF09`;
+    throw new ArchiveRequestError(detail, error?.code);
+  }
+  return data;
+}
+function fetchArchiveProjects() {
+  return archiveRequest("/api/projects");
+}
+function startArchiveImport(locale) {
+  return archiveRequest("/api/projects/import", {
+    method: "POST",
+    body: JSON.stringify({ locale })
+  });
+}
+function startArchiveExport(path, locale) {
+  return archiveRequest("/api/projects/export", {
+    method: "POST",
+    body: JSON.stringify({ path, locale })
+  });
+}
+function fetchArchiveJob() {
+  return archiveRequest("/api/projects/job");
+}
 
-// src/lib/whoami.ts
+// easel/dsh-plugin-easel/src/lib/whoami.ts
 var KEY = "easel_whoami";
 var WHOAMI_TTL_MS = 6e5;
 function getWhoamiCache() {
@@ -1628,7 +1674,7 @@ function verifyStale(platforms, opts = {}) {
   );
 }
 
-// src/lib/roster.ts
+// easel/dsh-plugin-easel/src/lib/roster.ts
 var PLATFORM_LABELS = {
   xiaohongshu: "\u5C0F\u7EA2\u4E66",
   kuaishou: "\u5FEB\u624B",
@@ -1665,7 +1711,7 @@ async function rosterPrompt() {
   return renderRosterPrompt(await fetchRoster());
 }
 
-// src/components/DashboardPage.tsx
+// easel/dsh-plugin-easel/src/components/DashboardPage.tsx
 var import_jsx_runtime2 = require("react/jsx-runtime");
 function fmtNum(n) {
   if (n == null) return "\u2014";
@@ -2065,7 +2111,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
   ] });
 }
 
-// src/features/dashboard.tsx
+// easel/dsh-plugin-easel/src/features/dashboard.tsx
 var import_jsx_runtime3 = require("react/jsx-runtime");
 var view = "dashboard";
 var order = 30;
@@ -2097,7 +2143,7 @@ var plugin = {
   }
 };
 
-// src/features/trends.tsx
+// easel/dsh-plugin-easel/src/features/trends.tsx
 var trends_exports = {};
 __export(trends_exports, {
   Component: () => Component2,
@@ -2108,7 +2154,7 @@ __export(trends_exports, {
   view: () => view2
 });
 
-// src/components/TrendsPage.tsx
+// easel/dsh-plugin-easel/src/components/TrendsPage.tsx
 var import_react3 = require("react");
 var import_jsx_runtime4 = require("react/jsx-runtime");
 var ALL_PLATFORMS = [
@@ -2676,7 +2722,7 @@ function builtinColumns(groups) {
   return groups.filter((g) => !g.platform.startsWith("custom:")).map((g) => ({ ...g, source: sourceOf(g.label) }));
 }
 
-// src/features/trends.tsx
+// easel/dsh-plugin-easel/src/features/trends.tsx
 var import_jsx_runtime5 = require("react/jsx-runtime");
 var view2 = "trends";
 var order2 = 31;
@@ -2708,7 +2754,7 @@ var plugin2 = {
   }
 };
 
-// src/features/ideas.tsx
+// easel/dsh-plugin-easel/src/features/ideas.tsx
 var ideas_exports = {};
 __export(ideas_exports, {
   Component: () => Component3,
@@ -2719,10 +2765,10 @@ __export(ideas_exports, {
   view: () => view3
 });
 
-// src/components/IdeasPage.tsx
+// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
 var import_react4 = require("react");
 
-// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3879,7 +3925,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -5854,7 +5900,7 @@ function createDOMPurify() {
 }
 var purify_default = createDOMPurify();
 
-// src/lib/sanitize.ts
+// easel/dsh-plugin-easel/src/lib/sanitize.ts
 k.setOptions({ breaks: true, gfm: true });
 function renderMarkdown(md) {
   if (!md) return "";
@@ -5862,7 +5908,7 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
-// src/components/IdeasPage.tsx
+// easel/dsh-plugin-easel/src/components/IdeasPage.tsx
 var import_jsx_runtime6 = require("react/jsx-runtime");
 var COLUMNS = [
   { key: "pending", label: "\u5F85\u505A", color: "var(--text-tertiary)" },
@@ -5888,7 +5934,7 @@ function IdeasPage({ onUseTopic }) {
   (0, import_react4.useEffect)(() => {
     load();
   }, [load]);
-  const showToast = (m2) => {
+  const showToast2 = (m2) => {
     setToast(m2);
     setTimeout(() => setToast(""), 2200);
   };
@@ -5956,10 +6002,10 @@ function IdeasPage({ onUseTopic }) {
       } catch {
       }
       setGreenlight(null);
-      showToast("\u5DF2\u7ACB\u9879\uFF1A\u8D44\u6599\u5DF2\u88C5\u5165\u9879\u76EE\u5DE5\u4F5C\u533A");
+      showToast2("\u5DF2\u7ACB\u9879\uFF1A\u8D44\u6599\u5DF2\u88C5\u5165\u9879\u76EE\u5DE5\u4F5C\u533A");
       load();
     } catch (error) {
-      showToast(`\u7ACB\u9879\u5931\u8D25\uFF1A${error.message ?? error}`);
+      showToast2(`\u7ACB\u9879\u5931\u8D25\uFF1A${error.message ?? error}`);
     } finally {
       setBusy(false);
     }
@@ -5975,7 +6021,7 @@ function IdeasPage({ onUseTopic }) {
   const schedule = async (it) => {
     const d2 = /* @__PURE__ */ new Date();
     await createSchedule({ title: it.title, date: d2.toISOString().slice(0, 10), platform: "", time: "", status: "idea", note: it.note });
-    showToast("\u5DF2\u52A0\u5165\u65E5\u5386\uFF08\u4ECA\u5929\uFF09");
+    showToast2("\u5DF2\u52A0\u5165\u65E5\u5386\uFF08\u4ECA\u5929\uFF09");
   };
   return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-scroll ideas-page", children: [
     /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-head", children: [
@@ -6125,7 +6171,7 @@ function IdeasPage({ onUseTopic }) {
   ] });
 }
 
-// src/features/ideas.tsx
+// easel/dsh-plugin-easel/src/features/ideas.tsx
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var view3 = "ideas";
 var order3 = 32;
@@ -6157,7 +6203,7 @@ var plugin3 = {
   }
 };
 
-// src/features/calendar.tsx
+// easel/dsh-plugin-easel/src/features/calendar.tsx
 var calendar_exports = {};
 __export(calendar_exports, {
   Component: () => Component4,
@@ -6168,10 +6214,10 @@ __export(calendar_exports, {
   view: () => view4
 });
 
-// src/components/CalendarPage.tsx
+// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
 var import_react5 = require("react");
 
-// src/data/holidays-cn.js
+// easel/dsh-plugin-easel/src/data/holidays-cn.js
 var HOLIDAYS_CN = {
   2025: {
     "2025-01-01": ["\u5143\u65E6", 1],
@@ -6251,7 +6297,7 @@ var HOLIDAYS_CN = {
   }
 };
 
-// src/lib/lunar.js
+// easel/dsh-plugin-easel/src/lib/lunar.js
 var LUNAR_INFO = [
   19416,
   19168,
@@ -6570,7 +6616,7 @@ function lunarFestivalsFor(year, month) {
   return result;
 }
 
-// src/lib/festivals.js
+// easel/dsh-plugin-easel/src/lib/festivals.js
 var FIXED_FESTIVALS = [
   ["01-01", "\u5143\u65E6"],
   ["02-14", "\u60C5\u4EBA\u8282"],
@@ -6647,7 +6693,7 @@ function festivalsFor(year, month) {
   return result;
 }
 
-// src/components/CalendarPage.tsx
+// easel/dsh-plugin-easel/src/components/CalendarPage.tsx
 var import_jsx_runtime8 = require("react/jsx-runtime");
 var STATUS_META = {
   idea: { label: "\u9009\u9898", color: "var(--text-tertiary)" },
@@ -7460,7 +7506,7 @@ function CalendarPage() {
   ] });
 }
 
-// src/features/calendar.tsx
+// easel/dsh-plugin-easel/src/features/calendar.tsx
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var view4 = "calendar";
 var order4 = 34;
@@ -7492,7 +7538,7 @@ var plugin4 = {
   }
 };
 
-// src/features/schedules.tsx
+// easel/dsh-plugin-easel/src/features/schedules.tsx
 var schedules_exports = {};
 __export(schedules_exports, {
   Component: () => Component5,
@@ -7503,7 +7549,7 @@ __export(schedules_exports, {
   view: () => view5
 });
 
-// src/components/SchedulesPage.tsx
+// easel/dsh-plugin-easel/src/components/SchedulesPage.tsx
 var import_react6 = require("react");
 var import_jsx_runtime10 = require("react/jsx-runtime");
 var TIMING_KINDS = [
@@ -7693,7 +7739,7 @@ function SchedulesPage({
   const [recordsDone, setRecordsDone] = (0, import_react6.useState)(true);
   const [sessionsTick, bumpSessions] = (0, import_react6.useReducer)((x2) => x2 + 1, 0);
   const [, setTick] = (0, import_react6.useState)(0);
-  const showToast = (m2) => {
+  const showToast2 = (m2) => {
     setToast(m2);
     setTimeout(() => setToast(""), 2400);
   };
@@ -7749,25 +7795,25 @@ function SchedulesPage({
   const submitCreate = async () => {
     if (form === null || detailBusy) return;
     if (!form.title.trim()) {
-      showToast("\u4EFB\u52A1\u540D\u79F0\u5FC5\u586B");
+      showToast2("\u4EFB\u52A1\u540D\u79F0\u5FC5\u586B");
       return;
     }
     if (form.title.trim().length > 120) {
-      showToast("\u4EFB\u52A1\u540D\u79F0\u4E0D\u8D85\u8FC7 120 \u4E2A\u5B57\u7B26");
+      showToast2("\u4EFB\u52A1\u540D\u79F0\u4E0D\u8D85\u8FC7 120 \u4E2A\u5B57\u7B26");
       return;
     }
     if (!form.prompt.trim()) {
-      showToast("\u4EFB\u52A1\u5185\u5BB9\u5FC5\u586B");
+      showToast2("\u4EFB\u52A1\u5185\u5BB9\u5FC5\u586B");
       return;
     }
     if (!form.sessionId) {
-      showToast("\u5FC5\u987B\u9009\u62E9\u76EE\u6807\u4F1A\u8BDD");
+      showToast2("\u5FC5\u987B\u9009\u62E9\u76EE\u6807\u4F1A\u8BDD");
       return;
     }
     if (form.timing.kind === "at") {
       const due = /* @__PURE__ */ new Date(`${form.timing.date}T${form.timing.time}:00`);
       if (!form.timing.date || !(due > /* @__PURE__ */ new Date())) {
-        showToast("\u4E00\u6B21\u6027\u4EFB\u52A1\u5FC5\u987B\u9009\u62E9\u672A\u6765\u7684\u65E5\u671F\u65F6\u523B");
+        showToast2("\u4E00\u6B21\u6027\u4EFB\u52A1\u5FC5\u987B\u9009\u62E9\u672A\u6765\u7684\u65E5\u671F\u65F6\u523B");
         return;
       }
     }
@@ -7793,10 +7839,10 @@ function SchedulesPage({
         }
       });
       setForm(null);
-      showToast("\u5DF2\u521B\u5EFA\uFF1A\u5230\u70B9\u4F1A\u81EA\u52A8\u8FD0\u884C");
+      showToast2("\u5DF2\u521B\u5EFA\uFF1A\u5230\u70B9\u4F1A\u81EA\u52A8\u8FD0\u884C");
       await load();
     } catch (e) {
-      showToast(e instanceof Error ? e.message : "\u521B\u5EFA\u5931\u8D25");
+      showToast2(e instanceof Error ? e.message : "\u521B\u5EFA\u5931\u8D25");
     } finally {
       setDetailBusy(false);
     }
@@ -7849,12 +7895,12 @@ function SchedulesPage({
     if (editingTiming.kind === "at") {
       const due = /* @__PURE__ */ new Date(`${editingTiming.date}T${editingTiming.time}:00`);
       if (!editingTiming.date || !(due > /* @__PURE__ */ new Date())) {
-        showToast("\u4E00\u6B21\u6027\u4EFB\u52A1\u5FC5\u987B\u9009\u62E9\u672A\u6765\u7684\u65E5\u671F\u65F6\u523B");
+        showToast2("\u4E00\u6B21\u6027\u4EFB\u52A1\u5FC5\u987B\u9009\u62E9\u672A\u6765\u7684\u65E5\u671F\u65F6\u523B");
         return;
       }
     }
     if (editingTiming.kind === "every" && (!Number.isSafeInteger(editingTiming.value) || editingTiming.value < 1)) {
-      showToast("\u95F4\u9694\u5FC5\u987B\u662F\u6B63\u6574\u6570");
+      showToast2("\u95F4\u9694\u5FC5\u987B\u662F\u6B63\u6574\u6570");
       return;
     }
     setDetailBusy(true);
@@ -7870,21 +7916,21 @@ function SchedulesPage({
       if (res?.ok !== true) throw new Error(res?.error?.message ?? "\u65E0\u6CD5\u786E\u8BA4\u66F4\u65B0");
       const value = res.value;
       if (value?.updated === false) {
-        if (value.code === "schedule_conflict") showToast("\u4EFB\u52A1\u5DF2\u53D8\u5316\uFF0C\u8BF7\u5237\u65B0\u540E\u91CD\u8BD5");
-        else if (value.code === "schedule_ended") showToast("\u4EFB\u52A1\u5DF2\u7ED3\u675F\uFF0C\u65E0\u6CD5\u4FEE\u6539");
-        else showToast("\u4EFB\u52A1\u5DF2\u4E0D\u53EF\u7528");
+        if (value.code === "schedule_conflict") showToast2("\u4EFB\u52A1\u5DF2\u53D8\u5316\uFF0C\u8BF7\u5237\u65B0\u540E\u91CD\u8BD5");
+        else if (value.code === "schedule_ended") showToast2("\u4EFB\u52A1\u5DF2\u7ED3\u675F\uFF0C\u65E0\u6CD5\u4FEE\u6539");
+        else showToast2("\u4EFB\u52A1\u5DF2\u4E0D\u53EF\u7528");
       } else if (value?.updated === true) {
         setEditingTiming(null);
-        showToast("\u65F6\u673A\u5DF2\u66F4\u65B0");
+        showToast2("\u65F6\u673A\u5DF2\u66F4\u65B0");
         const fresh = await load();
         const freshEntry = fresh?.find((x2) => x2.id === e.id) ?? null;
         if (freshEntry !== null) setDetail(freshEntry);
       } else {
         const code = typeof value?.code === "string" ? value.code : "";
-        showToast(TOOL_ERROR_ZH[code] ?? "\u65E0\u6CD5\u786E\u8BA4\u65F6\u673A\u66F4\u65B0");
+        showToast2(TOOL_ERROR_ZH[code] ?? "\u65E0\u6CD5\u786E\u8BA4\u65F6\u673A\u66F4\u65B0");
       }
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "\u66F4\u65B0\u5931\u8D25");
+      showToast2(err instanceof Error ? err.message : "\u66F4\u65B0\u5931\u8D25");
     } finally {
       setDetailBusy(false);
     }
@@ -7899,19 +7945,19 @@ function SchedulesPage({
       if (res?.ok !== true) throw new Error(res?.error?.message ?? "\u65E0\u6CD5\u786E\u8BA4\u5220\u9664");
       const value = res.value;
       if (value?.deleted === true) {
-        showToast("\u4EFB\u52A1\u5DF2\u5220\u9664");
+        showToast2("\u4EFB\u52A1\u5DF2\u5220\u9664");
         setDetail(null);
         setConfirmingDelete(false);
         await load();
       } else if (value?.code === "schedule_not_found") {
-        showToast("\u4EFB\u52A1\u5DF2\u4E0D\u5B58\u5728");
+        showToast2("\u4EFB\u52A1\u5DF2\u4E0D\u5B58\u5728");
         setDetail(null);
         await load();
       } else {
-        showToast("\u5220\u9664\u672A\u751F\u6548\uFF0C\u8BF7\u91CD\u8BD5");
+        showToast2("\u5220\u9664\u672A\u751F\u6548\uFF0C\u8BF7\u91CD\u8BD5");
       }
     } catch (err) {
-      showToast(err instanceof Error ? err.message : "\u5220\u9664\u5931\u8D25");
+      showToast2(err instanceof Error ? err.message : "\u5220\u9664\u5931\u8D25");
     } finally {
       setDetailBusy(false);
     }
@@ -8123,7 +8169,7 @@ function SchedulesPage({
   ] });
 }
 
-// src/features/schedules.tsx
+// easel/dsh-plugin-easel/src/features/schedules.tsx
 var import_jsx_runtime11 = require("react/jsx-runtime");
 var view5 = "schedules";
 var order5 = 36;
@@ -8163,7 +8209,7 @@ var plugin5 = {
   }
 };
 
-// src/features/skills.tsx
+// easel/dsh-plugin-easel/src/features/skills.tsx
 var skills_exports = {};
 __export(skills_exports, {
   Component: () => Component6,
@@ -8174,13 +8220,13 @@ __export(skills_exports, {
   view: () => view6
 });
 
-// src/components/SkillPage.tsx
+// easel/dsh-plugin-easel/src/components/SkillPage.tsx
 var import_react8 = require("react");
 
-// src/components/SkillDrawer.tsx
+// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
 var import_react7 = require("react");
 
-// src/lib/skillDisplayNames.ts
+// easel/dsh-plugin-easel/src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
   "ai-image-gen": "AI \u751F\u56FE",
   "ai-music": "BGM / \u97F3\u4E50\u751F\u6210",
@@ -8300,7 +8346,7 @@ function displayName(raw) {
   return SKILL_DISPLAY_NAMES[raw] || raw;
 }
 
-// src/components/SkillDrawer.tsx
+// easel/dsh-plugin-easel/src/components/SkillDrawer.tsx
 var import_jsx_runtime12 = require("react/jsx-runtime");
 function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) {
   const [detail, setDetail] = (0, import_react7.useState)(null);
@@ -8522,7 +8568,7 @@ ${input.trim()}
   ] }) });
 }
 
-// src/components/SkillPage.tsx
+// easel/dsh-plugin-easel/src/components/SkillPage.tsx
 var import_jsx_runtime13 = require("react/jsx-runtime");
 var LAYERS = [
   { key: "discover", label: "\u53D1\u73B0", Icon: IconSearch, color: "var(--layer-discover)" },
@@ -8668,7 +8714,7 @@ function SkillPage({ persona, onNavigate }) {
   ] });
 }
 
-// src/features/skills.tsx
+// easel/dsh-plugin-easel/src/features/skills.tsx
 var import_jsx_runtime14 = require("react/jsx-runtime");
 var view6 = "skills";
 var order6 = 35;
@@ -8700,7 +8746,7 @@ var plugin6 = {
   }
 };
 
-// src/features/outputs.tsx
+// easel/dsh-plugin-easel/src/features/outputs.tsx
 var outputs_exports = {};
 __export(outputs_exports, {
   Component: () => Component7,
@@ -8711,7 +8757,7 @@ __export(outputs_exports, {
   view: () => view7
 });
 
-// src/components/OutputsPage.tsx
+// easel/dsh-plugin-easel/src/components/OutputsPage.tsx
 var import_react9 = require("react");
 var import_jsx_runtime15 = require("react/jsx-runtime");
 var FILTERS = [
@@ -9017,7 +9063,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   ] });
 }
 
-// src/features/outputs.tsx
+// easel/dsh-plugin-easel/src/features/outputs.tsx
 var import_jsx_runtime16 = require("react/jsx-runtime");
 var view7 = "outputs";
 var order7 = 37;
@@ -9049,7 +9095,7 @@ var plugin7 = {
   }
 };
 
-// src/features/publish.tsx
+// easel/dsh-plugin-easel/src/features/publish.tsx
 var publish_exports = {};
 __export(publish_exports, {
   Component: () => Component8,
@@ -9060,10 +9106,10 @@ __export(publish_exports, {
   view: () => view8
 });
 
-// src/components/PublishPage.tsx
+// easel/dsh-plugin-easel/src/components/PublishPage.tsx
 var import_react10 = require("react");
 
-// src/lib/store.ts
+// easel/dsh-plugin-easel/src/lib/store.ts
 var PUBLISH_KEY = "easel_publish_draft";
 var PREVIOUS_BRAND = ["post", "craft"].join("");
 function readMigratedLocalValue(key, suffix) {
@@ -9100,7 +9146,7 @@ function savePublishDraft(d2) {
   }
 }
 
-// src/components/PublishPage.tsx
+// easel/dsh-plugin-easel/src/components/PublishPage.tsx
 var import_jsx_runtime17 = require("react/jsx-runtime");
 var PLATFORMS2 = [
   { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", titleLimit: 20, bodyLimit: 1e3, hint: "\u6807\u9898\u226420\uFF0C\u6B63\u6587\u22641000\uFF0C\u91CD\u60C5\u7EEA+\u8BDD\u9898\u6807\u7B7E" },
@@ -9181,7 +9227,7 @@ function PublishPage({ persona, onNavigate }) {
     return Object.values(count).some((n) => n >= 2);
   }, [targets]);
   const toggleAccount = (id) => setAccountIds((prev) => prev.includes(id) ? prev.filter((x2) => x2 !== id) : [...prev, id]);
-  const showToast = (m2) => {
+  const showToast2 = (m2) => {
     setToast(m2);
     setTimeout(() => setToast(""), 2800);
   };
@@ -9192,13 +9238,13 @@ function PublishPage({ persona, onNavigate }) {
     if (prev.includes(path)) return prev.filter((x2) => x2 !== path);
     if (isVideoPath(path)) {
       if (prev.length && !prev.every(isVideoPath)) {
-        showToast("\u56FE\u7247\u548C\u89C6\u9891\u4E0D\u80FD\u540C\u65F6\u53D1\u5E03\uFF0C\u8BF7\u5148\u53D6\u6D88\u5DF2\u9009\u56FE\u7247");
+        showToast2("\u56FE\u7247\u548C\u89C6\u9891\u4E0D\u80FD\u540C\u65F6\u53D1\u5E03\uFF0C\u8BF7\u5148\u53D6\u6D88\u5DF2\u9009\u56FE\u7247");
         return prev;
       }
       return [path];
     }
     if (prev.some(isVideoPath)) {
-      showToast("\u56FE\u7247\u548C\u89C6\u9891\u4E0D\u80FD\u540C\u65F6\u53D1\u5E03\uFF0C\u8BF7\u5148\u53D6\u6D88\u5DF2\u9009\u89C6\u9891");
+      showToast2("\u56FE\u7247\u548C\u89C6\u9891\u4E0D\u80FD\u540C\u65F6\u53D1\u5E03\uFF0C\u8BF7\u5148\u53D6\u6D88\u5DF2\u9009\u89C6\u9891");
       return prev;
     }
     return [...prev, path];
@@ -9238,9 +9284,9 @@ function PublishPage({ persona, onNavigate }) {
         }
       }
       setOverrides(next);
-      showToast(hit ? `\u5DF2\u751F\u6210 ${hit} \u4E2A\u5E73\u53F0\u7248\u672C` : "\u672A\u80FD\u8BFB\u56DE\u7ED3\u679C\uFF0C\u4EA7\u51FA\u53EF\u80FD\u53EA\u5728\u5BF9\u8BDD\u91CC\uFF0C\u53EF\u91CD\u8BD5");
+      showToast2(hit ? `\u5DF2\u751F\u6210 ${hit} \u4E2A\u5E73\u53F0\u7248\u672C` : "\u672A\u80FD\u8BFB\u56DE\u7ED3\u679C\uFF0C\u4EA7\u51FA\u53EF\u80FD\u53EA\u5728\u5BF9\u8BDD\u91CC\uFF0C\u53EF\u91CD\u8BD5");
     } catch {
-      showToast("\u6539\u5199\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5");
+      showToast2("\u6539\u5199\u5931\u8D25\uFF0C\u8BF7\u91CD\u8BD5");
     } finally {
       setAdapting(false);
     }
@@ -9284,7 +9330,7 @@ ${roster}${roster ? "\n" : ""}\u5F85\u68C0\u5185\u5BB9\uFF1A
     if (empty || publishing || checking) return;
     const groups = PLATFORMS2.map((p) => targets.filter((a) => a.platform === p.key)).filter((g) => g.length > 0);
     if (groups.length === 0) {
-      showToast("\u8BF7\u5148\u52FE\u9009\u8981\u53D1\u5E03\u7684\u8D26\u53F7");
+      showToast2("\u8BF7\u5148\u52FE\u9009\u8981\u53D1\u5E03\u7684\u8D26\u53F7");
       return;
     }
     setChecking(true);
@@ -9319,7 +9365,7 @@ ${plan}
     };
     await Promise.all(Array.from({ length: Math.min(PUBLISH_CONCURRENCY, groups.length) }, () => worker()));
     setPublishing(false);
-    showToast("\u53D1\u5E03\u6D41\u7A0B\u7ED3\u675F\uFF0C\u89C1\u5404\u8D26\u53F7\u72B6\u6001");
+    showToast2("\u53D1\u5E03\u6D41\u7A0B\u7ED3\u675F\uFF0C\u89C1\u5404\u8D26\u53F7\u72B6\u6001");
   };
   const publishOne = async (a) => {
     const meta = PLATFORMS2.find((p) => p.key === a.platform);
@@ -9389,7 +9435,7 @@ ${plan}
     if (!pubSms) return;
     const code = pubSmsCode.replace(/\D/g, "");
     if (code.length < 4) {
-      showToast("\u9A8C\u8BC1\u7801\u5E94\u4E3A 4-6 \u4F4D\u6570\u5B57");
+      showToast2("\u9A8C\u8BC1\u7801\u5E94\u4E3A 4-6 \u4F4D\u6570\u5B57");
       return;
     }
     setPubSmsBusy(true);
@@ -9398,7 +9444,7 @@ ${plan}
       setPubSmsCode("");
       setPubSms((p) => p && { ...p, state: "verifying", message: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" });
     } catch (e) {
-      showToast(e instanceof Error ? e.message : "\u63D0\u4EA4\u5931\u8D25");
+      showToast2(e instanceof Error ? e.message : "\u63D0\u4EA4\u5931\u8D25");
     } finally {
       setPubSmsBusy(false);
     }
@@ -9420,7 +9466,7 @@ ${plan}
       status: "draft",
       note: effective(key)
     });
-    showToast("\u5DF2\u5B58\u4E3A\u8349\u7A3F\u5E76\u52A0\u5165\u4ECA\u5929\u7684\u65E5\u5386");
+    showToast2("\u5DF2\u5B58\u4E3A\u8349\u7A3F\u5E76\u52A0\u5165\u4ECA\u5929\u7684\u65E5\u5386");
   };
   const canPublish = targets.length > 0;
   return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "publish-page", children: [
@@ -9576,7 +9622,7 @@ ${plan}
               setOverrides({});
               setCheckResult("");
               setPub({});
-              showToast("\u5DF2\u6E05\u7A7A");
+              showToast2("\u5DF2\u6E05\u7A7A");
             },
             children: [
               /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconTrash, { size: 13 }),
@@ -9714,7 +9760,7 @@ ${plan}
   ] });
 }
 
-// src/features/publish.tsx
+// easel/dsh-plugin-easel/src/features/publish.tsx
 var import_jsx_runtime18 = require("react/jsx-runtime");
 var view8 = "publish";
 var order8 = 38;
@@ -9746,7 +9792,7 @@ var plugin8 = {
   }
 };
 
-// src/features/accounts.tsx
+// easel/dsh-plugin-easel/src/features/accounts.tsx
 var accounts_exports = {};
 __export(accounts_exports, {
   Component: () => Component9,
@@ -9757,7 +9803,7 @@ __export(accounts_exports, {
   view: () => view9
 });
 
-// src/components/AccountsPage.tsx
+// easel/dsh-plugin-easel/src/components/AccountsPage.tsx
 var import_react11 = require("react");
 var import_jsx_runtime19 = require("react/jsx-runtime");
 var STATE_LABEL = {
@@ -10719,7 +10765,7 @@ function AccountsPage() {
   ] });
 }
 
-// src/features/accounts.tsx
+// easel/dsh-plugin-easel/src/features/accounts.tsx
 var import_jsx_runtime20 = require("react/jsx-runtime");
 var view9 = "accounts";
 var order9 = 39;
@@ -10751,7 +10797,7 @@ var plugin9 = {
   }
 };
 
-// src/features/profile.tsx
+// easel/dsh-plugin-easel/src/features/profile.tsx
 var profile_exports = {};
 __export(profile_exports, {
   Component: () => Component10,
@@ -10762,10 +10808,10 @@ __export(profile_exports, {
   view: () => view10
 });
 
-// src/components/PersonaBrowser.tsx
+// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
 var import_react14 = require("react");
 
-// src/components/ProfilePage.tsx
+// easel/dsh-plugin-easel/src/components/ProfilePage.tsx
 var import_react12 = require("react");
 var import_jsx_runtime21 = require("react/jsx-runtime");
 function fanTier(n) {
@@ -10852,7 +10898,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
       ignore = true;
     };
   }, [persona]);
-  const showToast = (msg) => {
+  const showToast2 = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(""), 2500);
   };
@@ -10861,9 +10907,9 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
     try {
       await savePersonaFile(persona, filename, drafts[filename] ?? "");
       setFiles((prev) => prev.map((f) => f.filename === filename ? { ...f, content: drafts[filename] ?? "" } : f));
-      showToast(`\u5DF2\u4FDD\u5B58 ${DIM_META[filename]?.label || filename} \u2713`);
+      showToast2(`\u5DF2\u4FDD\u5B58 ${DIM_META[filename]?.label || filename} \u2713`);
     } catch (e) {
-      showToast(e instanceof Error ? e.message : "\u4FDD\u5B58\u5931\u8D25");
+      showToast2(e instanceof Error ? e.message : "\u4FDD\u5B58\u5931\u8D25");
     } finally {
       setSavingFile("");
     }
@@ -10873,7 +10919,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
     try {
       const a = await fetchAccountAnalytics("wechat-oa");
       if (!a.loggedIn) {
-        showToast("\u516C\u4F17\u53F7\u540E\u53F0\u672A\u767B\u5F55\uFF1A\u8BF7\u5148\u5230\u300C\u8D26\u53F7\u300D\u9875\u626B\u7801\u767B\u5F55\u540E\u518D\u6293\u53D6");
+        showToast2("\u516C\u4F17\u53F7\u540E\u53F0\u672A\u767B\u5F55\uFF1A\u8BF7\u5148\u5230\u300C\u8D26\u53F7\u300D\u9875\u626B\u7801\u767B\u5F55\u540E\u518D\u6293\u53D6");
         return;
       }
       const base = files.find((f) => f.filename === filename)?.content ?? "";
@@ -10881,9 +10927,9 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
       await savePersonaFile(persona, filename, merged);
       setFiles((prev) => prev.map((f) => f.filename === filename ? { ...f, content: merged } : f));
       setDrafts((p) => ({ ...p, [filename]: merged }));
-      showToast(`\u5DF2\u6293\u53D6\u5E76\u66F4\u65B0\u753B\u50CF\uFF08\u7C89\u4E1D ${a.followers ?? 0}\uFF0C\u5DF2\u53D1\u8868 ${a.posts ?? 0} \u7BC7\uFF09\u2713`);
+      showToast2(`\u5DF2\u6293\u53D6\u5E76\u66F4\u65B0\u753B\u50CF\uFF08\u7C89\u4E1D ${a.followers ?? 0}\uFF0C\u5DF2\u53D1\u8868 ${a.posts ?? 0} \u7BC7\uFF09\u2713`);
     } catch (e) {
-      showToast(e instanceof Error ? `\u6293\u53D6\u5931\u8D25\uFF1A${e.message}` : "\u6293\u53D6\u5931\u8D25\uFF08\u53EF\u80FD\u672A\u767B\u5F55\u6216\u5E73\u53F0\u6539\u7248\uFF09");
+      showToast2(e instanceof Error ? `\u6293\u53D6\u5931\u8D25\uFF1A${e.message}` : "\u6293\u53D6\u5931\u8D25\uFF08\u53EF\u80FD\u672A\u767B\u5F55\u6216\u5E73\u53F0\u6539\u7248\uFF09");
     } finally {
       setFetchingWx(false);
     }
@@ -10895,9 +10941,9 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
     try {
       await deletePersona(persona);
       onDeleted(persona);
-      showToast(`\u5DF2\u5220\u9664\u753B\u50CF\u300C${persona}\u300D`);
+      showToast2(`\u5DF2\u5220\u9664\u753B\u50CF\u300C${persona}\u300D`);
     } catch (e) {
-      showToast(e instanceof Error ? e.message : "\u5220\u9664\u5931\u8D25");
+      showToast2(e instanceof Error ? e.message : "\u5220\u9664\u5931\u8D25");
     } finally {
       setDeleting(false);
     }
@@ -10993,7 +11039,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
   ] });
 }
 
-// src/components/OnboardingWizard.tsx
+// easel/dsh-plugin-easel/src/components/OnboardingWizard.tsx
 var import_react13 = require("react");
 var import_jsx_runtime22 = require("react/jsx-runtime");
 var PLATFORMS3 = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u89C6\u9891\u53F7", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
@@ -11225,7 +11271,7 @@ ${formToInstruction(name, form)}`;
   ] }) });
 }
 
-// src/components/PersonaBrowser.tsx
+// easel/dsh-plugin-easel/src/components/PersonaBrowser.tsx
 var import_jsx_runtime23 = require("react/jsx-runtime");
 function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }) {
   const [wizardOpen, setWizardOpen] = (0, import_react14.useState)(false);
@@ -11295,7 +11341,7 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
   ] });
 }
 
-// src/features/profile.tsx
+// easel/dsh-plugin-easel/src/features/profile.tsx
 var import_jsx_runtime24 = require("react/jsx-runtime");
 var view10 = "profile";
 var order10 = 38;
@@ -11327,7 +11373,7 @@ var plugin10 = {
   }
 };
 
-// src/features/breakdown.tsx
+// easel/dsh-plugin-easel/src/features/breakdown.tsx
 var breakdown_exports = {};
 __export(breakdown_exports, {
   Component: () => Component11,
@@ -11338,7 +11384,7 @@ __export(breakdown_exports, {
   view: () => view11
 });
 
-// src/components/BreakdownPage.tsx
+// easel/dsh-plugin-easel/src/components/BreakdownPage.tsx
 var import_react15 = require("react");
 var import_jsx_runtime25 = require("react/jsx-runtime");
 var FETCH_STAGES = [
@@ -11718,7 +11764,7 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
   ] });
 }
 
-// src/features/breakdown.tsx
+// easel/dsh-plugin-easel/src/features/breakdown.tsx
 var import_jsx_runtime26 = require("react/jsx-runtime");
 var view11 = "breakdown";
 var order11 = 33;
@@ -11750,10 +11796,10 @@ var plugin11 = {
   }
 };
 
-// src/lib/media-preview.tsx
+// easel/dsh-plugin-easel/src/lib/media-preview.tsx
 var import_react16 = require("react");
 
-// src/lib/media-url.js
+// easel/dsh-plugin-easel/src/lib/media-url.js
 var VIDEO_EXTENSIONS = ["mp4", "m4v", "mov", "webm", "mkv"];
 var AUDIO_EXTENSIONS = ["mp3", "wav", "m4a", "aac", "flac", "ogg", "opus"];
 var MEDIA_EXTENSIONS = [...VIDEO_EXTENSIONS, ...AUDIO_EXTENSIONS];
@@ -11784,7 +11830,7 @@ function workspaceMediaPath(absolutePath, projectRoot2) {
   return rel;
 }
 
-// src/lib/media-preview.tsx
+// easel/dsh-plugin-easel/src/lib/media-preview.tsx
 var import_jsx_runtime27 = require("react/jsx-runtime");
 var MEDIA_BODY_ID = "easel-media-player";
 var MEDIA_COPY = {
@@ -11932,7 +11978,7 @@ function registerMediaPreview(ctx) {
   else if (ctx.get?.("documentPreviews") !== void 0) attach(ctx);
 }
 
-// src/features/media.ts
+// easel/dsh-plugin-easel/src/features/media.ts
 var plugin12 = {
   name: "easel-media",
   inject: ["slots", "locale"],
@@ -11945,10 +11991,10 @@ var plugin12 = {
   }
 };
 
-// src/components/BackupSettings.tsx
+// easel/dsh-plugin-easel/src/components/BackupSettings.tsx
 var import_react17 = require("react");
 
-// src/lib/backup-api.ts
+// easel/dsh-plugin-easel/src/lib/backup-api.ts
 var BASE2 = "/easel/api/backup";
 async function request2(url, options) {
   const res = await fetch(`${BASE2}${url}`, { cache: "no-store", ...options });
@@ -11988,7 +12034,7 @@ function connectSmb(root, username, password) {
   return request2("/connect-smb", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ root, username, password }) });
 }
 
-// src/components/BackupSettings.tsx
+// easel/dsh-plugin-easel/src/components/BackupSettings.tsx
 var import_jsx_runtime28 = require("react/jsx-runtime");
 var GROUPS = [
   { id: "config", title: "scopeConfig", hint: "scopeConfigHint" },
@@ -12570,7 +12616,7 @@ function BackupSettings({ t }) {
   ] });
 }
 
-// src/locales/backup.ts
+// easel/dsh-plugin-easel/src/locales/backup.ts
 var BACKUP_COPY = {
   en: {
     nav: "Backup",
@@ -12738,7 +12784,7 @@ var BACKUP_COPY = {
   }
 };
 
-// src/features/backup.tsx
+// easel/dsh-plugin-easel/src/features/backup.tsx
 var NS = "easel.backup";
 var STYLE_ID = "easel-backup-settings-styles";
 var plugin13 = {
@@ -12767,7 +12813,7 @@ var plugin13 = {
   }
 };
 
-// src/lib/context-menu-model.js
+// easel/dsh-plugin-easel/src/lib/context-menu-model.js
 var FILE_ROW_SELECTOR = "[data-files-entry]";
 var FILE_ROOT_SELECTOR = "[data-files-root]";
 var EDITABLE_SELECTOR = [
@@ -12780,6 +12826,8 @@ var CHAT_FLOW_SELECTOR = "[data-chat-flow]";
 var CHAT_NODE_SELECTOR = "[data-chat-node-key]";
 var PRESENTED_FILE_SELECTOR = "[data-presented-file]";
 var TREND_ROW_SELECTOR = "[data-easel-trend]";
+var PROJECT_ROW_SELECTOR = "[data-easel-project]";
+var WORKSPACE_ROW_SELECTOR = '[data-row-key^="workspace:"]';
 var FILE_LINK_SELECTOR = "button[title]";
 var MESSAGE_KINDS = /* @__PURE__ */ new Set(["user", "assistant-step"]);
 function dataOf(element, name) {
@@ -12848,6 +12896,26 @@ function resolveSurface(target, selection) {
       };
     }
   }
+  const projectRow = target.closest(PROJECT_ROW_SELECTOR);
+  if (projectRow != null) {
+    const path = dataOf(projectRow, "easelProject");
+    if (typeof path === "string" && path !== "") {
+      return {
+        kind: "project",
+        element: projectRow,
+        path,
+        name: dataOf(projectRow, "easelProjectName") ?? ""
+      };
+    }
+  }
+  const workspaceRow = target.closest(WORKSPACE_ROW_SELECTOR);
+  if (workspaceRow != null) {
+    const key = dataOf(workspaceRow, "rowKey") ?? "";
+    if (key.startsWith("workspace:")) {
+      const workspaceId = key.slice("workspace:".length);
+      if (workspaceId !== "") return { kind: "workspace", element: workspaceRow, workspaceId };
+    }
+  }
   const link = fileLinkSurface(target);
   if (link !== null) return link;
   const trendRow = target.closest(TREND_ROW_SELECTOR);
@@ -12911,14 +12979,149 @@ function fileNameOf(path) {
   return parts[parts.length - 1] ?? "";
 }
 
-// src/features/context-menu.js
-var STYLE_ID2 = "easel-context-menu-style";
+// easel/dsh-plugin-easel/src/lib/ui-toast.ts
+var STYLE_ID2 = "easel-ui-toast-style";
+var TOAST_CLASS = "easel-ui-toast";
+var CSS = `
+.${TOAST_CLASS} {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 2147483000;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: max-content;
+  min-width: 220px;
+  max-width: min(70vw, 460px);
+  padding: 10px 14px;
+  border-radius: var(--dsw-radius-md, 8px);
+  background: var(--dsw-menu-surface-fill, var(--dsw-alias-bg-elevated, #ffffff));
+  box-shadow: var(--dsw-elevation-prominent, 0 12px 32px rgba(15, 23, 42, 0.2));
+  color: var(--dsw-alias-label-primary, #1f2329);
+  font: var(--dsw-text-body-font, 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif);
+  pointer-events: none;
+}
+.${TOAST_CLASS}--dismissible { pointer-events: auto; }
+.${TOAST_CLASS}__row { display: flex; align-items: center; gap: 10px; }
+.${TOAST_CLASS}__text { flex: 1 1 auto; min-width: 0; word-break: break-word; }
+.${TOAST_CLASS}__detail { color: var(--dsw-alias-label-secondary, rgba(31, 35, 41, 0.6)); font-size: 12px; line-height: 16px; }
+.${TOAST_CLASS}__bar { height: 3px; border-radius: 2px; background: var(--dsw-alias-border-l2, rgba(15, 23, 42, 0.12)); overflow: hidden; }
+.${TOAST_CLASS}__fill { height: 100%; background: var(--dsw-alias-state-business-primary, #4f7cff); transition: width 180ms ease-out; }
+.${TOAST_CLASS}__close {
+  flex: none; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 4px;
+  background: transparent; color: inherit; cursor: pointer; opacity: .65; line-height: 16px;
+}
+.${TOAST_CLASS}__close:hover { opacity: 1; background: var(--dsw-alias-interactive-bg-hover, rgba(15, 23, 42, .06)); }
+.${TOAST_CLASS}--ok .${TOAST_CLASS}__text { color: var(--dsh-success-text, #0f9d58); }
+.${TOAST_CLASS}--warn .${TOAST_CLASS}__text { color: var(--dsh-warning-text, #b45309); }
+.${TOAST_CLASS}--error .${TOAST_CLASS}__text { color: var(--dsh-error-text, #dc2626); }
+@media (prefers-reduced-motion: reduce) {
+  .${TOAST_CLASS}__fill { transition: none; }
+}
+`;
+var styleInstalled = false;
+function ensureStyle() {
+  if (styleInstalled || typeof document === "undefined") return;
+  if (document.getElementById(STYLE_ID2) !== null) {
+    styleInstalled = true;
+    return;
+  }
+  const style = document.createElement("style");
+  style.id = STYLE_ID2;
+  style.textContent = CSS;
+  document.head.append(style);
+  styleInstalled = true;
+}
+function showToast(options) {
+  ensureStyle();
+  let current = { ...options };
+  let root = null;
+  let timer;
+  let dismissed = false;
+  const dismiss = () => {
+    if (dismissed) return;
+    dismissed = true;
+    if (timer !== void 0) clearTimeout(timer);
+    root?.remove();
+    root = null;
+  };
+  const schedule = () => {
+    if (timer !== void 0) clearTimeout(timer);
+    const duration = current.duration ?? 2600;
+    if (duration > 0) timer = setTimeout(dismiss, duration);
+  };
+  const render = () => {
+    if (root === null) return;
+    root.className = `${TOAST_CLASS} ${TOAST_CLASS}--${current.kind ?? "info"}` + (current.dismissible === true ? ` ${TOAST_CLASS}--dismissible` : "");
+    root.setAttribute("role", current.kind === "error" ? "alert" : "status");
+    root.replaceChildren();
+    const row = document.createElement("div");
+    row.className = `${TOAST_CLASS}__row`;
+    const text2 = document.createElement("span");
+    text2.className = `${TOAST_CLASS}__text`;
+    text2.textContent = current.message;
+    row.append(text2);
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = `${TOAST_CLASS}__close`;
+    close.setAttribute("aria-label", current.closeLabel ?? "\u5173\u95ED");
+    close.textContent = "\xD7";
+    close.style.display = current.dismissible === true ? "" : "none";
+    close.addEventListener("click", dismiss);
+    row.append(close);
+    const detail = document.createElement("span");
+    detail.className = `${TOAST_CLASS}__detail`;
+    detail.textContent = current.detail ?? "";
+    detail.style.display = current.detail === void 0 || current.detail === "" ? "none" : "";
+    const bar = document.createElement("div");
+    bar.className = `${TOAST_CLASS}__bar`;
+    const fill = document.createElement("div");
+    fill.className = `${TOAST_CLASS}__fill`;
+    bar.append(fill);
+    if (current.progress === void 0) {
+      bar.style.display = "none";
+    } else {
+      const clamped = Math.max(0, Math.min(1, current.progress));
+      fill.style.width = `${Math.round(clamped * 100)}%`;
+    }
+    root.append(row, detail, bar);
+  };
+  const mount = () => {
+    if (dismissed) return;
+    document.querySelector(`.${TOAST_CLASS}`)?.remove();
+    root = document.createElement("div");
+    const dialogs = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
+    const host = dialogs.length > 0 ? dialogs[dialogs.length - 1] : document.body;
+    host.append(root);
+    render();
+    if (timer !== void 0) clearTimeout(timer);
+    schedule();
+  };
+  mount();
+  return {
+    update(next) {
+      if (dismissed) return;
+      current = { ...current, ...next };
+      if (root === null || !root.isConnected) mount();
+      else {
+        render();
+        schedule();
+      }
+    },
+    dismiss
+  };
+}
+
+// easel/dsh-plugin-easel/src/features/context-menu.js
+var STYLE_ID3 = "easel-context-menu-style";
 var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
 var SEPARATOR_CLASS = "easel-ctx-menu__separator";
 var HINT_CLASS = "easel-ctx-menu__hint";
-var TOAST_CLASS = "easel-ctx-toast";
-var CSS = `
+var CSS2 = `
 .${MENU_CLASS} {
   position: fixed;
   z-index: 2147483000;
@@ -12976,25 +13179,6 @@ var CSS = `
   margin: 4px 6px;
   background: var(--dsw-alias-border-l1, rgba(15, 23, 42, 0.08));
 }
-.${TOAST_CLASS} {
-  position: fixed;
-  left: 50%;
-  bottom: 28px;
-  transform: translateX(-50%);
-  z-index: 2147483000;
-  max-width: min(70vw, 460px);
-  padding: 9px 16px;
-  border-radius: var(--dsw-radius-md, 8px);
-  background: var(--dsw-menu-surface-fill, var(--dsw-alias-bg-elevated, #ffffff));
-  box-shadow: var(--dsw-elevation-prominent, 0 12px 32px rgba(15, 23, 42, 0.2));
-  color: var(--dsw-alias-label-primary, #1f2329);
-  font: var(--dsw-text-body-font, 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif);
-  text-align: center;
-  pointer-events: none;
-}
-.${TOAST_CLASS}--ok { color: var(--dsh-success-text, #0f9d58); }
-.${TOAST_CLASS}--warn { color: var(--dsh-warning-text, #b45309); }
-.${TOAST_CLASS}--error { color: var(--dsh-error-text, #dc2626); }
 `;
 var SEPARATOR = Object.freeze({ separator: true });
 var plugin14 = {
@@ -13003,27 +13187,34 @@ var plugin14 = {
     "sessions",
     "uiSession",
     "uiWorkspace",
+    "workspaces",
     "conversation",
     "remote",
-    "remote.session"
+    "remote.session",
+    "easelProjectArchive",
+    "locale"
   ],
   apply(ctx) {
+    const extras = {
+      archive: ctx.easelProjectArchive,
+      t: ctx.locale.bind("easel.archive")
+    };
     ctx.effect(() => installStyles(), "easel-context-menu: styles");
-    ctx.effect(() => installListener(ctx), "easel-context-menu: listener");
+    ctx.effect(() => installListener(ctx, extras), "easel-context-menu: listener");
   }
 };
 function installStyles() {
-  if (document.getElementById(STYLE_ID2) !== null) return () => {
+  if (document.getElementById(STYLE_ID3) !== null) return () => {
   };
   const style = document.createElement("style");
-  style.id = STYLE_ID2;
-  style.textContent = CSS;
+  style.id = STYLE_ID3;
+  style.textContent = CSS2;
   document.head.append(style);
   return () => {
     style.remove();
   };
 }
-function installListener(ctx) {
+function installListener(ctx, extras) {
   let closeActive = null;
   const close = () => {
     if (closeActive === null) return;
@@ -13043,6 +13234,18 @@ function installListener(ctx) {
       close();
       return;
     }
+    let items;
+    try {
+      items = itemsFor(ctx, surface, extras);
+    } catch (error) {
+      reportError(ctx, error);
+      close();
+      return;
+    }
+    if (items === null) {
+      close();
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
     if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
@@ -13051,7 +13254,7 @@ function installListener(ctx) {
       closeActive = showMenu({
         x: event.clientX,
         y: event.clientY,
-        items: itemsFor(ctx, surface),
+        items,
         onClosed: () => {
           closeActive = null;
         },
@@ -13069,9 +13272,11 @@ function installListener(ctx) {
     close();
   };
 }
-function itemsFor(ctx, surface) {
+function itemsFor(ctx, surface, extras) {
   if (surface.kind === "file") return fileItems(ctx, surface);
   if (surface.kind === "trend") return trendItems(surface.trend);
+  if (surface.kind === "project") return projectItems(ctx, surface, extras);
+  if (surface.kind === "workspace") return workspaceItems(ctx, surface, extras);
   if (surface.kind === "editable") return editableItems(surface.element);
   return [
     menuRow("\u590D\u5236", () => copyOrThrow(surface.text)),
@@ -13080,6 +13285,37 @@ function itemsFor(ctx, surface) {
     menuRow("\u6DFB\u52A0\u5230\u5F53\u524D\u4EFB\u52A1", () => addToTask(ctx, surface.text), { disabled: currentInput(ctx) === void 0 }),
     menuRow("\u5728\u8F85\u52A9\u5BF9\u8BDD\u4E2D\u63D0\u95EE", () => askInAuxiliaryConversation(ctx, surface.text), { disabled: currentSessionId(ctx) === void 0 })
   ];
+}
+function projectItems(ctx, surface, extras) {
+  const items = [
+    menuRow(extras.t("reveal"), () => revealPathAt(ctx, surface.path)),
+    menuRow(extras.t("copyPath"), () => copyOrThrow(surface.path))
+  ];
+  const archive = extras.archive;
+  if (archive !== void 0 && archive.supported() === true && archive.busy() !== true) {
+    items.push(SEPARATOR);
+    items.push(menuRow(extras.t("export"), () => {
+      void archive.startExport(surface.path, surface.name);
+    }));
+  }
+  return items;
+}
+function workspaceItems(ctx, surface, extras) {
+  const items = ctx.workspaces?.list?.getSnapshot?.().items ?? [];
+  const workspace = items.find((item) => item.workspaceId === surface.workspaceId);
+  if (workspace === void 0) return null;
+  const rows = [
+    menuRow(extras.t("reveal"), () => revealPathAt(ctx, workspace.path)),
+    menuRow(extras.t("copyPath"), () => copyOrThrow(workspace.path))
+  ];
+  const archive = extras.archive;
+  if (archive !== void 0 && archive.supported() === true && archive.isProject(workspace.path) && archive.busy() !== true) {
+    rows.push(SEPARATOR);
+    rows.push(menuRow(extras.t("export"), () => {
+      void archive.startExport(workspace.path, workspace.title);
+    }));
+  }
+  return rows;
 }
 function trendItems(trend) {
   const { title, url, source } = trend;
@@ -13136,17 +13372,8 @@ function openTrendUrl(url) {
   anchor.click();
   anchor.remove();
 }
-var contextToastTimer = null;
 function contextToast(message, kind) {
-  const previous = document.querySelector(`.${TOAST_CLASS}`);
-  if (previous !== null) previous.remove();
-  if (contextToastTimer !== null) clearTimeout(contextToastTimer);
-  const toast = document.createElement("div");
-  toast.className = `${TOAST_CLASS} ${TOAST_CLASS}--${kind}`;
-  toast.setAttribute("role", "status");
-  toast.textContent = message;
-  document.body.append(toast);
-  contextToastTimer = setTimeout(() => toast.remove(), 2600);
+  showToast({ kind, message, duration: 2600, closeLabel: "\u5173\u95ED" });
 }
 function messageOf(error) {
   return error instanceof Error ? error.message : String(error);
@@ -13596,10 +13823,10 @@ function reportError(ctx, error) {
   }
 }
 
-// src/components/HandoffSettings.tsx
+// easel/dsh-plugin-easel/src/components/HandoffSettings.tsx
 var import_react18 = require("react");
 
-// src/lib/handoff-api.ts
+// easel/dsh-plugin-easel/src/lib/handoff-api.ts
 var BASE3 = "/easel";
 async function request3(url, options) {
   const res = await fetch(`${BASE3}${url}`, { cache: "no-store", ...options });
@@ -13641,7 +13868,7 @@ function sendHandoff(peerId, workspacePath, payload) {
   });
 }
 
-// src/components/HandoffSettings.tsx
+// easel/dsh-plugin-easel/src/components/HandoffSettings.tsx
 var import_jsx_runtime29 = require("react/jsx-runtime");
 var COPY = {
   en: {
@@ -14115,9 +14342,9 @@ function HandoffSettings({ t }) {
   ] });
 }
 
-// src/features/handoff.tsx
+// easel/dsh-plugin-easel/src/features/handoff.tsx
 var NS2 = "easel.handoff";
-var STYLE_ID3 = "easel-handoff-settings-styles";
+var STYLE_ID4 = "easel-handoff-settings-styles";
 var plugin15 = {
   name: "easel-handoff-settings",
   inject: ["slots", "locale"],
@@ -14125,7 +14352,7 @@ var plugin15 = {
     ctx.effect(() => ctx.locale.register(NS2, COPY), "easel: handoff dictionaries");
     ctx.effect(() => {
       const style = document.createElement("style");
-      style.id = STYLE_ID3;
+      style.id = STYLE_ID4;
       style.textContent = HANDOFF_STYLES;
       document.head.append(style);
       return () => {
@@ -14144,7 +14371,100 @@ var plugin15 = {
   }
 };
 
-// src/features/index.ts
+// easel/dsh-plugin-easel/src/features/project-import.tsx
+var import_react19 = require("react");
+var import_jsx_runtime30 = require("react/jsx-runtime");
+var NS3 = "easel.archive";
+var STYLE_ID5 = "easel-project-import-style";
+var STYLES = `
+.easel-header-import {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--dsw-radius-sm);
+  background: transparent; color: var(--dsw-alias-label-secondary); cursor: pointer;
+}
+.easel-header-import:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
+.easel-header-import:disabled { opacity: .45; cursor: default; }
+.easel-header-import:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -2px;
+}
+.easel-header-import__spinner {
+  width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%; animation: easel-header-import-spin .7s linear infinite;
+}
+@keyframes easel-header-import-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .easel-header-import__spinner { animation: none; } }
+`;
+function ImportIcon() {
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+    "path",
+    {
+      d: "M8 2.5v7.5m0 0L5.5 7.5M8 10l2.5-2.5M3 11.5v1.5h10v-1.5",
+      stroke: "currentColor",
+      strokeWidth: "1.2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }
+  ) });
+}
+function useArchiveSnapshot(archive) {
+  const [snapshot, setSnapshot] = (0, import_react19.useState)(() => archive.snapshot());
+  (0, import_react19.useEffect)(() => {
+    setSnapshot(archive.snapshot());
+    return archive.subscribe(() => setSnapshot(archive.snapshot()));
+  }, [archive]);
+  return snapshot;
+}
+function ImportButton({ wide, archive, t }) {
+  const snapshot = useArchiveSnapshot(archive);
+  if (!wide || snapshot.supported !== true) return null;
+  const jobRunning = snapshot.job?.state === "running";
+  const busy = snapshot.picking || jobRunning;
+  const importing = snapshot.picking || jobRunning && snapshot.job?.kind === "import";
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+    "button",
+    {
+      type: "button",
+      className: "easel-header-import",
+      "aria-label": t("import"),
+      title: t("import"),
+      "aria-busy": importing,
+      disabled: busy,
+      onClick: () => {
+        void archive.startImport();
+      },
+      children: importing ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "easel-header-import__spinner", "aria-hidden": "true" }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(ImportIcon, {})
+    }
+  );
+}
+var plugin16 = {
+  name: "easel-project-import",
+  inject: ["slots", "locale", "easelProjectArchive"],
+  apply(ctx) {
+    ctx.effect(() => {
+      if (document.getElementById(STYLE_ID5) !== null) return () => {
+      };
+      const style = document.createElement("style");
+      style.id = STYLE_ID5;
+      style.textContent = STYLES;
+      document.head.append(style);
+      return () => {
+        style.remove();
+      };
+    }, "easel: project import button styles");
+    const t = ctx.locale.bind(NS3);
+    const archive = ctx.easelProjectArchive;
+    ctx.slots.inject("sidebar.workspaces.header.action", () => ctx.slots.register({
+      name: "sidebar.workspaces.header.action",
+      id: "easel-project-import",
+      order: 10,
+      locale: NS3,
+      inject: () => ({ archive, t })
+    }, ImportButton));
+  }
+};
+
+// easel/dsh-plugin-easel/src/features/index.ts
 var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, schedules_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
 var FEATURES = views.map((module2) => ({
   view: module2.view,
@@ -14152,9 +14472,9 @@ var FEATURES = views.map((module2) => ({
   labels: module2.labels,
   plugin: module2.plugin
 }));
-var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin12, plugin13, plugin14, plugin15];
+var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin12, plugin13, plugin14, plugin15, plugin16];
 
-// src/lib/hostUpdate.js
+// easel/dsh-plugin-easel/src/lib/hostUpdate.js
 var EVENT_PROGRESS = "easel://update-progress";
 var EVENT_AVAILABLE = "easel://update-available";
 function detectHostUpdateBridge(win) {
@@ -14306,14 +14626,292 @@ function createUpdateStore(bridge) {
   };
 }
 
-// src/components/DataRootSection.tsx
-var import_react19 = require("react");
-var import_jsx_runtime30 = require("react/jsx-runtime");
+// easel/dsh-plugin-easel/src/components/DataRootSection.tsx
+var import_react20 = require("react");
+
+// easel/dsh-plugin-easel/src/lib/archive-text.js
+function fillArchiveText(template, values) {
+  return String(template).replace(/\{(\w+)\}/g, (match, key) => {
+    const value = values[key];
+    return value === void 0 ? match : String(value);
+  });
+}
+function formatArchiveBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes <= 0) return "0 B";
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${Math.round(bytes)} B`;
+}
+function archivePathKey(path) {
+  const normalized = String(path).replace(/\\/g, "/").replace(/\/+$/, "");
+  return /^[A-Za-z]:\//.test(normalized) || /^\/\/[^/]/.test(normalized) ? normalized.toLowerCase() : normalized;
+}
+function isProjectDirectory(projectRoot2, candidate) {
+  if (typeof projectRoot2 !== "string" || projectRoot2 === "") return false;
+  const path = archivePathKey(candidate);
+  const projects = archivePathKey(`${projectRoot2}/projects`);
+  const slash = path.lastIndexOf("/");
+  return slash > 0 && path.slice(0, slash) === projects;
+}
+
+// easel/dsh-plugin-easel/src/lib/project-archive.ts
+var POLL_INTERVAL_MS = 600;
+var POLL_FAILURE_LIMIT = 3;
+var KNOWN_ERROR_CODES = /* @__PURE__ */ new Set([
+  "unsupported",
+  "picker-unavailable",
+  "busy",
+  "not-a-project",
+  "destination-inside-source",
+  "invalid-archive",
+  "unsafe-path",
+  "path-conflict",
+  "too-many-entries",
+  "manifest-version",
+  "no-files",
+  "file-too-large",
+  "file-changed",
+  "disk-space",
+  "archive-engine-unavailable",
+  "io",
+  "bad-destination",
+  "bad-name",
+  "name-conflict"
+]);
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+function browserLocale() {
+  const language = typeof navigator === "undefined" ? "zh" : navigator.language;
+  return language.toLowerCase().startsWith("zh") ? "zh" : "en";
+}
+function createProjectArchiveService(ctx, t) {
+  let state = { supported: void 0, projects: [], projectsReady: false, picking: false, job: null };
+  const listeners = /* @__PURE__ */ new Set();
+  let toast = null;
+  let disposed = false;
+  const publish = (patch) => {
+    state = { ...state, ...patch };
+    for (const listener of listeners) listener();
+  };
+  const currentLocale = () => {
+    const active = ctx.locale?.getSnapshot?.().active;
+    return active === "zh" || active === "en" ? active : browserLocale();
+  };
+  const setToast = (next) => {
+    if (toast === null) toast = showToast({ closeLabel: t("close"), ...next });
+    else toast.update(next);
+  };
+  const closeToast = () => {
+    toast?.dismiss();
+    toast = null;
+  };
+  const toastError = (code, detail) => {
+    const known = code !== void 0 && KNOWN_ERROR_CODES.has(code);
+    setToast({
+      kind: "error",
+      message: known ? t(`error.${code}`) : `${t("error.generic")}\uFF1A${detail}`,
+      detail,
+      progress: void 0,
+      dismissible: true,
+      duration: 8e3
+    });
+  };
+  const loadProjects = async () => {
+    const list = await fetchArchiveProjects();
+    publish({ supported: list.supported, projects: list.projects, projectsReady: true });
+    return list.projects;
+  };
+  const toastProgress = (job) => {
+    const name = job.name ?? "";
+    if (job.kind === "import") {
+      const detail2 = job.files !== void 0 && job.files > 0 ? fillArchiveText(t("progressImport"), { files: job.files, size: formatArchiveBytes(job.bytes ?? 0) }) : void 0;
+      setToast({ kind: "info", message: fillArchiveText(t("importing"), { name }), detail: detail2, duration: 0 });
+      return;
+    }
+    const total = job.totalBytes ?? 0;
+    const progress = total > 0 ? Math.min(1, (job.bytes ?? 0) / total) : void 0;
+    const detail = progress === void 0 ? void 0 : fillArchiveText(t("progressExport"), { percent: Math.round(progress * 100), size: formatArchiveBytes(job.bytes ?? 0) });
+    setToast({ kind: "info", message: fillArchiveText(t("exporting"), { name }), detail, progress, duration: 0 });
+  };
+  const finishImport = async (job) => {
+    const result = job.result;
+    if (result?.path === void 0 || result.name === void 0) {
+      toastError("io", t("error.generic"));
+      return;
+    }
+    let registered = true;
+    try {
+      const created = await ctx.workspaces.create({ path: result.path });
+      if (!created.ok) throw new Error(created.error?.message ?? "workspace create failed");
+    } catch (error) {
+      registered = false;
+      setToast({
+        kind: "warn",
+        message: fillArchiveText(t("workspaceFailed"), { message: error instanceof Error ? error.message : String(error) }),
+        detail: void 0,
+        progress: void 0,
+        dismissible: true,
+        duration: 8e3
+      });
+    }
+    if (registered) {
+      setToast({
+        kind: "ok",
+        message: result.renamed === true ? fillArchiveText(t("importedRenamed"), { name: result.name }) : fillArchiveText(t("imported"), { name: result.name }),
+        detail: void 0,
+        progress: void 0,
+        duration: 4e3
+      });
+    }
+    await loadProjects().catch(() => {
+    });
+  };
+  const finishExport = (job) => {
+    const result = job.result;
+    const target = result?.path ?? job.destination ?? "";
+    const links = result?.skippedLinks ?? 0;
+    const unreadable = result?.skippedUnreadable ?? 0;
+    const junk = result?.skippedJunk ?? 0;
+    const skipped = links + unreadable + junk;
+    setToast({
+      kind: skipped > 0 ? "warn" : "ok",
+      message: skipped > 0 ? fillArchiveText(t("exportedSkipped"), { path: target, links, unreadable, junk }) : fillArchiveText(t("exported"), { path: target }),
+      detail: void 0,
+      progress: void 0,
+      duration: 6e3
+    });
+  };
+  const poll = async (jobId) => {
+    let failures = 0;
+    while (!disposed) {
+      await delay(POLL_INTERVAL_MS);
+      if (disposed) return;
+      let job;
+      try {
+        job = await fetchArchiveJob();
+      } catch (error) {
+        failures += 1;
+        if (failures >= POLL_FAILURE_LIMIT) {
+          closeToast();
+          publish({ job: null });
+          toastError(
+            error instanceof ArchiveRequestError ? error.code : void 0,
+            error instanceof Error ? error.message : String(error)
+          );
+          return;
+        }
+        continue;
+      }
+      failures = 0;
+      if (job.state === "idle" || job.jobId !== void 0 && job.jobId !== jobId) {
+        publish({ job: null });
+        closeToast();
+        return;
+      }
+      publish({ job });
+      if (job.state === "running") {
+        toastProgress(job);
+        continue;
+      }
+      if (job.state === "failed") {
+        toastError(job.error?.code, job.error?.detail ?? t("error.generic"));
+        return;
+      }
+      if (job.kind === "import") await finishImport(job);
+      else finishExport(job);
+      return;
+    }
+  };
+  const startJob = async (kind, name, start) => {
+    if (disposed) return;
+    if (state.picking || state.job?.state === "running") return;
+    publish({ picking: true });
+    setToast({
+      kind: "info",
+      message: kind === "import" ? t("pickingImport") : t("pickingExport"),
+      duration: 0
+    });
+    try {
+      const started = await start();
+      if (disposed) {
+        publish({ picking: false });
+        closeToast();
+        return;
+      }
+      if (started.cancelled === true) {
+        publish({ picking: false });
+        closeToast();
+        return;
+      }
+      if (started.jobId === void 0) throw new Error(t("error.generic"));
+      const initial = {
+        jobId: started.jobId,
+        kind,
+        state: "running",
+        phase: kind === "import" ? "extracting" : "scanning",
+        name: started.sourceName ?? name,
+        files: 0,
+        bytes: 0,
+        ...started.destination === void 0 ? {} : { destination: started.destination }
+      };
+      publish({ picking: false, job: initial });
+      toastProgress(initial);
+      await poll(started.jobId);
+    } catch (error) {
+      closeToast();
+      publish({ picking: false, job: null });
+      toastError(
+        error instanceof ArchiveRequestError ? error.code : void 0,
+        error instanceof Error ? error.message : String(error)
+      );
+    }
+  };
+  const service = {
+    t,
+    snapshot: () => state,
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => {
+        listeners.delete(listener);
+      };
+    },
+    loadProjects,
+    supported: () => state.supported === true,
+    startImport: () => startJob("import", "", () => startArchiveImport(currentLocale())),
+    startExport: (path, name) => startJob("export", name, () => startArchiveExport(path, currentLocale())),
+    isProject(path) {
+      if (state.supported !== true) return false;
+      if (state.projectRoot !== void 0) return isProjectDirectory(state.projectRoot, path);
+      const key = archivePathKey(path);
+      return state.projects.some((project) => archivePathKey(project.path) === key);
+    },
+    busy: () => state.picking || state.job?.state === "running",
+    dispose() {
+      disposed = true;
+      closeToast();
+      listeners.clear();
+    }
+  };
+  void loadProjects().catch(() => {
+    publish({ projectsReady: true });
+  });
+  void fetchStatus().then((status) => {
+    if (status?.projectRoot !== void 0) publish({ projectRoot: status.projectRoot });
+  }).catch(() => {
+  });
+  return service;
+}
+
+// easel/dsh-plugin-easel/src/components/DataRootSection.tsx
+var import_jsx_runtime31 = require("react/jsx-runtime");
 var DATA_ROOT_STYLES = `
 .dtr-root { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
 .dtr-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
 .dtr-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
 .dtr-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 22px; font-weight: 500; }
+.dtr-card-title { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .dtr-badge { flex: none; padding: 1px 8px; border-radius: 999px; font-size: 11px; line-height: 16px; font-weight: 400; background: var(--dsw-alias-fill-secondary); color: var(--dsw-alias-label-secondary); }
 .dtr-path { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 20px; word-break: break-all; }
 .dtr-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; word-break: break-all; }
@@ -14331,7 +14929,7 @@ var DATA_ROOT_STYLES = `
 }
 .dtr-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .dtr-btn {
-  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   border: none; cursor: pointer; font-family: inherit;
   height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md);
   font-size: 14px; line-height: 22px; color: var(--dsw-alias-label-primary);
@@ -14342,6 +14940,30 @@ var DATA_ROOT_STYLES = `
 .dtr-btn-primary { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-business-primary); }
 .dtr-btn-danger { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-danger-primary, #d4453f); }
 .dtr-link { border: none; background: none; padding: 0; cursor: pointer; font-family: inherit; font-size: 12px; line-height: 18px; color: var(--dsw-alias-state-business-primary); }
+.dtr-project-list { list-style: none; margin: 0; padding: 0; max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; }
+.dtr-project { display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 4px; border-top: 0.5px solid var(--dsw-alias-border-l1); border-radius: var(--dsw-radius-md); }
+.dtr-project:first-child { border-top: 0; }
+.dtr-project:hover { background: var(--dsw-alias-fill-secondary); }
+.dtr-project:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: -2px; }
+.dtr-project-icon { flex: none; display: inline-flex; color: var(--dsw-alias-label-secondary); }
+.dtr-project-name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dtr-project-export {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 0; border: 0; border-radius: var(--dsw-radius-sm);
+  background: transparent; color: var(--dsw-alias-label-secondary); cursor: pointer; opacity: .7;
+}
+.dtr-project-export:hover:not(:disabled) { opacity: 1; background: var(--dsw-alias-interactive-bg-hover, rgba(15, 23, 42, .06)); }
+.dtr-project-export:disabled { opacity: .3; cursor: default; }
+.dtr-project-export:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: -2px; }
+.dtr-empty { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 8px 0 4px; }
+.dtr-empty-icon { color: var(--dsw-alias-label-secondary); }
+.dtr-empty-title { font-size: 13px; line-height: 20px; }
+.dtr-spinner {
+  width: 12px; height: 12px; border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%; animation: dtr-spin .7s linear infinite;
+}
+@keyframes dtr-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .dtr-spinner { animation: none; } }
 `;
 async function request4(path, init) {
   const headers = {
@@ -14357,14 +14979,62 @@ async function request4(path, init) {
   }
   return data;
 }
-function DataRootSection({ t }) {
-  const [status, setStatus] = (0, import_react19.useState)(null);
-  const [value, setValue] = (0, import_react19.useState)("");
-  const [busy, setBusy] = (0, import_react19.useState)(false);
-  const [armed, setArmed] = (0, import_react19.useState)(false);
-  const [error, setError] = (0, import_react19.useState)(null);
-  const [notice, setNotice] = (0, import_react19.useState)(null);
-  (0, import_react19.useEffect)(() => {
+function ArchiveIcon() {
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("svg", { width: "16", height: "16", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+    "path",
+    {
+      d: "M2.5 4.5 4 2.5h8l1.5 2M2.5 4.5v8h11v-8M2.5 4.5h11M6 7.5h4M8 7.5v4m0 0L6.5 10m1.5 1.5L9.5 10",
+      stroke: "currentColor",
+      strokeWidth: "1.2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }
+  ) });
+}
+function DownloadIcon() {
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("svg", { width: "14", height: "14", viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+    "path",
+    {
+      d: "M8 2.5v7.5m0 0L5.5 7.5M8 10l2.5-2.5M3 11.5v1.5h10v-1.5",
+      stroke: "currentColor",
+      strokeWidth: "1.2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round"
+    }
+  ) });
+}
+function FolderIcon({ size = 16 }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("svg", { width: size, height: size, viewBox: "0 0 16 16", fill: "none", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+    "path",
+    {
+      d: "M2.5 4.5c0-.55.45-1 1-1h3l1.5 1.5h4.5c.55 0 1 .45 1 1v6c0 .55-.45 1-1 1h-9c-.55 0-1-.45-1-1v-7.5Z",
+      stroke: "currentColor",
+      strokeWidth: "1.2",
+      strokeLinejoin: "round"
+    }
+  ) });
+}
+function useArchiveSnapshot2(archive) {
+  const [snapshot, setSnapshot] = (0, import_react20.useState)(() => archive.snapshot());
+  (0, import_react20.useEffect)(() => {
+    setSnapshot(archive.snapshot());
+    return archive.subscribe(() => setSnapshot(archive.snapshot()));
+  }, [archive]);
+  return snapshot;
+}
+function DataRootSection({ t, archive }) {
+  const [status, setStatus] = (0, import_react20.useState)(null);
+  const [value, setValue] = (0, import_react20.useState)("");
+  const [busy, setBusy] = (0, import_react20.useState)(false);
+  const [armed, setArmed] = (0, import_react20.useState)(false);
+  const [error, setError] = (0, import_react20.useState)(null);
+  const [notice, setNotice] = (0, import_react20.useState)(null);
+  const [archiveError, setArchiveError] = (0, import_react20.useState)(null);
+  const archiveState = useArchiveSnapshot2(archive);
+  const at = archive.t;
+  const archiveBusy = archiveState.picking || archiveState.job?.state === "running";
+  const archiveImporting = archiveState.picking || archiveState.job?.state === "running" && archiveState.job?.kind === "import";
+  (0, import_react20.useEffect)(() => {
     let active = true;
     request4("/data-root").then((next) => {
       if (!active) return;
@@ -14377,13 +15047,25 @@ function DataRootSection({ t }) {
       active = false;
     };
   }, []);
+  (0, import_react20.useEffect)(() => {
+    if (status === null || !status.supported) return;
+    let active = true;
+    archive.loadProjects().then(() => {
+      if (active) setArchiveError(null);
+    }).catch((err) => {
+      if (active) setArchiveError(err.message);
+    });
+    return () => {
+      active = false;
+    };
+  }, [archive, status]);
   if (status !== null && !status.supported) {
-    return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "dtr-root", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-muted", children: t("onlyDesktop") }) });
+    return /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "dtr-root", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-muted", children: t("onlyDesktop") }) });
   }
   if (status === null) {
-    return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-root", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-muted", children: t("loading") }),
-      error === null ? null : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-error", role: "alert", children: error })
+    return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-root", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-muted", children: t("loading") }),
+      error === null ? null : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-error", role: "alert", children: error })
     ] });
   }
   const choose = async () => {
@@ -14418,26 +15100,112 @@ function DataRootSection({ t }) {
   const trimmed = value.trim().replace(/[\\/]+$/, "");
   const current = (status.current ?? "").replace(/[\\/]+$/, "");
   const unchanged = trimmed.length === 0 || trimmed === current;
-  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-root", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-intro", children: t("intro") }),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("section", { className: "dtr-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-card-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { children: t("currentTitle") }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "dtr-badge", children: status.isDefault ? t("badgeDefault") : t("badgeCustom") })
+  const job = archiveState.job;
+  const jobLine = job?.state === "running" ? job.kind === "import" ? fillArchiveText(t("projectsImporting"), { name: job.name ?? "" }) : fillArchiveText(t("projectsExporting"), { name: job.name ?? "" }) : null;
+  const archiveVisible = archiveState.supported === true || archiveState.supported === void 0 && archiveState.projectsReady;
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-intro", children: t("intro") }),
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "dtr-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { children: t("currentTitle") }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-badge", children: status.isDefault ? t("badgeDefault") : t("badgeCustom") })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-path", children: status.current }),
-      status.isDefault || status.default === void 0 ? null : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-muted", children: t("defaultLine").replace("{path}", status.default) }),
-      status.cloudSynced ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-note dtr-note-warn", children: t("cloudWarning") }) : null,
-      status.pending ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-note dtr-note-info", children: t("pending") }) : null,
-      status.lastError ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-error", role: "alert", children: status.lastError }) : null
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-path", children: status.current }),
+      status.isDefault || status.default === void 0 ? null : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-muted", children: t("defaultLine").replace("{path}", status.default) }),
+      status.cloudSynced ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-note dtr-note-warn", children: t("cloudWarning") }) : null,
+      status.pending ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-note dtr-note-info", children: t("pending") }) : null,
+      status.lastError ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-error", role: "alert", children: status.lastError }) : null
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("section", { className: "dtr-card", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-card-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { children: t("moveToTitle") }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("span", { className: "dtr-actions", children: [
-          armed ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { type: "button", className: "dtr-btn dtr-btn-danger", disabled: busy, onClick: () => {
+    archiveVisible ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "dtr-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "dtr-card-title", children: [
+          t("projectsTitle"),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-badge", children: fillArchiveText(t("projectsCount"), { count: archiveState.projects.length }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+          "button",
+          {
+            type: "button",
+            className: "dtr-btn",
+            disabled: archiveBusy,
+            onClick: () => {
+              void archive.startImport();
+            },
+            children: [
+              archiveImporting ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-spinner", "aria-hidden": "true" }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(DownloadIcon, {}),
+              at("import")
+            ]
+          }
+        )
+      ] }),
+      archiveState.projects.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-empty", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-empty-icon", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(FolderIcon, { size: 20 }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-empty-title", children: t("projectsEmpty") }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-muted", children: t("projectsEmptyHint") }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "dtr-link",
+            disabled: archiveBusy,
+            onClick: () => {
+              void archive.startImport();
+            },
+            children: at("import")
+          }
+        )
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("ul", { className: "dtr-project-list", children: archiveState.projects.map((project) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+        "li",
+        {
+          className: "dtr-project",
+          title: project.path,
+          tabIndex: 0,
+          "data-easel-project": project.path,
+          "data-easel-project-name": project.name,
+          onKeyDown: (event) => {
+            if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) return;
+            event.preventDefault();
+            const rect = event.currentTarget.getBoundingClientRect();
+            event.currentTarget.dispatchEvent(new MouseEvent("contextmenu", {
+              bubbles: true,
+              cancelable: true,
+              clientX: rect.left + 24,
+              clientY: rect.top + 20
+            }));
+          },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-project-icon", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(FolderIcon, {}) }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "dtr-project-name", children: project.name }),
+            /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+              "button",
+              {
+                type: "button",
+                className: "dtr-project-export",
+                disabled: archiveBusy,
+                "aria-label": at("export"),
+                title: at("export"),
+                onClick: (event) => {
+                  event.stopPropagation();
+                  void archive.startExport(project.path, project.name);
+                },
+                children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(ArchiveIcon, {})
+              }
+            )
+          ]
+        },
+        project.path
+      )) }),
+      jobLine === null ? null : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-muted", children: jobLine }),
+      archiveError === null ? null : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-error", role: "alert", children: fillArchiveText(t("projectsLoadFailed"), { message: archiveError }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-muted", children: t("projectsHint") })
+    ] }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "dtr-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { children: t("moveToTitle") }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "dtr-actions", children: [
+          armed ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("button", { type: "button", className: "dtr-btn dtr-btn-danger", disabled: busy, onClick: () => {
             void migrate();
-          }, children: t("confirmMigrate") }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          }, children: t("confirmMigrate") }) : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
             "button",
             {
               type: "button",
@@ -14450,12 +15218,12 @@ function DataRootSection({ t }) {
               children: t("migrate")
             }
           ),
-          armed ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { type: "button", className: "dtr-btn", disabled: busy, onClick: () => setArmed(false), children: t("cancel") }) : null
+          armed ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("button", { type: "button", className: "dtr-btn", disabled: busy, onClick: () => setArmed(false), children: t("cancel") }) : null
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-field", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { children: t("newLocation") }),
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-field", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("label", { children: t("newLocation") }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
           "input",
           {
             className: "dtr-input",
@@ -14470,11 +15238,11 @@ function DataRootSection({ t }) {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-actions", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { type: "button", className: "dtr-btn", disabled: busy, onClick: () => {
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "dtr-actions", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("button", { type: "button", className: "dtr-btn", disabled: busy, onClick: () => {
           void choose();
         }, children: t("choose") }),
-        status.isDefault || status.default === void 0 ? null : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+        status.isDefault || status.default === void 0 ? null : /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
           "button",
           {
             type: "button",
@@ -14488,14 +15256,14 @@ function DataRootSection({ t }) {
           }
         )
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-muted", children: t("moveToHint") }),
-      notice ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-note dtr-note-info", children: notice }) : null,
-      error ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-error", role: "alert", children: error }) : null
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-muted", children: t("moveToHint") }),
+      notice ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-note dtr-note-info", children: notice }) : null,
+      error ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "dtr-error", role: "alert", children: error }) : null
     ] })
   ] });
 }
 
-// src/locales/dataRoot.ts
+// easel/dsh-plugin-easel/src/locales/dataRoot.ts
 var DATA_ROOT_COPY = {
   zh: {
     nav: "\u6570\u636E\u4F4D\u7F6E",
@@ -14516,6 +15284,14 @@ var DATA_ROOT_COPY = {
     confirmMigrate: "\u786E\u8BA4\u8FC1\u79FB\u5E76\u91CD\u542F",
     cancel: "\u53D6\u6D88",
     migrating: "\u6B63\u5728\u8FC1\u79FB\uFF0C\u5E94\u7528\u4F1A\u81EA\u52A8\u91CD\u542F\u2026",
+    projectsTitle: "\u9879\u76EE",
+    projectsCount: "{count} \u4E2A\u9879\u76EE",
+    projectsHint: "\u538B\u7F29\u5305\u53EA\u5305\u542B\u9879\u76EE\u6587\u4EF6\uFF0C\u4E0D\u542B\u4F1A\u8BDD\u8BB0\u5F55\uFF1B\u5BFC\u5165\u540E\u4F1A\u767B\u8BB0\u4E3A\u5DE5\u4F5C\u533A\u3002",
+    projectsEmpty: "\u8FD8\u6CA1\u6709\u9879\u76EE",
+    projectsEmptyHint: "\u628A\u9879\u76EE\u538B\u7F29\u5305\u5BFC\u5165\u8FD9\u91CC\uFF0C\u6216\u4ECE\u9009\u9898\u7ACB\u9879\u3002",
+    projectsLoadFailed: "\u9879\u76EE\u5217\u8868\u8BFB\u53D6\u5931\u8D25\uFF1A{message}",
+    projectsImporting: "\u6B63\u5728\u5BFC\u5165\u300C{name}\u300D\u2026",
+    projectsExporting: "\u6B63\u5728\u6253\u5305\u300C{name}\u300D\u2026",
     onlyDesktop: "\u4EC5\u684C\u9762\u7248\u652F\u6301\u4FEE\u6539\u6570\u636E\u4F4D\u7F6E\u3002",
     loading: "\u8BFB\u53D6\u4E2D\u2026",
     pickUnavailable: "\u7CFB\u7EDF\u6CA1\u6709\u53EF\u7528\u7684\u76EE\u5F55\u9009\u62E9\u5668\uFF0C\u8BF7\u76F4\u63A5\u8F93\u5165\u8DEF\u5F84\u3002"
@@ -14539,20 +15315,108 @@ var DATA_ROOT_COPY = {
     confirmMigrate: "Confirm move and restart",
     cancel: "Cancel",
     migrating: "Moving the data root; the app will restart automatically\u2026",
+    projectsTitle: "Projects",
+    projectsCount: "{count} projects",
+    projectsHint: "Archives contain project files only, not conversations; imports are registered as workspaces.",
+    projectsEmpty: "No projects yet",
+    projectsEmptyHint: "Import a project archive here, or start one from an idea.",
+    projectsLoadFailed: "Could not read the project list: {message}",
+    projectsImporting: "Importing \u201C{name}\u201D\u2026",
+    projectsExporting: "Packaging \u201C{name}\u201D\u2026",
     onlyDesktop: "Changing the data location is available in the desktop app only.",
     loading: "Loading\u2026",
     pickUnavailable: "No folder picker is available; type the path instead."
   }
 };
 
-// src/components/AboutSection.tsx
-var import_react20 = require("react");
+// easel/dsh-plugin-easel/src/locales/archive.ts
+var ARCHIVE_COPY = {
+  zh: {
+    import: "\u5BFC\u5165\u9879\u76EE\u538B\u7F29\u5305\u2026",
+    export: "\u5BFC\u51FA\u4E3A\u538B\u7F29\u5305\u2026",
+    copyPath: "\u590D\u5236\u9879\u76EE\u8DEF\u5F84",
+    reveal: "\u5728\u6587\u4EF6\u7BA1\u7406\u5668\u4E2D\u663E\u793A",
+    close: "\u5173\u95ED",
+    pickingImport: "\u9009\u62E9\u9879\u76EE\u538B\u7F29\u5305\u2026",
+    pickingExport: "\u9009\u62E9\u5BFC\u51FA\u4F4D\u7F6E\u2026",
+    importing: "\u6B63\u5728\u5BFC\u5165\u300C{name}\u300D\u2026",
+    exporting: "\u6B63\u5728\u6253\u5305\u300C{name}\u300D\u2026",
+    imported: "\u5DF2\u5BFC\u5165\u300C{name}\u300D",
+    importedRenamed: "\u540C\u540D\u9879\u76EE\u5DF2\u5B58\u5728\uFF0C\u5DF2\u5BFC\u5165\u4E3A\u300C{name}\u300D",
+    exported: "\u5DF2\u5BFC\u51FA\u5230 {path}",
+    exportedSkipped: "\u5DF2\u5BFC\u51FA\u5230 {path}\uFF08\u8DF3\u8FC7 {links} \u4E2A\u94FE\u63A5\u3001{unreadable} \u4E2A\u65E0\u6CD5\u8BFB\u53D6\u7684\u6587\u4EF6\u3001{junk} \u4E2A\u7CFB\u7EDF\u6587\u4EF6\uFF09",
+    workspaceFailed: "\u5DF2\u5BFC\u5165\u6587\u4EF6\uFF0C\u4F46\u5DE5\u4F5C\u533A\u767B\u8BB0\u5931\u8D25\uFF1A{message}",
+    progressImport: "{files} \u4E2A\u6587\u4EF6 \xB7 {size}",
+    progressExport: "{percent}% \xB7 {size}",
+    "error.generic": "\u9879\u76EE\u538B\u7F29\u5305\u64CD\u4F5C\u5931\u8D25",
+    "error.unsupported": "\u5F53\u524D\u7248\u672C\u672A\u542F\u7528\u9879\u76EE\u538B\u7F29\u5305",
+    "error.picker-unavailable": "\u7CFB\u7EDF\u6CA1\u6709\u53EF\u7528\u7684\u6587\u4EF6\u9009\u62E9\u5668",
+    "error.busy": "\u5DF2\u6709\u538B\u7F29\u5305\u4EFB\u52A1\u5728\u8FDB\u884C",
+    "error.not-a-project": "\u53EA\u80FD\u5BFC\u51FA\u6570\u636E\u4F4D\u7F6E projects/ \u4E0B\u7684\u9879\u76EE",
+    "error.destination-inside-source": "\u5BFC\u51FA\u6587\u4EF6\u4E0D\u80FD\u653E\u5728\u88AB\u5BFC\u51FA\u7684\u9879\u76EE\u76EE\u5F55\u91CC",
+    "error.invalid-archive": "\u8FD9\u4E2A\u6587\u4EF6\u4E0D\u662F\u6709\u6548\u7684 zip \u538B\u7F29\u5305",
+    "error.unsafe-path": "\u538B\u7F29\u5305\u91CC\u6709\u4E0D\u5B89\u5168\u7684\u8DEF\u5F84\uFF0C\u5DF2\u505C\u6B62\u5BFC\u5165",
+    "error.path-conflict": "\u538B\u7F29\u5305\u91CC\u6709\u91CD\u590D\u6216\u51B2\u7A81\u7684\u8DEF\u5F84",
+    "error.too-many-entries": "\u538B\u7F29\u5305\u91CC\u7684\u6587\u4EF6\u6570\u91CF\u8FC7\u591A",
+    "error.manifest-version": "\u8FD9\u4E2A\u538B\u7F29\u5305\u6765\u81EA\u66F4\u65B0\u7684 Easel\uFF0C\u8BF7\u5148\u5347\u7EA7\u5E94\u7528",
+    "error.no-files": "\u538B\u7F29\u5305\u91CC\u6CA1\u6709\u53EF\u5BFC\u5165\u7684\u6587\u4EF6",
+    "error.file-too-large": "\u5355\u4E2A\u6587\u4EF6\u8D85\u8FC7 4 GB\uFF0C\u65E0\u6CD5\u6253\u5305\uFF1B\u8BF7\u538B\u7F29\u6216\u62C6\u5206\u8BE5\u6587\u4EF6",
+    "error.file-changed": "\u6253\u5305\u8FC7\u7A0B\u4E2D\u6709\u6587\u4EF6\u88AB\u66FF\u6362\u6216\u5220\u9664\uFF0C\u5DF2\u505C\u6B62\u5BFC\u51FA",
+    "error.disk-space": "\u78C1\u76D8\u7A7A\u95F4\u4E0D\u8DB3",
+    "error.archive-engine-unavailable": "\u538B\u7F29\u5305\u5F15\u64CE\u4E0D\u53EF\u7528\uFF0C\u8BF7\u91CD\u65B0\u5B89\u88C5 Easel",
+    "error.io": "\u8BFB\u5199\u6587\u4EF6\u5931\u8D25",
+    "error.bad-destination": "\u5BFC\u51FA\u4F4D\u7F6E\u4E0D\u53EF\u7528",
+    "error.bad-name": "\u9879\u76EE\u91CC\u6709\u65E0\u6CD5\u5199\u5165\u538B\u7F29\u5305\u7684\u6587\u4EF6\u540D",
+    "error.name-conflict": "\u540C\u540D\u9879\u76EE\u592A\u591A\uFF0C\u65E0\u6CD5\u4E3A\u5BFC\u5165\u7684\u9879\u76EE\u547D\u540D"
+  },
+  en: {
+    import: "Import project archive\u2026",
+    export: "Export as zip\u2026",
+    copyPath: "Copy project path",
+    reveal: "Show in file manager",
+    close: "Close",
+    pickingImport: "Choose a project archive\u2026",
+    pickingExport: "Choose where to export\u2026",
+    importing: "Importing \u201C{name}\u201D\u2026",
+    exporting: "Packaging \u201C{name}\u201D\u2026",
+    imported: "Imported \u201C{name}\u201D",
+    importedRenamed: "A project with that name exists; imported as \u201C{name}\u201D",
+    exported: "Exported to {path}",
+    exportedSkipped: "Exported to {path} (skipped {links} links, {unreadable} unreadable files, and {junk} system files)",
+    workspaceFailed: "Files were imported, but registering the workspace failed: {message}",
+    progressImport: "{files} files \xB7 {size}",
+    progressExport: "{percent}% \xB7 {size}",
+    "error.generic": "The project archive operation failed",
+    "error.unsupported": "Project archives are not enabled in this build",
+    "error.picker-unavailable": "No file picker is available",
+    "error.busy": "Another archive task is already running",
+    "error.not-a-project": "Only projects directly under the data location\u2019s projects/ folder can be exported",
+    "error.destination-inside-source": "The export file cannot be placed inside the project being exported",
+    "error.invalid-archive": "That file is not a valid zip archive",
+    "error.unsafe-path": "The archive contains an unsafe path; import stopped",
+    "error.path-conflict": "The archive contains duplicate or conflicting paths",
+    "error.too-many-entries": "The archive contains too many entries",
+    "error.manifest-version": "This archive comes from a newer Easel; update the app first",
+    "error.no-files": "The archive contains no importable files",
+    "error.file-too-large": "A single file is 4 GB or larger and cannot be packaged; compress or split it",
+    "error.file-changed": "A file was replaced or deleted during packaging; export stopped",
+    "error.disk-space": "Not enough disk space",
+    "error.archive-engine-unavailable": "The archive engine is unavailable; reinstall Easel",
+    "error.io": "Reading or writing files failed",
+    "error.bad-destination": "The export destination is not usable",
+    "error.bad-name": "The project contains a file name that cannot be stored in a zip",
+    "error.name-conflict": "Too many projects share that name to pick an import name"
+  }
+};
 
-// src/assets/app-icon.png
+// easel/dsh-plugin-easel/src/components/AboutSection.tsx
+var import_react21 = require("react");
+
+// easel/dsh-plugin-easel/src/assets/app-icon.png
 var app_icon_default = "data:image/png;base64,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";
 
-// src/components/AboutSection.tsx
-var import_jsx_runtime31 = require("react/jsx-runtime");
+// easel/dsh-plugin-easel/src/components/AboutSection.tsx
+var import_jsx_runtime32 = require("react/jsx-runtime");
 var ABOUT_STYLES = `
 .eau-root { display: flex; flex-direction: column; gap: 14px; padding: 4px 0 8px; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
 .eau-card { border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
@@ -14640,15 +15504,15 @@ var CHANGELOG_URL = `${WEBSITE_URL}changelog/`;
 var REPO_URL = "https://github.com/laochenfei233/easel-dsh";
 var ISSUES_URL = "https://github.com/laochenfei233/easel-dsh/issues";
 function AboutSection({ t, update }) {
-  const state = (0, import_react20.useSyncExternalStore)(update.subscribe, update.snapshot);
-  const [draftSource, setDraftSource] = (0, import_react20.useState)(void 0);
-  const [customUrl, setCustomUrl] = (0, import_react20.useState)("");
-  const [sourceBusy, setSourceBusy] = (0, import_react20.useState)(false);
-  const [sourceNote, setSourceNote] = (0, import_react20.useState)(void 0);
-  (0, import_react20.useEffect)(() => {
+  const state = (0, import_react21.useSyncExternalStore)(update.subscribe, update.snapshot);
+  const [draftSource, setDraftSource] = (0, import_react21.useState)(void 0);
+  const [customUrl, setCustomUrl] = (0, import_react21.useState)("");
+  const [sourceBusy, setSourceBusy] = (0, import_react21.useState)(false);
+  const [sourceNote, setSourceNote] = (0, import_react21.useState)(void 0);
+  (0, import_react21.useEffect)(() => {
     void update.refresh();
   }, [update]);
-  (0, import_react20.useEffect)(() => {
+  (0, import_react21.useEffect)(() => {
     setCustomUrl(state.customUrl ?? "");
   }, [state.customUrl]);
   const links = [
@@ -14656,18 +15520,18 @@ function AboutSection({ t, update }) {
     { href: CHANGELOG_URL, label: t("changelogLink"), Icon: IconFile },
     { href: REPO_URL, label: t("repoLink"), Icon: IconGithub },
     { href: ISSUES_URL, label: t("feedbackLink"), Icon: IconChat }
-  ].map(({ href, label, Icon: Icon12 }) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("a", { className: "eau-link-row", href, target: "_blank", rel: "noreferrer", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-link-icon", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Icon12, { size: 16 }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-link-label", children: label }),
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "eau-link-action", children: [
+  ].map(({ href, label, Icon: Icon12 }) => /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("a", { className: "eau-link-row", href, target: "_blank", rel: "noreferrer", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-link-icon", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(Icon12, { size: 16 }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-link-label", children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("span", { className: "eau-link-action", children: [
       t("openLink"),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(IconChevron, { size: 14 })
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(IconChevron, { size: 14 })
     ] })
   ] }, href));
   if (!state.supported) {
-    return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-root", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("desktopOnly") }),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("section", { className: "eau-card eau-links", children: links })
+    return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-root", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "eau-muted", children: t("desktopOnly") }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("section", { className: "eau-card eau-links", children: links })
     ] });
   }
   const installing = state.progress?.phase === "installing";
@@ -14702,20 +15566,20 @@ function AboutSection({ t, update }) {
     }
     void applies("custom", customUrl.trim());
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-root", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "eau-card eau-hero", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-brand", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("img", { className: "eau-mark", src: app_icon_default, alt: "", width: 44, height: 44 }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-id", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-name", children: t("appName") }),
-          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-tagline", children: t("tagline") }),
-          state.version ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "eau-version", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("section", { className: "eau-card eau-hero", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-brand", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("img", { className: "eau-mark", src: app_icon_default, alt: "", width: 44, height: 44 }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-id", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-name", children: t("appName") }),
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-tagline", children: t("tagline") }),
+          state.version ? /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("span", { className: "eau-version", children: [
             "v",
             state.version
           ] }) : null
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-grow" }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-grow" }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
           "button",
           {
             type: "button",
@@ -14726,17 +15590,17 @@ function AboutSection({ t, update }) {
           }
         )
       ] }),
-      downloading || installing ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-progress", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : installing ? t("installing") : t("downloading") })
-      ] }) : statusText ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("p", { className: `eau-status ${statusClass}`, role: "status", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-dot" }),
+      downloading || installing ? /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : installing ? t("installing") : t("downloading") })
+      ] }) : statusText ? /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("p", { className: `eau-status ${statusClass}`, role: "status", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-dot" }),
         statusText
       ] }) : null,
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-divider" }),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-row", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-row-label", children: t("sourceLabel") }),
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-row-body", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-divider" }),
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-row-label", children: t("sourceLabel") }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-row-body", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)(
           "select",
           {
             className: "eau-select",
@@ -14745,16 +15609,16 @@ function AboutSection({ t, update }) {
             disabled: sourceBusy || installing,
             onChange: (event) => onSourceChange(event.target.value),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("option", { value: "default", children: t("sourceDefault") }),
-              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("option", { value: "github", children: t("sourceGithub") }),
-              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("option", { value: "custom", children: t("sourceCustom") })
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { value: "default", children: t("sourceDefault") }),
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { value: "github", children: t("sourceGithub") }),
+              /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("option", { value: "custom", children: t("sourceCustom") })
             ]
           }
         ) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-source-note", children: [
-        choice === "custom" ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-custom", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-source-note", children: [
+        choice === "custom" ? /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-custom", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)(
             "input",
             {
               className: "eau-input",
@@ -14772,47 +15636,47 @@ function AboutSection({ t, update }) {
               }
             }
           ),
-          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("button", { type: "button", className: "eau-btn", disabled: sourceBusy || installing, onClick: saveCustom, children: t("save") })
+          /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "eau-btn", disabled: sourceBusy || installing, onClick: saveCustom, children: t("save") })
         ] }) : null,
-        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-hint", role: "status", children: sourceNote ?? (choice === "default" ? t("sourceHint") : choice === "custom" && state.sourceKey !== "custom" ? t("customUrlHint") : state.endpoints.length > 0 ? state.endpoints.join(" \xB7 ") : t("sourceUnavailable")) })
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "eau-hint", role: "status", children: sourceNote ?? (choice === "default" ? t("sourceHint") : choice === "custom" && state.sourceKey !== "custom" ? t("customUrlHint") : state.endpoints.length > 0 ? state.endpoints.join(" \xB7 ") : t("sourceUnavailable")) })
       ] }),
-      state.lastCheckMs && !statusText ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("lastChecked").replace("{time}", new Date(state.lastCheckMs).toLocaleString()) }) : null
+      state.lastCheckMs && !statusText ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "eau-muted", children: t("lastChecked").replace("{time}", new Date(state.lastCheckMs).toLocaleString()) }) : null
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("section", { className: "eau-card eau-links", children: links })
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("section", { className: "eau-card eau-links", children: links })
   ] });
 }
 
-// src/components/UpdateNotice.tsx
-var import_react21 = require("react");
-var import_jsx_runtime32 = require("react/jsx-runtime");
+// easel/dsh-plugin-easel/src/components/UpdateNotice.tsx
+var import_react22 = require("react");
+var import_jsx_runtime33 = require("react/jsx-runtime");
 function UpdateNotice({ t, update }) {
-  const state = (0, import_react21.useSyncExternalStore)(update.subscribe, update.snapshot);
+  const state = (0, import_react22.useSyncExternalStore)(update.subscribe, update.snapshot);
   if (!state.supported || state.announce === void 0) return null;
   const notes = (state.announce.notes ?? "").trim();
   const summary = notes.slice(0, notes.indexOf("\n") === -1 ? notes.length : notes.indexOf("\n")).trim();
   const busy = state.progress?.phase === "downloading" || state.progress?.phase === "installing";
   const downloading = state.progress?.phase === "downloading";
-  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-overlay", role: "dialog", "aria-modal": "true", "aria-labelledby": "eau-notice-title", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-overlay-mask", "aria-hidden": "true", onClick: update.dismiss }),
-    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-dialog", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h2", { id: "eau-notice-title", children: t("noticeTitle").replace("{version}", state.announce.version) }),
-      summary ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "eau-muted", children: summary }) : null,
-      busy ? /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-progress", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : state.progress?.phase === "installing" ? t("installing") : t("downloading") })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-row eau-dialog-actions", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "eau-btn", onClick: update.dismiss, children: t("noticeLater") }),
-        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "eau-btn eau-btn-primary", onClick: () => {
+  return /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "eau-overlay", role: "dialog", "aria-modal": "true", "aria-labelledby": "eau-notice-title", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "eau-overlay-mask", "aria-hidden": "true", onClick: update.dismiss }),
+    /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "eau-dialog", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("h2", { id: "eau-notice-title", children: t("noticeTitle").replace("{version}", state.announce.version) }),
+      summary ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "eau-muted", children: summary }) : null,
+      busy ? /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "eau-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : state.progress?.phase === "installing" ? t("installing") : t("downloading") })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime33.jsxs)("div", { className: "eau-row eau-dialog-actions", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("button", { type: "button", className: "eau-btn", onClick: update.dismiss, children: t("noticeLater") }),
+        /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("button", { type: "button", className: "eau-btn eau-btn-primary", onClick: () => {
           void update.install();
         }, children: t("noticeInstallNow") })
       ] }),
-      state.progress?.phase === "failed" && state.lastError ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "eau-error", role: "alert", children: state.lastError }) : null,
-      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-row", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("noticeFullChangelog") }) })
+      state.progress?.phase === "failed" && state.lastError ? /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("p", { className: "eau-error", role: "alert", children: state.lastError }) : null,
+      /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("div", { className: "eau-row", children: /* @__PURE__ */ (0, import_jsx_runtime33.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("noticeFullChangelog") }) })
     ] })
   ] });
 }
 
-// src/locales/easelAbout.ts
+// easel/dsh-plugin-easel/src/locales/easelAbout.ts
 var EASEL_ABOUT_COPY = {
   zh: {
     nav: "\u5173\u4E8E",
@@ -14888,24 +15752,24 @@ var EASEL_ABOUT_COPY = {
   }
 };
 
-// src/client.tsx
-var NS3 = "easel.panel";
-var STYLE_ID4 = "dsh-plugin-easel-style";
+// easel/dsh-plugin-easel/src/client.tsx
+var NS4 = "easel.panel";
+var STYLE_ID6 = "dsh-plugin-easel-style";
 var DATA_ROOT_STYLE_ID = "easel-data-root-settings-styles";
 var ABOUT_STYLE_ID = "easel-about-settings-styles";
-var STYLES = EASEL_CSS;
+var STYLES2 = EASEL_CSS;
 var COPY2 = {
   zh: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.zh])),
   en: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.en]))
 };
 var client_default = {
-  inject: ["slots", "locale", "uiSidebarPanels", "sessions", "uiWorkspace", "remote", "remote.session"],
+  inject: ["slots", "locale", "uiSidebarPanels", "sessions", "workspaces", "uiWorkspace", "remote", "remote.session"],
   apply(ctx) {
-    ctx.effect(() => ctx.locale.register(NS3, COPY2), "easel: rail dictionaries");
+    ctx.effect(() => ctx.locale.register(NS4, COPY2), "easel: rail dictionaries");
     ctx.effect(() => {
       const style = document.createElement("style");
-      style.id = STYLE_ID4;
-      style.textContent = STYLES;
+      style.id = STYLE_ID6;
+      style.textContent = STYLES2;
       document.head.append(style);
       return () => style.remove();
     }, "easel: workbench styles");
@@ -14921,13 +15785,22 @@ var client_default = {
       document.head.append(style);
       return () => style.remove();
     }, "easel: data root section styles");
+    ctx.effect(
+      () => ctx.locale.register("easel.archive", ARCHIVE_COPY),
+      "easel: project archive dictionaries"
+    );
+    const projectArchive = createProjectArchiveService(ctx, ctx.locale.bind("easel.archive"));
+    ctx.provide("easelProjectArchive", projectArchive);
+    ctx.effect(() => () => {
+      projectArchive.dispose();
+    }, "easel: project archive service lifecycle");
     ctx.slots.inject("settings.section", () => ctx.slots.register({
       name: "settings.section",
       id: "data-root",
       order: 40,
       label: () => ctx.locale.bind("settings.dataRoot")("nav"),
       locale: "settings.dataRoot",
-      inject: () => ({})
+      inject: () => ({ archive: projectArchive })
     }, DataRootSection));
     const update = createUpdateStore(detectHostUpdateBridge());
     ctx.effect(() => () => {
@@ -14958,9 +15831,9 @@ var client_default = {
       locale: "settings.easelAbout",
       inject: () => ({ update })
     }, UpdateNotice));
-    const t = ctx.locale.bind(NS3);
+    const t = ctx.locale.bind(NS4);
     ctx.provide("easelShell", createShellBridge(ctx, t));
-    for (const plugin16 of CLIENT_PLUGINS) ctx.plugin(plugin16);
+    for (const plugin17 of CLIENT_PLUGINS) ctx.plugin(plugin17);
   }
 };
 

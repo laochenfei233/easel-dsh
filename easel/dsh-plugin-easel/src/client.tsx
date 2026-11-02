@@ -16,6 +16,8 @@ import { CLIENT_PLUGINS, FEATURES } from './features'
 import { detectHostUpdateBridge, createUpdateStore } from './lib/hostUpdate'
 import { DataRootSection, DATA_ROOT_STYLES } from './components/DataRootSection'
 import { DATA_ROOT_COPY } from './locales/dataRoot'
+import { ARCHIVE_COPY } from './locales/archive'
+import { createProjectArchiveService } from './lib/project-archive'
 import { AboutSection, ABOUT_STYLES } from './components/AboutSection'
 import { UpdateNotice } from './components/UpdateNotice'
 import { EASEL_ABOUT_COPY } from './locales/easelAbout'
@@ -39,7 +41,7 @@ const COPY = {
 // resolves the host's platform seed) is added by build.mjs around this
 // module's default export — do not wrap it here again.
 export default {
-  inject: ['slots', 'locale', 'uiSidebarPanels', 'sessions', 'uiWorkspace', 'remote', 'remote.session'],
+  inject: ['slots', 'locale', 'uiSidebarPanels', 'sessions', 'workspaces', 'uiWorkspace', 'remote', 'remote.session'],
   apply(ctx: any) {
     ctx.effect(() => ctx.locale.register(NS, COPY), 'easel: rail dictionaries')
     ctx.effect(() => {
@@ -70,13 +72,24 @@ export default {
       document.head.append(style)
       return () => style.remove()
     }, 'easel: data root section styles')
+
+    // One archive service feeds the settings card, the sidebar import button,
+    // and the context menu. It owns the native picker call, polling, workspace
+    // registration, and the progress toast, so a job survives its opener.
+    ctx.effect(
+      () => ctx.locale.register('easel.archive', ARCHIVE_COPY),
+      'easel: project archive dictionaries',
+    )
+    const projectArchive = createProjectArchiveService(ctx, ctx.locale.bind('easel.archive'))
+    ctx.provide('easelProjectArchive', projectArchive)
+    ctx.effect(() => () => { projectArchive.dispose() }, 'easel: project archive service lifecycle')
     ctx.slots.inject('settings.section', () => ctx.slots.register({
       name: 'settings.section',
       id: 'data-root',
       order: 40,
       label: () => ctx.locale.bind('settings.dataRoot')('nav'),
       locale: 'settings.dataRoot',
-      inject: () => ({}),
+      inject: () => ({ archive: projectArchive }),
     }, DataRootSection))
 
     // EASEL-DIVERGENCE(easel-app-update): the About section reads the shell

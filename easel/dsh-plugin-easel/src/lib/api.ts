@@ -691,3 +691,114 @@ export function projectizeTopic(body: {
 }): Promise<{ safe: string }> {
   return request('/api/projectize', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
 }
+
+// ---- 项目压缩包（spec easel-project-archive）----
+/** One exportable project directory. */
+export interface ArchiveProjectSummary {
+  name: string;
+  path: string;
+}
+
+/** GET /api/projects. */
+export interface ArchiveProjectList {
+  supported: boolean;
+  projects: ArchiveProjectSummary[];
+}
+
+/** Result payload of one completed archive job. */
+export interface ArchiveJobResult {
+  name?: string;
+  path?: string;
+  files: number;
+  bytes: number;
+  renamed?: boolean;
+  skippedLinks?: number;
+  skippedUnreadable?: number;
+  skippedJunk?: number;
+}
+
+/** GET /api/projects/job. */
+export interface ArchiveJob {
+  jobId?: string;
+  kind?: 'import' | 'export';
+  state: 'idle' | 'running' | 'done' | 'failed';
+  phase?: string;
+  name?: string;
+  files?: number;
+  bytes?: number;
+  totalBytes?: number;
+  destination?: string;
+  result?: ArchiveJobResult;
+  error?: { code: string; detail: string };
+  startedAt?: number;
+  finishedAt?: number;
+}
+
+/** POST /api/projects/import or /export. */
+export interface ArchiveStart {
+  cancelled?: true;
+  jobId?: string;
+  sourceName?: string;
+  destination?: string;
+}
+
+/** Archive request failure carrying the host error code. */
+export class ArchiveRequestError extends Error {
+  /** Host error code, when the failure body carried one. */
+  code?: string;
+
+  /**
+   * @param message - displayable detail.
+   * @param code - stable host code.
+   */
+  constructor(message: string, code?: string) {
+    super(message);
+    this.name = 'ArchiveRequestError';
+    this.code = code;
+  }
+}
+
+async function archiveRequest<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    accept: 'application/json',
+    ...(init?.body === undefined ? {} : { 'content-type': 'application/json' }),
+    ...(init?.headers as Record<string, string> | undefined),
+  };
+  const res = await fetch(`${BASE}${path}`, { ...init, headers, cache: 'no-store' });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const error = (data as { error?: { code?: string; detail?: string } }).error;
+    const detail = error?.detail
+      ?? (data as { detail?: string }).detail
+      ?? (data as { message?: string }).message
+      ?? `请求失败（${res.status}）`;
+    throw new ArchiveRequestError(detail, error?.code);
+  }
+  return data as T;
+}
+
+/** List the projects directly under projects/, or learn that archives are disabled. */
+export function fetchArchiveProjects(): Promise<ArchiveProjectList> {
+  return archiveRequest<ArchiveProjectList>('/api/projects');
+}
+
+/** Open the native zip picker and start an import job. */
+export function startArchiveImport(locale: 'zh' | 'en'): Promise<ArchiveStart> {
+  return archiveRequest<ArchiveStart>('/api/projects/import', {
+    method: 'POST',
+    body: JSON.stringify({ locale }),
+  });
+}
+
+/** Open the native save dialog and start an export job for one project directory. */
+export function startArchiveExport(path: string, locale: 'zh' | 'en'): Promise<ArchiveStart> {
+  return archiveRequest<ArchiveStart>('/api/projects/export', {
+    method: 'POST',
+    body: JSON.stringify({ path, locale }),
+  });
+}
+
+/** Read the single in-process archive job. */
+export function fetchArchiveJob(): Promise<ArchiveJob> {
+  return archiveRequest<ArchiveJob>('/api/projects/job');
+}

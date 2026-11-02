@@ -1330,6 +1330,7 @@ export function WorkspaceBrowser({
           </div>
         )}
         <div className={clsx(css.headerActions, wide && searchExpanded && css.headerActionsHidden)}>
+          {renderSlot('sidebar.workspaces.header.action', { wide })}
           {wide && (
             <ViewOptionsMenu
               groupBy={groupBy}

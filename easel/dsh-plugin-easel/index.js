@@ -27,12 +27,13 @@ import { spawn } from 'node:child_process'
 import { request as httpRequest } from 'node:http'
 import { request as httpsRequest } from 'node:https'
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
-import { homedir } from 'node:os'
 import { lookup as dnsLookup } from 'node:dns/promises'
 import { randomBytes, timingSafeEqual } from 'node:crypto'
 import net from 'node:net'
 import tls from 'node:tls'
 import { seedProjectWorkspace } from './lib/projectize.js'
+import { createProjectArchiveFeature } from './lib/project-archive.js'
+import { PickerUnavailableError, pickDirectory } from './lib/native-picker.js'
 import { writeApiDiscovery } from './lib/asr.js'
 import {
   applyWatch, buildWatchGroups, clusterTrends, decorateFetched, normalizeKeywords,
@@ -88,10 +89,16 @@ export function resolveSettings(config) {
   } catch {
     // Missing root: leave the configured path for the failing read to report.
   }
+  if (config.projectArchive !== undefined && typeof config.projectArchive !== 'boolean') {
+    throw new Error('easel: projectArchive must be a boolean')
+  }
   return {
     projectRoot,
     skillsDir: resolve(config.skillsDir ?? join(projectRoot, 'skills', 'openclaw')),
     basePath: normalizeBasePath(config.basePath ?? DEFAULT_BASE_PATH),
+    // The desktop shell injects EASEL_DATA_ROOT; a web/dev deployment opts in
+    // explicitly because a native picker belongs to the machine running dsh.
+    archiveEnabled: config.projectArchive ?? Boolean(process.env.EASEL_DATA_ROOT),
     // runner 舰队（skills/shared/scripts，B2 起由宿主半直接 spawn）用的解释器。
     python: config.pythonExecutable ?? process.env.EASEL_PYTHON ?? 'python',
     // 视频号下载器（wx_channels_download）安装目录或 exe 路径；缺省走 lib/channels.js
@@ -2139,8 +2146,14 @@ async function apiDataRoot() {
 
 /** POST /easel/api/data-root/pick — OS directory picker in the desktop session. */
 async function apiDataRootPick() {
-  const picked = await pickDataDirectory()
-  return { json: { path: picked } }
+  try {
+    return { json: { path: await pickDirectory() } }
+  } catch (error) {
+    if (error instanceof PickerUnavailableError || error?.code === 'picker-unavailable') {
+      throw new ApiError(501, 'picker-unavailable')
+    }
+    throw error
+  }
 }
 
 /** POST /easel/api/data-root — validate, write the pending request, restart. */
@@ -2212,65 +2225,6 @@ async function apiDataRootSet(c) {
   await rm(resultFile, { force: true }).catch(() => {})
   requestDataRootRestart()
   return { json: { ok: true, target }, status: 202 }
-}
-
-/**
- * Run one native picker. Returns the path, null when the user cancelled, and
- * `'missing'` when the command is not installed.
- */
-function runPicker(command, args) {
-  return new Promise((resolvePromise, reject) => {
-    let settled = false
-    let out = ''
-    const child = spawn(command, args, { windowsHide: true })
-    const timer = setTimeout(() => {
-      if (settled) return
-      settled = true
-      child.kill()
-      resolvePromise(null)
-    }, 120_000)
-    const finish = value => {
-      if (settled) return
-      settled = true
-      clearTimeout(timer)
-      resolvePromise(value)
-    }
-    child.stdout.on('data', chunk => { out += chunk })
-    child.stderr.on('data', () => {})
-    child.on('error', error => {
-      if (error.code === 'ENOENT') return finish('missing')
-      if (settled) return
-      settled = true
-      clearTimeout(timer)
-      reject(error)
-    })
-    child.on('close', code => finish(code === 0 ? out.trim() || null : null))
-  })
-}
-
-async function pickDataDirectory() {
-  if (process.platform === 'win32') {
-    const script = [
-      'Add-Type -AssemblyName System.Windows.Forms',
-      '$dialog = New-Object System.Windows.Forms.FolderBrowserDialog',
-      "$dialog.Description = '选择 Easel 数据目录'",
-      '$dialog.ShowNewFolderButton = $true',
-      'if ($dialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK) { [Console]::Out.Write($dialog.SelectedPath) }',
-    ].join('; ')
-    const picked = await runPicker('powershell', ['-NoProfile', '-STA', '-ExecutionPolicy', 'Bypass', '-Command', script])
-    if (picked === 'missing') throw new ApiError(501, 'picker-unavailable')
-    return picked
-  }
-  if (process.platform === 'darwin') {
-    const picked = await runPicker('osascript', ['-e', 'POSIX path of (choose folder with prompt "选择 Easel 数据目录")'])
-    if (picked === 'missing') throw new ApiError(501, 'picker-unavailable')
-    return picked
-  }
-  const zenity = await runPicker('zenity', ['--file-selection', '--directory', '--title=选择 Easel 数据目录'])
-  if (zenity !== 'missing') return zenity
-  const kdialog = await runPicker('kdialog', ['--getexistingdirectory', homedir()])
-  if (kdialog === 'missing') throw new ApiError(501, 'picker-unavailable')
-  return kdialog
 }
 
 /**
@@ -2923,6 +2877,12 @@ export function apply(ctx, config = {}) {
   ctx.effect(() => api.register(CORE_ROUTES), 'easel: core routes')
   ctx.effect(() => api.register(createHandoffRoutes(ctx)), 'easel: handoff routes')
   ctx.effect(() => api.register(createAutomationRoutes(ctx)), 'easel: automation task route')
+  const projectArchive = createProjectArchiveFeature(settings)
+  ctx.effect(() => api.register(projectArchive.routes), 'easel: project archive routes')
+  ctx.effect(() => {
+    void projectArchive.sweepStale().catch(error => ctx.logger?.warn?.(`easel: project archive sweep failed: ${error.message}`))
+    return () => projectArchive.dispose()
+  }, 'easel: project archive lifecycle')
   ctx.effect(() => ctx.webServer.register({
     kind: 'exact',
     path: `${settings.basePath}/status`,
