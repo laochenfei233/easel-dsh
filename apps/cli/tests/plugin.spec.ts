@@ -1,11 +1,12 @@
 /** Explicit CLI exemptions use the profile lock and never become pnpm arguments. */
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
-import { getDshRuntimeVersion, initProfile, PROFILE_TEMPLATES, readProfileVersionExemptions } from '@deepseek-ai/dsh-app-boot'
+import { expect, it, onTestFinished, vi } from 'vitest'
+import { getDshRuntimeVersion, initProfile, readProfileVersionExemptions } from '@deepseek-ai/dsh-app-boot'
+import { PROFILE_TEMPLATES } from '@deepseek-ai/dsh-official-bundles'
 import { runPluginCommand, runProfilePnpm } from '@deepseek-ai/dsh-plugin-manager/operations'
-import { resolvePnpm, runPlugin, runtimePnpmCandidate } from '../src/plugin.ts'
+import { runPlugin } from '../src/plugin.ts'
 
 vi.mock('../src/profile-boot.ts', () => ({ INSTALL_ANCHOR: '/installation/package.json' }))
 vi.mock('@deepseek-ai/dsh-plugin-manager/operations', async importOriginal => ({
@@ -17,8 +18,6 @@ vi.mock('@deepseek-ai/dsh-plugin-manager/operations', async importOriginal => ({
 function fixture() {
   const home = mkdtempSync(join(tmpdir(), 'cli-version-exemptions-'))
   vi.stubEnv('DSH_HOME', home)
-  // CLI now probes pnpm before runPluginCommand; node accepts `--version` so the probe always succeeds.
-  vi.stubEnv('PNPM_BINARY', process.execPath)
   const stdout = vi.spyOn(process.stdout, 'write').mockImplementation(() => true)
   const stderr = vi.spyOn(process.stderr, 'write').mockImplementation(() => true)
   onTestFinished(() => {
@@ -30,69 +29,6 @@ function fixture() {
   })
   return { home, dir: join(home, 'profiles', 'test'), stdout, stderr }
 }
-
-const shimName = (): string => (process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm')
-
-/** A fake pnpm shim that passes the `--version` probe. */
-function writeFakeShim(binDir: string): string {
-  mkdirSync(binDir, { recursive: true })
-  const file = join(binDir, shimName())
-  if (process.platform === 'win32') {
-    writeFileSync(file, '@ECHO off\r\nexit /b 0\r\n')
-  } else {
-    writeFileSync(file, '#!/bin/sh\nexit 0\n', { mode: 0o755 })
-  }
-  return file
-}
-
-describe('runtimePnpmCandidate', () => {
-  it('resolves the runtime sibling layout (deployed desktop bundle)', () => {
-    const runtime = mkdtempSync(join(tmpdir(), 'dsh-runtime-'))
-    try {
-      const binDir = join(runtime, 'node', 'node_modules', '.bin')
-      writeFakeShim(binDir)
-      const anchor = join(runtime, 'dsh', 'package.json')
-      expect(runtimePnpmCandidate(anchor)).toBe(join(binDir, shimName()))
-    } finally {
-      rmSync(runtime, { recursive: true, force: true })
-    }
-  })
-
-  it('returns undefined for a non-runtime layout (npm global install)', () => {
-    const nodeModules = mkdtempSync(join(tmpdir(), 'dsh-npm-'))
-    try {
-      const anchor = join(nodeModules, '@deepseek-ai', 'dsh', 'package.json')
-      expect(runtimePnpmCandidate(anchor)).toBeUndefined()
-    } finally {
-      rmSync(nodeModules, { recursive: true, force: true })
-    }
-  })
-})
-
-describe('resolvePnpm', () => {
-  let home: string
-
-  beforeEach(() => {
-    home = mkdtempSync(join(tmpdir(), 'dsh-plugin-test-'))
-    vi.stubEnv('DSH_HOME', home)
-    vi.stubEnv('PATH', '')
-    vi.stubEnv('PNPM_BINARY', '')
-  })
-
-  afterEach(() => {
-    vi.unstubAllEnvs()
-    rmSync(home, { recursive: true, force: true })
-  })
-
-  it('prefers PNPM_BINARY over every other candidate', () => {
-    vi.stubEnv('PNPM_BINARY', process.execPath) // node --version exits 0
-    expect(resolvePnpm()?.command).toBe(process.execPath)
-  })
-
-  it('returns undefined when no candidate resolves', () => {
-    expect(resolvePnpm()).toBeUndefined()
-  })
-})
 
 it('requires explicit acknowledgement, grants only the exact pair, lists and revokes it without pnpm', async () => {
   const { dir, stdout, stderr } = fixture()
@@ -168,23 +104,6 @@ it('forwards all other commands unchanged and retains package diagnostics', asyn
   expect(await runPlugin('test', args)).toBe(127)
   expect(runPluginCommand).toHaveBeenCalledWith(expect.objectContaining({ profile: 'test' }), args, expect.objectContaining({ execution: 'cli' }))
   expect(stderr.mock.calls.map(call => call[0]).join('')).toContain('pnpm was not found')
-})
-
-it('falls back to the resolved pnpm command when the caller supplies no package manager', async () => {
-  fixture()
-  vi.stubEnv('PNPM_BINARY', process.execPath)
-  vi.mocked(runPluginCommand).mockResolvedValue({ exitCode: 0, output: '', truncated: false, logPath: '/profile/log' })
-  expect(await runPlugin('test', ['list'])).toBe(0)
-  expect(runPluginCommand).toHaveBeenCalledWith(
-    expect.objectContaining({ profile: 'test' }),
-    ['list'],
-    expect.objectContaining({
-      execution: 'cli',
-      command: process.execPath,
-      shell: process.platform === 'win32',
-      windowsHide: true,
-    }),
-  )
 })
 
 it('uses the installation package runtime without changing CLI authentication or output policy', async () => {
