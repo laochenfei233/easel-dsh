@@ -75,3 +75,12 @@ python <skill>/scripts/bili_upload.py upload --video out.mp4 --title "标题" \
 
 包装 biliup（biliup/biliup-rs，成熟的 B站命令行投稿工具，Rust 后端），支持完整投稿参数
 （分区 tid、标签、封面、转载、定时）。本 SKILL 加中文分区映射、参数校验与 dry-run 预览。
+
+## 多账号（可选）
+
+数据根 `outputs/_accounts.json` 是账号注册表，支持同平台多账号（账号页管理）。
+
+- 默认不传参 = 默认账号（根 `cookies.json`），行为不变。
+- 指定账号：`bili_upload.py` 的 `login` / `upload` 子命令本就带 `--cookie <路径>`，指向该账号的 cookie 文件即可（默认账号=根 `cookies.json`，新账号在 `outputs/_accounts/<id>/cookies.json`）；直接调 biliup 时用 `biliup -u <同一文件>`。
+- 走宿主 API 时带 `account: <账号id>` 即可。
+- B站不走浏览器直启窗口（TV 扫码 API）。

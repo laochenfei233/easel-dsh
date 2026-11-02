@@ -84,13 +84,16 @@ OutFile "${OUTFILE}"
 ; it's just for nsis to append the product name folder in the directory selector
 ; https://nsis.sourceforge.io/Reference/InstallDir
 !define PLACEHOLDER_INSTALL_DIR "placeholder\${PRODUCTNAME}"
-; EASEL-DIVERGENCE(easel-dsh-layout): keep the program under
-; %LOCALAPPDATA%\Easel-dsh\app; user data lives in <Documents>\Easel-dsh by
+; EASEL-DIVERGENCE(easel-dsh-layout): the program lives directly in
+; %LOCALAPPDATA%\Easel-dsh; user data lives in <Documents>\Easel-dsh by
 ; default (settings can move it), outside this directory, so upgrades and
-; uninstalls never touch it. This differs from the Tauri default on purpose;
-; the .onInit block below only rewrites $INSTDIR when it still equals the
-; placeholder, so this absolute default is kept as-is.
-InstallDir "$LOCALAPPDATA\Easel-dsh\app"
+; uninstalls never touch it. The uninstaller deletes only the files it
+; installed and then tries a non-recursive RMDir, so anything a user drops
+; beside the program survives. This differs from the Tauri default on
+; purpose; the .onInit block below only rewrites $INSTDIR when it still
+; equals the placeholder, so this absolute default is kept as-is — including
+; across upgrades, where an old registry InstallLocation must not win.
+InstallDir "$LOCALAPPDATA\Easel-dsh"
 
 VIProductVersion "${VERSIONWITHBUILD}"
 VIAddVersionKey "ProductName" "${PRODUCTNAME}"
@@ -264,13 +267,16 @@ Function PageReinstall
     Abort
   ${EndIf}
 
-  ; Skip showing the page if passive
+  ; Skip showing the page if passive, or when upgrading: an Easel upgrade
+  ; always installs over the running app (the /UPDATE semantics), so the
+  ; un/reinstall choice page never appears and never offers uninstalling.
   ;
   ; Note that we don't call this earlier at the begining
   ; of this function because we need to populate some variables
   ; related to current installed version if detected and whether
   ; we are downgrading or not.
   ${If} $PassiveMode = 1
+  ${OrIf} $R0 = 1
     Call PageLeaveReinstall
   ${Else}
     nsDialogs::Create 1018
@@ -323,6 +329,12 @@ Function PageLeaveReinstall
 
   ; In update mode, always proceeds without uninstalling
   ${If} $UpdateMode = 1
+    Goto reinst_done
+  ${EndIf}
+
+  ; An Easel upgrade installs over the existing app without uninstalling,
+  ; matching the skipped un/reinstall page above.
+  ${If} $R0 = 1
     Goto reinst_done
   ${EndIf}
 
@@ -456,7 +468,13 @@ Function un.ConfirmShow ; Add add a `Delete app data` check box
   IntOp $5 $5 / 96
   IntOp $6 $6 / 96
   IntOp $7 $7 / 96
-  System::Call 'user32::CreateWindowEx(i r3, w "${__NSD_CheckBox_CLASS}", w "$(deleteAppData)", i ${__NSD_CheckBox_STYLE}, i r4, i r5, i r6, i r7, p r1, i0, i0, i0) i .s'
+  ; The checkbox is the only consent for deleting user data; it starts
+  ; unchecked, so the default uninstall keeps the data root and this profile.
+  ; The label comes from the hooks include (ASCII fallback when absent).
+  !ifndef EASEL_DATA_CHECKBOX_LABEL
+    !define EASEL_DATA_CHECKBOX_LABEL "$(deleteAppData)"
+  !endif
+  System::Call 'user32::CreateWindowEx(i r3, w "${__NSD_CheckBox_CLASS}", w "${EASEL_DATA_CHECKBOX_LABEL}", i ${__NSD_CheckBox_STYLE}, i r4, i r5, i r6, i r7, p r1, i0, i0, i0) i .s'
   Pop $DeleteAppDataCheckbox
   SendMessage $HWNDPARENT ${WM_GETFONT} 0 0 $1
   SendMessage $DeleteAppDataCheckbox ${WM_SETFONT} $1 1

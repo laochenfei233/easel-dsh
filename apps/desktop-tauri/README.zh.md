@@ -9,7 +9,7 @@ Tauri 2 桌面壳：在原生窗口里内嵌 dsh web UI，内置 Node 运行时�
 ```
 src-tauri/            Rust shell
   src/dsh_runner.rs   dsh child-process lifecycle: spawn `dsh web --port 3081 --no-open`, port health probe, crash auto-restart (does not race when dsh-plugin restarts itself)
-  src/tray.rs         tray residency: closing the window hides it; only tray Quit ends the process tree
+  src/tray.rs         tray residency: closing the window hides it; tray Quit ends the process tree (the installer stop hook asks for the same graceful exit with --quit)
   src/setup.rs        first-run wizard commands: write preset into the profile patch (agent-presets.config.default), install plugins (dsh plugin / local copy)
 ui/dist/              shell frontend (pure static, no build): index.html full-window iframe + error banner; wizard.html first-run wizard
 scripts/bundle-runtime.mjs  pack Node runtime + pnpm-deployed dsh closure + local plugins → runtime/
@@ -32,7 +32,7 @@ pnpm tauri dev              # from apps/desktop-tauri; dev mode uses PATH node +
 ```
 
 dev 模式需要已构建的 CLI 产物（`pnpm run build`）；也可用环境变量覆盖运行时解析：
-`DSH_DESKTOP_NODE`（node 可执行）、`DSH_DESKTOP_DSH_BIN`（dsh CLI 入口）、`DSH_DESKTOP_PLUGINS_DIR`（本地插件目录）。
+`DSH_DESKTOP_NODE`（node 可执行）、`DSH_DESKTOP_DSH_BIN`（dsh CLI 入口）、`DSH_DESKTOP_PLUGINS_DIR`（本地插件目录）、`EASEL_BUNDLE_DIR` / `EASEL_DREAMINA_DIR`（staged 的 `runtime/easel` / `runtime/dreamina` 内容树）。
 
 ## 构建发行版
 
@@ -42,7 +42,17 @@ node scripts/bundle-runtime.mjs --platform win   # win|mac|linux; generates runt
 pnpm tauri build            # package installers (runtime/ is bundled as resources)
 ```
 
-CI（`.github/workflows/desktop-release.yml`）在三平台矩阵上执行同一流程并上传 GitHub Release；打 `v*` tag 或手动触发。
+CI（`.github/workflows/desktop-release.yml`）在平台矩阵上执行同一流程并上传 GitHub Release；打 `v*` tag 或手动触发（`.github/workflows/easel-package.yml` 是 hosted 试构建变体，只出 artifact 不发 Release）。
+
+## 应用内更新器（Windows）
+
+壳集成 `tauri-plugin-updater`；GUI 的设置 → 关于展示当前版本、手动检查更新、安装发现的新版本。更新清单是 Tauri updater 标准格式的 `{version, notes, pub_date, platforms}` JSON；`.sig` 与清单的生成和分发归发布管道（spec `easel-website.md`）。
+
+- **更新源**：清单端点默认指向产品站镜像 `https://easel.xyern.com/downloads/updates/latest.json`，回退到 GitHub 每个 Release 附带的更新清单 `…/releases/latest/download/latest.json`；更新器按顺序逐个尝试，任一端可达即可（`tauri.conf.json` 的 `plugins.updater.endpoints`）。数据根 home 下的 `update-source.json`（形如 `{"endpoints": ["https://…"]}`）存在则整体替换内置列表——内网部署就是这样把更新器指向内部镜像的。坏形文件是响亮的误配置：About 展示原因，启动延迟检查跳过本轮。
+- **启动延迟检查**：启动 30 秒后一次 GET；失败记入 `<数据根>/home/update-state.json` 并保持静默。提醒只在「发现的版本比当前新」且「距清单 `pub_date` 满 24 小时」时触发——所有用户看到提醒的时点一致；同一文件的 `notedVersion` 为启动弹窗去重。之后 About 保留常驻的「有新版可用」提示直至升级完成。
+- **安装**：命令先停内置 dsh 进程（updater 之后自行退出壳进程，不走 `RunEvent::Exit`，否则 runtime node 会被安装器甩成孤儿），再下载并以插件的 `basicUi` 模式启动 NSIS 安装器——安装器永远带 `/UPDATE`，与安装器钩子已处理的标记相同，所以应用内路径与手动 `/UPDATE` 收敛为同一次免卸载覆盖安装。
+- **签名**：更新包用 minisign 签名；公钥内置于 `tauri.conf.json`（`plugins.updater.pubkey`），私钥是 GitHub Actions secret（`TAURI_SIGNING_PRIVATE_KEY`）。
+- **平台范围**：更新器与其 GUI 只存在于宿主桥中继可达的地方——WebView2 的 iframe（Windows）。浏览器、CLI `dsh web`、WebKit app 窗口一律降级为 About 的仅桌面说明；macOS 自动更新是后续独立特性。
 
 ## 首次启动
 
@@ -50,5 +60,6 @@ CI（`.github/workflows/desktop-release.yml`）在三平台矩阵上执行同一
 - 默认插件：`dsh-plugin`（插件中心/市场）、`dsh-win-terminal-inspector`（仅 Windows，本地复制 + patch insert）
 - 可选插件：`dsh-better-sidebar`、`dsh-notification`、`dsh-session-context-menu`、`@xmanrui/dsh-im`（企微/飞书/钉钉/微信/QQ 等 9 渠道）、`dsh-lark`、`dsh-qqbot`、`dsh-vision-router`、`graph-memory`、`aegis`
 - 数据位置：默认在系统「文档」目录下的 `Easel-dsh`（Windows 尊重 OneDrive 重定向）；设置 → 数据位置可以迁移。旧路径保留 junction/symlink，已有项目无需改写即可继续打开。
+- 内置即梦 CLI：`dreamina`（图/视频生成）与 `dreamina-canvas`（协同画布）在 `runtime/dreamina/bin`，排在 agent PATH 最后——用户经官方安装脚本自装的版本优先；两个 CLI 自带的 agent skill 在 `runtime/dreamina/skills`（经 `easel-dreamina-skills` 行注册）。staging（`scripts/bundle-runtime.mjs` 的 `stageDreamina`）在构建期拉取，画布 CLI 逐文件校验 sha256，可用 `--only dreamina` 单独重跑。
 
 插件安装/更新/卸载全部走 dsh 官方机制（`dsh plugin` / dsh-plugin 插件中心），运行时内置 pnpm 与其同版本族。

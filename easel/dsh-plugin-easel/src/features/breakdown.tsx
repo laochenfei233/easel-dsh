@@ -8,7 +8,7 @@ import BreakdownPage from '../components/BreakdownPage'
 import { pageKey } from '../lib/shell'
 
 export const view = 'breakdown'
-export const order = 39
+export const order = 33
 export const labels = { zh: '爆款拆解', en: 'Breakdown' }
 export const Icon = IconSkills
 export const Component = BreakdownPage

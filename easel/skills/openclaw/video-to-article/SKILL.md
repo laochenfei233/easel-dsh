@@ -34,9 +34,10 @@ auto-subtitle；抽帧用 ffmpeg，见第 3 步）。
 ### 1. 语音转录（带时间轴）
 ```bash
 BASE=$(node -e "const j=require('./outputs/_easel_api.json');process.stdout.write(j.base+j.basePath)")
-curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" \
+TOKEN=$(node -e "const j=require('./outputs/_easel_api.json');process.stdout.write(j.runnerToken)")
+curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" -H "X-Easel-Runner: $TOKEN" \
   -d '{"path":"input.mp4","format":"json"}'
-curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" \
+curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" -H "X-Easel-Runner: $TOKEN" \
   -d '{"path":"input.mp4","format":"txt"}'
 # 输出 outputs/input/input.json 与 outputs/input/input.txt，需要就 mv 到 outputs/主题名/assets/
 ```

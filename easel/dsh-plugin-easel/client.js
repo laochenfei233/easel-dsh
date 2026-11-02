@@ -505,7 +505,7 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   display: flex; align-items: center; gap: 6px; padding: 10px 12px 5px;
   font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em;
   color: var(--text-tertiary); font-weight: 700; cursor: pointer; user-select: none;
-}.easel-scope .archived-header:hover { color: var(--text-secondary); }.easel-scope .archived-chevron { display: inline-flex; align-items: center; transition: transform var(--t-fast); color: var(--text-tertiary); }.easel-scope .archived-chevron.open { transform: rotate(90deg); }/* ============ \u901A\u7528\u9875\u5BB9\u5668 ============ */.easel-scope .page-scroll { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; max-width: 1100px; margin: 0 auto 4px; }.easel-scope .notice-error { max-width: 1100px; margin: 14px auto 0; color: var(--red); background: var(--red-soft); border: 1px solid transparent; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; }/* ============ \u70ED\u70B9\u96F7\u8FBE ============ */.easel-scope .trend-platforms { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-grid { max-width: 1100px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }.easel-scope .trend-col { padding: 14px 6px 10px; }.easel-scope .trend-col-head { font-weight: 650; font-size: 14px; padding: 0 12px 8px; display: flex; align-items: center; gap: 8px; }.easel-scope .trend-count { color: var(--text-tertiary); font-size: 12px; font-weight: 500; }.easel-scope .trend-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 8px; transition: background var(--t-fast); }.easel-scope .trend-item:hover { background: var(--surface-hover); }.easel-scope .trend-rank { width: 20px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-tertiary); flex-shrink: 0; }.easel-scope .trend-rank.top { color: var(--accent-end); }.easel-scope .trend-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }.easel-scope .trend-title { font-size: 13px; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .trend-title:hover { color: var(--accent-start); }.easel-scope .trend-hot { font-size: 11px; color: var(--text-tertiary); }.easel-scope .trend-use { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--accent-end); cursor: pointer; white-space: nowrap; }.easel-scope .trend-item:hover .trend-use { opacity: 1; }.easel-scope .trend-use:hover { background: var(--accent-soft); border-color: transparent; }.easel-scope .trend-empty { color: var(--text-tertiary); font-size: 13px; padding: 10px 12px; }/* ============ \u5185\u5BB9\u65E5\u5386 ============ */.easel-scope .cal-nav { display: flex; align-items: center; gap: 8px; }.easel-scope .cal-month { font-weight: 650; font-size: 14px; min-width: 120px; text-align: center; }.easel-scope .cal-grid-head { max-width: 1100px; margin: 18px auto 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-wd { text-align: center; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }.easel-scope .cal-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-cell { height: 132px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 7px; cursor: pointer; transition: all var(--t-fast); display: flex; flex-direction: column; gap: 4px; overflow: hidden; }.easel-scope .cal-cell:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }.easel-scope .cal-cell.dim { opacity: 0.4; }.easel-scope .cal-cell.today { border-color: var(--accent-start); box-shadow: 0 0 0 2px var(--accent-soft); }.easel-scope .cal-daynum { font-size: 12px; color: var(--text-secondary); font-weight: 600; }.easel-scope .cal-cell.today .cal-daynum { color: var(--accent-end); }.easel-scope .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }.easel-scope .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }.easel-scope .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }/* ============ \u5DE5\u4F5C\u53F0 ============ */.easel-scope .dash-hero { max-width: 1100px; margin: 0 auto 8px; }.easel-scope .dash-quick { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }.easel-scope .dash-quick-btn {
+}.easel-scope .archived-header:hover { color: var(--text-secondary); }.easel-scope .archived-chevron { display: inline-flex; align-items: center; transition: transform var(--t-fast); color: var(--text-tertiary); }.easel-scope .archived-chevron.open { transform: rotate(90deg); }/* ============ \u901A\u7528\u9875\u5BB9\u5668 ============ */.easel-scope .page-scroll { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; max-width: 1100px; margin: 0 auto 4px; }.easel-scope .notice-error { max-width: 1100px; margin: 14px auto 0; color: var(--red); background: var(--red-soft); border: 1px solid transparent; border-radius: var(--radius); padding: 10px 14px; font-size: 13px; }/* ============ \u70ED\u70B9\u96F7\u8FBE ============ */.easel-scope .trend-platforms { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-grid { max-width: 1100px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }.easel-scope .trend-col { padding: 14px 6px 10px; }.easel-scope .trend-col-head { font-weight: 650; font-size: 14px; padding: 0 12px 8px; display: flex; align-items: center; gap: 8px; }.easel-scope .trend-count { color: var(--text-tertiary); font-size: 12px; font-weight: 500; }.easel-scope .trend-item { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 8px; transition: background var(--t-fast); }.easel-scope .trend-item:hover { background: var(--surface-hover); }.easel-scope .trend-rank { width: 20px; text-align: center; font-size: 13px; font-weight: 700; color: var(--text-tertiary); flex-shrink: 0; }.easel-scope .trend-rank.top { color: var(--accent-end); }.easel-scope .trend-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }.easel-scope .trend-title { font-size: 13px; color: var(--text); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .trend-title:hover { color: var(--accent-start); }.easel-scope .trend-hot { font-size: 11px; color: var(--text-tertiary); }.easel-scope .trend-meta { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }.easel-scope .trend-badge { font-size: 10.5px; line-height: 1; padding: 2.5px 6px; border-radius: 999px; white-space: nowrap; flex-shrink: 0; }.easel-scope .trend-badge-new { color: var(--accent-end); background: var(--accent-soft); font-weight: 650; }.easel-scope .trend-badge-up { color: var(--trend-up); background: color-mix(in srgb, var(--trend-up) 13%, transparent); }.easel-scope .trend-badge-down { color: var(--trend-down); background: color-mix(in srgb, var(--trend-down) 13%, transparent); }.easel-scope .trend-badge-watch { color: var(--amber, #b45309); background: color-mix(in srgb, var(--amber, #b45309) 13%, transparent); }.easel-scope .trend-age { font-size: 10.5px; color: var(--text-tertiary); white-space: nowrap; }.easel-scope .trend-plat { font-size: 10.5px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 64px; }.easel-scope .trend-stale { font-size: 11px; color: var(--amber, #b45309); font-weight: 500; }.easel-scope .trend-more { font-size: 11.5px; color: var(--text-tertiary); padding: 2px 12px 6px; }.easel-scope .trend-viewsep { width: 1px; align-self: stretch; background: var(--border); margin: 2px 4px; }.easel-scope .trend-watch-card { padding: 12px 6px 6px; max-width: 1100px; margin: 14px auto 0; }.easel-scope .trend-watch-group { display: flex; align-items: center; gap: 8px; padding: 0 8px; }.easel-scope .trend-watch-group + .trend-watch-group { border-top: 1px dashed var(--border); }.easel-scope .trend-watch-items { flex: 1; min-width: 0; }.easel-scope .trend-watch-group .trend-item { padding-top: 5px; padding-bottom: 5px; }.easel-scope .trend-watch-group .trend-item .trend-use, .easel-scope .trend-watch-group .trend-item .trend-save { opacity: 1; }.easel-scope .trend-watch-key { font-size: 12px; font-weight: 650; color: var(--accent-end); background: var(--accent-soft); border-radius: 999px; padding: 3px 10px; white-space: nowrap; flex-shrink: 0; }.easel-scope .trend-cluster { padding: 12px 6px 8px; }.easel-scope .trend-cluster-head { display: flex; align-items: center; gap: 8px; padding: 0 12px 6px; }.easel-scope .trend-cluster-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }.easel-scope .trend-cluster-actions .trend-save, .easel-scope .trend-cluster-actions .trend-use { opacity: 1; }.easel-scope .trend-cluster-platforms { display: flex; align-items: center; gap: 6px; padding: 0 12px 6px; flex-wrap: wrap; }.easel-scope .trend-chip { font-size: 10.5px; padding: 2px 8px; border-radius: 999px; background: var(--surface-hover); color: var(--text-secondary); }.easel-scope .trend-use { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); cursor: pointer; white-space: nowrap; color: var(--accent-end); }.easel-scope .trend-item:hover .trend-use { opacity: 1; }.easel-scope .trend-use:hover { background: var(--accent-soft); border-color: transparent; }.easel-scope .trend-empty { color: var(--text-tertiary); font-size: 13px; padding: 10px 12px; }/* ============ \u5185\u5BB9\u65E5\u5386 ============ */.easel-scope .cal-nav { display: flex; align-items: center; gap: 8px; }.easel-scope .cal-month { font-weight: 650; font-size: 14px; min-width: 120px; text-align: center; }.easel-scope .cal-grid-head { max-width: 1100px; margin: 18px auto 6px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-wd { text-align: center; font-size: 12px; color: var(--text-tertiary); font-weight: 600; }.easel-scope .cal-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }.easel-scope .cal-cell { height: 132px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 7px; cursor: pointer; transition: all var(--t-fast); display: flex; flex-direction: column; gap: 4px; overflow: hidden; }.easel-scope .cal-cell:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }.easel-scope .cal-cell.dim { opacity: 0.4; }.easel-scope .cal-cell.today { border-color: var(--accent-start); box-shadow: 0 0 0 2px var(--accent-soft); }.easel-scope .cal-daynum { font-size: 12px; color: var(--text-secondary); font-weight: 600; }.easel-scope .cal-cell.today .cal-daynum { color: var(--accent-end); }/* \u8282\u5047\u65E5\u5E95\u56FE\uFF08T2\uFF09\uFF1A\u4F11/\u73ED\u89D2\u6807 + \u8282\u65E5\u540D */.easel-scope .calendar-page { --cal-rest: #e5484d; --cal-festival: #b7791f; }.easel-scope .cal-daynum-row { display: flex; align-items: center; gap: 4px; }.easel-scope .cal-festival { display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 4px; font-size: 10px; font-weight: 700; flex-shrink: 0; }.easel-scope .cal-festival.rest { color: #fff; background: var(--cal-rest); }.easel-scope .cal-festival.work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 15%, transparent); }.easel-scope .cal-festnames { font-size: 11px; color: var(--cal-festival); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.2; }.easel-scope .cal-fest-day { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }.easel-scope .cal-festival-tag { font-size: 12px; padding: 2px 9px; border-radius: 999px; }.easel-scope .cal-festival-tag.is-statutory-rest { color: #fff; background: var(--cal-rest); font-weight: 600; }.easel-scope .cal-festival-tag.is-statutory-work { color: var(--text-tertiary); background: color-mix(in srgb, var(--text-tertiary) 14%, transparent); }.easel-scope .cal-festival-tag.is-lunar { color: #fff; background: var(--cal-festival); }.easel-scope .cal-festival-tag.is-fixed { color: var(--cal-festival); background: color-mix(in srgb, var(--cal-festival) 14%, transparent); }/* \u53F3\u952E\u83DC\u5355\uFF08T3\uFF09\uFF1A\u900F\u660E\u906E\u7F69\u4E0A\u7684\u6D6E\u5C42\u83DC\u5355 */.easel-scope .overlay.is-menu { background: transparent; }.easel-scope .cal-menu { position: fixed; z-index: 80; min-width: 176px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: 10px; box-shadow: var(--shadow-lg); padding: 5px; display: flex; flex-direction: column; }.easel-scope .cal-menu > button { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 7px 10px; font-size: 13px; color: var(--text); background: none; border: 0; border-radius: 7px; cursor: pointer; text-align: left; }.easel-scope .cal-menu > button:hover { background: var(--accent-soft); }.easel-scope .cal-menu-sep { height: 1px; background: var(--border); margin: 3px 4px; }.easel-scope .cal-menu > .cal-menu-del { color: var(--text-tertiary); }.easel-scope .cal-menu > .cal-menu-del:hover { color: var(--cal-rest); }.easel-scope .cal-repeat { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 12.5px; color: var(--text-secondary); cursor: pointer; }/* CalDAV \u8BA2\u9605\uFF08T6\uFF09\uFF1A\u53EA\u8BFB chip\uFF08\u7A7A\u5FC3\u70B9\uFF09\u4E0E\u8D26\u53F7\u7BA1\u7406\u5F39\u7A97 */.easel-scope .cal-event.is-caldav { background: color-mix(in srgb, var(--ev) 7%, transparent); border: 1px dashed color-mix(in srgb, var(--ev) 40%, transparent); cursor: default; }.easel-scope .cal-event.is-caldav .cal-event-dot { background: transparent; border: 2px solid var(--ev); }.easel-scope .cal-sub-hint { font-size: 12.5px; color: var(--text-tertiary); margin: 0 0 12px; line-height: 1.5; }.easel-scope .cal-sub-row { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px; }.easel-scope .cal-sub-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-sub-main { flex: 1; min-width: 0; }.easel-scope .cal-sub-url { font-size: 12px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .cal-sub-form { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }.easel-scope .cal-sub-error { margin-top: 10px; font-size: 12.5px; color: var(--cal-rest); }.easel-scope .cal-events { display: flex; flex-direction: column; gap: 3px; overflow: hidden; }.easel-scope .cal-event { display: flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 2px 6px; border-radius: 5px; background: color-mix(in srgb, var(--ev) 13%, transparent); cursor: pointer; }.easel-scope .cal-event-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ev); flex-shrink: 0; }.easel-scope .cal-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }/* ============ \u5DE5\u4F5C\u53F0 ============ */.easel-scope .dash-hero { max-width: 1100px; margin: 0 auto 8px; }.easel-scope .dash-quick { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 16px; }.easel-scope .dash-quick-btn {
   display: flex; align-items: center; gap: 7px; padding: 9px 15px;
   font-size: 13.5px; font-weight: 550; cursor: pointer; color: var(--text);
   background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
@@ -521,8 +521,16 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
 }.easel-scope .ana-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 20px; align-items: start; }.easel-scope .ana-col { min-width: 0; }.easel-scope .ana-id { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-overview { display: flex; gap: 8px; }.easel-scope .ana-stat { flex: 1; text-align: center; padding: 10px 4px; background: var(--surface-2); border-radius: 12px; }.easel-scope .ana-stat-val { font-size: 24px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }.easel-scope .ana-stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }.easel-scope .ana-stat-delta { font-size: 11px; font-weight: 600; margin-top: 5px; font-variant-numeric: tabular-nums; }.easel-scope .ana-muted { color: var(--text-tertiary) !important; font-weight: 400; }.easel-scope .ana-wins { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 14px; }.easel-scope .ana-win { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border);
   background: var(--surface); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); }.easel-scope .ana-win:hover { border-color: var(--border-strong); color: var(--text); }.easel-scope .ana-win.on { background: var(--accent-soft); border-color: transparent; color: var(--accent-end); font-weight: 600; }.easel-scope .ana-wins-note { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; line-height: 1.5; }.easel-scope .ana-sub { font-size: 12px; font-weight: 700; color: var(--text-secondary); margin-bottom: 10px; }.easel-scope .ana-metrics { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: 8px; }.easel-scope .ana-metric { text-align: center; padding: 8px 4px; background: var(--surface-2); border-radius: 10px; }.easel-scope .ana-metric-val { font-size: 16px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }.easel-scope .ana-metric-label { font-size: 11px; color: var(--text-secondary); margin-top: 3px; }.easel-scope .ana-metric-vs { font-size: 10px; font-weight: 600; margin-top: 3px; }.easel-scope .ana-notes { display: flex; flex-direction: column; gap: 6px; }.easel-scope .ana-note { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: 9px;
-  background: var(--surface-2); font-size: 12.5px; color: var(--text); text-decoration: none; transition: all var(--t-fast); }.easel-scope .ana-note:hover { background: var(--accent-soft); color: var(--accent-end); }.easel-scope .ana-note-cover { width: 34px; height: 34px; border-radius: 7px; object-fit: cover; flex-shrink: 0; background: var(--surface); }.easel-scope .ana-note-cover-ph { display: flex; align-items: center; justify-content: center; font-size: 15px; }.easel-scope .ana-note-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }.easel-scope .ana-note-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note-stat { font-size: 11px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note:hover .ana-note-stat { color: var(--accent-end); }.easel-scope .ana-note-go { flex-shrink: 0; color: var(--text-tertiary); }.easel-scope .ana-note:hover .ana-note-go { color: var(--accent-end); }/* ============ \u5185\u5BB9\u5E93\u753B\u5ECA ============ */.easel-scope .gallery-page { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .gallery-head { max-width: 1160px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }.easel-scope .gallery-filters { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1160px; margin: 14px auto 0; }.easel-scope .gallery-grid { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }.easel-scope .gcard { padding: 0; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }.easel-scope .gcard-thumb { aspect-ratio: 4/3; background: var(--surface-2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }.easel-scope .gcard-thumb img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-thumb video { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-ph { color: var(--text-tertiary); display: flex; flex-direction: column; align-items: center; gap: 6px; }.easel-scope .gcard-kind { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: rgba(24,24,48,0.55); color: #fff; }.easel-scope .gcard-meta { padding: 10px 12px; }.easel-scope .gcard-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .gcard-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }/* \u5185\u5BB9\u5E93\u9762\u5305\u5C51 */.easel-scope .crumb { cursor: pointer; color: var(--text-secondary); }.easel-scope .crumb:hover { color: var(--accent-start); }.easel-scope .crumb-sep { color: var(--text-tertiary); margin: 0 2px; font-weight: 400; }/* ============ \u9009\u9898\u5E93\u770B\u677F ============ */.easel-scope .kanban { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }.easel-scope .kanban-col { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; min-height: 200px; }.easel-scope .kanban-col-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text-secondary); padding: 2px 4px 10px; }.easel-scope .kanban-dot { width: 9px; height: 9px; border-radius: 3px; }.easel-scope .kanban-count { color: var(--text-tertiary); font-weight: 500; }.easel-scope .kanban-list { display: flex; flex-direction: column; gap: 10px; }.easel-scope .kanban-empty { color: var(--text-tertiary); font-size: 12.5px; padding: 12px 4px; }.easel-scope .idea-card { position: relative; padding: 13px 14px; }.easel-scope .idea-card-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 2px; }.easel-scope .idea-card:hover .idea-card-actions { display: flex; }.easel-scope .idea-title { font-size: 14px; font-weight: 600; line-height: 1.45; padding-right: 40px; }.easel-scope .idea-note { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 7px;
-  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }.easel-scope .idea-foot { display: flex; align-items: center; gap: 4px; margin-top: 11px; flex-wrap: wrap; }.easel-scope .idea-act { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 8px; border-radius: 7px;
+  background: var(--surface-2); font-size: 12.5px; color: var(--text); text-decoration: none; transition: all var(--t-fast); }.easel-scope .ana-note:hover { background: var(--accent-soft); color: var(--accent-end); }.easel-scope .ana-note-cover { width: 34px; height: 34px; border-radius: 7px; object-fit: cover; flex-shrink: 0; background: var(--surface); }.easel-scope .ana-note-cover-ph { display: flex; align-items: center; justify-content: center; font-size: 15px; }.easel-scope .ana-note-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }.easel-scope .ana-note-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note-stat { font-size: 11px; color: var(--text-tertiary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-note:hover .ana-note-stat { color: var(--accent-end); }.easel-scope .ana-note-go { flex-shrink: 0; color: var(--text-tertiary); }.easel-scope .ana-note:hover .ana-note-go { color: var(--accent-end); }/* \u8D26\u53F7 chips\uFF1A\u672A\u767B\u5F55\u4ECD\u53EF\u9009\uFF0C\u4F46\u964D\u8C03\uFF08\u70B9\u5B83\u53BB\u8D26\u53F7\u9875\uFF09 */.easel-scope .ana-plats .chip.ana-chip-off { opacity: .55; border-style: dashed; }.easel-scope .ana-plats .chip.ana-chip-off:hover { opacity: .8; }/* \u5168\u89C8\uFF1A\u6BCF\u4E2A\u8D26\u53F7\u4E00\u5F20\u5361\u3002\u5171\u4EAB\u7684\u7A97\u53E3\u9009\u62E9\u5668\u5728\u7F51\u683C\u4E0A\u65B9\uFF0C\u5361\u7247\u53EA\u627F\u8F7D\u6570\u5B57\u4E0E\u8D70\u52BF\u3002 */.easel-scope .ana-wins-head { margin: 0 0 12px; justify-content: flex-end; }.easel-scope .ana-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 10px; }.easel-scope .ana-acct {
+  display: flex; flex-direction: column; align-items: stretch; gap: 3px; text-align: left;
+  padding: 12px 13px 11px; border-radius: 14px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer; font: inherit;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}.easel-scope .ana-acct:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }.easel-scope .ana-acct:focus-visible { outline: 2px solid var(--accent-end); outline-offset: 2px; }.easel-scope .ana-acct.off { opacity: .62; border-style: dashed; }.easel-scope .ana-acct-top { display: flex; align-items: center; gap: 6px; min-height: 18px; }.easel-scope .ana-acct-plat { font-size: 10.5px; font-weight: 700; letter-spacing: .04em; color: var(--text-tertiary); text-transform: uppercase; }.easel-scope .ana-acct-name { font-size: 12.5px; font-weight: 600; color: var(--text-secondary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-acct-num { font-size: 24px; font-weight: 700; line-height: 1.15; margin-top: 5px; font-variant-numeric: tabular-nums; }.easel-scope .ana-acct-unit { font-size: 11px; font-weight: 500; color: var(--text-tertiary); margin-left: 5px; }.easel-scope .ana-acct-delta { display: flex; align-items: baseline; gap: 5px; font-size: 11px; font-weight: 600;
+  font-variant-numeric: tabular-nums; min-height: 15px; }.easel-scope .ana-acct-win { font-size: 10.5px; font-weight: 400; color: var(--text-tertiary); }.easel-scope .ana-spark { color: var(--accent-end); margin-top: 6px; width: 100%; height: 26px; opacity: .78; }.easel-scope .ana-acct-sub { font-size: 10.5px; color: var(--text-tertiary); margin-top: 5px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .ana-acct-empty { font-size: 11.5px; color: var(--text-tertiary); line-height: 1.5; margin-top: 8px; min-height: 34px; }/* ============ \u5185\u5BB9\u5E93\u753B\u5ECA ============ */.easel-scope .gallery-page { height: 100%; overflow-y: auto; padding: 28px 32px 60px; }.easel-scope .gallery-head { max-width: 1160px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }.easel-scope .gallery-filters { display: flex; gap: 8px; flex-wrap: wrap; max-width: 1160px; margin: 14px auto 0; }.easel-scope .gallery-grid { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }.easel-scope .gcard { padding: 0; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; }.easel-scope .gcard-thumb { aspect-ratio: 4/3; background: var(--surface-2); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }.easel-scope .gcard-thumb img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-thumb video { width: 100%; height: 100%; object-fit: cover; }.easel-scope .gcard-ph { color: var(--text-tertiary); display: flex; flex-direction: column; align-items: center; gap: 6px; }.easel-scope .gcard-kind { position: absolute; top: 8px; left: 8px; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 999px; background: rgba(24,24,48,0.55); color: #fff; }.easel-scope .gcard-meta { padding: 10px 12px; }.easel-scope .gcard-name { font-size: 13px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .gcard-sub { font-size: 11.5px; color: var(--text-tertiary); margin-top: 2px; }/* \u5185\u5BB9\u5E93\u9762\u5305\u5C51 */.easel-scope .crumb { cursor: pointer; color: var(--text-secondary); }.easel-scope .crumb:hover { color: var(--accent-start); }.easel-scope .crumb-sep { color: var(--text-tertiary); margin: 0 2px; font-weight: 400; }/* ============ \u9009\u9898\u5E93\u770B\u677F ============ */.easel-scope .kanban { max-width: 1160px; margin: 16px auto 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }.easel-scope .kanban-col { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 12px; min-height: 200px; }.easel-scope .kanban-col-head { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text-secondary); padding: 2px 4px 10px; }.easel-scope .kanban-dot { width: 9px; height: 9px; border-radius: 3px; }.easel-scope .kanban-count { color: var(--text-tertiary); font-weight: 500; }.easel-scope .kanban-list { display: flex; flex-direction: column; gap: 10px; }.easel-scope .kanban-empty { color: var(--text-tertiary); font-size: 12.5px; padding: 12px 4px; }.easel-scope .idea-card { position: relative; padding: 13px 14px; }.easel-scope .idea-card-actions { position: absolute; top: 8px; right: 8px; display: none; gap: 2px; }.easel-scope .idea-card:hover .idea-card-actions { display: flex; }.easel-scope .idea-title { font-size: 14px; font-weight: 600; line-height: 1.45; padding-right: 40px; }.easel-scope .idea-note { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; margin-top: 7px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }.easel-scope .idea-foot { display: flex; align-items: center; gap: 4px; margin-top: 11px; flex-wrap: wrap; }.easel-scope .idea-links { display: flex; align-items: center; gap: 4px; margin-top: 7px; }.easel-scope .idea-link { font-size: 11.5px; color: var(--accent-end); background: none; border: none; padding: 2px 4px; cursor: pointer; text-decoration: none; }.easel-scope .idea-link:hover { text-decoration: underline; }.easel-scope .idea-body-preview { max-height: 64vh; overflow: auto; padding: 6px 2px; font-size: 13px; line-height: 1.7; }.easel-scope .idea-act { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 8px; border-radius: 7px;
   border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); }.easel-scope .idea-act:hover { color: var(--text); border-color: var(--border-strong); }.easel-scope .idea-act.next { margin-left: auto; color: var(--accent-end); }.easel-scope .idea-act.next:hover { background: var(--accent-soft); border-color: transparent; }/* \u70ED\u70B9\u6536\u85CF\u6309\u94AE */.easel-scope .trend-save { opacity: 0; transition: all var(--t-fast); flex-shrink: 0; display: inline-flex; align-items: center;
   padding: 5px; border-radius: 7px; border: 1px solid var(--border); background: var(--bg-elev); color: var(--text-tertiary); cursor: pointer; }.easel-scope .trend-item:hover .trend-save { opacity: 1; }.easel-scope .trend-save:hover { color: var(--accent-end); background: var(--accent-soft); border-color: transparent; }/* ============ \u53D1\u5E03\u4E2D\u5FC3 ============ */.easel-scope .publish-page { display: flex; height: 100%; overflow: hidden; }.easel-scope .publish-editor { width: 46%; min-width: 400px; max-width: 620px; overflow-y: auto; padding: 28px 28px 60px; border-right: 1px solid var(--border); }.easel-scope .publish-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }.easel-scope .publish-previews { flex: 1; overflow-y: auto; padding: 28px 28px 60px; display: flex; flex-direction: column; gap: 14px; background: var(--surface-2); }.easel-scope .pv-card { padding: 0; overflow: hidden; }.easel-scope .pv-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); }.easel-scope .pv-plat { font-size: 13px; font-weight: 700; }.easel-scope .pv-count { font-size: 12px; color: var(--text-tertiary); font-variant-numeric: tabular-nums; }.easel-scope .pv-count.over { color: var(--red); font-weight: 700; }.easel-scope .pv-body { padding: 14px; }.easel-scope .pv-title { font-size: 15px; font-weight: 650; margin-bottom: 8px; }.easel-scope .pv-title.over { color: var(--red); }.easel-scope .pv-text { font-size: 13.5px; line-height: 1.7; white-space: pre-wrap; color: var(--text); word-break: break-word; }.easel-scope .pv-ph { color: var(--text-tertiary); }.easel-scope .pv-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 14px; border-top: 1px solid var(--border); background: var(--bg-elev); }.easel-scope .pv-hint { font-size: 11.5px; color: var(--text-tertiary); }.easel-scope .pv-copy { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 4px 9px; border-radius: 7px; border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary); cursor: pointer; transition: all var(--t-fast); flex-shrink: 0; }.easel-scope .pv-copy:hover { color: var(--text); border-color: var(--border-strong); }/* \u5E73\u53F0\u98CE\u683C\u5FAE\u8C03 */.easel-scope .pv-xiaohongshu .pv-title { color: #ff2e4d; }.easel-scope .pv-douyin { }.easel-scope .pv-weibo .pv-text { }@media (max-width: 900px) {.easel-scope .publish-page { flex-direction: column; }.easel-scope .publish-editor { width: 100%; max-width: none; border-right: none; border-bottom: 1px solid var(--border); }}/* \u53D1\u5E03\u4E2D\u5FC3 AI\u7248\u5FBD\u6807 + \u7206\u6B3E\u62C6\u89E3 */.easel-scope .pv-badge { margin-left: 8px; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-end); }.easel-scope .pv-badge-ok { background: color-mix(in srgb, var(--green) 18%, transparent); color: var(--green); }.easel-scope .pv-pubstate { margin: 8px 0 2px; font-size: 12px; padding: 6px 10px; border-radius: 8px; display: flex; align-items: center; gap: 6px; white-space: pre-wrap; word-break: break-word; }.easel-scope .pv-pubstate.publishing { background: var(--accent-soft); color: var(--accent-end); }.easel-scope .pv-pubstate.ok { background: color-mix(in srgb, var(--green) 15%, transparent); color: var(--green); }.easel-scope .pv-pubstate.fail { background: color-mix(in srgb, var(--red) 12%, transparent); color: var(--red); max-height: 120px; overflow: auto; }/* \u5A92\u4F53\u9644\u4EF6\u9009\u62E9 */.easel-scope .media-chip { position: relative; width: 46px; height: 46px; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid var(--accent-end); flex-shrink: 0; }.easel-scope .media-chip img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .media-chip .media-vid { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 20px; background: var(--bg-subtle, #eee); }.easel-scope .media-chip .media-x { position: absolute; top: 0; right: 2px; color: #fff; font-weight: 800; text-shadow: 0 0 3px #000; }.easel-scope .media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; margin-top: 10px; max-height: 260px; overflow: auto; padding: 4px; border: 1px solid var(--border); border-radius: 10px; }.easel-scope .media-cell { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; cursor: pointer; border: 2px solid transparent; background: var(--bg-subtle, #f0f0f0); }.easel-scope .media-cell.sel { border-color: var(--accent-end); }.easel-scope .media-cell img { width: 100%; height: 100%; object-fit: cover; }.easel-scope .media-cell .media-vid { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 22px; text-align: center; font-size: 11px; }.easel-scope .media-cell .media-check { position: absolute; top: 3px; right: 4px; background: var(--accent-end); color: #fff; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 11px; }.easel-scope .breakdown-body { max-width: 900px; margin: 16px auto 0; }/* \u53D1\u5E03\u4E2D\u5FC3\uFF1A\u9002\u914D\u8FDB\u5EA6\u63D0\u793A + \u9884\u89C8\u5B8C\u6574\u663E\u793A */.easel-scope .adapt-hint { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 12.5px; color: var(--text-secondary); }.easel-scope .pv-card { overflow: visible; }.easel-scope .pv-text { max-height: none; }.easel-scope .publish-saved-note { margin-top: 10px; font-size: 11.5px; color: var(--text-tertiary); }/* ============ \u5B50\u5DE5\u5177\u9876\u90E8\u5C0F\u5BFC\u822A ============ */.easel-scope .page-host { flex: 1; min-height: 0; display: flex; flex-direction: column; }.easel-scope .page-host > * { flex: 1; min-height: 0; }.easel-scope .subnav {
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
@@ -582,7 +590,18 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   min-width: 0; width: 100%; padding: 6px 9px; font-size: 12.5px; cursor: pointer;
   border: 1px solid var(--border); border-radius: 7px; background: var(--bg);
   color: var(--text); position: relative; user-select: none;
-}.easel-scope .proto-trigger:hover { border-color: #9db3d8; }.easel-scope .proto-trigger .proto-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}.easel-scope .proto-trigger:hover { border-color: #9db3d8; }.easel-scope .proto-trigger .proto-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }/* ============ \u5B9A\u65F6\u4EFB\u52A1 (easel-scheduled-tasks) ============ */.easel-scope .sch-strip {
+  display: flex; align-items: center; gap: 9px;
+  max-width: 1100px; margin: 0 auto 16px; padding: 11px 14px;
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+}.easel-scope .sch-strip.accent { background: var(--accent-gradient-soft); color: var(--text); }.easel-scope .sch-strip > svg { color: var(--accent-start); flex: none; }.easel-scope .sch-strip-label { font-size: 12px; color: var(--text-secondary); flex: none; }.easel-scope .sch-strip-title { font-size: 13.5px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .sch-strip-relative {
+  margin-left: auto; flex: none; font-size: 13px; font-weight: 800;
+  background: var(--accent-gradient); -webkit-background-clip: text; background-clip: text; color: transparent;
+}.easel-scope .sch-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; max-width: 1100px; margin: 0 auto 14px; }.easel-scope .sch-search { max-width: 240px; }.easel-scope .sch-list { display: flex; flex-direction: column; gap: 10px; max-width: 1100px; margin: 0 auto; }.easel-scope .sch-card { display: flex; flex-direction: column; gap: 5px; padding: 14px 16px; }.easel-scope .sch-card-top { display: flex; align-items: center; gap: 8px; min-width: 0; }.easel-scope .sch-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }.easel-scope .sch-dot.on { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }.easel-scope .sch-dot.off { background: var(--text-tertiary); }.easel-scope .sch-title { flex: 1 1 auto; min-width: 0; font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .sch-freq { flex: none; font-size: 11.5px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-end); }.easel-scope .sch-card-actions { display: flex; gap: 5px; flex: none; }.easel-scope .sch-next { font-size: 12.5px; font-weight: 600; color: var(--accent-start); font-variant-numeric: tabular-nums; }.easel-scope .sch-meta { font-size: 12px; color: var(--text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.easel-scope .sch-empty { max-width: 1100px; margin: 30px auto; text-align: center; font-size: 13px; color: var(--text-secondary); }.easel-scope .sch-prompt {
+  white-space: pre-wrap; font-size: 12.5px; line-height: 1.65; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 12px; max-height: 190px; overflow: auto;
+}.easel-scope .sch-records { display: flex; flex-direction: column; gap: 6px; }.easel-scope .sch-record { display: flex; align-items: center; gap: 8px; font-size: 12.5px; padding: 8px 11px; background: var(--surface-2); border-radius: var(--radius-sm); }.easel-scope .sch-record .ok { color: var(--green); font-weight: 700; }.easel-scope .sch-record .sch-time { color: var(--text); font-variant-numeric: tabular-nums; }
 /*
  * Apple design layer for the ported Easel pages.
  *
@@ -817,7 +836,15 @@ var EASEL_CSS = `.easel-scope { color-scheme: light; }body[data-ds-dark-theme] .
   color: var(--accent-start);
   font-size: 12px;
   font-weight: 500;
-}.easel-scope .trend-use:hover { background: rgba(0, 113, 227, 0.18); }.easel-scope .trend-use:active { transform: scale(0.94); }/* ---------- Notices ---------- */.easel-scope .notice-error {
+}.easel-scope .trend-use:hover { background: rgba(0, 113, 227, 0.18); }.easel-scope .trend-use:active { transform: scale(0.94); }/* Trend radar v2: badges, offline hint, watch card, cluster cards */.easel-scope .trend-badge { border-radius: 980px; font-weight: 600; letter-spacing: 0.1px; }.easel-scope .trend-badge-new { color: var(--accent-start); background: var(--accent-soft); }.easel-scope .trend-badge-up { color: var(--trend-up); background: color-mix(in srgb, var(--trend-up) 14%, transparent); }.easel-scope .trend-badge-down { color: var(--trend-down); background: color-mix(in srgb, var(--trend-down) 14%, transparent); }.easel-scope .trend-badge-watch, .easel-scope .trend-stale { color: var(--amber, #b45309); }.easel-scope .trend-age, .easel-scope .trend-more { font-size: 10.5px; color: var(--text-tertiary); }.easel-scope .trend-viewsep { background: var(--border-soft, var(--border)); }.easel-scope .trend-watch-card, .easel-scope .trend-cluster {
+  padding: 14px 8px 10px;
+  border-radius: var(--radius-lg, 18px);
+}.easel-scope .trend-watch-key {
+  border-radius: 980px;
+  color: var(--accent-start);
+  background: var(--accent-soft);
+  font-weight: 650;
+}.easel-scope .trend-watch-group + .trend-watch-group { border-top: 1px solid var(--border-soft, var(--border)); }.easel-scope .trend-chip { border-radius: 980px; background: var(--surface-2, var(--surface-hover)); color: var(--text-secondary); }.easel-scope .trend-cluster-head .trend-title { font-size: 13.5px; }.easel-scope .trend-plat { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); }.easel-scope .idea-link { color: var(--accent-start); border-radius: 6px; }.easel-scope .idea-body-preview { line-height: 1.65; }/* ---------- Notices ---------- */.easel-scope .notice-error {
   border: none;
   border-radius: var(--radius);
   background: var(--red-soft);
@@ -985,8 +1012,8 @@ function findWorkspaceByPath(pathOrRel) {
   const items = getWorkspaceService()?.list?.getSnapshot().items ?? [];
   if (items.length === 0) return null;
   const want = pathOrRel.replace(/\/+$/, "").replaceAll("\\", "/").toLowerCase();
-  const match = items.find((view11) => {
-    const p = view11.path.replaceAll("\\", "/").toLowerCase();
+  const match = items.find((view12) => {
+    const p = view12.path.replaceAll("\\", "/").toLowerCase();
     return p === want || p.endsWith(`/${want}`);
   });
   return match ?? null;
@@ -1001,17 +1028,21 @@ async function resolveHomeWorkspaceId(projectDir) {
 }
 
 // src/lib/shell.tsx
-function pageKey(view11) {
-  return `easel.${view11}`;
+function pageKey(view12) {
+  return `easel.${view12}`;
 }
-function topicPrompt(title, projectDir, inProject = false) {
+function topicPrompt(title, projectDir, inProject = false, bodyPath) {
   const base = `\u56F4\u7ED5\u5F53\u524D\u70ED\u70B9\u300C${title}\u300D\uFF1A\u5148\u5224\u65AD\u5B83\u9002\u4E0D\u9002\u5408\u6211\u7684\u8D26\u53F7\u8D5B\u9053\uFF1B\u82E5\u5408\u9002\uFF0C\u7ED9 2-3 \u4E2A\u5DEE\u5F02\u5316\u7684\u4E8C\u521B\u89D2\u5EA6\uFF0C\u5E76\u628A\u4F60\u6700\u63A8\u8350\u7684\u90A3\u6761\u5199\u6210\u53EF\u76F4\u63A5\u53D1\u5E03\u7684\u6587\u6848\u521D\u7A3F\u3002`;
-  if (!projectDir) return base;
-  return inProject ? `${base}
+  const body = bodyPath ? `
 
-\u672C\u9879\u76EE\u5DF2\u7ACB\u9879\uFF1A\u5148\u8BFB \u9879\u76EE\u8D44\u6599.md\uFF08\u5C31\u5728\u5F53\u524D\u76EE\u5F55\uFF0C\u9009\u9898\u5361\u3001\u62C6\u89E3\u7D20\u6750\u3001\u753B\u50CF\u5FEB\u7167\u90FD\u5728\u91CC\u9762\uFF0C\u6309\u9700\u53C2\u8003\uFF09\uFF0C\u672C\u6B21\u521B\u4F5C\u7684\u811A\u672C/\u6587\u6848/\u6210\u7247\u7B49\u4EA7\u7269\u4E00\u5F8B\u5199\u5165\u5F53\u524D\u76EE\u5F55\uFF08\u9879\u76EE\u5DE5\u4F5C\u533A\uFF09\u3002` : `${base}
+\u8FD9\u6761\u70ED\u70B9\u7684\u6B63\u6587\u5DF2\u6293\u53D6\u5230\u5185\u5BB9\u5E93\uFF1A${bodyPath}\u3002\u5148\u8BFB\u5B83\u518D\u52A8\u7B14\uFF0C\u4E0D\u8981\u51ED\u6807\u9898\u81C6\u6D4B\u5185\u5BB9\u3002` : "";
+  if (!projectDir) return `${base}${body}`;
+  const project = inProject ? `
+
+\u672C\u9879\u76EE\u5DF2\u7ACB\u9879\uFF1A\u5148\u8BFB \u9879\u76EE\u8D44\u6599.md\uFF08\u5C31\u5728\u5F53\u524D\u76EE\u5F55\uFF0C\u9009\u9898\u5361\u3001\u62C6\u89E3\u7D20\u6750\u3001\u753B\u50CF\u5FEB\u7167\u90FD\u5728\u91CC\u9762\uFF0C\u6309\u9700\u53C2\u8003\uFF09\uFF0C\u672C\u6B21\u521B\u4F5C\u7684\u811A\u672C/\u6587\u6848/\u6210\u7247\u7B49\u4EA7\u7269\u4E00\u5F8B\u5199\u5165\u5F53\u524D\u76EE\u5F55\uFF08\u9879\u76EE\u5DE5\u4F5C\u533A\uFF09\u3002` : `
 
 \u672C\u9879\u76EE\u5DF2\u7ACB\u9879\uFF1A\u5148\u8BFB ${projectDir}/\u9879\u76EE\u8D44\u6599.md\uFF08\u9009\u9898\u5361\u3001\u62C6\u89E3\u7D20\u6750\u3001\u753B\u50CF\u5FEB\u7167\u90FD\u5728\u91CC\u9762\uFF0C\u6309\u9700\u53C2\u8003\uFF09\uFF0C\u672C\u6B21\u521B\u4F5C\u7684\u811A\u672C/\u6587\u6848/\u6210\u7247\u7B49\u4EA7\u7269\u4E00\u5F8B\u5199\u5165 ${projectDir}/ \u76EE\u5F55\u3002`;
+  return `${base}${body}${project}`;
 }
 function createShell() {
   let state = { persona: "", personas: [], gatewayStatus: "connecting", apiDirect: false };
@@ -1056,7 +1087,7 @@ function createShellBridge(ctx, t) {
     if (layout === void 0) throw new Error("dsh-plugin-easel: the layout service is absent; cannot navigate");
     layout.selectPanel(page === "chat" ? "conversation" : pageKey(page));
   };
-  const useTopic = (title, projectDir) => {
+  const useTopic = (title, projectDir, bodyPath) => {
     const fallbackPrompt = topicPrompt(title, projectDir);
     const clipboardFallback = () => {
       void navigator.clipboard?.writeText(fallbackPrompt).catch(() => {
@@ -1070,7 +1101,8 @@ function createShellBridge(ctx, t) {
       void (async () => {
         const project = projectDir ? findWorkspaceByPath(projectDir) : null;
         const homeId = project?.workspaceId ?? await resolveHomeWorkspaceId();
-        const prompt = topicPrompt(title, projectDir, project !== null);
+        const bodyPrompt = await bodyPromptLine(bodyPath);
+        const prompt = topicPrompt(title, projectDir, project !== null, bodyPrompt);
         const id = homeId ? await sessions.create({ workspaceId: homeId }) : await sessions.create();
         uiWorkspace.openSession(id);
         await sessions.using(id, { source: "easelTopic" }, async () => {
@@ -1083,6 +1115,12 @@ function createShellBridge(ctx, t) {
     } catch {
       clipboardFallback();
     }
+  };
+  const bodyPromptLine = async (bodyPath) => {
+    if (!bodyPath) return void 0;
+    const root = await projectRoot();
+    if (!root) return void 0;
+    return `${root.replace(/[\\/]+$/, "")}/${bodyPath}`;
   };
   const storedMode = localStorage.getItem("easel.workspace.mode");
   globalThis.__easelWorkspaceUIMode = storedMode === "full" ? "full" : "single";
@@ -1187,6 +1225,10 @@ var IconTrash = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" }),
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" })
 ] });
+var IconPlus = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { ...svg(size, strokeWidth), className, children: [
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M5 12h14" }),
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M12 5v14" })
+] });
 var IconChevron = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", { ...svg(size, strokeWidth), className, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "m9 18 6-6-6-6" }) });
 var IconVideo = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { ...svg(size, strokeWidth), className, children: [
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("rect", { x: "2", y: "4", width: "20", height: "16", rx: "2.5" }),
@@ -1262,10 +1304,23 @@ var IconIdea = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M10 22h4" }),
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5.76.76 1.23 1.52 1.41 2.5" })
 ] });
+var IconClock = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { ...svg(size, strokeWidth), className, children: [
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", { cx: "12", cy: "12", r: "10" }),
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M12 6v6l4 2" })
+] });
 var IconBookmark = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("svg", { ...svg(size, strokeWidth), className, children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" }) });
 var IconPublish = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { ...svg(size, strokeWidth), className, children: [
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "m3 11 18-5v12L3 14v-3z" }),
   /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M11.6 16.8a3 3 0 1 1-5.8-1.6" })
+] });
+var IconGlobe = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { ...svg(size, strokeWidth), className, children: [
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("circle", { cx: "12", cy: "12", r: "10" }),
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M2 12h20" }),
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" })
+] });
+var IconGithub = ({ size, className, strokeWidth }) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("svg", { ...svg(size, strokeWidth), className, children: [
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" }),
+  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("path", { d: "M9 18c-4.51 2-5-2-7-2" })
 ] });
 
 // src/components/DashboardPage.tsx
@@ -1299,8 +1354,28 @@ function savePersonaFile(name, filename, content) {
 function deletePersona(name) {
   return request(`/api/persona/${encodeURIComponent(name)}`, { method: "DELETE" });
 }
-function fetchTrends(platforms, limit = 12) {
-  return request(`/api/trends?platforms=${encodeURIComponent(platforms)}&limit=${limit}`);
+function fetchTrends(platforms, limit = 12, options = {}) {
+  const params = new URLSearchParams({ platforms, limit: String(limit) });
+  if (options.view) params.set("view", options.view);
+  if (options.force) params.set("force", "1");
+  return request(`/api/trends?${params}`);
+}
+function captureTrendArticle(input) {
+  return request("/api/radar/article", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input)
+  });
+}
+function fetchHandoffPaired() {
+  return request("/api/handoff/status");
+}
+function pushFileToPeer(peerId, path) {
+  return request("/api/handoff/push", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ peerId, path })
+  });
 }
 function fetchSchedule() {
   return request("/api/schedule");
@@ -1324,6 +1399,29 @@ function updateSchedule(id, item) {
 }
 function deleteSchedule(id) {
   return request(`/api/schedule/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+function fetchCaldavAccounts() {
+  return request("/api/caldav/accounts");
+}
+function putCaldavAccounts(accounts) {
+  return request("/api/caldav/accounts", {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ accounts })
+  });
+}
+function discoverCaldav(id, creds) {
+  return request(`/api/caldav/accounts/${encodeURIComponent(id)}/discover`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(creds)
+  });
+}
+function syncCaldav(id) {
+  return request(`/api/caldav/accounts/${encodeURIComponent(id)}/sync`, { method: "POST" });
+}
+function fetchCaldavEvents() {
+  return request("/api/caldav/events");
 }
 function fetchIdeas() {
   return request("/api/ideas");
@@ -1369,6 +1467,26 @@ function mediaUrl(path) {
 function deleteOutput(path) {
   return request(`/api/output/${path.split("/").map(encodeURIComponent).join("/")}`, { method: "DELETE" });
 }
+function fetchAccounts() {
+  return request("/api/accounts");
+}
+function createAccount(platform, name) {
+  return request("/api/accounts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ platform, name })
+  });
+}
+function updateAccount(id, patch) {
+  return request(`/api/accounts/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(patch)
+  });
+}
+function deleteAccount(id) {
+  return request(`/api/accounts/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
 function getCredentials(platform) {
   return request(`/api/accounts/${encodeURIComponent(platform)}/credentials`);
 }
@@ -1385,14 +1503,16 @@ function startMpLogin(platform) {
 function mpLoginStatus(platform) {
   return request(`/api/accounts/${encodeURIComponent(platform)}/mp-login/status`);
 }
-function fetchAccounts() {
-  return request("/api/accounts");
+function accountWhoami(platform, account) {
+  const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
+  return request(`/api/accounts/${encodeURIComponent(platform)}/whoami${q2}`);
 }
-function accountWhoami(platform) {
-  return request(`/api/accounts/${encodeURIComponent(platform)}/whoami`);
-}
-function logoutAccount(platform) {
-  return request(`/api/logout/${encodeURIComponent(platform)}`, { method: "POST" });
+function logoutAccount(platform, account) {
+  return request(`/api/logout/${encodeURIComponent(platform)}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(account ? { account } : {})
+  });
 }
 function publishNow(platform, payload) {
   return request(`/api/publish/${encodeURIComponent(platform)}`, {
@@ -1401,21 +1521,22 @@ function publishNow(platform, payload) {
     body: JSON.stringify(payload)
   });
 }
-function publishStatus(platform) {
-  return request(`/api/publish/${encodeURIComponent(platform)}/status`);
+function publishStatus(platform, account) {
+  const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
+  return request(`/api/publish/${encodeURIComponent(platform)}/status${q2}`);
 }
-function submitPublishSms(platform, code2) {
+function submitPublishSms(platform, code, account) {
   return request(`/api/publish/${encodeURIComponent(platform)}/sms`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code: code2 })
+    body: JSON.stringify(account ? { code, account } : { code })
   });
 }
-function startLogin(platform, mode = "qr") {
+function startLogin(platform, mode = "qr", target = {}) {
   return request(`/api/login/${encodeURIComponent(platform)}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ mode })
+    body: JSON.stringify({ mode, account: target.account, name: target.name })
   });
 }
 function fetchRadarConfig() {
@@ -1428,20 +1549,29 @@ function saveRadarConfig(cfg) {
     body: JSON.stringify(cfg)
   });
 }
-function loginStatus(platform) {
-  return request(`/api/login/${encodeURIComponent(platform)}/status`);
+function loginStatus(platform, account) {
+  const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
+  return request(`/api/login/${encodeURIComponent(platform)}/status${q2}`);
 }
-function fetchAnalyticsPlatforms() {
-  return request("/api/analytics/platforms");
+function fetchAccountAnalytics(platform, account) {
+  const q2 = account ? `?account=${encodeURIComponent(account)}` : "";
+  return request(`/api/analytics/${encodeURIComponent(platform)}${q2}`);
 }
-function fetchAccountAnalytics(platform) {
-  return request(`/api/analytics/${encodeURIComponent(platform)}`);
+function fetchAnalyticsOverview() {
+  return request("/api/analytics/overview");
 }
-function submitLoginSms(platform, code2) {
+function submitLoginSms(platform, code, account) {
   return request(`/api/login/${encodeURIComponent(platform)}/sms`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ code: code2 })
+    body: JSON.stringify(account ? { code, account } : { code })
+  });
+}
+function createScheduledTask(input) {
+  return request("/api/automation/tasks", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input)
   });
 }
 async function fetchStatus() {
@@ -1485,7 +1615,8 @@ function verifyStale(platforms, opts = {}) {
       if (opts.alive && !opts.alive()) return;
       const p = todo[next++];
       try {
-        const r = await accountWhoami(p);
+        const addr = opts.resolve?.(p) ?? { platform: p };
+        const r = await accountWhoami(addr.platform, addr.account);
         setWhoamiCache(p, r);
         if (!opts.alive || opts.alive()) opts.onUpdate?.(p, r);
       } catch {
@@ -1495,6 +1626,43 @@ function verifyStale(platforms, opts = {}) {
   void Promise.all(
     Array.from({ length: Math.min(WHOAMI_CONCURRENCY, todo.length) }, () => worker())
   );
+}
+
+// src/lib/roster.ts
+var PLATFORM_LABELS = {
+  xiaohongshu: "\u5C0F\u7EA2\u4E66",
+  kuaishou: "\u5FEB\u624B",
+  "weixin-channels": "\u5FAE\u4FE1\u89C6\u9891\u53F7",
+  zhihu: "\u77E5\u4E4E",
+  bilibili: "B\u7AD9",
+  douyin: "\u6296\u97F3",
+  "wechat-oa": "\u5FAE\u4FE1\u516C\u4F17\u53F7"
+};
+var platformLabel = (platform) => PLATFORM_LABELS[platform] ?? platform;
+async function fetchRoster() {
+  const accounts = await fetchAccounts().catch(() => []);
+  return accounts.map((account) => ({
+    id: account.id,
+    platform: account.platform,
+    name: account.name,
+    persona: account.persona || ""
+  }));
+}
+function renderRosterPrompt(accounts) {
+  if (accounts.length === 0) return "";
+  const lines = accounts.map((account) => {
+    const label = platformLabel(account.platform);
+    const persona = account.persona ? `\uFF0C\u753B\u50CF\u300C${account.persona}\u300D\uFF08profiles/${account.persona}/ \u4E0B\u7684\u516D\u7EF4\u6587\u4EF6\uFF09` : "\uFF0C\u672A\u7ED1\u5B9A\u753B\u50CF";
+    return `- ${label}\u300C${account.name}\u300D\uFF08\u8D26\u53F7 id\uFF1A${account.id}${persona}\uFF09`;
+  });
+  return `
+
+\u3010\u53EF\u7528\u53D1\u5E03\u8D26\u53F7\u3011
+${lines.join("\n")}
+\u6D89\u53CA\u53D1\u5E03/\u63A8\u9001\u65F6\u660E\u786E\u76EE\u6807\u8D26\u53F7\uFF08\u8D26\u53F7 id \u6216\u540D\u5B57\uFF09\uFF1B\u7528\u6237\u6CA1\u6307\u5B9A\u5C31\u5148\u786E\u8BA4\uFF0C\u6216\u6309\u753B\u50CF\u8D34\u5408\u5EA6\u7ED9\u5EFA\u8BAE\u540E\u518D\u6267\u884C\uFF1B\u7ED9\u6307\u5B9A\u8D26\u53F7\u5199\u6587\u6848\u65F6\u6309\u5176\u753B\u50CF\u8C03\u6574\u8BED\u6C14\u4E0E\u9009\u9898\u3002`;
+}
+async function rosterPrompt() {
+  return renderRosterPrompt(await fetchRoster());
 }
 
 // src/components/DashboardPage.tsx
@@ -1509,6 +1677,29 @@ function growthInfo(n) {
   if (n == null || n === 0) return null;
   return n > 0 ? { text: `\u25B2+${fmtNum(n)}`, color: "var(--trend-up)" } : { text: `\u25BC${fmtNum(Math.abs(n))}`, color: "var(--trend-down)" };
 }
+var WIN = [
+  ["last", "\u8F83\u4E0A\u6B21"],
+  ["day", "\u8F83\u6628\u65E5"],
+  ["week", "\u8F83\u4E0A\u5468"],
+  ["month", "\u8F83\u4E0A\u6708"],
+  ["year", "\u8F83\u53BB\u5E74"]
+];
+function Sparkline({ points }) {
+  const vals = points.map((p) => p.followers).filter((v2) => typeof v2 === "number");
+  if (vals.length < 2) return null;
+  const min = Math.min(...vals);
+  const span = Math.max(...vals) - min || 1;
+  const w2 = 104;
+  const h = 26;
+  const step = w2 / (vals.length - 1);
+  const path = vals.map((v2, i) => `${i === 0 ? "M" : "L"}${(i * step).toFixed(1)},${(h - 2 - (v2 - min) / span * (h - 6)).toFixed(1)}`).join(" ");
+  return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("svg", { className: "ana-spark", viewBox: `0 0 ${w2} ${h}`, preserveAspectRatio: "none", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("path", { d: path, fill: "none", stroke: "currentColor", strokeWidth: "1.5", strokeLinejoin: "round", strokeLinecap: "round", vectorEffect: "non-scaling-stroke" }) });
+}
+function ageLabel(days) {
+  if (days == null) return "";
+  if (days < 1) return "\u4ECA\u5929\u91C7\u96C6";
+  return `${Math.floor(days)} \u5929\u524D\u91C7\u96C6`;
+}
 var STATUS_LABEL = { idea: "\u9009\u9898", draft: "\u8349\u7A3F", scheduled: "\u5F85\u53D1", published: "\u5DF2\u53D1" };
 function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTopic }) {
   const [trends, setTrends] = (0, import_react2.useState)([]);
@@ -1516,7 +1707,6 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
   const [outputs, setOutputs] = (0, import_react2.useState)([]);
   const [accounts, setAccounts] = (0, import_react2.useState)([]);
   const [ideas, setIdeas] = (0, import_react2.useState)([]);
-  const [anaPlats, setAnaPlats] = (0, import_react2.useState)([]);
   const [anaSel, setAnaSel] = (0, import_react2.useState)("");
   const [anaData, setAnaData] = (0, import_react2.useState)(() => {
     try {
@@ -1525,6 +1715,7 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
       return {};
     }
   });
+  const [anaOverview, setAnaOverview] = (0, import_react2.useState)("loading");
   const [anaWin, setAnaWin] = (0, import_react2.useState)("week");
   const [whoamiMap, setWhoamiMap] = (0, import_react2.useState)(() => getWhoamiCache());
   (0, import_react2.useEffect)(() => {
@@ -1534,37 +1725,46 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
     });
     fetchOutputs().then(setOutputs).catch(() => {
     });
-    fetchAccounts().then(setAccounts).catch(() => {
-    });
     fetchIdeas().then(setIdeas).catch(() => {
     });
-    fetchAnalyticsPlatforms().then((ps) => {
-      setAnaPlats(ps);
-      const cache = getWhoamiCache();
-      const isLog = (p) => p.loggedIn || !!cache[p.platform]?.loggedIn;
-      const first = ps.find(isLog);
-      if (first) setAnaSel((s) => s || first.platform);
-      const API_BASED = /* @__PURE__ */ new Set(["bilibili", "wechat-oa"]);
-      verifyStale(ps.filter((p) => !API_BASED.has(p.platform)).map((p) => p.platform), {
-        onUpdate: (platform, r) => {
-          setWhoamiMap((m2) => ({ ...m2, [platform]: r }));
-          if (r.loggedIn) setAnaSel((s) => s || platform);
-        }
-      });
-    }).catch(() => {
+    fetchAccounts().then(setAccounts).catch(() => {
     });
+    fetchAnalyticsOverview().then((rows) => {
+      setAnaOverview(rows);
+      const API_BASED = /* @__PURE__ */ new Set(["bilibili", "wechat-oa"]);
+      const verify = rows.filter((r) => !API_BASED.has(r.platform));
+      const byId = new Map(verify.map((r) => [r.id, r]));
+      verifyStale(verify.map((r) => r.id), {
+        resolve: (id) => ({ platform: byId.get(id)?.platform ?? id, account: id }),
+        onUpdate: (id, r) => setWhoamiMap((m2) => ({ ...m2, [id]: r }))
+      });
+    }).catch(() => setAnaOverview("error"));
   }, []);
-  const runAna = (platform) => {
-    setAnaSel(platform);
-    setAnaData((d2) => ({ ...d2, [platform]: "loading" }));
-    fetchAccountAnalytics(platform).then((r) => setAnaData((d2) => {
-      const next = { ...d2, [platform]: r };
-      try {
-        localStorage.setItem("easel_analytics", JSON.stringify(next));
-      } catch {
-      }
-      return next;
-    })).catch(() => setAnaData((d2) => ({ ...d2, [platform]: "error" })));
+  const runAna = (target) => {
+    setAnaSel(target.id);
+    setAnaData((d2) => ({ ...d2, [target.id]: "loading" }));
+    fetchAccountAnalytics(target.platform, target.id).then((r) => {
+      setAnaData((d2) => {
+        const next = { ...d2, [target.id]: r };
+        try {
+          localStorage.setItem("easel_analytics", JSON.stringify(next));
+        } catch {
+        }
+        return next;
+      });
+      setAnaOverview((rows) => Array.isArray(rows) ? rows.map((row) => row.id === target.id ? {
+        ...row,
+        loggedIn: r.loggedIn,
+        latest: { ts: r.fetched_at, followers: r.followers, likes: r.likes, following: r.following, posts: r.posts },
+        growth: r.growth,
+        points: [...row.points, { ts: r.fetched_at, followers: r.followers, likes: r.likes, posts: r.posts }].slice(-20),
+        ageDays: 0
+      } : row) : rows);
+    }).catch(() => setAnaData((d2) => ({ ...d2, [target.id]: "error" })));
+  };
+  const reloadOverview = () => {
+    setAnaOverview((rows) => Array.isArray(rows) ? rows : "loading");
+    fetchAnalyticsOverview().then(setAnaOverview).catch(() => setAnaOverview((rows) => Array.isArray(rows) ? rows : "error"));
   };
   const hour = (/* @__PURE__ */ new Date()).getHours();
   const greet = hour < 6 ? "\u591C\u6DF1\u4E86" : hour < 12 ? "\u4E0A\u5348\u597D" : hour < 14 ? "\u4E2D\u5348\u597D" : hour < 18 ? "\u4E0B\u5348\u597D" : "\u665A\u4E0A\u597D";
@@ -1689,98 +1889,178 @@ function DashboardPage({ persona, gatewayStatus, apiDirect, onNavigate, onUseTop
           /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "badge", children: g.meta?.platform || (g.type === "dir" ? `${g.fileCount ?? 0} \u6587\u4EF6` : "\u5355\u6587\u4EF6") })
         ] }, g.name))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "card dash-card dash-card-wide", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "dash-card-head", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(IconAccounts, { size: 16 }),
-            " \u521B\u4F5C\u6570\u636E"
-          ] }),
-          anaSel && anaData[anaSel] && anaData[anaSel] !== "loading" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "dash-more", onClick: () => runAna(anaSel), children: "\u5237\u65B0 \u2192" })
-        ] }),
-        (() => {
-          const logged = anaPlats.filter((p) => p.loggedIn || whoamiMap[p.platform]?.loggedIn);
-          if (anaPlats.length === 0) return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u52A0\u8F7D\u4E2D / \u9700\u914D\u7F6E\u4EE3\u7406" });
-          if (logged.length === 0) {
-            return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: "\u53BB\u8D26\u53F7\u9875\u767B\u5F55\u540E\uFF0C\u8FD9\u91CC\u770B\u5404\u5E73\u53F0\u7C89\u4E1D / \u83B7\u8D5E / \u5173\u6CE8\u3001\u589E\u957F\u8D8B\u52BF\u4E0E\u6700\u65B0\u7B14\u8BB0 \u2192" });
-          }
-          const d2 = anaSel ? anaData[anaSel] : void 0;
-          const WIN = [
-            ["last", "\u8F83\u4E0A\u6B21"],
-            ["day", "\u8F83\u6628\u65E5"],
-            ["week", "\u8F83\u4E0A\u5468"],
-            ["month", "\u8F83\u4E0A\u6708"],
-            ["year", "\u8F83\u53BB\u5E74"]
-          ];
-          return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-plats", children: logged.map((p) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
-              "button",
-              {
-                className: `chip ${anaSel === p.platform ? "active" : ""}`,
-                onClick: () => runAna(p.platform),
-                children: p.name
-              },
-              p.platform
-            )) }),
-            !d2 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u70B9\u4E0A\u65B9\u5E73\u53F0\u67E5\u770B\u8BE5\u8D26\u53F7\u6570\u636E" }),
-            d2 === "loading" && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "loading", style: { padding: "28px 0" }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "spinner" }),
-              "\u6293\u53D6\u4E2D\u2026\uFF08\u8D77\u6D4F\u89C8\u5668\uFF0C\u7EA6\u6570\u79D2\uFF09"
+      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "card dash-card dash-card-wide", children: (() => {
+        const raw = Array.isArray(anaOverview) ? anaOverview : [];
+        const platformOrder = /* @__PURE__ */ new Map();
+        raw.forEach((row, i) => {
+          if (!platformOrder.has(row.platform)) platformOrder.set(row.platform, i);
+        });
+        const rows = raw.map((row, i) => ({ row, i })).sort((a, b2) => platformOrder.get(a.row.platform) - platformOrder.get(b2.row.platform) || a.row.name.localeCompare(b2.row.name, "zh") || a.i - b2.i).map(({ row }) => row);
+        const isLogged = (a) => a.loggedIn || !!whoamiMap[a.id]?.loggedIn;
+        const sel = anaSel ? rows.find((a) => a.id === anaSel) : void 0;
+        const d2 = anaSel ? anaData[anaSel] : void 0;
+        return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "dash-card-head", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(IconAccounts, { size: 16 }),
+              " \u521B\u4F5C\u6570\u636E"
             ] }),
-            d2 === "error" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", style: { color: "var(--red)" }, children: "\u6293\u53D6\u5931\u8D25\uFF08\u672A\u767B\u5F55 / \u9700\u771F\u673A\u6821\u51C6\uFF09\uFF0C\u70B9\u5E73\u53F0\u91CD\u8BD5" }),
-            d2 && d2 !== "loading" && d2 !== "error" && (!d2.loggedIn ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: "\u8BE5\u5E73\u53F0\u767B\u5F55\u6001\u5DF2\u5931\u6548\uFF0C\u53BB\u8D26\u53F7\u9875\u91CD\u767B \u2192" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-body", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-main", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-id", children: d2.nickname ? `@${d2.nickname}` : d2.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-overview", children: [["\u7C89\u4E1D", "followers"], ["\u83B7\u8D5E", "likes"], ["\u5173\u6CE8", "following"]].map(([label2, key]) => {
-                  const w2 = d2.growth?.[anaWin] ?? null;
-                  const g = w2 ? growthInfo(w2[key]) : null;
-                  return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-stat", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-val", children: fmtNum(d2[key]) }),
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-label", children: label2 }),
-                    g ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta", style: { color: g.color }, children: g.text }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta ana-muted", children: "\u2014" })
-                  ] }, key);
-                }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins", children: WIN.map(([k2, lab]) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+            anaSel === "" && anaOverview !== "loading" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "dash-more", onClick: reloadOverview, children: "\u91CD\u8BFB\u5F52\u6863 \u2192" }),
+            anaSel !== "" && d2 !== void 0 && d2 !== "loading" && sel !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: "dash-more", onClick: () => runAna(sel), children: "\u5237\u65B0 \u2192" })
+          ] }),
+          anaOverview === "loading" && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "loading", style: { padding: "24px 0" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "spinner" }),
+            "\u8BFB\u5F52\u6863\u2026"
+          ] }),
+          anaOverview === "error" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", style: { color: "var(--red)" }, children: "\u8BFB\u53D6\u5F52\u6863\u5931\u8D25\uFF0C\u70B9\u300C\u91CD\u8BFB\u5F52\u6863\u300D\u91CD\u8BD5" }),
+          anaOverview !== "loading" && anaOverview !== "error" && rows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: "\u53BB\u8D26\u53F7\u9875\u767B\u5F55\u540E\uFF0C\u8FD9\u91CC\u770B\u6BCF\u4E2A\u8D26\u53F7\u7684\u7C89\u4E1D / \u83B7\u8D5E / \u5173\u6CE8\u3001\u589E\u957F\u8D8B\u52BF\u4E0E\u6700\u65B0\u7B14\u8BB0 \u2192" }),
+          rows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-plats", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("button", { className: `chip ${anaSel === "" ? "active" : ""}`, onClick: () => setAnaSel(""), children: "\u5168\u89C8" }),
+              rows.map((a) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
+                "button",
+                {
+                  className: `chip ${anaSel === a.id ? "active" : ""} ${isLogged(a) ? "" : "ana-chip-off"}`,
+                  title: isLogged(a) ? `${platformLabel(a.platform)}\u300C${a.name}\u300D` : `${platformLabel(a.platform)}\u300C${a.name}\u300D\u672A\u767B\u5F55\uFF0C\u53BB\u8D26\u53F7\u9875\u767B\u5F55`,
+                  onClick: () => isLogged(a) ? runAna(a) : onNavigate("accounts"),
+                  children: [
+                    platformLabel(a.platform),
+                    "\xB7",
+                    a.name
+                  ]
+                },
+                a.id
+              ))
+            ] }),
+            anaSel === "" && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins ana-wins-head", children: WIN.map(([k2, lab]) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                "button",
+                {
+                  className: `ana-win ${anaWin === k2 ? "on" : ""}`,
+                  onClick: () => setAnaWin(k2),
+                  children: lab
+                },
+                k2
+              )) }),
+              /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-grid", children: rows.map((a) => {
+                const logged = isLogged(a);
+                const g = growthInfo(a.growth?.[anaWin]?.followers ?? null);
+                const sub = a.latest === null ? "" : [
+                  `\u83B7\u8D5E ${fmtNum(a.latest.likes)}`,
+                  a.latest.following != null ? `\u5173\u6CE8 ${fmtNum(a.latest.following)}` : "",
+                  ageLabel(a.ageDays)
+                ].filter(Boolean).join(" \xB7 ");
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(
                   "button",
                   {
-                    className: `ana-win ${anaWin === k2 ? "on" : ""}`,
-                    onClick: () => setAnaWin(k2),
-                    children: lab
+                    className: `ana-acct ${logged ? "" : "off"}`,
+                    title: logged ? `\u67E5\u770B${platformLabel(a.platform)}\u300C${a.name}\u300D\u8BE6\u60C5` : "\u672A\u767B\u5F55\uFF0C\u53BB\u8D26\u53F7\u9875\u767B\u5F55",
+                    onClick: () => logged ? runAna(a) : onNavigate("accounts"),
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-acct-top", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-plat", children: platformLabel(a.platform) }),
+                        a.persona !== "" && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "badge", children: a.persona })
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-name", children: a.name }),
+                      a.latest !== null ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-acct-num", children: [
+                          fmtNum(a.latest.followers),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-unit", children: "\u7C89\u4E1D" })
+                        ] }),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-delta", children: g ? /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)(import_jsx_runtime2.Fragment, { children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { style: { color: g.color }, children: g.text }),
+                          /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-win", children: WIN.find(([k2]) => k2 === anaWin)?.[1] })
+                        ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-muted", children: "\u65E0\u5BF9\u6BD4\u57FA\u7EBF" }) }),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(Sparkline, { points: a.points }),
+                        /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-sub", children: sub })
+                      ] }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-acct-empty", children: !logged ? "\u672A\u767B\u5F55 \xB7 \u53BB\u8D26\u53F7\u9875" : a.archived ? "\u5C1A\u672A\u91C7\u96C6 \xB7 \u70B9\u5F00\u6293\u4E00\u6B21" : "\u8BE5\u5E73\u53F0\u4E0D\u5199\u5F52\u6863 \xB7 \u70B9\u5F00\u5B9E\u65F6\u6293\u53D6" })
+                    ]
                   },
-                  k2
-                )) }),
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins-note", children: d2.growth?.[anaWin]?.since_days != null ? `\u5BF9\u6BD4 ${d2.growth[anaWin].since_days} \u5929\u524D\u7684\u5FEB\u7167` : "\u6682\u65E0\u8BE5\u65F6\u6BB5\u5386\u53F2\u5FEB\u7167\uFF0C\u591A\u5237\u65B0\u51E0\u6B21\u5373\u53EF\u79EF\u7D2F\u5BF9\u6BD4" })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-metrics", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-sub", children: "\u8FD1 7 \u65E5 \xB7 \u73AF\u6BD4" }),
-                (d2.metrics ?? []).length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8BE5\u5E73\u53F0\u672A\u63D0\u4F9B\u8FD1 7 \u65E5\u6307\u6807" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metrics", children: (d2.metrics ?? []).map((m2) => {
-                  const vs = m2.vs ?? "";
-                  const up = vs.startsWith("+");
-                  const has = vs && vs !== "-";
-                  return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-metric", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metric-val", children: m2.value }),
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metric-label", children: m2.label }),
-                    has && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-metric-vs", style: { color: up ? "var(--trend-up)" : "var(--trend-down)" }, children: [
-                      "\u73AF\u6BD4",
-                      vs
-                    ] })
-                  ] }, m2.label);
-                }) })
-              ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-notes", children: [
-                /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-sub", children: "\u6700\u65B0\u7B14\u8BB0" }),
-                (d2.notes ?? []).length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8BE5\u8D26\u53F7\u6682\u65E0\u53EF\u8BFB\u53D6\u7684\u5DF2\u53D1\u5E03\u7B14\u8BB0" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-notes", children: (d2.notes ?? []).slice(0, 6).map((n, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("a", { className: "ana-note", href: n.url, target: "_blank", rel: "noreferrer", title: n.title, children: [
-                  n.cover ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("img", { className: "ana-note-cover", src: n.cover, alt: "", referrerPolicy: "no-referrer" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-cover ana-note-cover-ph", children: "\u{1F4DD}" }),
-                  /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-note-main", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-title", children: n.title || "(\u65E0\u6807\u9898)" }),
-                    n.stat && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-stat", children: n.stat })
+                  a.id
+                );
+              }) })
+            ] }),
+            anaSel !== "" && (() => {
+              if (sel === void 0) return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8D26\u53F7\u5DF2\u4E0D\u5B58\u5728\uFF0C\u70B9\u300C\u5168\u89C8\u300D\u5237\u65B0" });
+              if (d2 === void 0) return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u70B9\u4E0A\u65B9\u8D26\u53F7\u67E5\u770B\u8BE5\u8D26\u53F7\u6570\u636E" });
+              if (d2 === "loading") {
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "loading", style: { padding: "28px 0" }, children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "spinner" }),
+                  "\u6293\u53D6\u4E2D\u2026\uFF08\u8D77\u6D4F\u89C8\u5668\uFF0C\u7EA6\u6570\u79D2\uFF09"
+                ] });
+              }
+              if (d2 === "error") {
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", style: { color: "var(--red)" }, children: "\u6293\u53D6\u5931\u8D25\uFF08\u672A\u767B\u5F55 / \u9700\u771F\u673A\u6821\u51C6\uFF09\uFF0C\u70B9\u300C\u5237\u65B0\u300D\u91CD\u8BD5" });
+              }
+              if (!d2.loggedIn) {
+                return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "dash-empty", onClick: () => onNavigate("accounts"), style: { cursor: "pointer" }, children: [
+                  platformLabel(sel.platform),
+                  "\u300C",
+                  sel.name,
+                  "\u300D\u767B\u5F55\u6001\u5DF2\u5931\u6548\uFF0C\u53BB\u8D26\u53F7\u9875\u91CD\u767B \u2192"
+                ] });
+              }
+              return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-body", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-main", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-id", children: [
+                    platformLabel(sel.platform),
+                    "\u300C",
+                    sel.name,
+                    "\u300D",
+                    d2.nickname ? ` \xB7 @${d2.nickname}` : ""
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-go", children: "\u2197" })
-                ] }, i)) })
-              ] })
-            ] }))
-          ] });
-        })()
-      ] })
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-overview", children: [["\u7C89\u4E1D", "followers"], ["\u83B7\u8D5E", "likes"], ["\u5173\u6CE8", "following"]].map(([label, key]) => {
+                    const w2 = d2.growth?.[anaWin] ?? null;
+                    const g = w2 ? growthInfo(w2[key]) : null;
+                    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-stat", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-val", children: fmtNum(d2[key]) }),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-label", children: label }),
+                      g ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta", style: { color: g.color }, children: g.text }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-stat-delta ana-muted", children: "\u2014" })
+                    ] }, key);
+                  }) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins", children: WIN.map(([k2, lab]) => /* @__PURE__ */ (0, import_jsx_runtime2.jsx)(
+                    "button",
+                    {
+                      className: `ana-win ${anaWin === k2 ? "on" : ""}`,
+                      onClick: () => setAnaWin(k2),
+                      children: lab
+                    },
+                    k2
+                  )) }),
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-wins-note", children: d2.growth?.[anaWin]?.since_days != null ? `\u5BF9\u6BD4 ${d2.growth[anaWin].since_days} \u5929\u524D\u7684\u5FEB\u7167` : "\u6682\u65E0\u8BE5\u65F6\u6BB5\u5386\u53F2\u5FEB\u7167\uFF0C\u591A\u5237\u65B0\u51E0\u6B21\u5373\u53EF\u79EF\u7D2F\u5BF9\u6BD4" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-metrics", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-sub", children: "\u8FD1 7 \u65E5 \xB7 \u73AF\u6BD4" }),
+                  (d2.metrics ?? []).length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8BE5\u5E73\u53F0\u672A\u63D0\u4F9B\u8FD1 7 \u65E5\u6307\u6807" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metrics", children: (d2.metrics ?? []).map((m2) => {
+                    const vs = m2.vs ?? "";
+                    const up = vs.startsWith("+");
+                    const has = vs && vs !== "-";
+                    return /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-metric", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metric-val", children: m2.value }),
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-metric-label", children: m2.label }),
+                      has && /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-metric-vs", style: { color: up ? "var(--trend-up)" : "var(--trend-down)" }, children: [
+                        "\u73AF\u6BD4",
+                        vs
+                      ] })
+                    ] }, m2.label);
+                  }) })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("div", { className: "ana-col ana-col-notes", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-sub", children: "\u6700\u65B0\u7B14\u8BB0" }),
+                  (d2.notes ?? []).length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "dash-empty", children: "\u8BE5\u8D26\u53F7\u6682\u65E0\u53EF\u8BFB\u53D6\u7684\u5DF2\u53D1\u5E03\u7B14\u8BB0" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("div", { className: "ana-notes", children: (d2.notes ?? []).slice(0, 6).map((n, i) => /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("a", { className: "ana-note", href: n.url, target: "_blank", rel: "noreferrer", title: n.title, children: [
+                    n.cover ? /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("img", { className: "ana-note-cover", src: n.cover, alt: "", referrerPolicy: "no-referrer" }) : /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-cover ana-note-cover-ph", children: "\u{1F4DD}" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsxs)("span", { className: "ana-note-main", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-title", children: n.title || "(\u65E0\u6807\u9898)" }),
+                      n.stat && /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-stat", children: n.stat })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime2.jsx)("span", { className: "ana-note-go", children: "\u2197" })
+                  ] }, i)) })
+                ] })
+              ] });
+            })()
+          ] })
+        ] });
+      })() })
     ] })
   ] });
 }
@@ -1834,16 +2114,235 @@ var import_jsx_runtime4 = require("react/jsx-runtime");
 var ALL_PLATFORMS = [
   { key: "weibo", label: "\u5FAE\u535A" },
   { key: "douyin", label: "\u6296\u97F3" },
+  { key: "douyin_rule", label: "\u6296\u97F3\u89C4\u5219" },
+  { key: "douyin_activity", label: "\u6296\u97F3\u6D3B\u52A8" },
   { key: "zhihu", label: "\u77E5\u4E4E" },
   { key: "bilibili", label: "B\u7AD9" },
   { key: "baidu", label: "\u767E\u5EA6" },
   { key: "toutiao", label: "\u5934\u6761" }
 ];
+function sourceOf(label) {
+  if (label === "\u6296\u97F3\u89C4\u5219") return "\u6296\u97F3\u89C4\u5219\u4E2D\u5FC3";
+  if (label === "\u6296\u97F3\u6D3B\u52A8") return "\u6296\u97F3\u521B\u4F5C\u8005\u6D3B\u52A8";
+  return `${label}\u70ED\u641C`;
+}
+var fmtClock = (seconds) => seconds === void 0 ? "" : new Date(seconds * 1e3).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+function sortItems(items, rising) {
+  if (!rising) return items;
+  return [...items].sort((a, b2) => Number(b2.isNew === true) - Number(a.isNew === true) || (b2.delta ?? 0) - (a.delta ?? 0) || (a.rank ?? 0) - (b2.rank ?? 0));
+}
+var fmtAge = (ageMin) => ageMin >= 1440 ? `${Math.floor(ageMin / 1440)}\u5929` : `${Math.floor(ageMin / 60)}h`;
+function TrendBadges({ item }) {
+  const delta = typeof item.delta === "number" && item.delta !== 0 ? item.delta : null;
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(import_jsx_runtime4.Fragment, { children: [
+    item.isNew && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-badge trend-badge-new", children: "\u65B0" }),
+    delta === null ? null : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-badge trend-badge-${delta > 0 ? "up" : "down"}`, children: delta > 0 ? `\u2191${delta}` : `\u2193${-delta}` }),
+    (item.watch ?? []).slice(0, 2).map((w2) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-badge trend-badge-watch", children: w2 }, w2)),
+    typeof item.ageMin === "number" && item.ageMin >= 60 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-age", children: [
+      "\u9996\u73B0 ",
+      fmtAge(item.ageMin)
+    ] })
+  ] });
+}
+function TrendRow({ row, showPlatform, saved, onSave, onUse }) {
+  const payload = JSON.stringify({
+    title: row.title,
+    url: row.url,
+    source: row.source,
+    platform: row.platform,
+    rank: row.rank,
+    hot: row.hot
+  });
+  const rank = row.rank ?? 0;
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-item", "data-easel-trend": payload, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${rank > 0 && rank <= 3 ? "top" : ""}`, children: rank || "\xB7" }),
+    showPlatform && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-plat", children: row.label }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        "a",
+        {
+          className: "trend-title",
+          href: row.url || void 0,
+          target: "_blank",
+          rel: "noreferrer",
+          title: row.title,
+          children: row.title
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-meta", children: [
+        row.hot && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-hot", children: row.hot }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(TrendBadges, { item: row })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      "button",
+      {
+        className: "trend-save",
+        title: saved ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
+        onClick: onSave,
+        children: saved ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
+      }
+    ),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "trend-use", title: "\u505A\u6210\u5185\u5BB9", onClick: onUse, children: "\u505A\u5185\u5BB9" })
+  ] });
+}
+function TrendColumn({ group, rising, loading, isSaved, onSave, onUse }) {
+  const items = (0, import_react3.useMemo)(() => sortItems(group.items, rising), [group.items, rising]);
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-col", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
+      group.label,
+      group.stale && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-stale", title: "\u5185\u5BB9\u6765\u81EA\u6700\u8FD1\u4E00\u6B21\u6210\u529F\u5FEB\u7167", children: [
+        "\u79BB\u7EBF",
+        group.at ? ` \xB7 \u4E0A\u6B21 ${fmtClock(group.at)}` : ""
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-count", children: group.items.length })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-list", children: [
+      items.length === 0 && !loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: group.ok === false ? "\u8BE5\u5E73\u53F0\u6682\u65F6\u53D6\u4E0D\u5230\uFF08\u6570\u636E\u6E90\u4E0D\u53EF\u7528\uFF09" : "\u6682\u65E0\u6570\u636E" }),
+      items.map((it, i) => {
+        const row = { ...it, platform: group.platform, label: group.label, source: group.source };
+        return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          TrendRow,
+          {
+            row,
+            saved: isSaved(it.title),
+            onSave: () => onSave(row),
+            onUse: () => onUse(it.title)
+          },
+          it.url || `${it.title}-${i}`
+        );
+      })
+    ] })
+  ] });
+}
+function WatchCard({ watch, isSaved, onSave, onUse }) {
+  const total = watch.reduce((sum, g) => sum + g.items.length, 0);
+  const newCount = watch.reduce((sum, g) => sum + g.items.filter((it) => it.isNew).length, 0);
+  const shown = watch.slice(0, 5);
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-watch-card", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
+      "\u6211\u7684\u5173\u6CE8",
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-count", children: [
+        "\u547D\u4E2D ",
+        total,
+        " \u6761",
+        newCount > 0 ? ` \xB7 \u65B0 ${newCount}` : ""
+      ] })
+    ] }),
+    shown.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-watch-group", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-watch-key", children: g.keyword }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-watch-items", children: g.items.slice(0, 3).map((it, i) => {
+        const row = { ...it, source: sourceOf(it.label) };
+        return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          TrendRow,
+          {
+            row,
+            showPlatform: true,
+            saved: isSaved(it.title),
+            onSave: () => onSave(row),
+            onUse: () => onUse(it.title)
+          },
+          it.platform + (it.url || it.title) + i
+        );
+      }) }),
+      g.items.length > 3 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-more", children: [
+        "\u8FD8\u6709 ",
+        g.items.length - 3,
+        " \u6761 \xB7 "
+      ] })
+    ] }, g.keyword)),
+    watch.length > 5 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-more", children: [
+      "\u8FD8\u6709 ",
+      watch.length - 5,
+      " \u4E2A\u8BCD\u547D\u4E2D"
+    ] })
+  ] });
+}
+function ClusterCard({ cluster, isSaved, onSave, onUse }) {
+  const rep = cluster.items[0];
+  const shownLabels = cluster.labels.slice(0, 4);
+  const extra = cluster.labels.length - shownLabels.length;
+  const source = `\u8DE8\u5E73\u53F0\u70ED\u641C\uFF08${cluster.labels.join("/")}\uFF09`;
+  const payload = JSON.stringify({
+    title: cluster.title,
+    url: rep?.url ?? "",
+    source,
+    platform: cluster.platforms.join(","),
+    rank: cluster.bestRank
+  });
+  return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-cluster", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-cluster-head", "data-easel-trend": payload, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          "a",
+          {
+            className: "trend-title",
+            href: rep?.url || void 0,
+            target: "_blank",
+            rel: "noreferrer",
+            title: cluster.title,
+            children: cluster.title
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-meta", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-hot", children: [
+            cluster.platforms.length,
+            " \u5E73\u53F0\u5728\u699C \xB7 \u6700\u9AD8\u7B2C ",
+            cluster.bestRank
+          ] }),
+          cluster.isNew && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-badge trend-badge-new", children: "\u65B0" })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-cluster-actions", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          "button",
+          {
+            className: "trend-save",
+            title: isSaved(cluster.title) ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
+            onClick: () => onSave({
+              title: cluster.title,
+              url: rep?.url ?? "",
+              hot: "",
+              platform: cluster.platforms.join(","),
+              label: "\u805A\u5408",
+              source
+            }),
+            children: isSaved(cluster.title) ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "trend-use", title: "\u505A\u6210\u5185\u5BB9", onClick: () => onUse(cluster.title), children: "\u505A\u5185\u5BB9" })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-cluster-platforms", children: [
+      shownLabels.map((label) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-chip", children: label }, label)),
+      extra > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { className: "trend-more", children: [
+        "+",
+        extra
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-list", children: cluster.items.map((it, i) => {
+      const row = { ...it, source: sourceOf(it.label) };
+      return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        TrendRow,
+        {
+          row,
+          showPlatform: true,
+          saved: isSaved(it.title),
+          onSave: () => onSave(row),
+          onUse: () => onUse(it.title)
+        },
+        it.platform + (it.url || it.title) + i
+      );
+    }) })
+  ] });
+}
 function RadarSettings({ cfg, onSaved, onClose }) {
   const [draft, setDraft] = (0, import_react3.useState)(() => ({
     ...cfg,
-    sources: cfg.sources.map((s) => ({ ...s }))
+    sources: cfg.sources.map((s) => ({ ...s })),
+    keywords: [...cfg.keywords ?? []]
   }));
+  const [keywordText, setKeywordText] = (0, import_react3.useState)((cfg.keywords ?? []).join(" "));
   const [busy, setBusy] = (0, import_react3.useState)(false);
   const [msg, setMsg] = (0, import_react3.useState)("");
   const [err, setErr] = (0, import_react3.useState)("");
@@ -1865,6 +2364,7 @@ function RadarSettings({ cfg, onSaved, onClose }) {
         ...draft,
         proxyUrl: draft.proxyUrl.trim(),
         cdpEndpoint: draft.cdpEndpoint.trim(),
+        keywords: keywordText.split(/[\s,，、;；]+/).map((s) => s.trim()).filter(Boolean),
         sources: draft.sources.filter((s) => s.name.trim() && s.url.trim()).map((s) => ({ ...s, name: s.name.trim(), url: s.url.trim(), category: s.category.trim() || "\u81EA\u5B9A\u4E49" }))
       };
       await saveRadarConfig(cleaned);
@@ -1890,6 +2390,19 @@ function RadarSettings({ cfg, onSaved, onClose }) {
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "overlay", onClick: onClose, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "modal", style: { width: 620, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
     /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("h3", { style: { margin: "0 0 12px" }, children: "\u70ED\u70B9\u96F7\u8FBE \xB7 \u6E90\u4E0E\u4EE3\u7406" }),
     /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card", style: { padding: 14, marginBottom: 12 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { style: { fontWeight: 600, fontSize: 13, marginBottom: 8 }, children: "\u5173\u6CE8\u8BCD" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        "input",
+        {
+          style: field,
+          placeholder: "\u7528\u9017\u53F7\u6216\u7A7A\u683C\u5206\u9694\uFF0C\u4F8B\u5982\uFF1AAI \u8003\u7814 \u65B0\u80FD\u6E90\u6C7D\u8F66",
+          value: keywordText,
+          onChange: (e) => setKeywordText(e.target.value)
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { style: { fontSize: 11.5, color: "var(--text-tertiary)", marginTop: 6 }, children: "\u547D\u4E2D\u7684\u70ED\u70B9\u4F1A\u5728\u9875\u9762\u9876\u90E8\u300C\u6211\u7684\u5173\u6CE8\u300D\u7F6E\u9876\uFF08\u6700\u591A 20 \u4E2A\uFF0C\u6BCF\u4E2A 1\u201324 \u5B57\uFF09\u3002" })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card", style: { padding: 14, marginBottom: 12 }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { style: { fontWeight: 600, fontSize: 13, marginBottom: 8 }, children: "\u4EE3\u7406" }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", gap: 8, alignItems: "center" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
@@ -1914,7 +2427,7 @@ function RadarSettings({ cfg, onSaved, onClose }) {
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { fontSize: 11.5, color: "var(--text-tertiary)", marginTop: 6 }, children: [
-        "\u5E94\u7528\u4E8E\u70ED\u70B9\u6293\u53D6\u4E0E\u8D26\u53F7\u767B\u5F55\u3002\u73AF\u5883\u53D8\u91CF EASEL_PROXY=",
+        "\u5E94\u7528\u4E8E\u70ED\u70B9\u6293\u53D6\u3001\u6B63\u6587\u6293\u53D6\u4E0E\u8D26\u53F7\u767B\u5F55\u3002\u73AF\u5883\u53D8\u91CF EASEL_PROXY=",
         /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("code", { children: cfg.proxyEnv || "\uFF08\u672A\u8BBE\uFF09" }),
         " \u4F1A\u88AB\u8FD9\u91CC\u7684\u914D\u7F6E\u8986\u76D6\u3002"
       ] })
@@ -1991,14 +2504,18 @@ function RadarSettings({ cfg, onSaved, onClose }) {
   ] }) });
 }
 function TrendsPage({ onUseTopic }) {
-  const [selected, setSelected] = (0, import_react3.useState)(["weibo", "douyin", "zhihu"]);
+  const [selected, setSelected] = (0, import_react3.useState)(["weibo", "douyin", "zhihu", "douyin_rule", "douyin_activity"]);
   const [groups, setGroups] = (0, import_react3.useState)([]);
+  const [clusters, setClusters] = (0, import_react3.useState)(null);
+  const [watch, setWatch] = (0, import_react3.useState)([]);
   const [loading, setLoading] = (0, import_react3.useState)(false);
   const [error, setError] = (0, import_react3.useState)("");
   const [updated, setUpdated] = (0, import_react3.useState)(0);
   const [saved, setSaved] = (0, import_react3.useState)(/* @__PURE__ */ new Set());
   const [settingsOpen, setSettingsOpen] = (0, import_react3.useState)(false);
   const [radarCfg, setRadarCfg] = (0, import_react3.useState)(null);
+  const [viewMode, setViewMode] = (0, import_react3.useState)("list");
+  const [rising, setRising] = (0, import_react3.useState)(false);
   const [categoryFilter, setCategoryFilter] = (0, import_react3.useState)("");
   const loadRadar = (0, import_react3.useCallback)(() => {
     fetchRadarConfig().then(setRadarCfg).catch(() => {
@@ -2007,35 +2524,63 @@ function TrendsPage({ onUseTopic }) {
   const save = async (title, source) => {
     if (saved.has(title)) return;
     try {
-      await createIdea({ title, source: `${source}\u70ED\u641C`, status: "pending" });
+      await createIdea({ title, source, status: "pending" });
       setSaved((prev) => new Set(prev).add(title));
     } catch {
     }
   };
-  const load = (0, import_react3.useCallback)((pfs) => {
+  const load = (0, import_react3.useCallback)((pfs, options = {}) => {
     setLoading(true);
     setError("");
-    fetchTrends(pfs.join(","), 15).then((d2) => {
+    fetchTrends(pfs.join(","), 15, options).then((d2) => {
       setGroups(d2.trends);
+      setWatch(d2.watch ?? []);
       setUpdated(d2.updated);
+      if (d2.clusters !== void 0) setClusters(d2.clusters);
     }).catch(() => setError("\u70ED\u70B9\u62C9\u53D6\u5931\u8D25\u2014\u2014\u8BF7\u786E\u8BA4\u5DF2\u914D\u7F6E\u5916\u7F51\u4EE3\u7406\uFF08EASEL_PROXY \u6216\u70ED\u70B9\u9875\u8BBE\u7F6E\uFF09\u3002")).finally(() => setLoading(false));
   }, []);
-  const loadAll = (0, import_react3.useCallback)(() => {
+  (0, import_react3.useEffect)(() => {
     load(selected);
     loadRadar();
-  }, [load, selected, loadRadar]);
-  (0, import_react3.useEffect)(() => {
-    loadAll();
   }, []);
+  (0, import_react3.useEffect)(() => {
+    const onSaved = (event) => {
+      const title = event.detail?.title;
+      if (title) setSaved((prev) => new Set(prev).add(title));
+    };
+    window.addEventListener("easel:trend-saved", onSaved);
+    return () => window.removeEventListener("easel:trend-saved", onSaved);
+  }, []);
+  const refreshAll = (0, import_react3.useCallback)(() => {
+    load(selected, viewMode === "cluster" ? { view: "cluster", force: true } : { force: true });
+    loadRadar();
+  }, [load, selected, viewMode, loadRadar]);
   const toggle = (k2) => {
     const next = selected.includes(k2) ? selected.filter((x2) => x2 !== k2) : [...selected, k2];
     setSelected(next);
-    load(next);
+    load(next, viewMode === "cluster" ? { view: "cluster" } : {});
   };
+  const toggleView = () => {
+    const next = viewMode === "list" ? "cluster" : "list";
+    setViewMode(next);
+    if (next === "cluster" && clusters === null) load(selected, { view: "cluster" });
+  };
+  const handlers = (0, import_react3.useMemo)(() => ({
+    isSaved: (title) => saved.has(title),
+    onSave: (row) => {
+      void save(row.title, row.source);
+    },
+    onUse: (title) => {
+      onUseTopic(title);
+    }
+  }), [saved, onUseTopic]);
   const customGroups = groups.filter((g) => g.platform.startsWith("custom:"));
   const categories = Array.from(new Set(customGroups.map((g) => g.category || "\u81EA\u5B9A\u4E49")));
   const visibleCustom = categoryFilter === "" ? customGroups : customGroups.filter((g) => g.category === categoryFilter);
-  const builtinGroups = groups.filter((g) => !g.platform.startsWith("custom:"));
+  const columns = [
+    ...builtinColumns(groups),
+    ...visibleCustom.map((g) => ({ ...g, source: sourceOf(g.label) }))
+  ];
   return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "page-scroll trends-page", children: [
     /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "page-head", children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { children: [
@@ -2044,34 +2589,49 @@ function TrendsPage({ onUseTopic }) {
           " \u70ED\u70B9\u96F7\u8FBE"
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("p", { className: "page-subtitle", children: [
-          "\u591A\u5E73\u53F0\u5B9E\u65F6\u70ED\u641C\uFF0C\u6311\u503C\u5F97\u8E6D\u7684\u9009\u9898\uFF0C\u4E00\u952E\u4EA4\u7ED9 AI \u505A\u6210\u4F60\u7684\u5185\u5BB9\u3002",
+          "\u591A\u5E73\u53F0\u5B9E\u65F6\u70ED\u641C\uFF1A\u770B\u5347\u8DCC\u3001\u8DE8\u5E73\u53F0\u540C\u9898\u3001\u76EF\u7740\u4F60\u7684\u5173\u6CE8\u8BCD\uFF0C\u53F3\u952E\u628A\u6B63\u6587\u6293\u8FDB\u5185\u5BB9\u5E93\u4E0E\u9009\u9898\u5E93\u3002",
           updated > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("span", { style: { color: "var(--text-tertiary)" }, children: [
             " \xB7 ",
             new Date(updated * 1e3).toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }),
-            " \u66F4\u65B0"
+            " \u6570\u636E"
           ] })
         ] })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "btn btn-sm", onClick: () => setSettingsOpen(true), title: "\u81EA\u5B9A\u4E49\u6E90 / \u4EE3\u7406 / CDP \u7AEF\u70B9", children: "\u2699 \u6E90\u4E0E\u4EE3\u7406" }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("button", { className: "btn btn-sm", onClick: loadAll, disabled: loading, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "btn btn-sm", onClick: () => setSettingsOpen(true), title: "\u5173\u6CE8\u8BCD / \u81EA\u5B9A\u4E49\u6E90 / \u4EE3\u7406 / CDP \u7AEF\u70B9", children: "\u2699 \u6E90\u4E0E\u4EE3\u7406" }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("button", { className: "btn btn-sm", onClick: refreshAll, disabled: loading, children: [
           /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconRefresh, { size: 14 }),
           " ",
           loading ? "\u5237\u65B0\u4E2D\u2026" : "\u5237\u65B0"
         ] })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-platforms", children: ALL_PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-      "button",
-      {
-        className: `chip ${selected.includes(p.key) ? "active" : ""}`,
-        onClick: () => toggle(p.key),
-        children: p.label
-      },
-      p.key
-    )) }),
+    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-platforms", children: [
+      ALL_PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        "button",
+        {
+          className: `chip ${selected.includes(p.key) ? "active" : ""}`,
+          onClick: () => toggle(p.key),
+          children: p.label
+        },
+        p.key
+      )),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-viewsep" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: `chip ${viewMode === "list" ? "active" : ""}`, onClick: toggleView, children: "\u5206\u5E73\u53F0" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: `chip ${viewMode === "cluster" ? "active" : ""}`, onClick: toggleView, children: "\u805A\u5408" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        "button",
+        {
+          className: `chip ${rising ? "active" : ""}`,
+          onClick: () => setRising(!rising),
+          title: rising ? "\u6062\u590D\u699C\u5355\u539F\u5E8F" : "\u6309\u5347\u5E45\u91CD\u6392\uFF08\u4E0D\u91CD\u65B0\u8BF7\u6C42\uFF09",
+          children: rising ? "\u5347\u6E29 \u2713" : "\u5347\u6E29"
+        }
+      )
+    ] }),
     error && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "notice-error", children: error }),
-    customGroups.length > 0 && categories.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-platforms", style: { marginTop: -4 }, children: [
+    watch.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(WatchCard, { watch, ...handlers }),
+    viewMode === "list" && categories.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-platforms", style: { marginTop: -4 }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
         "button",
         {
@@ -2090,95 +2650,10 @@ function TrendsPage({ onUseTopic }) {
         c
       ))
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-grid", children: [
-      visibleCustom.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-col", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
-          g.label,
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-count", children: g.items.length })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-list", children: [
-          g.items.length === 0 && !loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: g.ok === false ? "\u8BE5\u6E90\u6682\u65F6\u53D6\u4E0D\u5230\uFF08\u68C0\u67E5 URL/\u7F51\u7EDC/\u4EE3\u7406\uFF09" : "\u6682\u65E0\u6570\u636E" }),
-          g.items.map((it, i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${i < 3 ? "top" : ""}`, children: i + 1 }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-                "a",
-                {
-                  className: "trend-title",
-                  href: it.url || void 0,
-                  target: "_blank",
-                  rel: "noreferrer",
-                  title: it.title,
-                  children: it.title
-                }
-              ),
-              it.hot && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-hot", children: it.hot })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-              "button",
-              {
-                className: "trend-save",
-                title: saved.has(it.title) ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
-                onClick: () => save(it.title, g.label),
-                children: saved.has(it.title) ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-              "button",
-              {
-                className: "trend-use",
-                title: "\u505A\u6210\u5185\u5BB9",
-                onClick: () => onUseTopic(it.title),
-                children: "\u505A\u5185\u5BB9"
-              }
-            )
-          ] }, i))
-        ] })
-      ] }, g.platform)),
-      builtinGroups.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "card trend-col", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-col-head", children: [
-          g.label,
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-count", children: g.items.length })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-list", children: [
-          g.items.length === 0 && !loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: g.ok === false ? "\u8BE5\u5E73\u53F0\u6682\u65F6\u53D6\u4E0D\u5230\uFF08\u6570\u636E\u6E90\u4E0D\u53EF\u7528\uFF09" : "\u6682\u65E0\u6570\u636E" }),
-          g.items.map((it, i) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-item", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: `trend-rank ${i < 3 ? "top" : ""}`, children: i + 1 }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-main", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-                "a",
-                {
-                  className: "trend-title",
-                  href: it.url || void 0,
-                  target: "_blank",
-                  rel: "noreferrer",
-                  title: it.title,
-                  children: it.title
-                }
-              ),
-              it.hot && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("span", { className: "trend-hot", children: it.hot })
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-              "button",
-              {
-                className: "trend-save",
-                title: saved.has(it.title) ? "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93" : "\u6536\u85CF\u5230\u9009\u9898\u5E93",
-                onClick: () => save(it.title, g.label),
-                children: saved.has(it.title) ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconCheck, { size: 14 }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(IconBookmark, { size: 14 })
-              }
-            ),
-            /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-              "button",
-              {
-                className: "trend-use",
-                title: "\u505A\u6210\u5185\u5BB9",
-                onClick: () => onUseTopic(it.title),
-                children: "\u505A\u5185\u5BB9"
-              }
-            )
-          ] }, i))
-        ] })
-      ] }, g.platform))
+    viewMode === "list" && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-grid", children: columns.map((g) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(TrendColumn, { group: g, rising, loading, ...handlers }, g.platform)) }),
+    viewMode === "cluster" && /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { className: "trend-grid", children: [
+      (clusters ?? []).map((c) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ClusterCard, { cluster: c, ...handlers }, c.id)),
+      !loading && clusters !== null && clusters.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("div", { className: "trend-empty", children: "\u5F53\u524D\u6E90\u4E4B\u95F4\u6CA1\u6709\u540C\u9898\u805A\u7C7B\u3002" })
     ] }),
     settingsOpen && radarCfg && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
       RadarSettings,
@@ -2186,7 +2661,7 @@ function TrendsPage({ onUseTopic }) {
         cfg: radarCfg,
         onSaved: () => {
           loadRadar();
-          load(selected);
+          load(selected, viewMode === "cluster" ? { view: "cluster" } : {});
         },
         onClose: () => setSettingsOpen(false)
       }
@@ -2196,6 +2671,9 @@ function TrendsPage({ onUseTopic }) {
       "\u52A0\u8F7D\u914D\u7F6E\u2026"
     ] }) }) })
   ] });
+}
+function builtinColumns(groups) {
+  return groups.filter((g) => !g.platform.startsWith("custom:")).map((g) => ({ ...g, source: sourceOf(g.label) }));
 }
 
 // src/features/trends.tsx
@@ -2243,726 +2721,6 @@ __export(ideas_exports, {
 
 // src/components/IdeasPage.tsx
 var import_react4 = require("react");
-var import_jsx_runtime6 = require("react/jsx-runtime");
-var COLUMNS = [
-  { key: "pending", label: "\u5F85\u505A", color: "var(--text-tertiary)" },
-  { key: "doing", label: "\u8FDB\u884C\u4E2D", color: "var(--layer-attribute)" },
-  { key: "project", label: "\u5DF2\u7ACB\u9879", color: "var(--accent, #7c5cff)" },
-  { key: "done", label: "\u5DF2\u5B8C\u6210", color: "var(--layer-publish)" }
-];
-var NEXT = { pending: "doing", doing: "done", done: "pending" };
-var EMPTY = { title: "", note: "", source: "", status: "pending" };
-function IdeasPage({ onUseTopic }) {
-  const [ideas, setIdeas] = (0, import_react4.useState)([]);
-  const [form, setForm] = (0, import_react4.useState)(null);
-  const [editId, setEditId] = (0, import_react4.useState)(null);
-  const [toast, setToast] = (0, import_react4.useState)("");
-  const [greenlight, setGreenlight] = (0, import_react4.useState)(null);
-  const [personas, setPersonas] = (0, import_react4.useState)([]);
-  const [personaPick, setPersonaPick] = (0, import_react4.useState)("");
-  const [busy, setBusy] = (0, import_react4.useState)(false);
-  const load = (0, import_react4.useCallback)(() => {
-    fetchIdeas().then(setIdeas).catch(() => {
-    });
-  }, []);
-  (0, import_react4.useEffect)(() => {
-    load();
-  }, [load]);
-  const showToast = (m2) => {
-    setToast(m2);
-    setTimeout(() => setToast(""), 2200);
-  };
-  const byStatus = (0, import_react4.useMemo)(() => {
-    const g = { pending: [], doing: [], project: [], done: [] };
-    for (const it of ideas) (g[it.status] || g.pending).push(it);
-    return g;
-  }, [ideas]);
-  const openNew = () => {
-    setEditId(null);
-    setForm({ ...EMPTY });
-  };
-  const openEdit = (it) => {
-    setEditId(it.id);
-    setForm({ title: it.title, note: it.note, source: it.source, status: it.status });
-  };
-  const save = async () => {
-    if (!form || !form.title.trim()) return;
-    if (editId) await updateIdea(editId, form);
-    else await createIdea(form);
-    setForm(null);
-    setEditId(null);
-    load();
-  };
-  const openGreenlight = async (it) => {
-    setGreenlight(it);
-    setPersonaPick("");
-    const status = await fetchStatus();
-    const list = status?.personas ?? [];
-    setPersonas(list);
-    if (list.length === 1) setPersonaPick(list[0].name);
-  };
-  const confirmGreenlight = async () => {
-    const it = greenlight;
-    if (!it || busy) return;
-    setBusy(true);
-    try {
-      const status = await fetchStatus();
-      const root = status?.projectRoot ?? "";
-      if (!root) throw new Error("\u62FF\u4E0D\u5230\u9879\u76EE\u6839");
-      const { safe } = await projectizeTopic({
-        ideaId: it.id,
-        title: it.title,
-        note: it.note,
-        source: it.source,
-        fallback: it.id,
-        deconstruct: it.deconstruct,
-        persona: personaPick
-      });
-      const ws = getWorkspaceService();
-      if (!ws) throw new Error("\u5DE5\u4F5C\u533A\u670D\u52A1\u4E0D\u53EF\u8FBE");
-      try {
-        await ws.create({ path: `${root.replace(/[\/]+$/, "")}/projects/${safe}/` });
-      } catch {
-      }
-      setGreenlight(null);
-      showToast("\u5DF2\u7ACB\u9879\uFF1A\u8D44\u6599\u5DF2\u88C5\u5165\u9879\u76EE\u5DE5\u4F5C\u533A");
-      load();
-    } catch (error) {
-      showToast(`\u7ACB\u9879\u5931\u8D25\uFF1A${error.message ?? error}`);
-    } finally {
-      setBusy(false);
-    }
-  };
-  const advance = async (it) => {
-    await updateIdea(it.id, { ...it, status: NEXT[it.status] });
-    load();
-  };
-  const remove = async (it) => {
-    await deleteIdea(it.id);
-    load();
-  };
-  const schedule = async (it) => {
-    const d2 = /* @__PURE__ */ new Date();
-    await createSchedule({ title: it.title, date: d2.toISOString().slice(0, 10), platform: "", time: "", status: "idea", note: it.note });
-    showToast("\u5DF2\u52A0\u5165\u65E5\u5386\uFF08\u4ECA\u5929\uFF09");
-  };
-  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-scroll ideas-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-head", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h1", { className: "page-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconIdea, { size: 21 }),
-          " \u9009\u9898\u5E93"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "page-subtitle", children: "\u6512\u4F4F\u6BCF\u4E00\u4E2A\u7075\u611F\u2014\u2014\u4ECE\u70ED\u70B9\u6536\u85CF\u6216\u624B\u52A8\u65B0\u589E\uFF0C\u63A8\u8FDB\u5230\u300C\u505A\u5185\u5BB9\u300D\u518D\u8FDB\u65E5\u5386\u3002" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: openNew, children: "+ \u65B0\u5EFA\u9009\u9898" })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban", children: COLUMNS.map((col) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-dot", style: { background: col.color } }),
-        col.label,
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-count", children: byStatus[col.key].length })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-list", children: [
-        byStatus[col.key].length === 0 && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban-empty", children: "\u62D6\u70B9\u9009\u9898\u8FDB\u6765\u5427" }),
-        byStatus[col.key].map((it) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "card idea-card", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-card-actions", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act", title: "\u7F16\u8F91", onClick: () => openEdit(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconEdit, { size: 13 }) }),
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act danger", title: "\u5220\u9664", onClick: () => remove(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconTrash, { size: 13 }) })
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-title", children: it.title }),
-          it.source && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "badge", style: { marginTop: 6 }, children: it.source }),
-          it.note && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-note", children: it.note }),
-          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-foot", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => onUseTopic(it.title, it.projectDir), children: [
-              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChat, { size: 13 }),
-              " \u505A\u5185\u5BB9"
-            ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => schedule(it), children: [
-              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconCalendar, { size: 13 }),
-              " \u6392\u671F"
-            ] }),
-            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "idea-act", title: "\u786E\u8BA4\u7ACB\u9879\uFF1A\u5EFA\u540C\u540D\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599", onClick: () => openGreenlight(it), children: "\u{1F6A9} \u7ACB\u9879" }),
-            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act next", onClick: () => advance(it), title: "\u63A8\u8FDB\u72B6\u6001", children: [
-              COLUMNS.find((c) => c.key === NEXT[it.status])?.label,
-              " ",
-              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChevron, { size: 12 })
-            ] })
-          ] })
-        ] }, it.id))
-      ] })
-    ] }, col.key)) }),
-    form && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setForm(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { style: { margin: 0 }, children: editId ? "\u7F16\u8F91\u9009\u9898" : "\u65B0\u5EFA\u9009\u9898" }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setForm(null), children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u9009\u9898 *" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "input",
-        {
-          className: "field",
-          value: form.title,
-          autoFocus: true,
-          placeholder: "\u60F3\u505A\u7684\u5185\u5BB9 / \u89D2\u5EA6",
-          onChange: (e) => setForm({ ...form, title: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u5907\u6CE8 / \u89D2\u5EA6" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "textarea",
-        {
-          className: "field",
-          style: { minHeight: 70 },
-          value: form.note,
-          onChange: (e) => setForm({ ...form, note: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u6765\u6E90" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "input",
-        {
-          className: "field",
-          value: form.source,
-          placeholder: "\u5982\uFF1A\u5FAE\u535A\u70ED\u641C / \u7075\u611F",
-          onChange: (e) => setForm({ ...form, source: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { style: { display: "flex", gap: 7 }, children: COLUMNS.map((c) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
-        "button",
-        {
-          className: `chip ${form.status === c.key ? "active" : ""}`,
-          onClick: () => setForm({ ...form, status: c.key }),
-          children: c.label
-        },
-        c.key
-      )) }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setForm(null), children: "\u53D6\u6D88" }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: !form.title.trim(), children: "\u4FDD\u5B58" })
-      ] })
-    ] }) }),
-    greenlight && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setGreenlight(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h3", { style: { margin: 0 }, children: [
-          "\u7ACB\u9879\uFF1A",
-          greenlight.title.slice(0, 20),
-          greenlight.title.length > 20 ? "\u2026" : ""
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setGreenlight(null), children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("p", { style: { margin: "6px 0 12px", fontSize: 12.5, color: "var(--text-secondary)" }, children: [
-        "\u5C06\u5EFA\u540C\u540D\u9879\u76EE\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599",
-        greenlight.deconstruct ? "\uFF08\u62C6\u89E3\u62A5\u544A\u3001\u5B57\u5E55\u3001\u89C6\u9891\u4E0E\u5173\u952E\u5E27\uFF09" : "",
-        "\uFF0C \u8D26\u6237\u753B\u50CF\u6309\u4E0B\u9009\u62E9\u5E26\u5165\u5FEB\u7167\u3002\u4FA7\u680F\u51FA\u73B0\u540C\u540D\u5DE5\u4F5C\u533A\u5206\u7EC4\u3002"
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u8D26\u6237\u753B\u50CF" }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("select", { className: "field", value: personaPick, onChange: (e) => setPersonaPick(e.target.value), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("option", { value: "", children: "\u4E0D\u5E26\u5165" }),
-        personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("option", { value: p.name, children: [
-          p.name,
-          p.description ? ` \u2014 ${p.description}` : ""
-        ] }, p.name))
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setGreenlight(null), children: "\u53D6\u6D88" }),
-        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: confirmGreenlight, disabled: busy, children: "\u{1F6A9} \u786E\u8BA4\u7ACB\u9879" })
-      ] })
-    ] }) }),
-    toast && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "toast ok", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "toast-icon", children: "\u2713" }),
-      toast
-    ] })
-  ] });
-}
-
-// src/features/ideas.tsx
-var import_jsx_runtime7 = require("react/jsx-runtime");
-var view3 = "ideas";
-var order3 = 32;
-var labels3 = { zh: "\u9009\u9898\u5E93", en: "Ideas" };
-var Icon3 = IconIdea;
-var Component3 = IdeasPage;
-var plugin3 = {
-  name: "easel-view-ideas",
-  inject: ["slots", "easelShell"],
-  apply(ctx) {
-    const { useShellProps, t } = ctx.easelShell;
-    ctx.slots.inject("main", () => ctx.slots.register({
-      name: "main",
-      key: pageKey(view3),
-      inject: () => ({})
-    }, function EaselPage() {
-      const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Component3, { ...props }) });
-    }));
-    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
-      name: "sidebar.panellist",
-      id: pageKey(view3),
-      order: order3,
-      locale: "easel.panel",
-      label: () => t(view3)
-    }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Icon3, { size });
-    }));
-  }
-};
-
-// src/features/calendar.tsx
-var calendar_exports = {};
-__export(calendar_exports, {
-  Component: () => Component4,
-  Icon: () => Icon4,
-  labels: () => labels4,
-  order: () => order4,
-  plugin: () => plugin4,
-  view: () => view4
-});
-
-// src/components/CalendarPage.tsx
-var import_react5 = require("react");
-var import_jsx_runtime8 = require("react/jsx-runtime");
-var STATUS_META = {
-  idea: { label: "\u9009\u9898", color: "var(--text-tertiary)" },
-  draft: { label: "\u8349\u7A3F", color: "var(--layer-plan)" },
-  scheduled: { label: "\u5F85\u53D1", color: "var(--layer-attribute)" },
-  published: { label: "\u5DF2\u53D1", color: "var(--layer-publish)" }
-};
-var EVENT_COLOR = "var(--layer-discover)";
-var EVENT_TYPES = ["\u8282\u65E5", "\u7535\u5546", "\u5E73\u53F0\u6D3B\u52A8", "\u884C\u4E1A"];
-var SOURCE_LABEL = {
-  chat: "\u5BF9\u8BDD\u9875",
-  "publish-page": "\u53D1\u5E03\u9875",
-  manual: "\u624B\u52A8",
-  scheduler: "\u6392\u671F"
-};
-var PLATFORMS = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u5FAE\u4FE1\u89C6\u9891\u53F7", "\u5FEB\u624B", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
-var WEEKDAYS = ["\u4E00", "\u4E8C", "\u4E09", "\u56DB", "\u4E94", "\u516D", "\u65E5"];
-function ymd(d2) {
-  return `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, "0")}-${String(d2.getDate()).padStart(2, "0")}`;
-}
-var kindOf = (it) => it.kind === "event" ? "event" : "content";
-var MAX_VISIBLE = 3;
-var EMPTY2 = {
-  title: "",
-  date: "",
-  platform: "",
-  time: "",
-  status: "idea",
-  note: "",
-  kind: "content",
-  url: "",
-  source: "manual",
-  event_type: "",
-  end_date: ""
-};
-function CalendarPage() {
-  const today = (0, import_react5.useMemo)(() => /* @__PURE__ */ new Date(), []);
-  const [cursor, setCursor] = (0, import_react5.useState)(() => new Date(today.getFullYear(), today.getMonth(), 1));
-  const [items, setItems] = (0, import_react5.useState)([]);
-  const [editing, setEditing] = (0, import_react5.useState)(null);
-  const [form, setForm] = (0, import_react5.useState)(null);
-  const [saving, setSaving] = (0, import_react5.useState)(false);
-  const [filter, setFilter] = (0, import_react5.useState)("all");
-  const [ctx, setCtx] = (0, import_react5.useState)(null);
-  const [showSuggest, setShowSuggest] = (0, import_react5.useState)(true);
-  const [dayView, setDayView] = (0, import_react5.useState)(null);
-  const load = (0, import_react5.useCallback)(() => {
-    fetchSchedule().then(setItems).catch(() => {
-    });
-    fetchScheduleContext(14).then(setCtx).catch(() => {
-    });
-  }, []);
-  (0, import_react5.useEffect)(() => {
-    load();
-  }, [load]);
-  const visible = (0, import_react5.useMemo)(
-    () => filter === "all" ? items : items.filter((it) => kindOf(it) === filter),
-    [items, filter]
-  );
-  const byDate = (0, import_react5.useMemo)(() => {
-    const m2 = {};
-    for (const it of visible) {
-      const bucket = m2[it.date] ||= { events: [], content: [] };
-      (kindOf(it) === "event" ? bucket.events : bucket.content).push(it);
-    }
-    return m2;
-  }, [visible]);
-  const cells = (0, import_react5.useMemo)(() => {
-    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
-    const startOffset = (first.getDay() + 6) % 7;
-    const start = new Date(first);
-    start.setDate(1 - startOffset);
-    return Array.from({ length: 42 }, (_2, i) => {
-      const d2 = new Date(start);
-      d2.setDate(start.getDate() + i);
-      return d2;
-    });
-  }, [cursor]);
-  const openNew = (date) => {
-    setDayView(null);
-    setEditing(null);
-    setForm({ ...EMPTY2, date, kind: filter === "event" ? "event" : "content" });
-  };
-  const openEdit = (it) => {
-    setDayView(null);
-    setEditing(it);
-    setForm({ ...EMPTY2, ...it });
-  };
-  const close = () => {
-    setForm(null);
-    setEditing(null);
-  };
-  const renderChip = (it) => {
-    if (kindOf(it) === "event") {
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-        "div",
-        {
-          className: "cal-event is-event",
-          title: it.event_type ? `${it.event_type}\xB7${it.title}` : it.title,
-          style: { ["--ev"]: EVENT_COLOR },
-          onClick: (e) => {
-            e.stopPropagation();
-            openEdit(it);
-          },
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-title", children: it.title })
-          ]
-        },
-        it.id
-      );
-    }
-    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-      "div",
-      {
-        className: "cal-event",
-        title: it.title,
-        style: { ["--ev"]: STATUS_META[it.status]?.color || "var(--text-tertiary)" },
-        onClick: (e) => {
-          e.stopPropagation();
-          openEdit(it);
-        },
-        children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-event-title", children: [
-            it.platform ? `[${it.platform}] ` : "",
-            it.title
-          ] }),
-          it.status === "published" && it.source && SOURCE_LABEL[it.source] && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: SOURCE_LABEL[it.source] })
-        ]
-      },
-      it.id
-    );
-  };
-  const save = async () => {
-    if (!form || !form.title.trim() || !form.date) return;
-    setSaving(true);
-    try {
-      if (editing) await updateSchedule(editing.id, form);
-      else await createSchedule(form);
-      close();
-      load();
-    } finally {
-      setSaving(false);
-    }
-  };
-  const remove = async () => {
-    if (!editing) return;
-    setSaving(true);
-    try {
-      await deleteSchedule(editing.id);
-      close();
-      load();
-    } finally {
-      setSaving(false);
-    }
-  };
-  const monthLabel = `${cursor.getFullYear()} \u5E74 ${cursor.getMonth() + 1} \u6708`;
-  const shift = (n) => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + n, 1));
-  const todayStr = ymd(today);
-  const isEvent = form?.kind === "event";
-  const suggestions = ctx?.suggestions || [];
-  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-scroll calendar-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-head", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h1", { className: "page-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconCalendar, { size: 21 }),
-          " \u5185\u5BB9\u65E5\u5386"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("p", { className: "page-subtitle", children: "\u6BCF\u5929\u5404\u5E73\u53F0\u53D1\u4EC0\u4E48\u4E00\u76EE\u4E86\u7136\u2014\u2014\u53D1\u5E03\u81EA\u52A8\u843D\u5E93\uFF0C\u53EF\u8BB0\u5F55\u6392\u671F\u4E0E\u5E73\u53F0\u6D3B\u52A8\u3002" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-nav", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(-1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { style: { transform: "rotate(180deg)", display: "inline-flex" }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => setCursor(new Date(today.getFullYear(), today.getMonth(), 1)), children: "\u672C\u6708" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-month", children: monthLabel }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) })
-      ] })
-    ] }),
-    showSuggest && suggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { children: [
-          "\u{1F4C5} \u65E5\u5386\u5EFA\u8BAE\uFF08\u8FD1 ",
-          ctx?.window_days ?? 14,
-          " \u5929\uFF09"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setShowSuggest(false), children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("ul", { children: suggestions.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("li", { children: s }, i)) })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-legend", children: [
-      Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch", style: { ["--sw"]: m2.color } }),
-        m2.label
-      ] }, k2)),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: EVENT_COLOR } }),
-        "\u5E73\u53F0\u6D3B\u52A8"
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-filter", children: ["all", "content", "event"].map((f) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: `chip ${filter === f ? "active" : ""}`, onClick: () => setFilter(f), children: f === "all" ? "\u5168\u90E8" : f === "content" ? "\u5185\u5BB9" : "\u6D3B\u52A8" }, f)) })
-    ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid-head", children: WEEKDAYS.map((w2) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-wd", children: [
-      "\u5468",
-      w2
-    ] }, w2)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid", children: cells.map((d2, i) => {
-      const ds = ymd(d2);
-      const inMonth = d2.getMonth() === cursor.getMonth();
-      const bucket = byDate[ds] || { events: [], content: [] };
-      const dayItems = [...bucket.events, ...bucket.content];
-      const shown = dayItems.slice(0, MAX_VISIBLE);
-      const hidden = dayItems.length - shown.length;
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
-        "div",
-        {
-          className: `cal-cell ${inMonth ? "" : "dim"} ${ds === todayStr ? "today" : ""}`,
-          onClick: () => dayItems.length ? setDayView(ds) : openNew(ds),
-          children: [
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-daynum", children: d2.getDate() }),
-            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-events", children: [
-              shown.map(renderChip),
-              hidden > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "cal-more", onClick: (e) => {
-                e.stopPropagation();
-                setDayView(ds);
-              }, children: [
-                "+",
-                hidden,
-                " \u66F4\u591A"
-              ] })
-            ] })
-          ]
-        },
-        i
-      );
-    }) }),
-    dayView && (() => {
-      const b2 = byDate[dayView] || { events: [], content: [] };
-      const list = [...b2.events, ...b2.content];
-      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: () => setDayView(null), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
-            dayView,
-            "\uFF08",
-            list.length,
-            " \u9879\uFF09"
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setDayView(null), children: "\xD7" })
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-dayview-list", children: list.map(renderChip) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: () => openNew(dayView), children: "+ \u65B0\u589E" }) })
-      ] }) });
-    })(),
-    form && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: close, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
-          editing ? "\u7F16\u8F91" : "\u65B0\u589E",
-          isEvent ? "\u5E73\u53F0\u6D3B\u52A8" : "\u6392\u671F"
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: close, children: "\xD7" })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7C7B\u578B" }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 7 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${!isEvent ? "active" : ""}`,
-            onClick: () => setForm({ ...form, kind: "content" }),
-            children: "\u5185\u5BB9 / \u53D1\u5E03"
-          }
-        ),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${isEvent ? "active" : ""}`,
-            onClick: () => setForm({ ...form, kind: "event", status: "idea" }),
-            children: "\u5E73\u53F0\u6D3B\u52A8"
-          }
-        )
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6807\u9898 *" }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-        "input",
-        {
-          className: "field",
-          value: form.title,
-          autoFocus: true,
-          placeholder: isEvent ? "\u6D3B\u52A8/\u8282\u70B9\u540D\u79F0" : "\u8981\u53D1\u4EC0\u4E48\u5185\u5BB9",
-          onChange: (e) => setForm({ ...form, title: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 10 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: isEvent ? "\u5F00\u59CB\u65E5\u671F *" : "\u65E5\u671F *" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              type: "date",
-              value: form.date,
-              onChange: (e) => setForm({ ...form, date: e.target.value })
-            }
-          )
-        ] }),
-        isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7ED3\u675F\u65E5\u671F" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              type: "date",
-              value: form.end_date || "",
-              onChange: (e) => setForm({ ...form, end_date: e.target.value })
-            }
-          )
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { width: 120 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u65F6\u95F4" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-            "input",
-            {
-              className: "field",
-              type: "time",
-              value: form.time,
-              onChange: (e) => setForm({ ...form, time: e.target.value })
-            }
-          )
-        ] })
-      ] }),
-      isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6D3B\u52A8\u7C7B\u578B" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: EVENT_TYPES.map((t) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.event_type === t ? "active" : ""}`,
-            onClick: () => setForm({ ...form, event_type: form.event_type === t ? "" : t }),
-            children: t
-          },
-          t
-        )) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5173\u8054\u5E73\u53F0\uFF08\u53EF\u9009\uFF09" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.platform === p ? "active" : ""}`,
-            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
-            children: p
-          },
-          p
-        )) })
-      ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5E73\u53F0" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.platform === p ? "active" : ""}`,
-            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
-            children: p
-          },
-          p
-        )) }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", gap: 7 }, children: Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-          "button",
-          {
-            className: `chip ${form.status === k2 ? "active" : ""}`,
-            onClick: () => setForm({ ...form, status: k2 }),
-            children: m2.label
-          },
-          k2
-        )) })
-      ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5907\u6CE8" }),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
-        "textarea",
-        {
-          className: "field",
-          style: { minHeight: 60 },
-          value: form.note,
-          onChange: (e) => setForm({ ...form, note: e.target.value })
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 18 }, children: [
-        editing ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "btn btn-sm btn-danger", onClick: remove, disabled: saving, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconTrash, { size: 13 }),
-          " \u5220\u9664"
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", {}),
-        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: close, children: "\u53D6\u6D88" }),
-          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: saving || !form.title.trim() || !form.date, children: saving ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58" })
-        ] })
-      ] })
-    ] }) })
-  ] });
-}
-
-// src/features/calendar.tsx
-var import_jsx_runtime9 = require("react/jsx-runtime");
-var view4 = "calendar";
-var order4 = 33;
-var labels4 = { zh: "\u5185\u5BB9\u65E5\u5386", en: "Calendar" };
-var Icon4 = IconCalendar;
-var Component4 = CalendarPage;
-var plugin4 = {
-  name: "easel-view-calendar",
-  inject: ["slots", "easelShell"],
-  apply(ctx) {
-    const { useShellProps, t } = ctx.easelShell;
-    ctx.slots.inject("main", () => ctx.slots.register({
-      name: "main",
-      key: pageKey(view4),
-      inject: () => ({})
-    }, function EaselPage() {
-      const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Component4, { ...props }) });
-    }));
-    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
-      name: "sidebar.panellist",
-      id: pageKey(view4),
-      order: order4,
-      locale: "easel.panel",
-      label: () => t(view4)
-    }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Icon4, { size });
-    }));
-  }
-};
-
-// src/features/skills.tsx
-var skills_exports = {};
-__export(skills_exports, {
-  Component: () => Component5,
-  Icon: () => Icon5,
-  labels: () => labels5,
-  order: () => order5,
-  plugin: () => plugin5,
-  view: () => view5
-});
-
-// src/components/SkillPage.tsx
-var import_react7 = require("react");
-
-// src/components/SkillDrawer.tsx
-var import_react6 = require("react");
 
 // ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
@@ -6104,6 +5862,2324 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
+// src/components/IdeasPage.tsx
+var import_jsx_runtime6 = require("react/jsx-runtime");
+var COLUMNS = [
+  { key: "pending", label: "\u5F85\u505A", color: "var(--text-tertiary)" },
+  { key: "doing", label: "\u8FDB\u884C\u4E2D", color: "var(--layer-attribute)" },
+  { key: "project", label: "\u5DF2\u7ACB\u9879", color: "var(--accent, #7c5cff)" },
+  { key: "done", label: "\u5DF2\u5B8C\u6210", color: "var(--layer-publish)" }
+];
+var NEXT = { pending: "doing", doing: "done", done: "pending" };
+var EMPTY = { title: "", note: "", source: "", status: "pending" };
+function IdeasPage({ onUseTopic }) {
+  const [ideas, setIdeas] = (0, import_react4.useState)([]);
+  const [form, setForm] = (0, import_react4.useState)(null);
+  const [editId, setEditId] = (0, import_react4.useState)(null);
+  const [toast, setToast] = (0, import_react4.useState)("");
+  const [greenlight, setGreenlight] = (0, import_react4.useState)(null);
+  const [personas, setPersonas] = (0, import_react4.useState)([]);
+  const [personaPick, setPersonaPick] = (0, import_react4.useState)("");
+  const [busy, setBusy] = (0, import_react4.useState)(false);
+  const load = (0, import_react4.useCallback)(() => {
+    fetchIdeas().then(setIdeas).catch(() => {
+    });
+  }, []);
+  (0, import_react4.useEffect)(() => {
+    load();
+  }, [load]);
+  const showToast = (m2) => {
+    setToast(m2);
+    setTimeout(() => setToast(""), 2200);
+  };
+  const [bodyPreview, setBodyPreview] = (0, import_react4.useState)(null);
+  const openBody = async (it) => {
+    setBodyPreview({ idea: it, content: "", error: "" });
+    try {
+      const file = await fetchOutputContent(it.bodyPath);
+      const error = file.isBinary ? "\u8BE5\u6587\u4EF6\u4E0D\u662F\u6587\u672C" : "";
+      setBodyPreview({ idea: it, content: error === "" ? file.content : "", error });
+    } catch (e) {
+      setBodyPreview({ idea: it, content: "", error: e instanceof Error ? e.message : "\u6B63\u6587\u8BFB\u53D6\u5931\u8D25\uFF08\u6587\u4EF6\u53EF\u80FD\u5DF2\u5220\u9664\uFF09" });
+    }
+  };
+  const byStatus = (0, import_react4.useMemo)(() => {
+    const g = { pending: [], doing: [], project: [], done: [] };
+    for (const it of ideas) (g[it.status] || g.pending).push(it);
+    return g;
+  }, [ideas]);
+  const openNew = () => {
+    setEditId(null);
+    setForm({ ...EMPTY });
+  };
+  const openEdit = (it) => {
+    setEditId(it.id);
+    setForm({ title: it.title, note: it.note, source: it.source, status: it.status });
+  };
+  const save = async () => {
+    if (!form || !form.title.trim()) return;
+    if (editId) await updateIdea(editId, form);
+    else await createIdea(form);
+    setForm(null);
+    setEditId(null);
+    load();
+  };
+  const openGreenlight = async (it) => {
+    setGreenlight(it);
+    setPersonaPick("");
+    const status = await fetchStatus();
+    const list = status?.personas ?? [];
+    setPersonas(list);
+    if (list.length === 1) setPersonaPick(list[0].name);
+  };
+  const confirmGreenlight = async () => {
+    const it = greenlight;
+    if (!it || busy) return;
+    setBusy(true);
+    try {
+      const status = await fetchStatus();
+      const root = status?.projectRoot ?? "";
+      if (!root) throw new Error("\u62FF\u4E0D\u5230\u9879\u76EE\u6839");
+      const { safe } = await projectizeTopic({
+        ideaId: it.id,
+        title: it.title,
+        note: it.note,
+        source: it.source,
+        fallback: it.id,
+        deconstruct: it.deconstruct,
+        persona: personaPick
+      });
+      const ws = getWorkspaceService();
+      if (!ws) throw new Error("\u5DE5\u4F5C\u533A\u670D\u52A1\u4E0D\u53EF\u8FBE");
+      try {
+        await ws.create({ path: `${root.replace(/[\/]+$/, "")}/projects/${safe}/` });
+      } catch {
+      }
+      setGreenlight(null);
+      showToast("\u5DF2\u7ACB\u9879\uFF1A\u8D44\u6599\u5DF2\u88C5\u5165\u9879\u76EE\u5DE5\u4F5C\u533A");
+      load();
+    } catch (error) {
+      showToast(`\u7ACB\u9879\u5931\u8D25\uFF1A${error.message ?? error}`);
+    } finally {
+      setBusy(false);
+    }
+  };
+  const advance = async (it) => {
+    await updateIdea(it.id, { ...it, status: NEXT[it.status] });
+    load();
+  };
+  const remove = async (it) => {
+    await deleteIdea(it.id);
+    load();
+  };
+  const schedule = async (it) => {
+    const d2 = /* @__PURE__ */ new Date();
+    await createSchedule({ title: it.title, date: d2.toISOString().slice(0, 10), platform: "", time: "", status: "idea", note: it.note });
+    showToast("\u5DF2\u52A0\u5165\u65E5\u5386\uFF08\u4ECA\u5929\uFF09");
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-scroll ideas-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "page-head", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h1", { className: "page-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconIdea, { size: 21 }),
+          " \u9009\u9898\u5E93"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("p", { className: "page-subtitle", children: "\u6512\u4F4F\u6BCF\u4E00\u4E2A\u7075\u611F\u2014\u2014\u4ECE\u70ED\u70B9\u6536\u85CF\u6216\u624B\u52A8\u65B0\u589E\uFF0C\u63A8\u8FDB\u5230\u300C\u505A\u5185\u5BB9\u300D\u518D\u8FDB\u65E5\u5386\u3002" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: openNew, children: "+ \u65B0\u5EFA\u9009\u9898" })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban", children: COLUMNS.map((col) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-col-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-dot", style: { background: col.color } }),
+        col.label,
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "kanban-count", children: byStatus[col.key].length })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "kanban-list", children: [
+        byStatus[col.key].length === 0 && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "kanban-empty", children: "\u62D6\u70B9\u9009\u9898\u8FDB\u6765\u5427" }),
+        byStatus[col.key].map((it) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "card idea-card", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-card-actions", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act", title: "\u7F16\u8F91", onClick: () => openEdit(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconEdit, { size: 13 }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "session-act danger", title: "\u5220\u9664", onClick: () => remove(it), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconTrash, { size: 13 }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-title", children: it.title }),
+          it.source && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "badge", style: { marginTop: 6 }, children: it.source }),
+          it.note && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "idea-note", children: it.note }),
+          (it.bodyPath || it.url) && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-links", children: [
+            it.bodyPath && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "idea-link", onClick: () => openBody(it), children: "\u6B63\u6587" }),
+            it.url && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("a", { className: "idea-link", href: it.url, target: "_blank", rel: "noreferrer", children: "\u539F\u6587" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "idea-foot", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => onUseTopic(it.title, it.projectDir, it.bodyPath), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChat, { size: 13 }),
+              " \u505A\u5185\u5BB9"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act", onClick: () => schedule(it), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconCalendar, { size: 13 }),
+              " \u6392\u671F"
+            ] }),
+            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "idea-act", title: "\u786E\u8BA4\u7ACB\u9879\uFF1A\u5EFA\u540C\u540D\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599", onClick: () => openGreenlight(it), children: "\u{1F6A9} \u7ACB\u9879" }),
+            it.status !== "project" && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("button", { className: "idea-act next", onClick: () => advance(it), title: "\u63A8\u8FDB\u72B6\u6001", children: [
+              COLUMNS.find((c) => c.key === NEXT[it.status])?.label,
+              " ",
+              /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(IconChevron, { size: 12 })
+            ] })
+          ] })
+        ] }, it.id))
+      ] })
+    ] }, col.key)) }),
+    form && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setForm(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { style: { margin: 0 }, children: editId ? "\u7F16\u8F91\u9009\u9898" : "\u65B0\u5EFA\u9009\u9898" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setForm(null), children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u9009\u9898 *" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "input",
+        {
+          className: "field",
+          value: form.title,
+          autoFocus: true,
+          placeholder: "\u60F3\u505A\u7684\u5185\u5BB9 / \u89D2\u5EA6",
+          onChange: (e) => setForm({ ...form, title: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u5907\u6CE8 / \u89D2\u5EA6" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "textarea",
+        {
+          className: "field",
+          style: { minHeight: 70 },
+          value: form.note,
+          onChange: (e) => setForm({ ...form, note: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u6765\u6E90" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "input",
+        {
+          className: "field",
+          value: form.source,
+          placeholder: "\u5982\uFF1A\u5FAE\u535A\u70ED\u641C / \u7075\u611F",
+          onChange: (e) => setForm({ ...form, source: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { style: { display: "flex", gap: 7 }, children: COLUMNS.map((c) => /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "button",
+        {
+          className: `chip ${form.status === c.key ? "active" : ""}`,
+          onClick: () => setForm({ ...form, status: c.key }),
+          children: c.label
+        },
+        c.key
+      )) }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setForm(null), children: "\u53D6\u6D88" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: !form.title.trim(), children: "\u4FDD\u5B58" })
+      ] })
+    ] }) }),
+    bodyPreview && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setBodyPreview(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 760, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("h3", { style: { margin: 0, fontSize: 15 }, children: bodyPreview.idea.title }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setBodyPreview(null), children: "\xD7" })
+      ] }),
+      bodyPreview.error !== "" ? /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { style: { color: "var(--red)", fontSize: 12.5, padding: "12px 0" }, children: bodyPreview.error }) : /* @__PURE__ */ (0, import_jsx_runtime6.jsx)(
+        "div",
+        {
+          className: "idea-body-preview outputs-viewer-content",
+          dangerouslySetInnerHTML: { __html: renderMarkdown(bodyPreview.content) }
+        }
+      )
+    ] }) }),
+    greenlight && /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("div", { className: "overlay", onClick: () => setGreenlight(null), children: /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("h3", { style: { margin: 0 }, children: [
+          "\u7ACB\u9879\uFF1A",
+          greenlight.title.slice(0, 20),
+          greenlight.title.length > 20 ? "\u2026" : ""
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "icon-btn", onClick: () => setGreenlight(null), children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("p", { style: { margin: "6px 0 12px", fontSize: 12.5, color: "var(--text-secondary)" }, children: [
+        "\u5C06\u5EFA\u540C\u540D\u9879\u76EE\u5DE5\u4F5C\u533A\u5E76\u88C5\u914D\u8D44\u6599",
+        greenlight.deconstruct ? "\uFF08\u62C6\u89E3\u62A5\u544A\u3001\u5B57\u5E55\u3001\u89C6\u9891\u4E0E\u5173\u952E\u5E27\uFF09" : "",
+        "\uFF0C \u8D26\u6237\u753B\u50CF\u6309\u4E0B\u9009\u62E9\u5E26\u5165\u5FEB\u7167\u3002\u4FA7\u680F\u51FA\u73B0\u540C\u540D\u5DE5\u4F5C\u533A\u5206\u7EC4\u3002"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("label", { className: "field-label", children: "\u8D26\u6237\u753B\u50CF" }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("select", { className: "field", value: personaPick, onChange: (e) => setPersonaPick(e.target.value), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("option", { value: "", children: "\u4E0D\u5E26\u5165" }),
+        personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("option", { value: p.name, children: [
+          p.name,
+          p.description ? ` \u2014 ${p.description}` : ""
+        ] }, p.name))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm", onClick: () => setGreenlight(null), children: "\u53D6\u6D88" }),
+        /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("button", { className: "btn btn-sm btn-primary", onClick: confirmGreenlight, disabled: busy, children: "\u{1F6A9} \u786E\u8BA4\u7ACB\u9879" })
+      ] })
+    ] }) }),
+    toast && /* @__PURE__ */ (0, import_jsx_runtime6.jsxs)("div", { className: "toast ok", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime6.jsx)("span", { className: "toast-icon", children: "\u2713" }),
+      toast
+    ] })
+  ] });
+}
+
+// src/features/ideas.tsx
+var import_jsx_runtime7 = require("react/jsx-runtime");
+var view3 = "ideas";
+var order3 = 32;
+var labels3 = { zh: "\u9009\u9898\u5E93", en: "Ideas" };
+var Icon3 = IconIdea;
+var Component3 = IdeasPage;
+var plugin3 = {
+  name: "easel-view-ideas",
+  inject: ["slots", "easelShell"],
+  apply(ctx) {
+    const { useShellProps, t } = ctx.easelShell;
+    ctx.slots.inject("main", () => ctx.slots.register({
+      name: "main",
+      key: pageKey(view3),
+      inject: () => ({})
+    }, function EaselPage() {
+      const props = useShellProps();
+      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Component3, { ...props }) });
+    }));
+    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
+      name: "sidebar.panellist",
+      id: pageKey(view3),
+      order: order3,
+      locale: "easel.panel",
+      label: () => t(view3)
+    }, function EaselRailIcon({ size }) {
+      return /* @__PURE__ */ (0, import_jsx_runtime7.jsx)(Icon3, { size });
+    }));
+  }
+};
+
+// src/features/calendar.tsx
+var calendar_exports = {};
+__export(calendar_exports, {
+  Component: () => Component4,
+  Icon: () => Icon4,
+  labels: () => labels4,
+  order: () => order4,
+  plugin: () => plugin4,
+  view: () => view4
+});
+
+// src/components/CalendarPage.tsx
+var import_react5 = require("react");
+
+// src/data/holidays-cn.js
+var HOLIDAYS_CN = {
+  2025: {
+    "2025-01-01": ["\u5143\u65E6", 1],
+    "2025-01-26": ["\u6625\u8282", 0],
+    "2025-01-28": ["\u6625\u8282", 1],
+    "2025-01-29": ["\u6625\u8282", 1],
+    "2025-01-30": ["\u6625\u8282", 1],
+    "2025-01-31": ["\u6625\u8282", 1],
+    "2025-02-01": ["\u6625\u8282", 1],
+    "2025-02-02": ["\u6625\u8282", 1],
+    "2025-02-03": ["\u6625\u8282", 1],
+    "2025-02-04": ["\u6625\u8282", 1],
+    "2025-02-08": ["\u6625\u8282", 0],
+    "2025-04-04": ["\u6E05\u660E\u8282", 1],
+    "2025-04-05": ["\u6E05\u660E\u8282", 1],
+    "2025-04-06": ["\u6E05\u660E\u8282", 1],
+    "2025-04-27": ["\u52B3\u52A8\u8282", 0],
+    "2025-05-01": ["\u52B3\u52A8\u8282", 1],
+    "2025-05-02": ["\u52B3\u52A8\u8282", 1],
+    "2025-05-03": ["\u52B3\u52A8\u8282", 1],
+    "2025-05-04": ["\u52B3\u52A8\u8282", 1],
+    "2025-05-05": ["\u52B3\u52A8\u8282", 1],
+    "2025-05-31": ["\u7AEF\u5348\u8282", 1],
+    "2025-06-01": ["\u7AEF\u5348\u8282", 1],
+    "2025-06-02": ["\u7AEF\u5348\u8282", 1],
+    "2025-09-28": ["\u56FD\u5E86\u8282", 0],
+    "2025-10-01": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-02": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-03": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-04": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-05": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-06": ["\u4E2D\u79CB\u8282", 1],
+    "2025-10-07": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-08": ["\u56FD\u5E86\u8282", 1],
+    "2025-10-11": ["\u56FD\u5E86\u8282", 0]
+  },
+  2026: {
+    "2026-01-01": ["\u5143\u65E6", 1],
+    "2026-01-02": ["\u5143\u65E6", 1],
+    "2026-01-03": ["\u5143\u65E6", 1],
+    "2026-01-04": ["\u5143\u65E6", 0],
+    "2026-02-14": ["\u6625\u8282", 0],
+    "2026-02-15": ["\u6625\u8282", 1],
+    "2026-02-16": ["\u6625\u8282", 1],
+    "2026-02-17": ["\u6625\u8282", 1],
+    "2026-02-18": ["\u6625\u8282", 1],
+    "2026-02-19": ["\u6625\u8282", 1],
+    "2026-02-20": ["\u6625\u8282", 1],
+    "2026-02-21": ["\u6625\u8282", 1],
+    "2026-02-22": ["\u6625\u8282", 1],
+    "2026-02-23": ["\u6625\u8282", 1],
+    "2026-02-28": ["\u6625\u8282", 0],
+    "2026-04-04": ["\u6E05\u660E\u8282", 1],
+    "2026-04-05": ["\u6E05\u660E\u8282", 1],
+    "2026-04-06": ["\u6E05\u660E\u8282", 1],
+    "2026-05-01": ["\u52B3\u52A8\u8282", 1],
+    "2026-05-02": ["\u52B3\u52A8\u8282", 1],
+    "2026-05-03": ["\u52B3\u52A8\u8282", 1],
+    "2026-05-04": ["\u52B3\u52A8\u8282", 1],
+    "2026-05-05": ["\u52B3\u52A8\u8282", 1],
+    "2026-05-09": ["\u52B3\u52A8\u8282", 0],
+    "2026-06-19": ["\u7AEF\u5348\u8282", 1],
+    "2026-06-20": ["\u7AEF\u5348\u8282", 1],
+    "2026-06-21": ["\u7AEF\u5348\u8282", 1],
+    "2026-09-20": ["\u56FD\u5E86\u8282", 0],
+    "2026-09-25": ["\u4E2D\u79CB\u8282", 1],
+    "2026-09-26": ["\u4E2D\u79CB\u8282", 1],
+    "2026-09-27": ["\u4E2D\u79CB\u8282", 1],
+    "2026-10-01": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-02": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-03": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-04": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-05": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-06": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-07": ["\u56FD\u5E86\u8282", 1],
+    "2026-10-10": ["\u56FD\u5E86\u8282", 0]
+  }
+};
+
+// src/lib/lunar.js
+var LUNAR_INFO = [
+  19416,
+  19168,
+  42352,
+  21717,
+  53856,
+  55632,
+  91476,
+  22176,
+  39632,
+  21970,
+  // 1900-1909
+  19168,
+  42422,
+  42192,
+  53840,
+  119381,
+  46400,
+  54944,
+  44450,
+  38320,
+  84343,
+  // 1910-1919
+  18800,
+  42160,
+  46261,
+  27216,
+  27968,
+  109396,
+  11104,
+  38256,
+  21234,
+  18800,
+  // 1920-1929
+  25958,
+  54432,
+  59984,
+  28309,
+  23248,
+  11104,
+  100067,
+  37600,
+  116951,
+  51536,
+  // 1930-1939
+  54432,
+  120998,
+  46416,
+  22176,
+  107956,
+  9680,
+  37584,
+  53938,
+  43344,
+  46423,
+  // 1940-1949
+  27808,
+  46416,
+  86869,
+  19872,
+  42416,
+  83315,
+  21168,
+  43432,
+  59728,
+  27296,
+  // 1950-1959
+  44710,
+  43856,
+  19296,
+  43748,
+  42352,
+  21088,
+  62051,
+  55632,
+  23383,
+  22176,
+  // 1960-1969
+  38608,
+  19925,
+  19152,
+  42192,
+  54484,
+  53840,
+  54616,
+  46400,
+  46752,
+  103846,
+  // 1970-1979
+  38320,
+  18864,
+  43380,
+  42160,
+  45690,
+  27216,
+  27968,
+  44870,
+  43872,
+  38256,
+  // 1980-1989
+  19189,
+  18800,
+  25776,
+  29859,
+  59984,
+  27480,
+  23232,
+  43872,
+  38613,
+  37600,
+  // 1990-1999
+  51552,
+  55636,
+  54432,
+  55888,
+  30034,
+  22176,
+  43959,
+  9680,
+  37584,
+  51893,
+  // 2000-2009
+  43344,
+  46240,
+  47780,
+  44368,
+  21977,
+  19360,
+  42416,
+  86390,
+  21168,
+  43312,
+  // 2010-2019
+  31060,
+  27296,
+  44368,
+  23378,
+  19296,
+  42726,
+  42208,
+  53856,
+  60005,
+  54576,
+  // 2020-2029
+  23200,
+  30371,
+  38608,
+  19195,
+  19152,
+  42192,
+  118966,
+  53840,
+  54560,
+  56645,
+  // 2030-2039
+  46496,
+  22224,
+  21938,
+  18864,
+  42359,
+  42160,
+  43600,
+  111189,
+  27936,
+  44448,
+  // 2040-2049
+  84835,
+  37744,
+  18936,
+  18800,
+  25776,
+  92326,
+  59984,
+  27424,
+  108228,
+  43744,
+  // 2050-2059
+  41696,
+  53987,
+  51552,
+  54615,
+  54432,
+  55888,
+  23893,
+  22176,
+  42704,
+  21972,
+  // 2060-2069
+  21200,
+  43448,
+  43344,
+  46240,
+  46758,
+  44368,
+  21920,
+  43940,
+  42416,
+  21168,
+  // 2070-2079
+  45683,
+  26928,
+  29495,
+  27296,
+  44368,
+  84821,
+  19296,
+  42352,
+  21732,
+  53600,
+  // 2080-2089
+  59752,
+  54560,
+  55968,
+  92838,
+  22224,
+  19168,
+  43476,
+  41680,
+  53584,
+  62034,
+  // 2090-2099
+  54560
+  // 2100
+];
+var BASE_UTC = Date.UTC(1900, 0, 31);
+function lunarLeapMonth(year) {
+  return LUNAR_INFO[year - 1900] & 15;
+}
+function lunarLeapDays(year) {
+  if (lunarLeapMonth(year) === 0) return 0;
+  return LUNAR_INFO[year - 1900] & 65536 ? 30 : 29;
+}
+function lunarMonthDays(year, month) {
+  return LUNAR_INFO[year - 1900] & 65536 >> month ? 30 : 29;
+}
+function lunarYearDays(year) {
+  let sum = 348;
+  for (let mask = 32768; mask > 8; mask >>= 1) sum += LUNAR_INFO[year - 1900] & mask ? 1 : 0;
+  return sum + lunarLeapDays(year);
+}
+function solarToLunar(year, month, day) {
+  if (year < 1900 || year > 2100) return null;
+  let offset = Math.round((Date.UTC(year, month - 1, day) - BASE_UTC) / 864e5);
+  if (offset < 0) return null;
+  let i = 1900;
+  let temp = 0;
+  for (; i < 2101 && offset > 0; i++) {
+    temp = lunarYearDays(i);
+    offset -= temp;
+  }
+  if (offset < 0) {
+    offset += temp;
+    i--;
+  }
+  if (i > 2100) return null;
+  const lunarYear = i;
+  const leap = lunarLeapMonth(lunarYear);
+  let isLeap = false;
+  for (i = 1; i < 13 && offset > 0; i++) {
+    if (leap > 0 && i === leap + 1 && !isLeap) {
+      --i;
+      isLeap = true;
+      temp = lunarLeapDays(lunarYear);
+    } else {
+      temp = lunarMonthDays(lunarYear, i);
+    }
+    if (isLeap && i === leap + 1) isLeap = false;
+    offset -= temp;
+  }
+  if (offset === 0 && leap > 0 && i === leap + 1) {
+    if (isLeap) isLeap = false;
+    else {
+      isLeap = true;
+      --i;
+    }
+  }
+  if (offset < 0) {
+    offset += temp;
+    --i;
+  }
+  return { year: lunarYear, month: i, day: offset + 1, isLeap };
+}
+function qingmingDay(year) {
+  const y2 = year % 100;
+  return Math.floor(y2 * 0.2422 + 4.81) - Math.floor(y2 / 4);
+}
+var LUNAR_FESTIVALS = /* @__PURE__ */ new Map([
+  ["1-1", "\u6625\u8282"],
+  ["1-15", "\u5143\u5BB5\u8282"],
+  ["2-2", "\u9F99\u62AC\u5934"],
+  ["5-5", "\u7AEF\u5348\u8282"],
+  ["7-7", "\u4E03\u5915\u8282"],
+  ["7-15", "\u4E2D\u5143\u8282"],
+  ["8-15", "\u4E2D\u79CB\u8282"],
+  ["9-9", "\u91CD\u9633\u8282"],
+  ["12-8", "\u814A\u516B\u8282"]
+]);
+function ymdOf(year, month, day) {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+function lunarFestivalsFor(year, month) {
+  const result = /* @__PURE__ */ new Map();
+  const first = Date.UTC(year, month - 1, 1);
+  const last = Date.UTC(month === 12 ? year + 1 : year, month === 12 ? 0 : month, 1);
+  for (let t = first; t < last; t += 864e5) {
+    const d2 = new Date(t);
+    const ymd2 = ymdOf(d2.getUTCFullYear(), d2.getUTCMonth() + 1, d2.getUTCDate());
+    const lunar = solarToLunar(d2.getUTCFullYear(), d2.getUTCMonth() + 1, d2.getUTCDate());
+    if (lunar === null) continue;
+    const name = LUNAR_FESTIVALS.get(`${lunar.month}-${lunar.day}`);
+    if (name !== void 0 && !lunar.isLeap) result.set(ymd2, name);
+    const next = new Date(t + 864e5);
+    const nextLunar = solarToLunar(next.getUTCFullYear(), next.getUTCMonth() + 1, next.getUTCDate());
+    if (nextLunar !== null && nextLunar.month === 1 && nextLunar.day === 1) result.set(ymd2, "\u9664\u5915");
+  }
+  return result;
+}
+
+// src/lib/festivals.js
+var FIXED_FESTIVALS = [
+  ["01-01", "\u5143\u65E6"],
+  ["02-14", "\u60C5\u4EBA\u8282"],
+  ["03-08", "\u5987\u5973\u8282"],
+  ["03-12", "\u690D\u6811\u8282"],
+  ["04-01", "\u611A\u4EBA\u8282"],
+  ["05-01", "\u52B3\u52A8\u8282"],
+  ["05-04", "\u9752\u5E74\u8282"],
+  ["05-12", "\u62A4\u58EB\u8282"],
+  ["06-01", "\u513F\u7AE5\u8282"],
+  ["06-18", "618"],
+  ["07-01", "\u5EFA\u515A\u8282"],
+  ["08-01", "\u5EFA\u519B\u8282"],
+  ["09-10", "\u6559\u5E08\u8282"],
+  ["10-01", "\u56FD\u5E86\u8282"],
+  ["10-31", "\u4E07\u5723\u591C"],
+  ["11-11", "\u53CC11"],
+  ["12-12", "\u53CC12"],
+  ["12-24", "\u5E73\u5B89\u591C"],
+  ["12-25", "\u5723\u8BDE\u8282"]
+];
+var FLOATING_FESTIVALS = [
+  [5, 2, 0, "\u6BCD\u4EB2\u8282"],
+  [6, 3, 0, "\u7236\u4EB2\u8282"],
+  [11, 4, 4, "\u611F\u6069\u8282"]
+];
+function ymdOf2(year, month, day) {
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+function floatingDate(year, month, nth, weekday) {
+  const first = new Date(year, month - 1, 1);
+  const offset = (weekday - first.getDay() + 7) % 7;
+  return 1 + offset + (nth - 1) * 7;
+}
+var computedYearCache = /* @__PURE__ */ new Map();
+function computedFestivalsForYear(year) {
+  const cached = computedYearCache.get(year);
+  if (cached) return cached;
+  const map = /* @__PURE__ */ new Map();
+  const push = (ymd2, name, kind) => {
+    const list = map.get(ymd2) || [];
+    if (!list.some((f) => f.name === name)) list.push({ name, kind });
+    map.set(ymd2, list);
+  };
+  for (const [mmdd, name] of FIXED_FESTIVALS) {
+    push(`${year}-${mmdd}`, name, "fixed");
+  }
+  for (const [month, nth, weekday, name] of FLOATING_FESTIVALS) {
+    push(ymdOf2(year, month, floatingDate(year, month, nth, weekday)), name, "fixed");
+  }
+  const qm = ymdOf2(year, 4, qingmingDay(year));
+  if (!(year in HOLIDAYS_CN) || !(qm in HOLIDAYS_CN[year])) push(qm, "\u6E05\u660E\u8282", "lunar");
+  for (let month = 1; month <= 12; month++) {
+    for (const [ymd2, name] of lunarFestivalsFor(year, month)) push(ymd2, name, "lunar");
+  }
+  computedYearCache.set(year, map);
+  return map;
+}
+function festivalsFor(year, month) {
+  const result = /* @__PURE__ */ new Map();
+  const days = new Date(year, month, 0).getDate();
+  const computed = computedFestivalsForYear(year);
+  const statutory = HOLIDAYS_CN[year] || {};
+  for (let day = 1; day <= days; day++) {
+    const ymd2 = ymdOf2(year, month, day);
+    const list = [];
+    const entry = statutory[ymd2];
+    if (entry) list.push({ name: entry[0], kind: entry[1] === 1 ? "statutory-rest" : "statutory-work" });
+    for (const f of computed.get(ymd2) || []) {
+      if (!list.some((x2) => x2.name === f.name)) list.push(f);
+    }
+    if (list.length > 0) result.set(ymd2, list);
+  }
+  return result;
+}
+
+// src/components/CalendarPage.tsx
+var import_jsx_runtime8 = require("react/jsx-runtime");
+var STATUS_META = {
+  idea: { label: "\u9009\u9898", color: "var(--text-tertiary)" },
+  draft: { label: "\u8349\u7A3F", color: "var(--layer-plan)" },
+  scheduled: { label: "\u5F85\u53D1", color: "var(--layer-attribute)" },
+  published: { label: "\u5DF2\u53D1", color: "var(--layer-publish)" }
+};
+var EVENT_COLOR = "var(--layer-discover)";
+var EVENT_TYPES = ["\u8282\u65E5", "\u7535\u5546", "\u5E73\u53F0\u6D3B\u52A8", "\u884C\u4E1A"];
+var SOURCE_LABEL = {
+  chat: "\u5BF9\u8BDD\u9875",
+  "publish-page": "\u53D1\u5E03\u9875",
+  manual: "\u624B\u52A8",
+  scheduler: "\u6392\u671F"
+};
+var PLATFORMS = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u5FAE\u4FE1\u89C6\u9891\u53F7", "\u5FEB\u624B", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
+var WEEKDAYS = ["\u4E00", "\u4E8C", "\u4E09", "\u56DB", "\u4E94", "\u516D", "\u65E5"];
+function ymd(d2) {
+  return `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, "0")}-${String(d2.getDate()).padStart(2, "0")}`;
+}
+var kindOf = (it) => it.kind === "event" ? "event" : "content";
+var MAX_VISIBLE = 3;
+var EMPTY2 = {
+  title: "",
+  date: "",
+  platform: "",
+  time: "",
+  status: "idea",
+  note: "",
+  kind: "content",
+  url: "",
+  source: "manual",
+  event_type: "",
+  end_date: "",
+  repeat: ""
+};
+function eventDates(ev) {
+  const [startDate, startTime] = ev.start.split(" ");
+  const [endDate, endTime] = (ev.end || ev.start).split(" ");
+  const cursor = /* @__PURE__ */ new Date(`${startDate}T00:00`);
+  const last = /* @__PURE__ */ new Date(`${endDate}T00:00`);
+  if (Number.isNaN(cursor.getTime()) || Number.isNaN(last.getTime())) return [startDate];
+  const endInclusive = startTime && endTime ? last : new Date(last.getTime() - 864e5);
+  const dates = [];
+  for (let d2 = new Date(cursor); d2.getTime() <= endInclusive.getTime() && dates.length < 62; d2.setDate(d2.getDate() + 1)) {
+    dates.push(ymd(d2));
+  }
+  return dates.length > 0 ? dates : [startDate];
+}
+function syncAgo(ts) {
+  if (!ts) return "\u672A\u540C\u6B65";
+  const s = Math.floor(Date.now() / 1e3) - ts;
+  if (s < 60) return "\u521A\u521A\u540C\u6B65";
+  if (s < 3600) return `${Math.floor(s / 60)} \u5206\u949F\u524D\u540C\u6B65`;
+  if (s < 86400) return `${Math.floor(s / 3600)} \u5C0F\u65F6\u524D\u540C\u6B65`;
+  return `${Math.floor(s / 86400)} \u5929\u524D\u540C\u6B65`;
+}
+function CalendarPage() {
+  const today = (0, import_react5.useMemo)(() => /* @__PURE__ */ new Date(), []);
+  const [cursor, setCursor] = (0, import_react5.useState)(() => new Date(today.getFullYear(), today.getMonth(), 1));
+  const [items, setItems] = (0, import_react5.useState)([]);
+  const [editing, setEditing] = (0, import_react5.useState)(null);
+  const [form, setForm] = (0, import_react5.useState)(null);
+  const [saving, setSaving] = (0, import_react5.useState)(false);
+  const [filter, setFilter] = (0, import_react5.useState)("all");
+  const [ctx, setCtx] = (0, import_react5.useState)(null);
+  const [showSuggest, setShowSuggest] = (0, import_react5.useState)(true);
+  const [dayView, setDayView] = (0, import_react5.useState)(null);
+  const [caldav, setCaldav] = (0, import_react5.useState)([]);
+  const [caldavByAccount, setCaldavByAccount] = (0, import_react5.useState)({});
+  const [subOpen, setSubOpen] = (0, import_react5.useState)(false);
+  const [subDraft, setSubDraft] = (0, import_react5.useState)(null);
+  const [subCals, setSubCals] = (0, import_react5.useState)(null);
+  const [subBusy, setSubBusy] = (0, import_react5.useState)("");
+  const [subError, setSubError] = (0, import_react5.useState)("");
+  const loadCaldav = (0, import_react5.useCallback)(() => {
+    fetchCaldavAccounts().then((r) => setCaldav(r.accounts)).catch(() => {
+    });
+    fetchCaldavEvents().then((r) => setCaldavByAccount(r.byAccount || {})).catch(() => {
+    });
+  }, []);
+  const load = (0, import_react5.useCallback)(() => {
+    fetchSchedule().then(setItems).catch(() => {
+    });
+    fetchScheduleContext(14).then(setCtx).catch(() => {
+    });
+    loadCaldav();
+  }, [loadCaldav]);
+  (0, import_react5.useEffect)(() => {
+    load();
+  }, [load]);
+  (0, import_react5.useEffect)(() => {
+    let cancelled = false;
+    fetchCaldavAccounts().then(async (r) => {
+      const stale = r.accounts.filter((a) => a.enabled && (!a.syncedAt || Date.now() / 1e3 - a.syncedAt > 86400));
+      if (cancelled || stale.length === 0) return;
+      await Promise.allSettled(stale.map((a) => syncCaldav(a.id)));
+      if (!cancelled) fetchCaldavEvents().then((res) => setCaldavByAccount(res.byAccount || {})).catch(() => {
+      });
+    }).catch(() => {
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const visible = (0, import_react5.useMemo)(
+    () => filter === "all" ? items : items.filter((it) => kindOf(it) === filter),
+    [items, filter]
+  );
+  const cells = (0, import_react5.useMemo)(() => {
+    const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+    const startOffset = (first.getDay() + 6) % 7;
+    const start = new Date(first);
+    start.setDate(1 - startOffset);
+    return Array.from({ length: 42 }, (_2, i) => {
+      const d2 = new Date(start);
+      d2.setDate(start.getDate() + i);
+      return d2;
+    });
+  }, [cursor]);
+  const festivalMap = (0, import_react5.useMemo)(() => {
+    const merged = /* @__PURE__ */ new Map();
+    for (const offset of [-1, 0, 1]) {
+      const anchor = new Date(cursor.getFullYear(), cursor.getMonth() + offset, 1);
+      for (const [ymd2, list] of festivalsFor(anchor.getFullYear(), anchor.getMonth() + 1)) {
+        if (!merged.has(ymd2)) merged.set(ymd2, list);
+      }
+    }
+    return merged;
+  }, [cursor]);
+  const byDate = (0, import_react5.useMemo)(() => {
+    const m2 = {};
+    const push = (date, it) => {
+      const bucket = m2[date] ||= { events: [], content: [] };
+      (kindOf(it) === "event" ? bucket.events : bucket.content).push(it);
+    };
+    for (const it of visible) {
+      if (it.repeat === "yearly" && /^\d{4}-\d{2}-\d{2}$/.test(it.date)) {
+        const [, mo, dd] = it.date.split("-").map(Number);
+        for (const d2 of cells) {
+          if (d2.getMonth() + 1 === mo && d2.getDate() === dd) push(ymd(d2), it);
+        }
+        continue;
+      }
+      push(it.date, it);
+    }
+    return m2;
+  }, [visible, cells]);
+  const caldavByDate = (0, import_react5.useMemo)(() => {
+    const m2 = {};
+    for (const [aid, bucket] of Object.entries(caldavByAccount)) {
+      const acc = caldav.find((a) => a.id === aid);
+      if (!acc || !acc.enabled) continue;
+      for (const ev of bucket.events) {
+        for (const ds of eventDates(ev)) (m2[ds] ||= []).push({ ev, acc });
+      }
+    }
+    return m2;
+  }, [caldavByAccount, caldav]);
+  const [menu, setMenu] = (0, import_react5.useState)(null);
+  (0, import_react5.useEffect)(() => {
+    if (!menu) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setMenu(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menu]);
+  const openNew = (date) => {
+    setDayView(null);
+    setEditing(null);
+    setForm({ ...EMPTY2, date, kind: filter === "event" ? "event" : "content" });
+  };
+  const openEdit = (it) => {
+    setDayView(null);
+    setEditing(it);
+    setForm({ ...EMPTY2, ...it });
+  };
+  const close = () => {
+    setForm(null);
+    setEditing(null);
+  };
+  const renderChip = (it) => {
+    if (kindOf(it) === "event") {
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+        "div",
+        {
+          className: "cal-event is-event",
+          title: it.event_type ? `${it.event_type}\xB7${it.title}` : it.title,
+          style: { ["--ev"]: EVENT_COLOR },
+          onClick: (e) => {
+            e.stopPropagation();
+            openEdit(it);
+          },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-title", children: it.title })
+          ]
+        },
+        it.id
+      );
+    }
+    return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+      "div",
+      {
+        className: "cal-event",
+        title: it.title,
+        style: { ["--ev"]: STATUS_META[it.status]?.color || "var(--text-tertiary)" },
+        onClick: (e) => {
+          e.stopPropagation();
+          openEdit(it);
+        },
+        children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-event-title", children: [
+            it.platform ? `[${it.platform}${it.accountName ? `\xB7${it.accountName}` : ""}] ` : "",
+            it.title
+          ] }),
+          it.status === "published" && it.source && SOURCE_LABEL[it.source] && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: SOURCE_LABEL[it.source] })
+        ]
+      },
+      it.id
+    );
+  };
+  const renderCaldavChip = (ev, acc, ds) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+    "div",
+    {
+      className: "cal-event is-caldav",
+      title: `${acc.name} \xB7 ${ev.title}`,
+      style: { ["--ev"]: acc.color || "var(--text-tertiary)" },
+      onClick: (e) => {
+        e.stopPropagation();
+        setDayView(ds);
+      },
+      children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-title", children: ev.title })
+      ]
+    },
+    `cd-${ev.uid}-${ev.start}`
+  );
+  const save = async () => {
+    if (!form || !form.title.trim() || !form.date) return;
+    setSaving(true);
+    try {
+      if (editing) await updateSchedule(editing.id, form);
+      else await createSchedule(form);
+      close();
+      load();
+    } finally {
+      setSaving(false);
+    }
+  };
+  const remove = async () => {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      await deleteSchedule(editing.id);
+      close();
+      load();
+    } finally {
+      setSaving(false);
+    }
+  };
+  const monthLabel = `${cursor.getFullYear()} \u5E74 ${cursor.getMonth() + 1} \u6708`;
+  const shift = (n) => setCursor((c) => new Date(c.getFullYear(), c.getMonth() + n, 1));
+  const todayStr = ymd(today);
+  const isEvent = form?.kind === "event";
+  const suggestions = ctx?.suggestions || [];
+  return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-scroll calendar-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "page-head", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h1", { className: "page-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconCalendar, { size: 21 }),
+          " \u5185\u5BB9\u65E5\u5386"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("p", { className: "page-subtitle", children: "\u6BCF\u5929\u5404\u5E73\u53F0\u53D1\u4EC0\u4E48\u4E00\u76EE\u4E86\u7136\u2014\u2014\u53D1\u5E03\u81EA\u52A8\u843D\u5E93\uFF0C\u53EF\u8BB0\u5F55\u6392\u671F\u4E0E\u5E73\u53F0\u6D3B\u52A8\u3002" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-nav", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(-1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { style: { transform: "rotate(180deg)", display: "inline-flex" }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => setCursor(new Date(today.getFullYear(), today.getMonth(), 1)), children: "\u672C\u6708" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-month", children: monthLabel }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => shift(1), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconChevron, { size: 14 }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => {
+          setSubOpen(true);
+          setSubError("");
+        }, children: "\u{1F4C5} \u8BA2\u9605" })
+      ] })
+    ] }),
+    showSuggest && suggestions.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-suggest-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { children: [
+          "\u{1F4C5} \u65E5\u5386\u5EFA\u8BAE\uFF08\u8FD1 ",
+          ctx?.window_days ?? 14,
+          " \u5929\uFF09"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setShowSuggest(false), children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("ul", { children: suggestions.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("li", { children: s }, i)) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-legend", children: [
+      Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch", style: { ["--sw"]: m2.color } }),
+        m2.label
+      ] }, k2)),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: EVENT_COLOR } }),
+        "\u5E73\u53F0\u6D3B\u52A8"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival rest", children: "\u4F11" }),
+        "\u6CD5\u5B9A\u8282\u5047\u65E5"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival work", children: "\u73ED" }),
+        "\u8C03\u4F11\u4E0A\u73ED"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-legend-item", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: "var(--cal-festival)" } }),
+        "\u8282\u65E5"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-legend-filter", children: ["all", "content", "event"].map((f) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: `chip ${filter === f ? "active" : ""}`, onClick: () => setFilter(f), children: f === "all" ? "\u5168\u90E8" : f === "content" ? "\u5185\u5BB9" : "\u6D3B\u52A8" }, f)) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid-head", children: WEEKDAYS.map((w2) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-wd", children: [
+      "\u5468",
+      w2
+    ] }, w2)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-grid", children: cells.map((d2, i) => {
+      const ds = ymd(d2);
+      const inMonth = d2.getMonth() === cursor.getMonth();
+      const bucket = byDate[ds] || { events: [], content: [] };
+      const dayChips = [
+        ...bucket.events.map((it) => ({ kind: "item", it })),
+        ...(caldavByDate[ds] || []).map(({ ev, acc }) => ({ kind: "caldav", ev, acc })),
+        ...bucket.content.map((it) => ({ kind: "item", it }))
+      ];
+      const shown = dayChips.slice(0, MAX_VISIBLE);
+      const hidden = dayChips.length - shown.length;
+      const fests = festivalMap.get(ds) || [];
+      const rest = fests.find((f) => f.kind === "statutory-rest");
+      const work = fests.find((f) => f.kind === "statutory-work");
+      const allFestNames = fests.filter((f) => f.kind !== "statutory-rest" && f.kind !== "statutory-work").map((f) => f.name);
+      const festNames = allFestNames.slice(0, 2);
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+        "div",
+        {
+          className: `cal-cell ${inMonth ? "" : "dim"} ${ds === todayStr ? "today" : ""}`,
+          onClick: () => dayChips.length ? setDayView(ds) : openNew(ds),
+          onContextMenu: (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setMenu({ x: e.clientX, y: e.clientY, ds });
+          },
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-daynum-row", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-daynum", children: d2.getDate() }),
+              rest && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival rest", title: rest.name, children: "\u4F11" }),
+              work && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-festival work", title: work.name, children: "\u73ED" })
+            ] }),
+            festNames.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-festnames", title: allFestNames.join(" \xB7 "), children: festNames.join(" \xB7 ") }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-events", children: [
+              shown.map((chip) => chip.kind === "item" ? renderChip(chip.it) : renderCaldavChip(chip.ev, chip.acc, ds)),
+              hidden > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "cal-more", onClick: (e) => {
+                e.stopPropagation();
+                setDayView(ds);
+              }, children: [
+                "+",
+                hidden,
+                " \u66F4\u591A"
+              ] })
+            ] })
+          ]
+        },
+        i
+      );
+    }) }),
+    menu && (() => {
+      const customFests = (byDate[menu.ds]?.events || []).filter((it) => it.event_type === "\u8282\u65E5" && it.source === "manual");
+      const openWith = (preset) => {
+        setMenu(null);
+        setDayView(null);
+        setEditing(null);
+        setForm({ ...EMPTY2, date: menu.ds, ...preset });
+      };
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        "div",
+        {
+          className: "overlay is-menu",
+          onClick: () => setMenu(null),
+          onContextMenu: (e) => {
+            e.preventDefault();
+            setMenu(null);
+          },
+          children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+            "div",
+            {
+              className: "cal-menu",
+              style: { left: Math.min(menu.x, window.innerWidth - 200), top: Math.min(menu.y, window.innerHeight - 170) },
+              onClick: (e) => e.stopPropagation(),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { onClick: () => openWith({ kind: "event", event_type: "\u8282\u65E5", status: "idea" }), children: "\u{1F389} \u6DFB\u52A0\u8282\u65E5\u2026" }),
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { onClick: () => openWith({ kind: "event", status: "idea" }), children: "\u{1F4E3} \u6DFB\u52A0\u5E73\u53F0\u6D3B\u52A8\u2026" }),
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { onClick: () => openWith({ kind: "content" }), children: "\u{1F4DD} \u6DFB\u52A0\u6392\u671F\u2026" }),
+                customFests.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-menu-sep" }),
+                customFests.map((it) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+                  "button",
+                  {
+                    className: "cal-menu-del",
+                    title: it.repeat === "yearly" ? "\u6BCF\u5E74\u91CD\u590D" : void 0,
+                    onClick: async () => {
+                      setMenu(null);
+                      await deleteSchedule(it.id);
+                      load();
+                    },
+                    children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { children: [
+                        "\u5220\u9664\u300C",
+                        it.title,
+                        "\u300D"
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconTrash, { size: 13 })
+                    ]
+                  },
+                  it.id
+                ))
+              ]
+            }
+          )
+        }
+      );
+    })(),
+    dayView && (() => {
+      const b2 = byDate[dayView] || { events: [], content: [] };
+      const list = [...b2.events, ...b2.content];
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: () => setDayView(null), children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
+            dayView,
+            "\uFF08",
+            list.length,
+            " \u9879\uFF09"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => setDayView(null), children: "\xD7" })
+        ] }),
+        (festivalMap.get(dayView) || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-fest-day", children: (festivalMap.get(dayView) || []).map((f, i) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: `cal-festival-tag is-${f.kind}`, children: f.name }, i)) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-dayview-list", children: [
+          list.map(renderChip),
+          (caldavByDate[dayView] || []).map(({ ev, acc }) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(
+            "div",
+            {
+              className: "cal-event is-caldav",
+              title: ev.location ? `${acc.name} \xB7 ${ev.location}` : acc.name,
+              style: { ["--ev"]: acc.color || "var(--text-tertiary)" },
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-event-dot" }),
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("span", { className: "cal-event-title", children: [
+                  ev.allDay ? "\u5168\u5929" : ev.start.slice(11, 16),
+                  " \xB7 ",
+                  ev.title,
+                  ev.location ? ` @${ev.location}` : ""
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: acc.name })
+              ]
+            },
+            `cd-${ev.uid}-${ev.start}`
+          ))
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: () => openNew(dayView), children: "+ \u65B0\u589E" }) })
+      ] }) });
+    })(),
+    subOpen && (() => {
+      const newDraft = () => ({
+        id: Math.random().toString(16).slice(2, 14),
+        name: "",
+        url: "",
+        username: "",
+        password: "",
+        enabled: true,
+        calendars: []
+      });
+      const startEdit = (acc) => {
+        setSubDraft(acc ? { ...acc, password: "" } : newDraft());
+        setSubCals(null);
+        setSubError("");
+      };
+      const persist = async (accounts) => {
+        setSubBusy("save");
+        setSubError("");
+        try {
+          await putCaldavAccounts(accounts);
+          loadCaldav();
+        } catch (e) {
+          setSubError(e.message || String(e));
+        } finally {
+          setSubBusy("");
+        }
+      };
+      const syncOne = async (acc) => {
+        setSubBusy(acc.id);
+        setSubError("");
+        try {
+          await syncCaldav(acc.id);
+          loadCaldav();
+        } catch (e) {
+          setSubError(e.message || String(e));
+        } finally {
+          setSubBusy("");
+        }
+      };
+      const saveDraft = async () => {
+        if (!subDraft) return;
+        await persist(caldav.some((a) => a.id === subDraft.id) ? caldav.map((a) => a.id === subDraft.id ? subDraft : a) : [...caldav, subDraft]);
+        setSubDraft(null);
+        setSubCals(null);
+      };
+      const probe = async () => {
+        if (!subDraft) return;
+        setSubBusy("probe");
+        setSubError("");
+        try {
+          await putCaldavAccounts(caldav.some((a) => a.id === subDraft.id) ? caldav.map((a) => a.id === subDraft.id ? subDraft : a) : [...caldav, subDraft]);
+          const res = await discoverCaldav(subDraft.id, {
+            url: subDraft.url,
+            username: subDraft.username,
+            password: subDraft.password || void 0
+          });
+          setSubCals(res.calendars);
+          loadCaldav();
+        } catch (e) {
+          setSubError(e.message || String(e));
+        } finally {
+          setSubBusy("");
+        }
+      };
+      return /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: () => {
+        setSubOpen(false);
+        setSubDraft(null);
+        setSubCals(null);
+      }, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 540, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("h3", { style: { margin: 0 }, children: "\u{1F4C5} \u8BA2\u9605\u65E5\u5386\uFF08CalDAV\uFF09" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: () => {
+            setSubOpen(false);
+            setSubDraft(null);
+            setSubCals(null);
+          }, children: "\xD7" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("p", { className: "cal-sub-hint", children: "\u53EA\u8BFB\u5BFC\u5165 iCloud / Fastmail / Nextcloud \u7B49\u6807\u51C6 CalDAV \u65E5\u5386\u3002\u586B\u670D\u52A1\u5668\u5730\u5740\u53EF\u81EA\u52A8\u53D1\u73B0\uFF0C\u4E5F\u53EF\u76F4\u63A5\u7C98\u8D34\u65E5\u5386 URL\uFF1B \u5BC6\u7801\u7528\u5404\u670D\u52A1\u7684\u300C\u5E94\u7528\u4E13\u7528\u5BC6\u7801\u300D\u3002Google \u65E5\u5386\u9700 OAuth\uFF0C\u6682\u4E0D\u652F\u6301\u3002" }),
+        caldav.map((acc) => /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-row", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-sub-dot", style: { ["--ev"]: acc.color || "var(--text-tertiary)" } }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-main", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { fontWeight: 600 }, children: [
+              acc.name,
+              !acc.enabled && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", { className: "cal-src", children: "\uFF08\u5DF2\u505C\u7528\uFF09" })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-url", children: [
+              acc.url,
+              acc.username ? ` \xB7 ${acc.username}` : ""
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-src", children: [
+              syncAgo(acc.syncedAt),
+              caldavByAccount[acc.id] ? ` \xB7 ${caldavByAccount[acc.id].events.length} \u6761\u4E8B\u4EF6` : "",
+              acc.calendars.length > 0 ? ` \xB7 ${acc.calendars.length} \u4E2A\u65E5\u5386` : ""
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "cal-repeat", style: { margin: 0 }, title: "\u542F\u7528/\u505C\u7528", children: /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              type: "checkbox",
+              checked: acc.enabled,
+              onChange: (e) => persist(caldav.map((a) => a.id === acc.id ? { ...a, enabled: e.target.checked } : a))
+            }
+          ) }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", disabled: subBusy !== "", onClick: () => syncOne(acc), children: subBusy === acc.id ? "\u540C\u6B65\u4E2D\u2026" : "\u540C\u6B65" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => startEdit(acc), children: "\u7F16\u8F91" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-danger", onClick: () => persist(caldav.filter((a) => a.id !== acc.id)), children: "\u5220\u9664" })
+        ] }, acc.id)),
+        !subDraft && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => startEdit(null), children: "+ \u6DFB\u52A0\u8D26\u53F7" }),
+        subDraft && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "cal-sub-form", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u540D\u79F0" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              value: subDraft.name,
+              placeholder: "iCloud / \u516C\u53F8\u65E5\u5386\u2026",
+              onChange: (e) => setSubDraft({ ...subDraft, name: e.target.value })
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u670D\u52A1\u5668\u6216\u65E5\u5386 URL *" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              value: subDraft.url,
+              autoFocus: true,
+              placeholder: "https://caldav.icloud.com/ \u6216\u5B8C\u6574\u65E5\u5386 URL",
+              onChange: (e) => setSubDraft({ ...subDraft, url: e.target.value })
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 10 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7528\u6237\u540D" }),
+              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+                "input",
+                {
+                  className: "field",
+                  value: subDraft.username,
+                  onChange: (e) => setSubDraft({ ...subDraft, username: e.target.value })
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5E94\u7528\u4E13\u7528\u5BC6\u7801" }),
+              /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+                "input",
+                {
+                  className: "field",
+                  type: "password",
+                  value: subDraft.password,
+                  placeholder: caldav.some((a) => a.id === subDraft.id) ? "\u5DF2\u4FDD\u5B58\uFF08\u7559\u7A7A\u4E0D\u6539\uFF09" : "",
+                  onChange: (e) => setSubDraft({ ...subDraft, password: e.target.value })
+                }
+              )
+            ] })
+          ] }),
+          subCals !== null && /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("label", { className: "field-label", children: [
+              "\u9009\u62E9\u8981\u8BA2\u9605\u7684\u65E5\u5386\uFF08",
+              subCals.length,
+              " \u4E2A\uFF1B\u4E0D\u9009\u5219\u8BA2\u9605\u586B\u5199\u7684 URL\uFF09"
+            ] }),
+            subCals.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-src", children: "\u672A\u53D1\u73B0\u65E5\u5386" }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: subCals.map((cal) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+              "button",
+              {
+                className: `chip ${subDraft.calendars.includes(cal.href) ? "active" : ""}`,
+                title: cal.href,
+                onClick: () => setSubDraft({
+                  ...subDraft,
+                  calendars: subDraft.calendars.includes(cal.href) ? subDraft.calendars.filter((h) => h !== cal.href) : [...subDraft.calendars, cal.href]
+                }),
+                children: cal.displayname
+              },
+              cal.href
+            )) })
+          ] }),
+          subError && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "cal-sub-error", children: subError }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 14 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: () => {
+              setSubDraft(null);
+              setSubCals(null);
+            }, children: "\u53D6\u6D88" }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", disabled: subBusy !== "" || !/^https?:\/\//i.test(subDraft.url), onClick: probe, children: subBusy === "probe" ? "\u63A2\u6D4B\u4E2D\u2026" : "\u63A2\u6D4B\u65E5\u5386" }),
+            /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", disabled: subBusy !== "" || !subDraft.url.trim(), onClick: saveDraft, children: subBusy === "save" ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58" })
+          ] })
+        ] })
+      ] }) });
+    })(),
+    form && /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { className: "overlay", onClick: close, children: /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { className: "modal", style: { width: 440, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("h3", { style: { margin: 0 }, children: [
+          editing ? "\u7F16\u8F91" : "\u65B0\u589E",
+          isEvent ? "\u5E73\u53F0\u6D3B\u52A8" : "\u6392\u671F"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "icon-btn", onClick: close, children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7C7B\u578B" }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 7 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${!isEvent ? "active" : ""}`,
+            onClick: () => setForm({ ...form, kind: "content" }),
+            children: "\u5185\u5BB9 / \u53D1\u5E03"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${isEvent ? "active" : ""}`,
+            onClick: () => setForm({ ...form, kind: "event", status: "idea" }),
+            children: "\u5E73\u53F0\u6D3B\u52A8"
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6807\u9898 *" }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        "input",
+        {
+          className: "field",
+          value: form.title,
+          autoFocus: true,
+          placeholder: isEvent ? "\u6D3B\u52A8/\u8282\u70B9\u540D\u79F0" : "\u8981\u53D1\u4EC0\u4E48\u5185\u5BB9",
+          onChange: (e) => setForm({ ...form, title: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 10 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: isEvent ? "\u5F00\u59CB\u65E5\u671F *" : "\u65E5\u671F *" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              type: "date",
+              value: form.date,
+              onChange: (e) => setForm({ ...form, date: e.target.value })
+            }
+          )
+        ] }),
+        isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { flex: 1 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u7ED3\u675F\u65E5\u671F" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              type: "date",
+              value: form.end_date || "",
+              onChange: (e) => setForm({ ...form, end_date: e.target.value })
+            }
+          )
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { width: 120 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u65F6\u95F4" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              className: "field",
+              type: "time",
+              value: form.time,
+              onChange: (e) => setForm({ ...form, time: e.target.value })
+            }
+          )
+        ] })
+      ] }),
+      isEvent ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u6D3B\u52A8\u7C7B\u578B" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: EVENT_TYPES.map((t) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.event_type === t ? "active" : ""}`,
+            onClick: () => setForm({ ...form, event_type: form.event_type === t ? "" : t }),
+            children: t
+          },
+          t
+        )) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5173\u8054\u5E73\u53F0\uFF08\u53EF\u9009\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.platform === p ? "active" : ""}`,
+            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
+            children: p
+          },
+          p
+        )) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("label", { className: "cal-repeat", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+            "input",
+            {
+              type: "checkbox",
+              checked: form.repeat === "yearly",
+              onChange: (e) => setForm({ ...form, repeat: e.target.checked ? "yearly" : "" })
+            }
+          ),
+          "\u6BCF\u5E74\u91CD\u590D\uFF08\u540C\u6708\u540C\u65E5\u81EA\u52A8\u51FA\u73B0\u5728\u6BCF\u4E00\u5E74\uFF09"
+        ] })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)(import_jsx_runtime8.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5E73\u53F0" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 7 }, children: PLATFORMS.map((p) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.platform === p ? "active" : ""}`,
+            onClick: () => setForm({ ...form, platform: form.platform === p ? "" : p }),
+            children: p
+          },
+          p
+        )) }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u72B6\u6001" }),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("div", { style: { display: "flex", gap: 7 }, children: Object.entries(STATUS_META).map(([k2, m2]) => /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+          "button",
+          {
+            className: `chip ${form.status === k2 ? "active" : ""}`,
+            onClick: () => setForm({ ...form, status: k2 }),
+            children: m2.label
+          },
+          k2
+        )) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("label", { className: "field-label", children: "\u5907\u6CE8" }),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(
+        "textarea",
+        {
+          className: "field",
+          style: { minHeight: 60 },
+          value: form.note,
+          onChange: (e) => setForm({ ...form, note: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 18 }, children: [
+        editing ? /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("button", { className: "btn btn-sm btn-danger", onClick: remove, disabled: saving, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)(IconTrash, { size: 13 }),
+          " \u5220\u9664"
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("span", {}),
+        /* @__PURE__ */ (0, import_jsx_runtime8.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm", onClick: close, children: "\u53D6\u6D88" }),
+          /* @__PURE__ */ (0, import_jsx_runtime8.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: saving || !form.title.trim() || !form.date, children: saving ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58" })
+        ] })
+      ] })
+    ] }) })
+  ] });
+}
+
+// src/features/calendar.tsx
+var import_jsx_runtime9 = require("react/jsx-runtime");
+var view4 = "calendar";
+var order4 = 34;
+var labels4 = { zh: "\u5185\u5BB9\u65E5\u5386", en: "Calendar" };
+var Icon4 = IconCalendar;
+var Component4 = CalendarPage;
+var plugin4 = {
+  name: "easel-view-calendar",
+  inject: ["slots", "easelShell"],
+  apply(ctx) {
+    const { useShellProps, t } = ctx.easelShell;
+    ctx.slots.inject("main", () => ctx.slots.register({
+      name: "main",
+      key: pageKey(view4),
+      inject: () => ({})
+    }, function EaselPage() {
+      const props = useShellProps();
+      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Component4, { ...props }) });
+    }));
+    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
+      name: "sidebar.panellist",
+      id: pageKey(view4),
+      order: order4,
+      locale: "easel.panel",
+      label: () => t(view4)
+    }, function EaselRailIcon({ size }) {
+      return /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(Icon4, { size });
+    }));
+  }
+};
+
+// src/features/schedules.tsx
+var schedules_exports = {};
+__export(schedules_exports, {
+  Component: () => Component5,
+  Icon: () => Icon5,
+  labels: () => labels5,
+  order: () => order5,
+  plugin: () => plugin5,
+  view: () => view5
+});
+
+// src/components/SchedulesPage.tsx
+var import_react6 = require("react");
+var import_jsx_runtime10 = require("react/jsx-runtime");
+var TIMING_KINDS = [
+  { key: "at", label: "\u4EC5\u4E00\u6B21" },
+  { key: "daily", label: "\u6BCF\u5929" },
+  { key: "weekly", label: "\u6BCF\u5468" },
+  { key: "every", label: "\u6BCF N \u5C0F\u65F6/\u5206\u949F" }
+];
+var WEEKDAYS2 = [
+  { value: 1, label: "\u4E00" },
+  { value: 2, label: "\u4E8C" },
+  { value: 3, label: "\u4E09" },
+  { value: 4, label: "\u56DB" },
+  { value: 5, label: "\u4E94" },
+  { value: 6, label: "\u516D" },
+  { value: 7, label: "\u65E5" }
+];
+var EMPTY_TIMING = { kind: "daily", date: "", time: "09:00", weekdays: [1, 2, 3, 4, 5], value: 1, unit: "hour" };
+var localZone = () => Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+var pad = (n) => String(n).padStart(2, "0");
+var hhmm = (time) => {
+  const match = /^(\d{2}:\d{2})/.exec(String(time ?? ""));
+  return match === null ? void 0 : match[1];
+};
+var freqLine = (e) => {
+  if (e.kind === "at" || e.kind === "after") return "\u4EC5\u4E00\u6B21";
+  if (e.kind === "every") {
+    const s = e.everySeconds ?? 0;
+    if (s % 3600 === 0) return `\u6BCF ${s / 3600} \u5C0F\u65F6`;
+    return `\u6BCF ${Math.ceil(s / 60)} \u5206\u949F`;
+  }
+  if (e.kind === "daily") return `\u6BCF\u5929 ${hhmm(e.time) ?? ""}`.trim();
+  if (e.kind === "weekly") return `\u6BCF\u5468${(e.weekdays ?? []).map((d2) => WEEKDAYS2[d2 - 1]?.label ?? "").join("\u3001")} ${hhmm(e.time) ?? ""}`.trim();
+  return "\u81EA\u5B9A\u4E49\u65F6\u673A";
+};
+var relativeNext = (scheduledAt) => {
+  const diff = Date.parse(scheduledAt) - Date.now();
+  if (Number.isNaN(diff)) return "";
+  if (diff <= 0) return "\u5373\u5C06\u6267\u884C";
+  const min = Math.round(diff / 6e4);
+  if (min < 60) return `${Math.max(1, min)} \u5206\u949F\u540E`;
+  const hours = Math.round(min / 60);
+  if (hours < 24) return `${hours} \u5C0F\u65F6\u540E`;
+  return `${Math.round(hours / 24)} \u5929\u540E`;
+};
+var absoluteShort = (scheduledAt) => {
+  const d2 = new Date(scheduledAt);
+  if (Number.isNaN(d2.getTime())) return "";
+  return `${pad(d2.getMonth() + 1)}-${pad(d2.getDate())} ${pad(d2.getHours())}:${pad(d2.getMinutes())}`;
+};
+var timingToChange = (t, timeZone) => {
+  const time = /^(\d{1,2}):(\d{2})$/.exec(t.time.trim()) !== null ? `${t.time.trim()}:00` : t.time.trim();
+  if (t.kind === "at") return { kind: "at", at: { date: t.date, time, time_zone: timeZone } };
+  if (t.kind === "daily") return { kind: "daily", daily: { time, time_zone: timeZone } };
+  if (t.kind === "weekly") return { kind: "weekly", weekly: { time, weekdays: [...t.weekdays].sort((a, b2) => a - b2), time_zone: timeZone } };
+  return { kind: "every", every_seconds: t.value * (t.unit === "hour" ? 3600 : 60) };
+};
+var timingFromRecord = (e) => {
+  const local = new Date(e.scheduledAt);
+  const time = hhmm(e.time) ?? (Number.isNaN(local.getTime()) ? "09:00" : `${pad(local.getHours())}:${pad(local.getMinutes())}`);
+  if (e.kind === "daily") return { ...EMPTY_TIMING, kind: "daily", time };
+  if (e.kind === "weekly") return { ...EMPTY_TIMING, kind: "weekly", time, weekdays: [...e.weekdays ?? [1]] };
+  if (e.kind === "every") {
+    const s = e.everySeconds ?? 3600;
+    return s >= 3600 ? { ...EMPTY_TIMING, kind: "every", value: Math.max(1, Math.round(s / 3600)), unit: "hour" } : { ...EMPTY_TIMING, kind: "every", value: Math.max(1, Math.round(s / 60)), unit: "minute" };
+  }
+  return {
+    ...EMPTY_TIMING,
+    kind: "at",
+    date: Number.isNaN(local.getTime()) ? "" : `${local.getFullYear()}-${pad(local.getMonth() + 1)}-${pad(local.getDate())}`,
+    time
+  };
+};
+var isEditableKind = (e) => e.kind !== "cron";
+function TimingFields({ draft, onChange }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "field-label", children: "\u65F6\u673A" }),
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { style: { display: "flex", gap: 7, flexWrap: "wrap" }, children: TIMING_KINDS.map((k2) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+      "button",
+      {
+        type: "button",
+        className: `chip ${draft.kind === k2.key ? "active" : ""}`,
+        onClick: () => onChange({ ...draft, kind: k2.key }),
+        children: k2.label
+      },
+      k2.key
+    )) }),
+    draft.kind === "at" && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 8 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { className: "field", type: "date", value: draft.date, onChange: (e) => onChange({ ...draft, date: e.target.value }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { className: "field", type: "time", value: draft.time, onChange: (e) => onChange({ ...draft, time: e.target.value }) })
+    ] }),
+    draft.kind === "daily" && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+      "input",
+      {
+        className: "field",
+        style: { marginTop: 8 },
+        type: "time",
+        value: draft.time,
+        onChange: (e) => onChange({ ...draft, time: e.target.value })
+      }
+    ),
+    draft.kind === "weekly" && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { style: { display: "flex", gap: 7, flexWrap: "wrap", marginTop: 8 }, children: WEEKDAYS2.map((d2) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+        "button",
+        {
+          type: "button",
+          className: `chip ${draft.weekdays.includes(d2.value) ? "active" : ""}`,
+          onClick: () => onChange({
+            ...draft,
+            weekdays: draft.weekdays.includes(d2.value) ? draft.weekdays.filter((w2) => w2 !== d2.value) : [...draft.weekdays, d2.value]
+          }),
+          children: d2.label
+        },
+        d2.value
+      )) }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+        "input",
+        {
+          className: "field",
+          style: { marginTop: 8 },
+          type: "time",
+          value: draft.time,
+          onChange: (e) => onChange({ ...draft, time: e.target.value })
+        }
+      )
+    ] }),
+    draft.kind === "every" && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { display: "flex", gap: 8, alignItems: "center", marginTop: 8 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+        "input",
+        {
+          className: "field",
+          style: { width: 90 },
+          type: "number",
+          min: 1,
+          value: Number.isFinite(draft.value) ? draft.value : 1,
+          onChange: (e) => onChange({ ...draft, value: Number(e.target.value) })
+        }
+      ),
+      ["hour", "minute"].map((u) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+        "button",
+        {
+          type: "button",
+          className: `chip ${draft.unit === u ? "active" : ""}`,
+          onClick: () => onChange({ ...draft, unit: u }),
+          children: u === "hour" ? "\u5C0F\u65F6" : "\u5206\u949F"
+        },
+        u
+      ))
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { marginTop: 6, fontSize: 12, color: "var(--text-secondary)" }, children: "\u5230\u70B9\u540E\uFF0C\u4EFB\u52A1\u5185\u5BB9\u4F1A\u4F5C\u4E3A\u4E00\u6761\u6D88\u606F\u53D1\u7ED9\u6240\u9009\u4F1A\u8BDD\u5E76\u81EA\u52A8\u6267\u884C\u3002" })
+  ] });
+}
+var TOOL_ERROR_ZH = {
+  invalid_prompt: "\u4EFB\u52A1\u5185\u5BB9\u4E3A\u7A7A\u3001\u8FC7\u957F\u6216\u542B\u9996\u5C3E\u7A7A\u767D",
+  invalid_selector: "\u65F6\u673A\u8BBE\u7F6E\u4E0D\u5B8C\u6574\u6216\u6709\u51B2\u7A81",
+  invalid_rule: "\u89C4\u5219\u53C2\u6570\u65E0\u6548",
+  invalid_time_zone: "\u65F6\u533A\u65E0\u6548",
+  not_future: "\u4E00\u6B21\u6027\u4EFB\u52A1\u5FC5\u987B\u9009\u62E9\u672A\u6765\u7684\u65E5\u671F\u65F6\u523B",
+  time_out_of_range: "\u65F6\u95F4\u8D85\u51FA\u53EF\u8BBE\u7F6E\u7684\u8303\u56F4",
+  frequency_too_high: "\u89E6\u53D1\u9891\u7387\u8FC7\u9AD8\uFF08\u6700\u5C0F\u95F4\u9694 1 \u5206\u949F\uFF09",
+  subagent_session: "\u5B50 agent \u4F1A\u8BDD\u4E0D\u80FD\u627F\u8F7D\u5B9A\u65F6\u4EFB\u52A1"
+};
+function SchedulesPage({
+  sessions,
+  workspaces,
+  subscribeChanged,
+  catalog,
+  updateTask,
+  deleteTask,
+  history
+}) {
+  const [entries2, setEntries] = (0, import_react6.useState)([]);
+  const [loading, setLoading] = (0, import_react6.useState)(true);
+  const [error, setError] = (0, import_react6.useState)("");
+  const [filter, setFilter] = (0, import_react6.useState)("all");
+  const [query, setQuery] = (0, import_react6.useState)("");
+  const [toast, setToast] = (0, import_react6.useState)("");
+  const [form, setForm] = (0, import_react6.useState)(null);
+  const [rosterList, setRosterList] = (0, import_react6.useState)([]);
+  const [detail, setDetail] = (0, import_react6.useState)(null);
+  const [detailBusy, setDetailBusy] = (0, import_react6.useState)(false);
+  const [editingTiming, setEditingTiming] = (0, import_react6.useState)(null);
+  const [confirmingDelete, setConfirmingDelete] = (0, import_react6.useState)(false);
+  const [records, setRecords] = (0, import_react6.useState)([]);
+  const [recordsError, setRecordsError] = (0, import_react6.useState)("");
+  const [recordsCursor, setRecordsCursor] = (0, import_react6.useState)(void 0);
+  const [recordsDone, setRecordsDone] = (0, import_react6.useState)(true);
+  const [sessionsTick, bumpSessions] = (0, import_react6.useReducer)((x2) => x2 + 1, 0);
+  const [, setTick] = (0, import_react6.useState)(0);
+  const showToast = (m2) => {
+    setToast(m2);
+    setTimeout(() => setToast(""), 2400);
+  };
+  const load = (0, import_react6.useCallback)(async () => {
+    setLoading(true);
+    try {
+      const read = catalog;
+      if (read === void 0) throw new Error("\u4EFB\u52A1\u6570\u636E\u4E0D\u53EF\u8FBE\uFF08\u8C03\u5EA6\u8FDC\u7AEF\u672A\u8FDE\u63A5\uFF09");
+      const res = await read();
+      if (res?.ok === true && Array.isArray(res.value)) {
+        setEntries(res.value);
+        setError("");
+        return res.value;
+      }
+      throw new Error(res?.error?.message ?? "\u65E0\u6CD5\u52A0\u8F7D\u4EFB\u52A1");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "\u65E0\u6CD5\u52A0\u8F7D\u4EFB\u52A1");
+      return void 0;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  (0, import_react6.useEffect)(() => {
+    void load();
+  }, [load]);
+  (0, import_react6.useEffect)(() => {
+    if (subscribeChanged === void 0) return void 0;
+    return subscribeChanged(() => {
+      void load();
+    });
+  }, [subscribeChanged, load]);
+  (0, import_react6.useEffect)(() => {
+    const timer = setInterval(() => setTick((x2) => x2 + 1), 3e4);
+    return () => clearInterval(timer);
+  }, []);
+  (0, import_react6.useEffect)(() => {
+    const unsub = sessions?.list?.subscribe?.(() => bumpSessions());
+    return typeof unsub === "function" ? unsub : void 0;
+  }, [sessions]);
+  const sessionOptions = (0, import_react6.useMemo)(() => {
+    const wsSnap = workspaces?.list?.getSnapshot?.();
+    const sSnap = sessions?.list?.getSnapshot?.();
+    const archived = new Set(wsSnap?.archivedSessionIds ?? []);
+    return (sSnap?.ids ?? []).filter((id) => !archived.has(id)).map((id) => ({ id, title: sSnap?.byId?.[id]?.title?.trim() || id }));
+  }, [sessions, workspaces, sessionsTick]);
+  const filtered = (0, import_react6.useMemo)(() => entries2.filter((e) => {
+    if (filter !== "all" && e.status !== filter) return false;
+    if (query.trim() === "") return true;
+    const q2 = query.trim().toLowerCase();
+    return e.title.toLowerCase().includes(q2) || e.prompt.toLowerCase().includes(q2);
+  }), [entries2, filter, query]);
+  const nextUp = (0, import_react6.useMemo)(() => entries2.find((e) => e.status === "active"), [entries2]);
+  const submitCreate = async () => {
+    if (form === null || detailBusy) return;
+    if (!form.title.trim()) {
+      showToast("\u4EFB\u52A1\u540D\u79F0\u5FC5\u586B");
+      return;
+    }
+    if (form.title.trim().length > 120) {
+      showToast("\u4EFB\u52A1\u540D\u79F0\u4E0D\u8D85\u8FC7 120 \u4E2A\u5B57\u7B26");
+      return;
+    }
+    if (!form.prompt.trim()) {
+      showToast("\u4EFB\u52A1\u5185\u5BB9\u5FC5\u586B");
+      return;
+    }
+    if (!form.sessionId) {
+      showToast("\u5FC5\u987B\u9009\u62E9\u76EE\u6807\u4F1A\u8BDD");
+      return;
+    }
+    if (form.timing.kind === "at") {
+      const due = /* @__PURE__ */ new Date(`${form.timing.date}T${form.timing.time}:00`);
+      if (!form.timing.date || !(due > /* @__PURE__ */ new Date())) {
+        showToast("\u4E00\u6B21\u6027\u4EFB\u52A1\u5FC5\u987B\u9009\u62E9\u672A\u6765\u7684\u65E5\u671F\u65F6\u523B");
+        return;
+      }
+    }
+    setDetailBusy(true);
+    try {
+      const linked = rosterList.find((a) => a.id === form.accountId);
+      const persona = linked?.persona ? `\uFF0C\u753B\u50CF\u300C${linked.persona}\u300D` : "";
+      const promptBody = linked === void 0 ? form.prompt.trim() : `${form.prompt.trim()}
+
+\u76EE\u6807\u8D26\u53F7\uFF1A${platformLabel(linked.platform)}\u300C${linked.name}\u300D\uFF08\u8D26\u53F7 id\uFF1A${linked.id}${persona}\uFF09`;
+      await createScheduledTask({
+        sessionId: form.sessionId,
+        title: form.title.trim(),
+        prompt: promptBody,
+        timeZone: localZone(),
+        timing: {
+          kind: form.timing.kind,
+          date: form.timing.date || void 0,
+          time: form.timing.time,
+          weekdays: form.timing.kind === "weekly" ? form.timing.weekdays : void 0,
+          value: form.timing.kind === "every" ? form.timing.value : void 0,
+          unit: form.timing.kind === "every" ? form.timing.unit : void 0
+        }
+      });
+      setForm(null);
+      showToast("\u5DF2\u521B\u5EFA\uFF1A\u5230\u70B9\u4F1A\u81EA\u52A8\u8FD0\u884C");
+      await load();
+    } catch (e) {
+      showToast(e instanceof Error ? e.message : "\u521B\u5EFA\u5931\u8D25");
+    } finally {
+      setDetailBusy(false);
+    }
+  };
+  const openDetail = (e) => {
+    setDetail(e);
+    setEditingTiming(null);
+    setConfirmingDelete(false);
+    setRecords([]);
+    setRecordsError("");
+    setRecordsCursor(void 0);
+    setRecordsDone(true);
+    void (async () => {
+      try {
+        const res = await history?.({ sessionId: e.sessionId, id: e.id, limit: 20 });
+        if (res?.ok !== true) throw new Error(res?.error?.message ?? "");
+        const value = res.value;
+        setRecords(value?.records ?? []);
+        setRecordsCursor(value?.nextBefore);
+        setRecordsDone(value?.nextBefore === void 0);
+        setRecordsError("");
+      } catch {
+        setRecordsDone(true);
+        setRecordsError("\u65E0\u6CD5\u52A0\u8F7D\u8FD0\u884C\u8BB0\u5F55");
+      }
+    })();
+  };
+  const loadMoreRecords = async () => {
+    const e = detail;
+    if (e === null || recordsCursor === void 0 || detailBusy) return;
+    setDetailBusy(true);
+    try {
+      const res = await history?.({ sessionId: e.sessionId, id: e.id, limit: 20, before: recordsCursor });
+      if (res?.ok !== true) throw new Error(res?.error?.message ?? "");
+      const value = res.value;
+      setRecords((cur) => [...cur, ...value?.records ?? []]);
+      setRecordsCursor(value?.nextBefore);
+      setRecordsDone(value?.nextBefore === void 0);
+      setRecordsError("");
+    } catch {
+      setRecordsDone(true);
+      setRecordsError("\u65E0\u6CD5\u52A0\u8F7D\u8FD0\u884C\u8BB0\u5F55");
+    } finally {
+      setDetailBusy(false);
+    }
+  };
+  const saveTiming = async () => {
+    const e = detail;
+    if (e === null || editingTiming === null || detailBusy) return;
+    if (editingTiming.kind === "at") {
+      const due = /* @__PURE__ */ new Date(`${editingTiming.date}T${editingTiming.time}:00`);
+      if (!editingTiming.date || !(due > /* @__PURE__ */ new Date())) {
+        showToast("\u4E00\u6B21\u6027\u4EFB\u52A1\u5FC5\u987B\u9009\u62E9\u672A\u6765\u7684\u65E5\u671F\u65F6\u523B");
+        return;
+      }
+    }
+    if (editingTiming.kind === "every" && (!Number.isSafeInteger(editingTiming.value) || editingTiming.value < 1)) {
+      showToast("\u95F4\u9694\u5FC5\u987B\u662F\u6B63\u6574\u6570");
+      return;
+    }
+    setDetailBusy(true);
+    try {
+      const call = updateTask;
+      if (call === void 0) throw new Error("\u66F4\u65B0\u901A\u9053\u4E0D\u53EF\u7528\uFF08\u8FDC\u7AEF\u5E73\u9762\u672A\u8FDE\u63A5\uFF09");
+      const res = await call({
+        sessionId: e.sessionId,
+        id: e.id,
+        expected: e,
+        change: timingToChange(editingTiming, e.timeZone || localZone())
+      });
+      if (res?.ok !== true) throw new Error(res?.error?.message ?? "\u65E0\u6CD5\u786E\u8BA4\u66F4\u65B0");
+      const value = res.value;
+      if (value?.updated === false) {
+        if (value.code === "schedule_conflict") showToast("\u4EFB\u52A1\u5DF2\u53D8\u5316\uFF0C\u8BF7\u5237\u65B0\u540E\u91CD\u8BD5");
+        else if (value.code === "schedule_ended") showToast("\u4EFB\u52A1\u5DF2\u7ED3\u675F\uFF0C\u65E0\u6CD5\u4FEE\u6539");
+        else showToast("\u4EFB\u52A1\u5DF2\u4E0D\u53EF\u7528");
+      } else if (value?.updated === true) {
+        setEditingTiming(null);
+        showToast("\u65F6\u673A\u5DF2\u66F4\u65B0");
+        const fresh = await load();
+        const freshEntry = fresh?.find((x2) => x2.id === e.id) ?? null;
+        if (freshEntry !== null) setDetail(freshEntry);
+      } else {
+        const code = typeof value?.code === "string" ? value.code : "";
+        showToast(TOOL_ERROR_ZH[code] ?? "\u65E0\u6CD5\u786E\u8BA4\u65F6\u673A\u66F4\u65B0");
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "\u66F4\u65B0\u5931\u8D25");
+    } finally {
+      setDetailBusy(false);
+    }
+  };
+  const remove = async (e) => {
+    if (detailBusy) return;
+    setDetailBusy(true);
+    try {
+      const call = deleteTask;
+      if (call === void 0) throw new Error("\u5220\u9664\u901A\u9053\u4E0D\u53EF\u7528\uFF08\u8FDC\u7AEF\u5E73\u9762\u672A\u8FDE\u63A5\uFF09");
+      const res = await call({ sessionId: e.sessionId, id: e.id });
+      if (res?.ok !== true) throw new Error(res?.error?.message ?? "\u65E0\u6CD5\u786E\u8BA4\u5220\u9664");
+      const value = res.value;
+      if (value?.deleted === true) {
+        showToast("\u4EFB\u52A1\u5DF2\u5220\u9664");
+        setDetail(null);
+        setConfirmingDelete(false);
+        await load();
+      } else if (value?.code === "schedule_not_found") {
+        showToast("\u4EFB\u52A1\u5DF2\u4E0D\u5B58\u5728");
+        setDetail(null);
+        await load();
+      } else {
+        showToast("\u5220\u9664\u672A\u751F\u6548\uFF0C\u8BF7\u91CD\u8BD5");
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "\u5220\u9664\u5931\u8D25");
+    } finally {
+      setDetailBusy(false);
+    }
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "page-scroll", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "page-head", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("h1", { className: "page-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconClock, { size: 21 }),
+          " \u5B9A\u65F6\u4EFB\u52A1"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "page-subtitle", children: "\u5230\u70B9\u81EA\u52A8\u628A\u4EFB\u52A1\u5185\u5BB9\u53D1\u7ED9\u6240\u9009\u4F1A\u8BDD\u2014\u2014\u6BCF\u65E5\u7B80\u62A5\u3001\u5468\u66F4\u521D\u7A3F\u3001\u7D20\u6750\u5DE1\u68C0\u90FD\u4EA4\u7ED9\u5B83\u3002" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("button", { className: "btn btn-sm btn-primary", onClick: () => {
+        void fetchRoster().then(setRosterList);
+        setForm({
+          title: "",
+          prompt: "",
+          timing: { ...EMPTY_TIMING },
+          sessionId: sessionOptions[0]?.id ?? "",
+          accountId: ""
+        });
+      }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconPlus, { size: 13 }),
+        " \u65B0\u5EFA\u4EFB\u52A1"
+      ] })
+    ] }),
+    nextUp !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "sch-strip accent", role: "status", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconClock, { size: 16 }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "sch-strip-label", children: "\u4E0B\u4E00\u6B21\u89E6\u53D1" }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "sch-strip-title", children: nextUp.title }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "sch-strip-relative", children: relativeNext(nextUp.scheduledAt) })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "sch-toolbar", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { style: { display: "flex", gap: 7 }, children: [["all", "\u5168\u90E8"], ["active", "\u5DF2\u5F00\u542F"], ["inactive", "\u5DF2\u7ED3\u675F"]].map(([key, label]) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+        "button",
+        {
+          className: `chip ${filter === key ? "active" : ""}`,
+          onClick: () => setFilter(key),
+          children: label
+        },
+        key
+      )) }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("input", { className: "field sch-search", value: query, placeholder: "\u641C\u7D22\u4EFB\u52A1\u2026", onChange: (e) => setQuery(e.target.value) })
+    ] }),
+    loading && entries2.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { className: "sch-empty", children: "\u6B63\u5728\u52A0\u8F7D\u4EFB\u52A1\u2026" }),
+    !loading && error !== "" && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "sch-empty", children: [
+      error,
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("button", { className: "btn btn-sm", style: { marginLeft: 10 }, onClick: () => {
+        void load();
+      }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconRefresh, { size: 13 }),
+        " \u91CD\u8BD5"
+      ] })
+    ] }),
+    !loading && error === "" && filtered.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "sch-empty", children: "\u8FD8\u6CA1\u6709\u5B9A\u65F6\u4EFB\u52A1\u3002\u65B0\u5EFA\u4E00\u4E2A\uFF0C\u5230\u70B9\u5B83\u4F1A\u81EA\u52A8\u5728\u6240\u9009\u4F1A\u8BDD\u91CC\u8FD0\u884C\u3002" }),
+    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "sch-list", children: filtered.map((e) => /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "card sch-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "sch-card-top", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: `sch-dot ${e.status === "active" ? "on" : "off"}` }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "sch-title", children: e.title }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "sch-freq", children: freqLine(e) }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("span", { className: "sch-card-actions", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "session-act", title: "\u8BE6\u60C5", onClick: () => openDetail(e), children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconChevron, { size: 13 }) }),
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "session-act danger", title: "\u5220\u9664", onClick: () => {
+            openDetail(e);
+            setConfirmingDelete(true);
+          }, children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconTrash, { size: 13 }) })
+        ] })
+      ] }),
+      e.status === "active" && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "sch-next", children: [
+        absoluteShort(e.scheduledAt),
+        " \xB7 ",
+        relativeNext(e.scheduledAt)
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "sch-meta", children: [
+        "\u4F1A\u8BDD\u300C",
+        sessionOptions.find((s) => s.id === e.sessionId)?.title ?? e.sessionId.slice(0, 12),
+        "\u300D",
+        e.lastDelivery !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
+          " \xB7 \u4E0A\u6B21 ",
+          absoluteShort(e.lastDelivery.deliveredAt),
+          " \u5DF2\u6295\u9012"
+        ] })
+      ] })
+    ] }, e.id)) }),
+    form !== null && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "overlay", onClick: () => setForm(null), children: /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "modal", style: { width: 480, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), "aria-label": "\u65B0\u5EFA\u5B9A\u65F6\u4EFB\u52A1", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h3", { style: { margin: 0 }, children: "\u65B0\u5EFA\u5B9A\u65F6\u4EFB\u52A1" }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "icon-btn", onClick: () => setForm(null), children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "field-label", children: "\u4EFB\u52A1\u540D\u79F0 *" }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+        "input",
+        {
+          className: "field",
+          value: form.title,
+          autoFocus: true,
+          placeholder: "\u5982\uFF1A\u4ECA\u65E5\u70ED\u70B9\u7B80\u62A5",
+          onChange: (e) => setForm({ ...form, title: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "field-label", children: "\u4EFB\u52A1\u5185\u5BB9\uFF08\u63D0\u793A\u8BCD\uFF09*" }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+        "textarea",
+        {
+          className: "field",
+          style: { minHeight: 84 },
+          value: form.prompt,
+          placeholder: "\u5230\u70B9\u53D1\u7ED9\u4F1A\u8BDD\u6267\u884C\u7684\u5185\u5BB9\uFF0C\u5982\uFF1A\u6574\u7406\u4ECA\u5929\u7684\u70ED\u70B9\uFF0C\u7ED9\u4E00\u4EFD\u7B80\u62A5\u3002",
+          onChange: (e) => setForm({ ...form, prompt: e.target.value })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(TimingFields, { draft: form.timing, onChange: (timing) => setForm({ ...form, timing }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "field-label", children: "\u76EE\u6807\u4F1A\u8BDD *" }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("select", { className: "field", value: form.sessionId, onChange: (e) => setForm({ ...form, sessionId: e.target.value }), children: [
+        sessionOptions.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: "", children: "\uFF08\u6682\u65E0\u53EF\u7528\u4F1A\u8BDD\uFF0C\u5148\u65B0\u5EFA\u4E00\u4E2A\u5BF9\u8BDD\uFF09" }),
+        sessionOptions.map((s) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: s.id, children: s.title }, s.id))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("label", { className: "field-label", children: "\u5173\u8054\u53D1\u5E03\u8D26\u53F7\uFF08\u53EF\u9009\uFF09" }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("select", { className: "field", value: form.accountId, onChange: (e) => setForm({ ...form, accountId: e.target.value }), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: "", children: "\u4E0D\u5173\u8054" }),
+        rosterList.map((a) => /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("option", { value: a.id, children: [
+          platformLabel(a.platform),
+          "\u300C",
+          a.name,
+          "\u300D",
+          a.persona ? `\uFF08\u753B\u50CF\uFF1A${a.persona}\uFF09` : ""
+        ] }, a.id))
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-sm", onClick: () => setForm(null), children: "\u53D6\u6D88" }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-sm btn-primary", disabled: detailBusy, onClick: () => {
+          void submitCreate();
+        }, children: "\u521B\u5EFA" })
+      ] })
+    ] }) }),
+    detail !== null && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "overlay", onClick: () => {
+      setDetail(null);
+      setConfirmingDelete(false);
+    }, children: /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "modal", style: { width: 520, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), "aria-label": "\u4EFB\u52A1\u8BE6\u60C5", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("h3", { style: { margin: 0 }, children: detail.title }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "icon-btn", onClick: () => {
+          setDetail(null);
+          setConfirmingDelete(false);
+        }, children: "\xD7" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { display: "flex", gap: 8, marginBottom: 10 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: `chip ${detail.status === "active" ? "active" : ""}`, children: detail.status === "active" ? "\u5DF2\u5F00\u542F" : "\u5DF2\u7ED3\u675F" }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "chip", children: freqLine(detail) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginBottom: 4 }, children: "\u4EFB\u52A1\u5185\u5BB9" }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "sch-prompt", children: detail.prompt }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { marginTop: 10, fontSize: 12.5, color: "var(--text-secondary)" }, children: [
+        detail.status === "active" ? /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
+          "\u4E0B\u6B21 ",
+          absoluteShort(detail.scheduledAt),
+          "\uFF08",
+          relativeNext(detail.scheduledAt),
+          "\uFF09"
+        ] }) : "\u5DF2\u7ED3\u675F\uFF0C\u4E0D\u4F1A\u518D\u89E6\u53D1\u3002",
+        detail.lastDelivery !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
+          " \xB7 \u4E0A\u6B21 ",
+          absoluteShort(detail.lastDelivery.deliveredAt),
+          " \u5DF2\u6295\u9012"
+        ] })
+      ] }),
+      isEditableKind(detail) && detail.status === "active" && editingTiming === null && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("button", { className: "btn btn-sm", style: { marginTop: 12 }, onClick: () => setEditingTiming(timingFromRecord(detail)), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconEdit, { size: 13 }),
+        " \u7F16\u8F91\u65F6\u673A"
+      ] }),
+      !isEditableKind(detail) && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { marginTop: 12, fontSize: 12, color: "var(--text-secondary)" }, children: "\u81EA\u5B9A\u4E49\u65F6\u673A\uFF08cron\uFF09\u4EFB\u52A1\u8BF7\u5728 \u8BBE\u7F6E \u2192 \u81EA\u52A8\u5316\u4EFB\u52A1 \u4E2D\u7F16\u8F91\u3002" }),
+      editingTiming !== null && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { marginTop: 12 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(TimingFields, { draft: editingTiming, onChange: setEditingTiming }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-sm", onClick: () => setEditingTiming(null), children: "\u53D6\u6D88" }),
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-sm btn-primary", disabled: detailBusy, onClick: () => {
+            void saveTiming();
+          }, children: "\u4FDD\u5B58\u4FEE\u6539" })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { marginTop: 14, marginBottom: 6, fontSize: 12.5, color: "var(--text-secondary)" }, children: "\u8FD0\u884C\u8BB0\u5F55" }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "sch-records", children: [
+        recordsError !== "" && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { fontSize: 12, color: "var(--red)" }, children: recordsError }),
+        recordsError === "" && records.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("p", { style: { fontSize: 12, color: "var(--text-tertiary)" }, children: "\u6682\u65E0\u8FD0\u884C\u8BB0\u5F55" }),
+        records.map((r, i) => /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "sch-record", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "ok", children: "\u2713" }),
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "sch-time", children: absoluteShort(r.deliveredAt) }),
+          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { style: { color: "var(--text-secondary)" }, children: "\u5DF2\u6295\u9012" })
+        ] }, `${r.deliveredAt}-${i}`)),
+        !recordsDone && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-sm", disabled: detailBusy, onClick: () => {
+          void loadMoreRecords();
+        }, children: "\u52A0\u8F7D\u66F4\u591A" })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 16 }, children: confirmingDelete ? /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-sm", onClick: () => setConfirmingDelete(false), children: "\u53D6\u6D88" }),
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-sm btn-danger", disabled: detailBusy, onClick: () => {
+          void remove(detail);
+        }, children: "\u786E\u8BA4\u5220\u9664" })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("button", { className: "btn btn-sm btn-danger", onClick: () => setConfirmingDelete(true), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(IconTrash, { size: 13 }),
+        " \u5220\u9664\u4EFB\u52A1"
+      ] }) })
+    ] }) }),
+    toast !== "" && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "toast ok", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "toast-icon", children: "\u2713" }),
+      toast
+    ] })
+  ] });
+}
+
+// src/features/schedules.tsx
+var import_jsx_runtime11 = require("react/jsx-runtime");
+var view5 = "schedules";
+var order5 = 36;
+var labels5 = { zh: "\u5B9A\u65F6\u4EFB\u52A1", en: "Schedule" };
+var Icon5 = IconClock;
+var Component5 = SchedulesPage;
+var plugin5 = {
+  name: "easel-view-schedules",
+  inject: ["slots", "easelShell", "sessions", "workspaces", "remote", "remote.schedule"],
+  apply(ctx) {
+    const { useShellProps, t } = ctx.easelShell;
+    ctx.slots.inject("main", () => ctx.slots.register({
+      name: "main",
+      key: pageKey(view5),
+      inject: () => ({
+        sessions: ctx.sessions,
+        workspaces: ctx.workspaces,
+        subscribeChanged: (listener) => ctx.remote.$on("schedule/changed", listener),
+        catalog: () => ctx.remote.schedule.catalog(),
+        updateTask: (request5) => ctx.remote.schedule.update(request5),
+        deleteTask: (request5) => ctx.remote.schedule.delete(request5),
+        history: (request5) => ctx.remote.schedule.history(request5)
+      })
+    }, function EaselPage(injected) {
+      const props = useShellProps();
+      return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Component5, { ...props, ...injected }) });
+    }));
+    ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
+      name: "sidebar.panellist",
+      id: pageKey(view5),
+      order: order5,
+      locale: "easel.panel",
+      label: () => t(view5)
+    }, function EaselRailIcon({ size }) {
+      return /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Icon5, { size });
+    }));
+  }
+};
+
+// src/features/skills.tsx
+var skills_exports = {};
+__export(skills_exports, {
+  Component: () => Component6,
+  Icon: () => Icon6,
+  labels: () => labels6,
+  order: () => order6,
+  plugin: () => plugin6,
+  view: () => view6
+});
+
+// src/components/SkillPage.tsx
+var import_react8 = require("react");
+
+// src/components/SkillDrawer.tsx
+var import_react7 = require("react");
+
 // src/lib/skillDisplayNames.ts
 var SKILL_DISPLAY_NAMES = {
   "ai-image-gen": "AI \u751F\u56FE",
@@ -6225,18 +8301,18 @@ function displayName(raw) {
 }
 
 // src/components/SkillDrawer.tsx
-var import_jsx_runtime10 = require("react/jsx-runtime");
+var import_jsx_runtime12 = require("react/jsx-runtime");
 function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) {
-  const [detail, setDetail] = (0, import_react6.useState)(null);
-  const [loadErr, setLoadErr] = (0, import_react6.useState)("");
-  const [envInputs, setEnvInputs] = (0, import_react6.useState)({});
-  const [saving, setSaving] = (0, import_react6.useState)(false);
-  const [savedMsg, setSavedMsg] = (0, import_react6.useState)("");
-  const [input, setInput] = (0, import_react6.useState)("");
-  const [result, setResult] = (0, import_react6.useState)("");
-  const [running, setRunning] = (0, import_react6.useState)(false);
-  const [runErr, setRunErr] = (0, import_react6.useState)("");
-  const runCtl = (0, import_react6.useRef)(null);
+  const [detail, setDetail] = (0, import_react7.useState)(null);
+  const [loadErr, setLoadErr] = (0, import_react7.useState)("");
+  const [envInputs, setEnvInputs] = (0, import_react7.useState)({});
+  const [saving, setSaving] = (0, import_react7.useState)(false);
+  const [savedMsg, setSavedMsg] = (0, import_react7.useState)("");
+  const [input, setInput] = (0, import_react7.useState)("");
+  const [result, setResult] = (0, import_react7.useState)("");
+  const [running, setRunning] = (0, import_react7.useState)(false);
+  const [runErr, setRunErr] = (0, import_react7.useState)("");
+  const runCtl = (0, import_react7.useRef)(null);
   const loadDetail = () => {
     let ignore = false;
     fetchSkillDetail(skillName).then((d2) => {
@@ -6251,9 +8327,9 @@ function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) 
       ignore = true;
     };
   };
-  (0, import_react6.useEffect)(loadDetail, [skillName]);
-  const bodyHtml = (0, import_react6.useMemo)(() => renderMarkdown(detail?.body || ""), [detail?.body]);
-  const resultHtml = (0, import_react6.useMemo)(() => renderMarkdown(result), [result]);
+  (0, import_react7.useEffect)(loadDetail, [skillName]);
+  const bodyHtml = (0, import_react7.useMemo)(() => renderMarkdown(detail?.body || ""), [detail?.body]);
+  const resultHtml = (0, import_react7.useMemo)(() => renderMarkdown(result), [result]);
   const handleSaveEnv = async () => {
     const updates = Object.fromEntries(
       Object.entries(envInputs).filter(([, v2]) => v2.trim() !== "")
@@ -6283,9 +8359,10 @@ function SkillDrawer({ skillName, persona, onClose, onConfigured, onNavigate }) 
     setRunErr("");
     setResult("");
     const batch = `skill-${Date.now().toString(36)}.md`;
+    const roster = await rosterPrompt();
     const prompt = `\u8BF7\u4E25\u683C\u6267\u884C\u6280\u80FD\u300C${skillName}\u300D\uFF1A\u8BFB\u53D6 skills/openclaw/${skillName}/SKILL.md\uFF0C\u6309\u5B83\u7684\u6D41\u7A0B\u3001\u6570\u636E\u6E90\u4E0E\u5DE5\u5177\u6267\u884C\u3002
 ` + (persona ? `\u6267\u884C\u65F6\u4F7F\u7528\u6211\u7684\u753B\u50CF\u300C${persona}\u300D\uFF08profiles/${persona}/ \u4E0B\u7684\u516D\u7EF4\u6587\u4EF6\uFF09\u3002
-` : "") + `\u4EFB\u52A1\u8F93\u5165\uFF1A
+` : "") + roster + `\u4EFB\u52A1\u8F93\u5165\uFF1A
 ${input.trim()}
 
 \u3010\u4EA4\u4ED8\u65B9\u5F0F\u3011\u5B8C\u6210\u540E\uFF0C\u628A\u6700\u7EC8\u4EA7\u51FA\u5168\u6587\u5199\u5165 outputs/_adapt/${batch}\uFF08Markdown\uFF0C\u5185\u5BB9\u53EA\u6709\u4EA7\u51FA\u672C\u8EAB\uFF09\u3002\u9664\u8BE5\u6587\u4EF6\u5916\u4E0D\u8981\u5199\u5176\u5B83\u6587\u4EF6\u3002`;
@@ -6307,50 +8384,50 @@ ${input.trim()}
     }
   };
   const blocked = detail?.needsApi && !detail.apiConfigured;
-  return /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "drawer-overlay", onClick: onClose, children: /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "drawer", onClick: (e) => e.stopPropagation(), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "drawer-header", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "skill-detail-title", children: displayName(skillName) }),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "skill-detail-rawname", children: skillName }),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "skill-detail-meta", children: [
-          detail?.layer && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "badge badge-accent", children: { discover: "\u53D1\u73B0", plan: "\u7B56\u5212", produce: "\u5236\u4F5C", publish: "\u53D1\u5E03", attribute: "\u5F52\u56E0", general: "\u901A\u7528" }[detail.layer] || detail.layer }),
-          detail?.needsApi && (detail.apiConfigured ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "badge badge-ok", children: "\u2713 \u5DF2\u914D\u7F6E" }) : /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "badge badge-warn", children: "\u2757 \u9700\u914D\u7F6E API" }))
+  return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "drawer-overlay", onClick: onClose, children: /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "drawer", onClick: (e) => e.stopPropagation(), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "drawer-header", children: /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "skill-detail-title", children: displayName(skillName) }),
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "skill-detail-rawname", children: skillName }),
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "skill-detail-meta", children: [
+          detail?.layer && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: "badge badge-accent", children: { discover: "\u53D1\u73B0", plan: "\u7B56\u5212", produce: "\u5236\u4F5C", publish: "\u53D1\u5E03", attribute: "\u5F52\u56E0", general: "\u901A\u7528" }[detail.layer] || detail.layer }),
+          detail?.needsApi && (detail.apiConfigured ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: "badge badge-ok", children: "\u2713 \u5DF2\u914D\u7F6E" }) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: "badge badge-warn", children: "\u2757 \u9700\u914D\u7F6E API" }))
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "icon-btn", onClick: onClose, title: "\u5173\u95ED", children: "\xD7" })
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("button", { className: "icon-btn", onClick: onClose, title: "\u5173\u95ED", children: "\xD7" })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "drawer-body", children: [
-      loadErr && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { style: { color: "var(--red)", fontSize: 14 }, children: loadErr }),
-      detail?.needsApi && detail.apiSpec && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "panel", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "panel-title", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "drawer-body", children: [
+      loadErr && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { style: { color: "var(--red)", fontSize: 14 }, children: loadErr }),
+      detail?.needsApi && detail.apiSpec && /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "panel", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "panel-title", children: [
           "\u{1F511} ",
           detail.apiSpec.label,
           " \xB7 API \u914D\u7F6E",
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { style: { fontWeight: 400, color: "var(--text-secondary)", fontSize: 12 }, children: "\uFF08\u4EFB\u9009\u4E00\u4E2A\u670D\u52A1\u5546\u586B\u9F50\u5373\u53EF\u7528\uFF09" })
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { style: { fontWeight: 400, color: "var(--text-secondary)", fontSize: 12 }, children: "\uFF08\u4EFB\u9009\u4E00\u4E2A\u670D\u52A1\u5546\u586B\u9F50\u5373\u53EF\u7528\uFF09" })
         ] }),
-        detail.apiSpec.settings.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "provider-block", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "provider-head", children: /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("strong", { style: { fontSize: 13 }, children: "\u9ED8\u8BA4\u9009\u62E9\u4E0E\u80FD\u529B" }) }),
-          detail.apiSpec.settings.map((k2) => /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("label", { className: "field-label", children: [
+        detail.apiSpec.settings.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "provider-block", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "provider-head", children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("strong", { style: { fontSize: 13 }, children: "\u9ED8\u8BA4\u9009\u62E9\u4E0E\u80FD\u529B" }) }),
+          detail.apiSpec.settings.map((k2) => /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("label", { className: "field-label", children: [
               k2.label,
               " \xB7 \u53EF\u9009",
-              k2.configured && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("span", { style: { color: "var(--green)", marginLeft: 6 }, children: [
+              k2.configured && /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("span", { style: { color: "var(--green)", marginLeft: 6 }, children: [
                 "\u5DF2\u914D\u7F6E",
                 k2.masked ? `\uFF1A${k2.masked}` : ""
               ] })
             ] }),
-            k2.choices.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
+            k2.choices.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
               "select",
               {
                 className: "field",
                 value: envInputs[k2.env] ?? "",
                 onChange: (e) => setEnvInputs((p) => ({ ...p, [k2.env]: e.target.value })),
                 children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: "", children: k2.configured ? `\u5F53\u524D\uFF1A${k2.masked}` : `\u8BF7\u9009\u62E9 ${k2.env}` }),
-                  k2.choices.map((choice) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: choice, children: choice }, choice))
+                  /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("option", { value: "", children: k2.configured ? `\u5F53\u524D\uFF1A${k2.masked}` : `\u8BF7\u9009\u62E9 ${k2.env}` }),
+                  k2.choices.map((choice) => /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("option", { value: choice, children: choice }, choice))
                 ]
               }
-            ) : /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+            ) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
               "input",
               {
                 className: "field",
@@ -6364,32 +8441,32 @@ ${input.trim()}
         ] }),
         detail.apiSpec.providers.map((prov) => {
           const provOk = prov.keys.filter((k2) => k2.required).every((k2) => k2.configured);
-          return /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: `provider-block ${provOk ? "configured" : ""}`, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "provider-head", children: [
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("strong", { style: { fontSize: 13 }, children: prov.name }),
-              provOk ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "badge badge-ok", children: "\u2713 \u5C31\u7EEA" }) : /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "badge", children: "\u672A\u914D\u7F6E" })
+          return /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: `provider-block ${provOk ? "configured" : ""}`, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "provider-head", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("strong", { style: { fontSize: 13 }, children: prov.name }),
+              provOk ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: "badge badge-ok", children: "\u2713 \u5C31\u7EEA" }) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: "badge", children: "\u672A\u914D\u7F6E" })
             ] }),
-            prov.keys.map((k2) => /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { children: [
-              /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("label", { className: "field-label", children: [
+            prov.keys.map((k2) => /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("label", { className: "field-label", children: [
                 k2.label,
                 k2.required ? "" : " \xB7 \u53EF\u9009",
-                k2.configured && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("span", { style: { color: "var(--green)", marginLeft: 6 }, children: [
+                k2.configured && /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("span", { style: { color: "var(--green)", marginLeft: 6 }, children: [
                   "\u5DF2\u914D\u7F6E",
                   k2.secret && k2.masked ? `\uFF08${k2.masked}\uFF09` : k2.masked ? `\uFF1A${k2.masked}` : ""
                 ] })
               ] }),
-              k2.choices.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(
+              k2.choices.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(
                 "select",
                 {
                   className: "field",
                   value: envInputs[k2.env] ?? "",
                   onChange: (e) => setEnvInputs((p) => ({ ...p, [k2.env]: e.target.value })),
                   children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: "", children: k2.configured ? `\u5F53\u524D\uFF1A${k2.masked}` : `\u8BF7\u9009\u62E9 ${k2.env}` }),
-                    k2.choices.map((choice) => /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("option", { value: choice, children: choice }, choice))
+                    /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("option", { value: "", children: k2.configured ? `\u5F53\u524D\uFF1A${k2.masked}` : `\u8BF7\u9009\u62E9 ${k2.env}` }),
+                    k2.choices.map((choice) => /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("option", { value: choice, children: choice }, choice))
                   ]
                 }
-              ) : /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+              ) : /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
                 "input",
                 {
                   className: "field",
@@ -6402,15 +8479,15 @@ ${input.trim()}
             ] }, k2.env))
           ] }, prov.id);
         }),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 12, marginTop: 8 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-primary btn-sm", onClick: handleSaveEnv, disabled: saving, children: saving ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58\u5230 .env" }),
-          savedMsg && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { style: { fontSize: 13, color: savedMsg.includes("\u2713") ? "var(--green)" : "var(--text-secondary)" }, children: savedMsg })
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 12, marginTop: 8 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("button", { className: "btn btn-primary btn-sm", onClick: handleSaveEnv, disabled: saving, children: saving ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58\u5230 .env" }),
+          savedMsg && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { style: { fontSize: 13, color: savedMsg.includes("\u2713") ? "var(--green)" : "var(--text-secondary)" }, children: savedMsg })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "panel", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "panel-title", children: "\u25B6 \u8FD0\u884C" }),
-        blocked && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { style: { fontSize: 13, color: "var(--amber)", marginBottom: 10 }, children: "\u8BE5 SKILL \u9700\u8981\u5148\u914D\u7F6E\u4E0A\u9762\u7684 API \u624D\u80FD\u8FD0\u884C\u3002" }),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "panel", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "panel-title", children: "\u25B6 \u8FD0\u884C" }),
+        blocked && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { style: { fontSize: 13, color: "var(--amber)", marginBottom: 10 }, children: "\u8BE5 SKILL \u9700\u8981\u5148\u914D\u7F6E\u4E0A\u9762\u7684 API \u624D\u80FD\u8FD0\u884C\u3002" }),
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(
           "textarea",
           {
             className: "field",
@@ -6420,24 +8497,24 @@ ${input.trim()}
             style: { minHeight: 100 }
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { style: { marginTop: 10, display: "flex", gap: 8, alignItems: "center" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-primary", onClick: handleRun, disabled: running || !input.trim() || blocked, children: running ? /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("span", { className: "spinner", style: { width: 14, height: 14, margin: 0 } }),
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { style: { marginTop: 10, display: "flex", gap: 8, alignItems: "center" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("button", { className: "btn btn-primary", onClick: handleRun, disabled: running || !input.trim() || blocked, children: running ? /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_jsx_runtime12.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("span", { className: "spinner", style: { width: 14, height: 14, margin: 0 } }),
             "\u6267\u884C\u4E2D\u2026"
           ] }) : "\u6267\u884C" }),
-          running && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)(import_jsx_runtime10.Fragment, { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-sm", onClick: () => runCtl.current?.(), children: "\u505C\u6B62" }),
-            /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("button", { className: "btn btn-sm btn-ghost", onClick: () => onNavigate?.("chat"), children: "\u6253\u5F00\u5BF9\u8BDD" })
+          running && /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)(import_jsx_runtime12.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("button", { className: "btn btn-sm", onClick: () => runCtl.current?.(), children: "\u505C\u6B62" }),
+            /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("button", { className: "btn btn-sm btn-ghost", onClick: () => onNavigate?.("chat"), children: "\u6253\u5F00\u5BF9\u8BDD" })
           ] })
         ] }),
-        running && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { style: { fontSize: 12, color: "var(--text-secondary)", marginTop: 8 }, children: "\u4EFB\u52A1\u5728 dsh \u5BF9\u8BDD\u91CC\u540E\u53F0\u6267\u884C\uFF1B\u9047\u5230\u5DE5\u5177\u786E\u8BA4/\u63D0\u95EE\u8BF7\u5230\u5BF9\u8BDD\u91CC\u5904\u7406\u3002" }),
-        runErr && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { style: { color: "var(--red)", fontSize: 13, marginTop: 10 }, children: runErr }),
-        resultHtml && /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "skill-result", dangerouslySetInnerHTML: { __html: resultHtml } })
+        running && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { style: { fontSize: 12, color: "var(--text-secondary)", marginTop: 8 }, children: "\u4EFB\u52A1\u5728 dsh \u5BF9\u8BDD\u91CC\u540E\u53F0\u6267\u884C\uFF1B\u9047\u5230\u5DE5\u5177\u786E\u8BA4/\u63D0\u95EE\u8BF7\u5230\u5BF9\u8BDD\u91CC\u5904\u7406\u3002" }),
+        runErr && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { style: { color: "var(--red)", fontSize: 13, marginTop: 10 }, children: runErr }),
+        resultHtml && /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "skill-result", dangerouslySetInnerHTML: { __html: resultHtml } })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "panel", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "panel-title", children: "\u{1F4D6} \u8BF4\u660E" }),
-        detail ? /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "skill-body-md", dangerouslySetInnerHTML: { __html: bodyHtml } }) : !loadErr && /* @__PURE__ */ (0, import_jsx_runtime10.jsxs)("div", { className: "loading", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime10.jsx)("div", { className: "spinner" }),
+      /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "panel", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "panel-title", children: "\u{1F4D6} \u8BF4\u660E" }),
+        detail ? /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "skill-body-md", dangerouslySetInnerHTML: { __html: bodyHtml } }) : !loadErr && /* @__PURE__ */ (0, import_jsx_runtime12.jsxs)("div", { className: "loading", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "spinner" }),
           "\u52A0\u8F7D\u4E2D\u2026"
         ] })
       ] })
@@ -6446,7 +8523,7 @@ ${input.trim()}
 }
 
 // src/components/SkillPage.tsx
-var import_jsx_runtime11 = require("react/jsx-runtime");
+var import_jsx_runtime13 = require("react/jsx-runtime");
 var LAYERS = [
   { key: "discover", label: "\u53D1\u73B0", Icon: IconSearch, color: "var(--layer-discover)" },
   { key: "plan", label: "\u7B56\u5212", Icon: IconCompass, color: "var(--layer-plan)" },
@@ -6486,20 +8563,20 @@ var LAYER_DESC = {
   other: "\u6280\u80FD"
 };
 function SkillPage({ persona, onNavigate }) {
-  const [skills, setSkills] = (0, import_react7.useState)([]);
-  const [error, setError] = (0, import_react7.useState)("");
-  const [query, setQuery] = (0, import_react7.useState)("");
-  const [selected, setSelected] = (0, import_react7.useState)(null);
+  const [skills, setSkills] = (0, import_react8.useState)([]);
+  const [error, setError] = (0, import_react8.useState)("");
+  const [query, setQuery] = (0, import_react8.useState)("");
+  const [selected, setSelected] = (0, import_react8.useState)(null);
   const load = () => {
     fetchSkills().then(setSkills).catch(() => setError("\u52A0\u8F7D SKILL \u5217\u8868\u5931\u8D25"));
   };
-  (0, import_react7.useEffect)(load, []);
-  const filtered = (0, import_react7.useMemo)(() => {
+  (0, import_react8.useEffect)(load, []);
+  const filtered = (0, import_react8.useMemo)(() => {
     const q2 = query.trim().toLowerCase();
     if (!q2) return skills;
     return skills.filter((s) => s.name.toLowerCase().includes(q2) || (s.description || "").toLowerCase().includes(q2) || displayName(s.name).toLowerCase().includes(q2));
   }, [skills, query]);
-  const grouped = (0, import_react7.useMemo)(() => {
+  const grouped = (0, import_react8.useMemo)(() => {
     const g = {};
     for (const s of filtered) {
       const key = LAYER_META[s.layer] ? s.layer : "other";
@@ -6509,21 +8586,21 @@ function SkillPage({ persona, onNavigate }) {
   }, [filtered]);
   const orderedLayers = [...LAYERS, OTHER].filter((l3) => grouped[l3.key]?.length);
   const needApiCount = skills.filter((s) => s.needsApi && !s.apiConfigured).length;
-  return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "skills-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "skills-page-head", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("h1", { className: "page-title", children: "\u6280\u80FD\u5E93" }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("p", { className: "page-subtitle", children: [
+  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "skills-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "skills-page-head", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("h1", { className: "page-title", children: "\u6280\u80FD\u5E93" }),
+      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("p", { className: "page-subtitle", children: [
         "\u5171 ",
         skills.length,
         " \u4E2A\u6280\u80FD\uFF0C\u6309\u6D41\u6C34\u7EBF\u5C42\u5206\u533A\u6D4F\u89C8\u3002\u70B9\u5361\u7247\u67E5\u770B\u8BF4\u660E\u3001\u5C31\u5730\u8FD0\u884C\uFF1B \u6807 ",
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "badge badge-warn", style: { padding: "1px 7px" }, children: "\u9700 API" }),
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "badge badge-warn", style: { padding: "1px 7px" }, children: "\u9700 API" }),
         " \u7684\u9700\u5148\u914D\u7F6E\u5BC6\u94A5",
         needApiCount > 0 && `\uFF08\u5F53\u524D ${needApiCount} \u4E2A\u5F85\u914D\u7F6E\uFF09`,
         "\u3002"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "skill-search", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "skill-search-ic", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(IconSearch, { size: 16 }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "skill-search", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "skill-search-ic", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconSearch, { size: 16 }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
           "input",
           {
             className: "field",
@@ -6532,45 +8609,45 @@ function SkillPage({ persona, onNavigate }) {
             onChange: (e) => setQuery(e.target.value)
           }
         ),
-        query && /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("button", { className: "btn btn-ghost btn-sm", onClick: () => setQuery(""), children: "\u6E05\u9664" })
+        query && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("button", { className: "btn btn-ghost btn-sm", onClick: () => setQuery(""), children: "\u6E05\u9664" })
       ] })
     ] }),
-    error && /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { style: { color: "var(--red)", maxWidth: 1100, margin: "16px auto" }, children: error }),
-    /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "skills-body", children: [
-      orderedLayers.length === 0 && !error && /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "empty-state", style: { height: 240 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "empty-icon", children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(IconSearch, { size: 40 }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("p", { children: [
+    error && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { style: { color: "var(--red)", maxWidth: 1100, margin: "16px auto" }, children: error }),
+    /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "skills-body", children: [
+      orderedLayers.length === 0 && !error && /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "empty-state", style: { height: 240 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "empty-icon", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconSearch, { size: 40 }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("p", { children: [
           "\u6CA1\u6709\u5339\u914D\u300C",
           query,
           "\u300D\u7684\u6280\u80FD"
         ] })
       ] }),
-      orderedLayers.map((layer) => /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("section", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("div", { className: "section-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "section-ic", style: { color: layer.color }, children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(layer.Icon, { size: 15 }) }),
+      orderedLayers.map((layer) => /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("section", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "section-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "section-ic", style: { color: layer.color }, children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(layer.Icon, { size: 15 }) }),
           layer.label,
-          /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)("span", { style: { color: "var(--text-tertiary)", fontWeight: 500 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("span", { style: { color: "var(--text-tertiary)", fontWeight: 500 }, children: [
             "\xB7 ",
             grouped[layer.key].length
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "skill-grid", children: grouped[layer.key].map((s) => {
+        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "skill-grid", children: grouped[layer.key].map((s) => {
           const meta = LAYER_META[s.layer] || OTHER;
-          const Icon11 = iconFor(s.name, meta.Icon);
+          const Icon12 = iconFor(s.name, meta.Icon);
           const alert2 = s.needsApi && !s.apiConfigured;
-          return /* @__PURE__ */ (0, import_jsx_runtime11.jsxs)(
+          return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(
             "div",
             {
               className: "card card-hover skill-card",
               style: { ["--layer-color"]: meta.color },
               onClick: () => setSelected(s.name),
               children: [
-                alert2 && /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "skill-card-alert", title: "\u9700\u8981\u914D\u7F6E API key", children: "!" }),
-                /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "skill-card-icon", style: { color: meta.color }, children: /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(Icon11, { size: 19 }) }),
-                /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "skill-card-name", children: displayName(s.name) }),
-                /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "skill-card-rawname", children: s.name }),
-                /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "skill-card-desc", children: s.description?.trim() || LAYER_DESC[layer.key] }),
-                /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("div", { className: "skill-card-foot", children: s.needsApi && (s.apiConfigured ? /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "badge badge-ok", children: "\u5DF2\u914D\u7F6E" }) : /* @__PURE__ */ (0, import_jsx_runtime11.jsx)("span", { className: "badge badge-warn", children: "\u9700 API" })) })
+                alert2 && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "skill-card-alert", title: "\u9700\u8981\u914D\u7F6E API key", children: "!" }),
+                /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "skill-card-icon", style: { color: meta.color }, children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Icon12, { size: 19 }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "skill-card-name", children: displayName(s.name) }),
+                /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "skill-card-rawname", children: s.name }),
+                /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "skill-card-desc", children: s.description?.trim() || LAYER_DESC[layer.key] }),
+                /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "skill-card-foot", children: s.needsApi && (s.apiConfigured ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "badge badge-ok", children: "\u5DF2\u914D\u7F6E" }) : /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "badge badge-warn", children: "\u9700 API" })) })
               ]
             },
             s.name
@@ -6578,7 +8655,7 @@ function SkillPage({ persona, onNavigate }) {
         }) })
       ] }, layer.key))
     ] }),
-    selected && /* @__PURE__ */ (0, import_jsx_runtime11.jsx)(
+    selected && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
       SkillDrawer,
       {
         skillName: selected,
@@ -6592,33 +8669,33 @@ function SkillPage({ persona, onNavigate }) {
 }
 
 // src/features/skills.tsx
-var import_jsx_runtime12 = require("react/jsx-runtime");
-var view5 = "skills";
-var order5 = 34;
-var labels5 = { zh: "\u6280\u80FD\u5E93", en: "Skills" };
-var Icon5 = IconSkills;
-var Component5 = SkillPage;
-var plugin5 = {
+var import_jsx_runtime14 = require("react/jsx-runtime");
+var view6 = "skills";
+var order6 = 35;
+var labels6 = { zh: "\u6280\u80FD\u5E93", en: "Skills" };
+var Icon6 = IconSkills;
+var Component6 = SkillPage;
+var plugin6 = {
   name: "easel-view-skills",
   inject: ["slots", "easelShell"],
   apply(ctx) {
     const { useShellProps, t } = ctx.easelShell;
     ctx.slots.inject("main", () => ctx.slots.register({
       name: "main",
-      key: pageKey(view5),
+      key: pageKey(view6),
       inject: () => ({})
     }, function EaselPage() {
       const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Component5, { ...props }) });
+      return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Component6, { ...props }) });
     }));
     ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
       name: "sidebar.panellist",
-      id: pageKey(view5),
-      order: order5,
+      id: pageKey(view6),
+      order: order6,
       locale: "easel.panel",
-      label: () => t(view5)
+      label: () => t(view6)
     }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime12.jsx)(Icon5, { size });
+      return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Icon6, { size });
     }));
   }
 };
@@ -6626,17 +8703,17 @@ var plugin5 = {
 // src/features/outputs.tsx
 var outputs_exports = {};
 __export(outputs_exports, {
-  Component: () => Component6,
-  Icon: () => Icon6,
-  labels: () => labels6,
-  order: () => order6,
-  plugin: () => plugin6,
-  view: () => view6
+  Component: () => Component7,
+  Icon: () => Icon7,
+  labels: () => labels7,
+  order: () => order7,
+  plugin: () => plugin7,
+  view: () => view7
 });
 
 // src/components/OutputsPage.tsx
-var import_react8 = require("react");
-var import_jsx_runtime13 = require("react/jsx-runtime");
+var import_react9 = require("react");
+var import_jsx_runtime15 = require("react/jsx-runtime");
 var FILTERS = [
   { key: "all", label: "\u5168\u90E8" },
   { key: "image", label: "\u56FE\u7247" },
@@ -6669,10 +8746,10 @@ var statusBadge = (s) => ({
   color: STATUS_COLOR[s] || "var(--text-secondary)"
 });
 function kindIcon(kind, size = 30) {
-  if (kind === "video") return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconVideo, { size });
-  if (kind === "audio") return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconMusic, { size });
-  if (kind === "image") return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconImage, { size });
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconFile, { size });
+  if (kind === "video") return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconVideo, { size });
+  if (kind === "audio") return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconMusic, { size });
+  if (kind === "image") return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconImage, { size });
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconFile, { size });
 }
 var isHtml = (name) => /\.html?$/i.test(name);
 var kindLabel = (f) => f.kind === "text" ? isHtml(f.name) ? "\u5361\u7247" : "\u6587\u6863" : f.kind === "image" ? "\u56FE\u7247" : f.kind === "video" ? "\u89C6\u9891" : f.kind === "audio" ? "\u97F3\u9891" : "\u6587\u4EF6";
@@ -6699,67 +8776,67 @@ function resolvePath(roots, names) {
   return nodes;
 }
 function Thumb({ f, big }) {
-  if (f && f.kind === "image") return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("img", { src: mediaUrl(f.path), alt: "", loading: "lazy" });
-  if (f && f.kind === "video") return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("video", { src: mediaUrl(f.path), preload: "metadata", muted: true });
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "gcard-ph", children: kindIcon(f?.kind, big ? 34 : 30) });
+  if (f && f.kind === "image") return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("img", { src: mediaUrl(f.path), alt: "", loading: "lazy" });
+  if (f && f.kind === "video") return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("video", { src: mediaUrl(f.path), preload: "metadata", muted: true });
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "gcard-ph", children: kindIcon(f?.kind, big ? 34 : 30) });
 }
 function OutputsPage({ jumpPath, onJumpHandled }) {
-  const [roots, setRoots] = (0, import_react8.useState)([]);
-  const [treeError, setTreeError] = (0, import_react8.useState)("");
-  const [stack, setStack] = (0, import_react8.useState)([]);
-  const [filter, setFilter] = (0, import_react8.useState)("all");
-  const [selected, setSelected] = (0, import_react8.useState)(null);
-  const [content, setContent] = (0, import_react8.useState)("");
-  const [loading, setLoading] = (0, import_react8.useState)(false);
-  const reqSeq = (0, import_react8.useRef)(0);
-  const load = (0, import_react8.useCallback)(() => {
+  const [roots, setRoots] = (0, import_react9.useState)([]);
+  const [treeError, setTreeError] = (0, import_react9.useState)("");
+  const [stack, setStack] = (0, import_react9.useState)([]);
+  const [filter, setFilter] = (0, import_react9.useState)("all");
+  const [selected, setSelected] = (0, import_react9.useState)(null);
+  const [content, setContent] = (0, import_react9.useState)("");
+  const [loading, setLoading] = (0, import_react9.useState)(false);
+  const reqSeq = (0, import_react9.useRef)(0);
+  const load = (0, import_react9.useCallback)(() => {
     setTreeError("");
     fetchOutputs().then(setRoots).catch(() => setTreeError("\u52A0\u8F7D\u4EA7\u7269\u5217\u8868\u5931\u8D25"));
   }, []);
-  (0, import_react8.useEffect)(() => {
+  (0, import_react9.useEffect)(() => {
     load();
   }, [load]);
-  const currentNodes = (0, import_react8.useMemo)(() => resolvePath(roots, stack), [roots, stack]);
-  const dirs = (0, import_react8.useMemo)(
+  const currentNodes = (0, import_react9.useMemo)(() => resolvePath(roots, stack), [roots, stack]);
+  const dirs = (0, import_react9.useMemo)(
     () => currentNodes.filter((n) => n.type === "dir").sort((a, b2) => (b2.mtime || 0) - (a.mtime || 0)),
     [currentNodes]
   );
-  const files = (0, import_react8.useMemo)(() => {
+  const files = (0, import_react9.useMemo)(() => {
     const fs = currentNodes.filter((n) => n.type === "file").sort((a, b2) => (b2.mtime || 0) - (a.mtime || 0));
     return filter === "all" ? fs : fs.filter((f) => f.kind === filter);
   }, [currentNodes, filter]);
   const atTop = stack.length === 0;
   const atProjectRoot = stack.length === 1;
-  const projectMeta = (0, import_react8.useMemo)(
+  const projectMeta = (0, import_react9.useMemo)(
     () => stack.length >= 1 ? roots.find((r) => r.name === stack[0])?.meta : void 0,
     [roots, stack]
   );
-  const deliverableSet = (0, import_react8.useMemo)(
+  const deliverableSet = (0, import_react9.useMemo)(
     () => new Set(atProjectRoot ? projectMeta?.deliverablePaths || [] : []),
     [projectMeta, atProjectRoot]
   );
   const hasSplit = atProjectRoot && deliverableSet.size > 0;
-  const deliverableFiles = (0, import_react8.useMemo)(
+  const deliverableFiles = (0, import_react9.useMemo)(
     () => hasSplit ? files.filter((f) => deliverableSet.has(f.path)) : [],
     [files, deliverableSet, hasSplit]
   );
-  const restFiles = (0, import_react8.useMemo)(
+  const restFiles = (0, import_react9.useMemo)(
     () => hasSplit ? files.filter((f) => !deliverableSet.has(f.path)) : files,
     [files, deliverableSet, hasSplit]
   );
-  const enterDir = (0, import_react8.useCallback)((name) => {
+  const enterDir = (0, import_react9.useCallback)((name) => {
     setStack((s) => [...s, name]);
     setFilter("all");
   }, []);
-  const goTo = (0, import_react8.useCallback)((depth) => {
+  const goTo = (0, import_react9.useCallback)((depth) => {
     setStack((s) => s.slice(0, depth));
     setFilter("all");
   }, []);
-  const remove = (0, import_react8.useCallback)(async (node, e) => {
+  const remove = (0, import_react9.useCallback)(async (node, e) => {
     e.stopPropagation();
     const isDir = node.type === "dir";
-    const label2 = isDir ? `\u9879\u76EE/\u6587\u4EF6\u5939\u300C${node.meta?.title || node.name}\u300D\u53CA\u5176\u5168\u90E8\u5185\u5BB9` : `\u6587\u4EF6\u300C${node.name}\u300D`;
-    if (!window.confirm(`\u786E\u5B9A\u5220\u9664${label2}\uFF1F
+    const label = isDir ? `\u9879\u76EE/\u6587\u4EF6\u5939\u300C${node.meta?.title || node.name}\u300D\u53CA\u5176\u5168\u90E8\u5185\u5BB9` : `\u6587\u4EF6\u300C${node.name}\u300D`;
+    if (!window.confirm(`\u786E\u5B9A\u5220\u9664${label}\uFF1F
 \u6B64\u64CD\u4F5C\u4E0D\u53EF\u6062\u590D\u3002`)) return;
     try {
       await deleteOutput(node.path);
@@ -6769,7 +8846,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
       alert(err.message || "\u5220\u9664\u5931\u8D25");
     }
   }, [load]);
-  const open = (0, import_react8.useCallback)(async (f) => {
+  const open = (0, import_react9.useCallback)(async (f) => {
     const seq = ++reqSeq.current;
     setSelected(f);
     setContent("");
@@ -6783,7 +8860,7 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
       }
     }
   }, []);
-  (0, import_react8.useEffect)(() => {
+  (0, import_react9.useEffect)(() => {
     if (!jumpPath || roots.length === 0) return;
     const parts = jumpPath.split("/").filter(Boolean);
     const parent = [];
@@ -6805,11 +8882,11 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   const preview = () => {
     if (!selected) return null;
     const url = mediaUrl(selected.path);
-    if (selected.kind === "image") return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("img", { src: url, alt: selected.name, style: { maxWidth: "100%", borderRadius: "var(--radius)" } });
-    if (selected.kind === "video") return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("video", { src: url, controls: true, style: { maxWidth: "100%", borderRadius: "var(--radius)" } });
-    if (selected.kind === "audio") return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("audio", { src: url, controls: true, style: { width: "100%" } });
-    if (selected.kind === "text" && isHtml(selected.name)) return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(import_jsx_runtime13.Fragment, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(
+    if (selected.kind === "image") return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("img", { src: url, alt: selected.name, style: { maxWidth: "100%", borderRadius: "var(--radius)" } });
+    if (selected.kind === "video") return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("video", { src: url, controls: true, style: { maxWidth: "100%", borderRadius: "var(--radius)" } });
+    if (selected.kind === "audio") return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("audio", { src: url, controls: true, style: { width: "100%" } });
+    if (selected.kind === "text" && isHtml(selected.name)) return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
         "iframe",
         {
           src: `${url}?v=${selected.mtime ?? 0}`,
@@ -6819,18 +8896,18 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
           style: { width: "100%", height: "68vh", border: "1px solid var(--border)", borderRadius: "var(--radius)", background: "#fff" }
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { style: { marginTop: 8 }, children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("a", { href: url, target: "_blank", rel: "noreferrer", style: { color: "var(--accent-start)", fontSize: 13 }, children: "\u5728\u65B0\u6807\u7B7E\u6253\u5F00 \u2197" }) })
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { style: { marginTop: 8 }, children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("a", { href: url, target: "_blank", rel: "noreferrer", style: { color: "var(--accent-start)", fontSize: 13 }, children: "\u5728\u65B0\u6807\u7B7E\u6253\u5F00 \u2197" }) })
     ] });
     if (selected.kind === "text") {
-      if (loading) return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "loading", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "spinner" }),
+      if (loading) return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "loading", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "spinner" }),
         "\u52A0\u8F7D\u4E2D\u2026"
       ] });
-      return /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "outputs-viewer-content", dangerouslySetInnerHTML: { __html: renderMarkdown(content) } });
+      return /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "outputs-viewer-content", dangerouslySetInnerHTML: { __html: renderMarkdown(content) } });
     }
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { style: { color: "var(--text-secondary)", fontSize: 14 }, children: [
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { style: { color: "var(--text-secondary)", fontSize: 14 }, children: [
       "\u65E0\u6CD5\u9884\u89C8\u3002",
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("a", { href: url, download: true, style: { color: "var(--accent-start)" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("a", { href: url, download: true, style: { color: "var(--accent-start)" }, children: [
         "\u4E0B\u8F7D ",
         selected.name
       ] })
@@ -6839,22 +8916,22 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
   const renderDir = (d2) => {
     const m2 = d2.meta;
     const cover = coverNode(m2) || firstMedia(d2);
-    return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "card card-hover gcard", onClick: () => enterDir(d2.name), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "gcard-thumb", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "gcard-kind", children: m2?.kind ? KIND_LABEL[m2.kind] || m2.kind : "\u6587\u4EF6\u5939" }),
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("button", { className: "gcard-del", title: "\u5220\u9664", onClick: (e) => remove(d2, e), children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconTrash, { size: 14 }) }),
-        cover ? /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Thumb, { f: cover, big: true }) : /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "gcard-ph", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconFolder, { size: 38 }) })
+    return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "card card-hover gcard", onClick: () => enterDir(d2.name), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "gcard-thumb", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "gcard-kind", children: m2?.kind ? KIND_LABEL[m2.kind] || m2.kind : "\u6587\u4EF6\u5939" }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("button", { className: "gcard-del", title: "\u5220\u9664", onClick: (e) => remove(d2, e), children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconTrash, { size: 14 }) }),
+        cover ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Thumb, { f: cover, big: true }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "gcard-ph", children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconFolder, { size: 38 }) })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "gcard-meta", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "gcard-name", title: m2?.title || d2.name, children: [
-          !m2 && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconFolder, { size: 13 }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "gcard-meta", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "gcard-name", title: m2?.title || d2.name, children: [
+          !m2 && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconFolder, { size: 13 }),
           " ",
           m2?.title || d2.name
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "gcard-sub", style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }, children: [
-          m2?.platform && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { style: badge, children: m2.platform }),
-          m2?.status && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { style: statusBadge(m2.status), children: STATUS_LABEL2[m2.status] || m2.status }),
-          /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("span", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "gcard-sub", style: { display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }, children: [
+          m2?.platform && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { style: badge, children: m2.platform }),
+          m2?.status && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { style: statusBadge(m2.status), children: STATUS_LABEL2[m2.status] || m2.status }),
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { children: [
             d2.fileCount ?? 0,
             " \u4E2A\u6587\u4EF6"
           ] })
@@ -6862,78 +8939,78 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
       ] })
     ] }, d2.path);
   };
-  const renderFile = (f) => /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "card card-hover gcard", onClick: () => open(f), children: [
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "gcard-thumb", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "gcard-kind", children: kindLabel(f) }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("button", { className: "gcard-del", title: "\u5220\u9664", onClick: (e) => remove(f, e), children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconTrash, { size: 14 }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(Thumb, { f })
+  const renderFile = (f) => /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "card card-hover gcard", onClick: () => open(f), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "gcard-thumb", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "gcard-kind", children: kindLabel(f) }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("button", { className: "gcard-del", title: "\u5220\u9664", onClick: (e) => remove(f, e), children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconTrash, { size: 14 }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(Thumb, { f })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "gcard-meta", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "gcard-name", title: f.name, children: f.name }) })
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "gcard-meta", children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "gcard-name", title: f.name, children: f.name }) })
   ] }, f.path);
   const empty = dirs.length === 0 && files.length === 0;
-  return /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "gallery-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "gallery-head", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("h1", { className: "page-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconOutputs, { size: 21 }),
-          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "crumb", onClick: () => goTo(0), children: "\u5185\u5BB9\u5E93" }),
-          stack.map((name, i) => /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("span", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "crumb-sep", children: "/" }),
-            i === stack.length - 1 ? projectMeta?.title && i === 0 ? projectMeta.title : name : /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { className: "crumb", onClick: () => goTo(i + 1), children: name })
+  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "gallery-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "gallery-head", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("h1", { className: "page-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconOutputs, { size: 21 }),
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "crumb", onClick: () => goTo(0), children: "\u5185\u5BB9\u5E93" }),
+          stack.map((name, i) => /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "crumb-sep", children: "/" }),
+            i === stack.length - 1 ? projectMeta?.title && i === 0 ? projectMeta.title : name : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "crumb", onClick: () => goTo(i + 1), children: name })
           ] }, i))
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("p", { className: "page-subtitle", children: atTop ? `\u6309\u9879\u76EE\u5F52\u6863\uFF0C\u5171 ${roots.length} \u4E2A\u9879\u76EE\u3002\u70B9\u9879\u76EE\u8FDB\u53BB\u770B\u6210\u54C1\u4E0E\u7D20\u6750\u3002` : `${dirs.length} \u4E2A\u6587\u4EF6\u5939 \xB7 ${files.length} \u4E2A\u6587\u4EF6\uFF08\u53EF\u7EE7\u7EED\u70B9\u5F00\u5B50\u6587\u4EF6\u5939\uFF09` })
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { className: "page-subtitle", children: atTop ? `\u6309\u9879\u76EE\u5F52\u6863\uFF0C\u5171 ${roots.length} \u4E2A\u9879\u76EE\u3002\u70B9\u9879\u76EE\u8FDB\u53BB\u770B\u6210\u54C1\u4E0E\u7D20\u6750\u3002` : `${dirs.length} \u4E2A\u6587\u4EF6\u5939 \xB7 ${files.length} \u4E2A\u6587\u4EF6\uFF08\u53EF\u7EE7\u7EED\u70B9\u5F00\u5B50\u6587\u4EF6\u5939\uFF09` })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("button", { className: "btn btn-sm", onClick: load, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconRefresh, { size: 14 }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("button", { className: "btn btn-sm", onClick: load, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconRefresh, { size: 14 }),
         " \u5237\u65B0"
       ] })
     ] }),
-    treeError && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "notice-error", children: treeError }),
-    atProjectRoot && projectMeta?.tags && projectMeta.tags.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "gallery-filters", style: { marginBottom: 4 }, children: projectMeta.tags.map((t) => /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("span", { style: badge, children: [
+    treeError && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "notice-error", children: treeError }),
+    atProjectRoot && projectMeta?.tags && projectMeta.tags.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "gallery-filters", style: { marginBottom: 4 }, children: projectMeta.tags.map((t) => /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { style: badge, children: [
       "#",
       t
     ] }, t)) }),
-    stack.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "gallery-filters", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("button", { className: "btn btn-sm", onClick: () => goTo(stack.length - 1), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("span", { style: { transform: "rotate(180deg)", display: "inline-flex" }, children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconChevron, { size: 13 }) }),
+    stack.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "gallery-filters", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("button", { className: "btn btn-sm", onClick: () => goTo(stack.length - 1), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { style: { transform: "rotate(180deg)", display: "inline-flex" }, children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconChevron, { size: 13 }) }),
         " \u8FD4\u56DE\u4E0A\u7EA7"
       ] }),
-      files.length > 0 && FILTERS.map((f) => /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("button", { className: `chip ${filter === f.key ? "active" : ""}`, onClick: () => setFilter(f.key), children: f.label }, f.key))
+      files.length > 0 && FILTERS.map((f) => /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("button", { className: `chip ${filter === f.key ? "active" : ""}`, onClick: () => setFilter(f.key), children: f.label }, f.key))
     ] }),
-    empty && !treeError ? /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "empty-state", style: { height: 300 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "empty-icon", children: /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconOutputs, { size: 44 }) }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("p", { children: atTop ? "\u8FD8\u6CA1\u6709\u4EA7\u7269\u2014\u2014\u53BB\u5BF9\u8BDD\u6216\u6280\u80FD\u5E93\u751F\u6210\u7B2C\u4E00\u6761\u5185\u5BB9\u5427" : "\u8FD9\u4E2A\u6587\u4EF6\u5939\u662F\u7A7A\u7684" })
-    ] }) : hasSplit ? /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(import_jsx_runtime13.Fragment, { children: [
-      deliverableFiles.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(import_jsx_runtime13.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "section-label", style: { margin: "6px 0 8px", fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }, children: [
+    empty && !treeError ? /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "empty-state", style: { height: 300 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "empty-icon", children: /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconOutputs, { size: 44 }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { children: atTop ? "\u8FD8\u6CA1\u6709\u4EA7\u7269\u2014\u2014\u53BB\u5BF9\u8BDD\u6216\u6280\u80FD\u5E93\u751F\u6210\u7B2C\u4E00\u6761\u5185\u5BB9\u5427" : "\u8FD9\u4E2A\u6587\u4EF6\u5939\u662F\u7A7A\u7684" })
+    ] }) : hasSplit ? /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+      deliverableFiles.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "section-label", style: { margin: "6px 0 8px", fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }, children: [
           "\u6210\u54C1 \xB7 ",
           deliverableFiles.length
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "gallery-grid", children: deliverableFiles.map(renderFile) })
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "gallery-grid", children: deliverableFiles.map(renderFile) })
       ] }),
-      (dirs.length > 0 || restFiles.length > 0) && /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)(import_jsx_runtime13.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "section-label", style: { margin: "18px 0 8px", fontSize: 13, fontWeight: 600, color: "var(--text-tertiary)" }, children: "\u7D20\u6750 / \u8FC7\u7A0B\u6587\u4EF6" }),
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "gallery-grid", children: [
+      (dirs.length > 0 || restFiles.length > 0) && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "section-label", style: { margin: "18px 0 8px", fontSize: 13, fontWeight: 600, color: "var(--text-tertiary)" }, children: "\u7D20\u6750 / \u8FC7\u7A0B\u6587\u4EF6" }),
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "gallery-grid", children: [
           dirs.map(renderDir),
           restFiles.map(renderFile)
         ] })
       ] })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "gallery-grid", children: [
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "gallery-grid", children: [
       dirs.map(renderDir),
       files.map(renderFile)
     ] }),
-    selected && /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "drawer-overlay", onClick: () => setSelected(null), children: /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "drawer", onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { className: "drawer-header", style: { display: "flex", alignItems: "center", justifyContent: "space-between" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("div", { style: { minWidth: 0 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "skill-detail-title", style: { fontSize: 16 }, children: selected.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { style: { fontSize: 12, color: "var(--text-tertiary)", marginTop: 3, fontFamily: "'SF Mono','Consolas',monospace" }, children: selected.path })
+    selected && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "drawer-overlay", onClick: () => setSelected(null), children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "drawer", onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "drawer-header", style: { display: "flex", alignItems: "center", justifyContent: "space-between" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { style: { minWidth: 0 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "skill-detail-title", style: { fontSize: 16 }, children: selected.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { style: { fontSize: 12, color: "var(--text-tertiary)", marginTop: 3, fontFamily: "'SF Mono','Consolas',monospace" }, children: selected.path })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("button", { className: "icon-btn", onClick: () => setSelected(null), children: "\xD7" })
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("button", { className: "icon-btn", onClick: () => setSelected(null), children: "\xD7" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { className: "drawer-body", children: preview() }),
-      /* @__PURE__ */ (0, import_jsx_runtime13.jsx)("div", { style: { padding: "10px 16px", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end" }, children: /* @__PURE__ */ (0, import_jsx_runtime13.jsxs)("button", { className: "btn btn-sm btn-danger", onClick: (e) => remove(selected, e), children: [
-        /* @__PURE__ */ (0, import_jsx_runtime13.jsx)(IconTrash, { size: 13 }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "drawer-body", children: preview() }),
+      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { style: { padding: "10px 16px", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "flex-end" }, children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("button", { className: "btn btn-sm btn-danger", onClick: (e) => remove(selected, e), children: [
+        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconTrash, { size: 13 }),
         " \u5220\u9664\u6B64\u6587\u4EF6"
       ] }) })
     ] }) })
@@ -6941,33 +9018,33 @@ function OutputsPage({ jumpPath, onJumpHandled }) {
 }
 
 // src/features/outputs.tsx
-var import_jsx_runtime14 = require("react/jsx-runtime");
-var view6 = "outputs";
-var order6 = 35;
-var labels6 = { zh: "\u5185\u5BB9\u5E93", en: "Outputs" };
-var Icon6 = IconOutputs;
-var Component6 = OutputsPage;
-var plugin6 = {
+var import_jsx_runtime16 = require("react/jsx-runtime");
+var view7 = "outputs";
+var order7 = 37;
+var labels7 = { zh: "\u5185\u5BB9\u5E93", en: "Outputs" };
+var Icon7 = IconOutputs;
+var Component7 = OutputsPage;
+var plugin7 = {
   name: "easel-view-outputs",
   inject: ["slots", "easelShell"],
   apply(ctx) {
     const { useShellProps, t } = ctx.easelShell;
     ctx.slots.inject("main", () => ctx.slots.register({
       name: "main",
-      key: pageKey(view6),
+      key: pageKey(view7),
       inject: () => ({})
     }, function EaselPage() {
       const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Component6, { ...props }) });
+      return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Component7, { ...props }) });
     }));
     ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
       name: "sidebar.panellist",
-      id: pageKey(view6),
-      order: order6,
+      id: pageKey(view7),
+      order: order7,
       locale: "easel.panel",
-      label: () => t(view6)
+      label: () => t(view7)
     }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(Icon6, { size });
+      return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Icon7, { size });
     }));
   }
 };
@@ -6975,16 +9052,16 @@ var plugin6 = {
 // src/features/publish.tsx
 var publish_exports = {};
 __export(publish_exports, {
-  Component: () => Component7,
-  Icon: () => Icon7,
-  labels: () => labels7,
-  order: () => order7,
-  plugin: () => plugin7,
-  view: () => view7
+  Component: () => Component8,
+  Icon: () => Icon8,
+  labels: () => labels8,
+  order: () => order8,
+  plugin: () => plugin8,
+  view: () => view8
 });
 
 // src/components/PublishPage.tsx
-var import_react9 = require("react");
+var import_react10 = require("react");
 
 // src/lib/store.ts
 var PUBLISH_KEY = "easel_publish_draft";
@@ -7003,7 +9080,7 @@ function readMigratedLocalValue(key, suffix) {
 var PUBLISH_DEFAULT = {
   title: "",
   body: "",
-  platforms: ["xiaohongshu", "douyin"],
+  accounts: [],
   overrides: {},
   tags: ""
 };
@@ -7024,7 +9101,7 @@ function savePublishDraft(d2) {
 }
 
 // src/components/PublishPage.tsx
-var import_jsx_runtime15 = require("react/jsx-runtime");
+var import_jsx_runtime17 = require("react/jsx-runtime");
 var PLATFORMS2 = [
   { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", titleLimit: 20, bodyLimit: 1e3, hint: "\u6807\u9898\u226420\uFF0C\u6B63\u6587\u22641000\uFF0C\u91CD\u60C5\u7EEA+\u8BDD\u9898\u6807\u7B7E" },
   { key: "douyin", label: "\u6296\u97F3", titleLimit: 55, bodyLimit: 55, hint: "\u6587\u6848\u226455\uFF0C\u524D\u51E0\u5B57\u662F\u94A9\u5B50" },
@@ -7034,38 +9111,38 @@ var PLATFORMS2 = [
   { key: "bilibili", label: "B\u7AD9", titleLimit: 80, bodyLimit: 2e3, hint: "\u9700\u9644\u89C6\u9891\uFF0C\u6807\u9898\u226480\u3001\u7B80\u4ECB\u22642000\uFF0C\u9ED8\u8BA4\u6295\u300C\u77E5\u8BC6\u300D\u5206\u533A" },
   { key: "wechat-oa", label: "\u516C\u4F17\u53F7", titleLimit: 64, bodyLimit: 2e4, hint: "\u56FE\u6587\u6587\u7AE0\uFF0C\u6B63\u6587\u7528 Markdown\uFF0C\u9996\u56FE\u4F5C\u5C01\u9762\uFF0C\u53D1\u5230\u8349\u7A3F\u7BB1\uFF1B\u9700\u5148\u5728\u8D26\u53F7\u9875\u300C\u767B\u5F55\u516C\u4F17\u53F7\u540E\u53F0\u300D\u626B\u7801" }
 ];
-var PUBLISHABLE = /* @__PURE__ */ new Set(["xiaohongshu", "douyin", "kuaishou", "weixin-channels", "zhihu", "bilibili", "wechat-oa"]);
 var MEDIA_REQUIRED = /* @__PURE__ */ new Set(["xiaohongshu", "douyin", "kuaishou", "weixin-channels", "bilibili", "wechat-oa"]);
 var VIDEO_ONLY = /* @__PURE__ */ new Set(["douyin", "weixin-channels", "bilibili"]);
 var VIDEO_RE = /\.(mp4|mov|webm|mkv|avi|m4v|flv|ts)$/i;
-function PublishPage({ persona }) {
+var PUBLISH_CONCURRENCY = 2;
+function PublishPage({ persona, onNavigate }) {
   const draft0 = loadPublishDraft();
-  const [title, setTitle] = (0, import_react9.useState)(draft0.title);
-  const [body, setBody] = (0, import_react9.useState)(draft0.body);
-  const [platforms, setPlatforms] = (0, import_react9.useState)(draft0.platforms);
-  const [overrides, setOverrides] = (0, import_react9.useState)(draft0.overrides);
-  const [tags, setTags] = (0, import_react9.useState)(draft0.tags || "");
-  const [editing, setEditing] = (0, import_react9.useState)(null);
-  const [copied, setCopied] = (0, import_react9.useState)("");
-  const [toast, setToast] = (0, import_react9.useState)("");
-  const [adapting, setAdapting] = (0, import_react9.useState)(false);
-  const [checking, setChecking] = (0, import_react9.useState)(false);
-  const [checkResult, setCheckResult] = (0, import_react9.useState)("");
-  const adaptCtl = (0, import_react9.useRef)(null);
-  const checkCtl = (0, import_react9.useRef)(null);
-  const [accounts, setAccounts] = (0, import_react9.useState)([]);
-  const [mediaFiles, setMediaFiles] = (0, import_react9.useState)([]);
-  const [selectedMedia, setSelectedMedia] = (0, import_react9.useState)([]);
-  const [showPicker, setShowPicker] = (0, import_react9.useState)(false);
-  const [pub, setPub] = (0, import_react9.useState)({});
-  const [publishing, setPublishing] = (0, import_react9.useState)(false);
-  const [pubSms, setPubSms] = (0, import_react9.useState)(null);
-  const [pubSmsCode, setPubSmsCode] = (0, import_react9.useState)("");
-  const [pubSmsBusy, setPubSmsBusy] = (0, import_react9.useState)(false);
-  (0, import_react9.useEffect)(() => {
-    savePublishDraft({ title, body, platforms, overrides, tags });
-  }, [title, body, platforms, overrides, tags]);
-  (0, import_react9.useEffect)(() => {
+  const [title, setTitle] = (0, import_react10.useState)(draft0.title);
+  const [body, setBody] = (0, import_react10.useState)(draft0.body);
+  const [accountIds, setAccountIds] = (0, import_react10.useState)(draft0.accounts);
+  const [overrides, setOverrides] = (0, import_react10.useState)(draft0.overrides);
+  const [tags, setTags] = (0, import_react10.useState)(draft0.tags || "");
+  const [editing, setEditing] = (0, import_react10.useState)(null);
+  const [copied, setCopied] = (0, import_react10.useState)("");
+  const [toast, setToast] = (0, import_react10.useState)("");
+  const [adapting, setAdapting] = (0, import_react10.useState)(false);
+  const [checking, setChecking] = (0, import_react10.useState)(false);
+  const [checkResult, setCheckResult] = (0, import_react10.useState)("");
+  const adaptCtl = (0, import_react10.useRef)(null);
+  const checkCtl = (0, import_react10.useRef)(null);
+  const [accounts, setAccounts] = (0, import_react10.useState)([]);
+  const [mediaFiles, setMediaFiles] = (0, import_react10.useState)([]);
+  const [selectedMedia, setSelectedMedia] = (0, import_react10.useState)([]);
+  const [showPicker, setShowPicker] = (0, import_react10.useState)(false);
+  const [pub, setPub] = (0, import_react10.useState)({});
+  const [publishing, setPublishing] = (0, import_react10.useState)(false);
+  const [pubSms, setPubSms] = (0, import_react10.useState)(null);
+  const [pubSmsCode, setPubSmsCode] = (0, import_react10.useState)("");
+  const [pubSmsBusy, setPubSmsBusy] = (0, import_react10.useState)(false);
+  (0, import_react10.useEffect)(() => {
+    savePublishDraft({ title, body, accounts: accountIds, overrides, tags });
+  }, [title, body, accountIds, overrides, tags]);
+  (0, import_react10.useEffect)(() => {
     fetchAccounts().then(setAccounts).catch(() => {
     });
     fetchOutputs().then((roots) => {
@@ -7083,8 +9160,27 @@ function PublishPage({ persona }) {
     }).catch(() => {
     });
   }, []);
-  const loginOf = (key) => accounts.find((a) => a.platform === key)?.loggedIn ?? false;
-  const toggle = (k2) => setPlatforms((prev) => prev.includes(k2) ? prev.filter((x2) => x2 !== k2) : [...prev, k2]);
+  (0, import_react10.useEffect)(() => {
+    if (accounts.length === 0) return;
+    setAccountIds((ids) => {
+      const alive = ids.filter((id) => accounts.some((a) => a.id === id));
+      return alive.length === ids.length ? ids : alive;
+    });
+  }, [accounts]);
+  const targets = (0, import_react10.useMemo)(
+    () => accountIds.map((id) => accounts.find((a) => a.id === id)).filter((a) => !!a),
+    [accountIds, accounts]
+  );
+  const selectedPlatformKeys = (0, import_react10.useMemo)(() => {
+    const set = new Set(targets.map((a) => a.platform));
+    return PLATFORMS2.filter((p) => set.has(p.key));
+  }, [targets]);
+  const samePlatformMulti = (0, import_react10.useMemo)(() => {
+    const count = {};
+    for (const a of targets) count[a.platform] = (count[a.platform] || 0) + 1;
+    return Object.values(count).some((n) => n >= 2);
+  }, [targets]);
+  const toggleAccount = (id) => setAccountIds((prev) => prev.includes(id) ? prev.filter((x2) => x2 !== id) : [...prev, id]);
   const showToast = (m2) => {
     setToast(m2);
     setTimeout(() => setToast(""), 2800);
@@ -7108,8 +9204,8 @@ function PublishPage({ persona }) {
     return [...prev, path];
   });
   const adapt = async () => {
-    if (empty || platforms.length === 0 || adapting) return;
-    const sel = PLATFORMS2.filter((p) => platforms.includes(p.key));
+    if (empty || selectedPlatformKeys.length === 0 || adapting) return;
+    const sel = selectedPlatformKeys;
     const batch = `adapt-${Date.now().toString(36)}`;
     const prompt = `\u8BF7\u6267\u884C\u6280\u80FD skill-content-repurposing\uFF08\u5148\u8BFB\u53D6 skills/openclaw/skill-content-repurposing/SKILL.md\uFF0C\u52A1\u5FC5\u53C2\u8003\u8BE5 SKILL \u7684 platform-specs \u4E0E\u6539\u5199\u914D\u65B9\uFF09\uFF1A\u628A\u4E0B\u9762\u8FD9\u6761\u5185\u5BB9\u6539\u7F16\u5230\u8FD9\u4E9B\u5E73\u53F0\uFF1A${sel.map((p) => p.label).join("\u3001")}\u3002
 \u3010\u786C\u6027\u8981\u6C42\u3011\u6BCF\u4E2A\u5E73\u53F0\u8F93\u51FA\u201C\u53EF\u76F4\u63A5\u590D\u5236\u53D1\u5E03\u7684\u7EAF\u6587\u672C\u6B63\u6587\u201D\uFF0C\u7981\u6B62\u4EFB\u4F55 Markdown \u8BED\u6CD5\uFF1A\u4E0D\u8981 **\u52A0\u7C97**\u3001# \u6807\u9898\u3001---\u3001\u8868\u683C\u3001\u4EE3\u7801\u5757\u3001\u7F16\u53F7\u5217\u8868\u7B26\u53F7\uFF1B\u5C0F\u7EA2\u4E66\u53EF\u7528 emoji \u548C #\u8BDD\u9898\u6807\u7B7E\uFF0C\u6309\u5E73\u53F0\u4E60\u60EF\u81EA\u7136\u5206\u884C\u5373\u53EF\u3002
@@ -7152,6 +9248,7 @@ function PublishPage({ persona }) {
   const stopAdapt = () => adaptCtl.current?.();
   const runPrecheck = async () => {
     const batch = `precheck-${Date.now().toString(36)}.md`;
+    const roster = await rosterPrompt();
     const prompt = `\u4F60\u662F\u793E\u5A92\u53D1\u5E03\u5BA1\u6838\u52A9\u624B\u3002\u5BF9\u4E0B\u9762\u8FD9\u6761\u5F85\u53D1\u5185\u5BB9\u505A\u4E09\u9879\u68C0\u67E5\uFF0C\u7528\u7B80\u6D01\u4E2D\u6587\u5206\u70B9\u8F93\u51FA\uFF1A
 1. **\u5408\u89C4\u98CE\u9669**\uFF1A\u662F\u5426\u542B\u6781\u9650\u8BCD/\u533B\u7597\u529F\u6548/\u654F\u611F\u6216\u8FDD\u89C4\u8868\u8FF0\uFF0C\u5217\u51FA\u95EE\u9898\u8BCD+\u66FF\u6362\u5EFA\u8BAE\uFF1B\u65E0\u5219\u5199"\u672A\u89C1\u660E\u663E\u98CE\u9669"\u3002
 2. **\u6807\u9898/\u94A9\u5B50**\uFF1A\u7ED9\u6807\u9898\u6253 1-10 \u5206\uFF0C\u5E76\u7ED9 1-2 \u4E2A\u66F4\u597D\u7684\u5907\u9009\u3002
@@ -7160,7 +9257,7 @@ function PublishPage({ persona }) {
 `) + `\u6700\u540E\u4E00\u884C\u7ED9\u300C\u2705\u53EF\u53D1 / \u26A0\uFE0F\u5EFA\u8BAE\u4FEE\u6539\u300D\u7ED3\u8BBA\u3002
 \u5B8C\u6210\u540E\u628A\u5B8C\u6574\u9884\u68C0\u62A5\u544A\u5199\u5165 outputs/_adapt/${batch}\uFF08Markdown\uFF09\u3002\u9664\u8BE5\u6587\u4EF6\u5916\u4E0D\u8981\u5199\u5176\u5B83\u6587\u4EF6\u3002
 
-\u5F85\u68C0\u5185\u5BB9\uFF1A
+${roster}${roster ? "\n" : ""}\u5F85\u68C0\u5185\u5BB9\uFF1A
 \u6807\u9898\uFF1A${title}
 \u6B63\u6587\uFF1A${body}`;
     const handle = await pushTask(prompt, { open: false });
@@ -7185,9 +9282,9 @@ function PublishPage({ persona }) {
   };
   const publishAll = async () => {
     if (empty || publishing || checking) return;
-    const targets = PLATFORMS2.filter((p) => platforms.includes(p.key) && PUBLISHABLE.has(p.key));
-    if (targets.length === 0) {
-      showToast("\u6240\u9009\u5E73\u53F0\u6682\u4E0D\u652F\u6301\u4E00\u952E\u53D1\u5E03\uFF08B\u7AD9\u8BF7\u7528\u300C\u590D\u5236\u300D\u6216\u7EC8\u7AEF biliup\uFF09");
+    const groups = PLATFORMS2.map((p) => targets.filter((a) => a.platform === p.key)).filter((g) => g.length > 0);
+    if (groups.length === 0) {
+      showToast("\u8BF7\u5148\u52FE\u9009\u8981\u53D1\u5E03\u7684\u8D26\u53F7");
       return;
     }
     setChecking(true);
@@ -7200,89 +9297,104 @@ function PublishPage({ persona }) {
     } finally {
       setChecking(false);
     }
+    const plan = groups.map((g) => {
+      const label = PLATFORMS2.find((p) => p.key === g[0].platform)?.label || g[0].platform;
+      return `${label}\uFF1A${g.map((a) => a.name).join("\u3001")}`;
+    }).join("\n");
     const okToSend = window.confirm(
       `\u53D1\u5E03\u524D\u9884\u68C0\u5DF2\u6267\u884C\uFF0C\u7ED3\u679C\u5DF2\u663E\u793A\u5728\u9875\u9762\u4E2D\u3002\u4EBA\u8BBE\u8BC4\u5206\u53EA\u505A\u63D0\u9192\uFF0C\u4E0D\u4F1A\u963B\u6B62\u53D1\u5E03\u3002
 
-\u5373\u5C06\u3010\u771F\u5B9E\u53D1\u5E03\u3011\u5230\uFF1A${targets.map((t) => t.label).join("\u3001")}\u3002
+\u5373\u5C06\u3010\u771F\u5B9E\u53D1\u5E03\u3011\u5230\u4EE5\u4E0B\u8D26\u53F7\uFF08\u540C\u5E73\u53F0\u4E32\u884C\u3001\u8DE8\u5E73\u53F0\u6700\u591A ${PUBLISH_CONCURRENCY} \u8DEF\u5E76\u884C\uFF09\uFF1A
+${plan}
 \u8FD9\u4F1A\u516C\u5F00\u53D1\u5E03\u5230\u4F60\u7684\u8D26\u53F7\uFF0C\u786E\u5B9A\u7EE7\u7EED\uFF1F`
     );
     if (!okToSend) return;
     setPublishing(true);
-    for (const t of targets) {
-      if (!loginOf(t.key)) {
-        setPub((r) => ({ ...r, [t.key]: { status: "fail", msg: "\u672A\u767B\u5F55 \xB7 \u53BB\u8D26\u53F7\u9875\u767B\u5F55" } }));
-        continue;
+    let gi = 0;
+    const worker = async () => {
+      while (gi < groups.length) {
+        const group = groups[gi++];
+        for (const a of group) await publishOne(a);
       }
-      if (MEDIA_REQUIRED.has(t.key) && selectedMedia.length === 0) {
-        setPub((r) => ({ ...r, [t.key]: { status: "fail", msg: "\u9700\u9644\u5E26\u56FE\u7247/\u89C6\u9891" } }));
-        continue;
-      }
-      if (VIDEO_ONLY.has(t.key) && !selectedMedia.some((p) => VIDEO_RE.test(p))) {
-        setPub((r) => ({ ...r, [t.key]: { status: "fail", msg: `${t.label}\u53EA\u80FD\u53D1\u89C6\u9891\uFF0C\u8BF7\u4ECE\u5185\u5BB9\u5E93\u9009\u4E00\u4E2A\u89C6\u9891` } }));
-        continue;
-      }
-      setPub((r) => ({ ...r, [t.key]: { status: "publishing", msg: "\u53D1\u5E03\u4E2D\u2026\u53EF\u80FD\u9700 1-2 \u5206\u949F" } }));
-      try {
-        const res = await publishNow(t.key, { title, body: effective(t.key), media: selectedMedia, tags });
-        if (res.async) {
-          await pollAsyncPublish(t.key, t.label);
-        } else {
-          setPub((r) => ({
-            ...r,
-            [t.key]: res.ok ? { status: "ok", msg: "\u5DF2\u53D1\u5E03 \u2705" } : { status: "fail", msg: res.detail || res.message || "\u53D1\u5E03\u5931\u8D25" }
-          }));
-        }
-      } catch (e) {
-        setPub((r) => ({ ...r, [t.key]: { status: "fail", msg: e instanceof Error ? e.message : "\u53D1\u5E03\u5931\u8D25" } }));
-      }
-    }
+    };
+    await Promise.all(Array.from({ length: Math.min(PUBLISH_CONCURRENCY, groups.length) }, () => worker()));
     setPublishing(false);
-    showToast("\u53D1\u5E03\u6D41\u7A0B\u7ED3\u675F\uFF0C\u89C1\u5404\u5E73\u53F0\u5361\u7247\u72B6\u6001");
+    showToast("\u53D1\u5E03\u6D41\u7A0B\u7ED3\u675F\uFF0C\u89C1\u5404\u8D26\u53F7\u72B6\u6001");
   };
-  const pollAsyncPublish = (key, label2) => new Promise((resolve) => {
+  const publishOne = async (a) => {
+    const meta = PLATFORMS2.find((p) => p.key === a.platform);
+    if (!a.loggedIn) {
+      setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: "\u672A\u767B\u5F55 \xB7 \u53BB\u8D26\u53F7\u9875\u767B\u5F55" } }));
+      return;
+    }
+    if (MEDIA_REQUIRED.has(a.platform) && selectedMedia.length === 0) {
+      setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: "\u9700\u9644\u5E26\u56FE\u7247/\u89C6\u9891" } }));
+      return;
+    }
+    if (meta && VIDEO_ONLY.has(a.platform) && !selectedMedia.some((p) => VIDEO_RE.test(p))) {
+      setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: `${meta.label}\u53EA\u80FD\u53D1\u89C6\u9891\uFF0C\u8BF7\u4ECE\u5185\u5BB9\u5E93\u9009\u4E00\u4E2A\u89C6\u9891` } }));
+      return;
+    }
+    setPub((r) => ({ ...r, [a.id]: { status: "publishing", msg: "\u53D1\u5E03\u4E2D\u2026\u53EF\u80FD\u9700 1-2 \u5206\u949F" } }));
+    try {
+      const res = await publishNow(a.platform, { title, body: effective(a.platform), media: selectedMedia, tags, account: a.id });
+      if (res.async) {
+        await pollAsyncPublish(a);
+      } else {
+        setPub((r) => ({
+          ...r,
+          [a.id]: res.ok ? { status: "ok", msg: "\u5DF2\u53D1\u5E03 \u2705" } : { status: "fail", msg: res.detail || res.message || "\u53D1\u5E03\u5931\u8D25" }
+        }));
+      }
+    } catch (e) {
+      setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: e instanceof Error ? e.message : "\u53D1\u5E03\u5931\u8D25" } }));
+    }
+  };
+  const pollAsyncPublish = (a) => new Promise((resolve) => {
+    const label = PLATFORMS2.find((p) => p.key === a.platform)?.label || a.platform;
     const started = Date.now();
     const iv = setInterval(async () => {
       if (Date.now() - started > 15 * 60 * 1e3) {
         clearInterval(iv);
-        setPubSms(null);
-        setPub((r) => ({ ...r, [key]: { status: "fail", msg: "\u53D1\u5E03\u8D85\u65F6" } }));
+        setPubSms((m2) => m2 && m2.accountId === a.id ? null : m2);
+        setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: "\u53D1\u5E03\u8D85\u65F6" } }));
         resolve();
         return;
       }
       let s;
       try {
-        s = await publishStatus(key);
+        s = await publishStatus(a.platform, a.id);
       } catch {
         return;
       }
       if (s.state === "sms_required" || s.state === "verifying") {
-        setPubSms({ platform: key, name: label2, state: s.state, message: s.message });
-        setPub((r) => ({ ...r, [key]: { status: "publishing", msg: s.message || "\u9700\u77ED\u4FE1\u9A8C\u8BC1" } }));
+        setPubSms({ platform: a.platform, accountId: a.id, name: `${label} \xB7 ${a.name}`, state: s.state, message: s.message });
+        setPub((r) => ({ ...r, [a.id]: { status: "publishing", msg: s.message || "\u9700\u77ED\u4FE1\u9A8C\u8BC1" } }));
       } else if (s.state === "success") {
         clearInterval(iv);
-        setPubSms(null);
-        setPub((r) => ({ ...r, [key]: { status: "ok", msg: "\u5DF2\u53D1\u5E03 \u2705" } }));
+        setPubSms((m2) => m2 && m2.accountId === a.id ? null : m2);
+        setPub((r) => ({ ...r, [a.id]: { status: "ok", msg: "\u5DF2\u53D1\u5E03 \u2705" } }));
         resolve();
       } else if (s.state === "error") {
         clearInterval(iv);
-        setPubSms(null);
-        setPub((r) => ({ ...r, [key]: { status: "fail", msg: s.message || "\u53D1\u5E03\u5931\u8D25" } }));
+        setPubSms((m2) => m2 && m2.accountId === a.id ? null : m2);
+        setPub((r) => ({ ...r, [a.id]: { status: "fail", msg: s.message || "\u53D1\u5E03\u5931\u8D25" } }));
         resolve();
       } else {
-        setPub((r) => ({ ...r, [key]: { status: "publishing", msg: s.message || "\u53D1\u5E03\u4E2D\u2026" } }));
+        setPub((r) => ({ ...r, [a.id]: { status: "publishing", msg: s.message || "\u53D1\u5E03\u4E2D\u2026" } }));
       }
     }, 2500);
   });
   const submitPubSms = async () => {
     if (!pubSms) return;
-    const code2 = pubSmsCode.replace(/\D/g, "");
-    if (code2.length < 4) {
+    const code = pubSmsCode.replace(/\D/g, "");
+    if (code.length < 4) {
       showToast("\u9A8C\u8BC1\u7801\u5E94\u4E3A 4-6 \u4F4D\u6570\u5B57");
       return;
     }
     setPubSmsBusy(true);
     try {
-      await submitPublishSms(pubSms.platform, code2);
+      await submitPublishSms(pubSms.platform, code, pubSms.accountId);
       setPubSmsCode("");
       setPubSms((p) => p && { ...p, state: "verifying", message: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" });
     } catch (e) {
@@ -7310,16 +9422,16 @@ function PublishPage({ persona }) {
     });
     showToast("\u5DF2\u5B58\u4E3A\u8349\u7A3F\u5E76\u52A0\u5165\u4ECA\u5929\u7684\u65E5\u5386");
   };
-  const canPublish = platforms.some((k2) => PUBLISHABLE.has(k2));
-  return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "publish-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "publish-editor", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("h1", { className: "page-title", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconPublish, { size: 21 }),
+  const canPublish = targets.length > 0;
+  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "publish-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "publish-editor", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("h1", { className: "page-title", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconPublish, { size: 21 }),
         " \u53D1\u5E03\u4E2D\u5FC3"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { className: "page-subtitle", children: "\u4E00\u6B21\u7F16\u8F91 \u2192 AI \u4E00\u952E\u6539\u5199\u6210\u5404\u5E73\u53F0\u7248\u672C \u2192 \u9884\u68C0 \u2192 \u9644\u5A92\u4F53 \u2192 \u4E00\u952E\u771F\u53D1\u5E03\u3002" }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("label", { className: "field-label", children: "\u6807\u9898" }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "page-subtitle", children: "\u4E00\u6B21\u7F16\u8F91 \u2192 AI \u4E00\u952E\u6539\u5199\u6210\u5404\u5E73\u53F0\u7248\u672C \u2192 \u9884\u68C0 \u2192 \u9644\u5A92\u4F53 \u2192 \u6309\u8D26\u53F7\u4E00\u952E\u5206\u53D1\u3002" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { className: "field-label", children: "\u6807\u9898" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
         "input",
         {
           className: "field",
@@ -7328,8 +9440,8 @@ function PublishPage({ persona }) {
           onChange: (e) => setTitle(e.target.value)
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("label", { className: "field-label", children: "\u6B63\u6587\uFF08\u6BCD\u7248\uFF09" }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { className: "field-label", children: "\u6B63\u6587\uFF08\u6BCD\u7248\uFF09" }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
         "textarea",
         {
           className: "field",
@@ -7339,11 +9451,11 @@ function PublishPage({ persona }) {
           onChange: (e) => setBody(e.target.value)
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("label", { className: "field-label", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("label", { className: "field-label", children: [
         "\u8BDD\u9898\u6807\u7B7E ",
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { style: { color: "var(--text-secondary)", fontWeight: 400, fontSize: 12 }, children: "\uFF08\u9017\u53F7\u5206\u9694\uFF0C\u5982\u300CAI,\u804C\u573A,\u5E72\u8D27\u300D\uFF1B\u5C0F\u7EA2\u4E66\u4F1A\u7528 # \u8054\u60F3\u771F\u6B63\u7ED1\u5B9A\u8BDD\u9898\uFF09" })
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { color: "var(--text-secondary)", fontWeight: 400, fontSize: 12 }, children: "\uFF08\u9017\u53F7\u5206\u9694\uFF0C\u5982\u300CAI,\u804C\u573A,\u5E72\u8D27\u300D\uFF1B\u5C0F\u7EA2\u4E66\u4F1A\u7528 # \u8054\u60F3\u771F\u6B63\u7ED1\u5B9A\u8BDD\u9898\uFF09" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
         "input",
         {
           className: "field",
@@ -7352,87 +9464,107 @@ function PublishPage({ persona }) {
           onChange: (e) => setTags(e.target.value)
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("label", { className: "field-label", children: "\u53D1\u5E03\u5E73\u53F0" }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8 }, children: PLATFORMS2.map((p) => /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
-        "button",
-        {
-          className: `chip ${platforms.includes(p.key) ? "active" : ""}`,
-          onClick: () => toggle(p.key),
-          children: p.label
-        },
-        p.key
-      )) }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("label", { className: "field-label", style: { marginTop: 14 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("label", { className: "field-label", children: [
+        "\u53D1\u5E03\u76EE\u6807 ",
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { style: { color: "var(--text-secondary)", fontWeight: 400, fontSize: 12 }, children: [
+          "\uFF08\u5E73\u53F0 \u2192 \u8D26\u53F7\uFF0C\u53EF\u8DE8\u5E73\u53F0\u591A\u9009\uFF1B\u540C\u5E73\u53F0\u4E32\u884C\u53D1\u5E03\uFF0C\u8DE8\u5E73\u53F0\u6700\u591A ",
+          PUBLISH_CONCURRENCY,
+          " \u8DEF\u5E76\u884C\uFF09"
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", flexDirection: "column", gap: 8 }, children: PLATFORMS2.map((p) => {
+        const accs = accounts.filter((a) => a.platform === p.key);
+        return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("b", { style: { fontSize: 13, minWidth: 70 }, children: p.label }),
+          accs.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { style: { fontSize: 12.5, color: "var(--text-secondary)" }, children: [
+            "\u8BE5\u5E73\u53F0\u8FD8\u6CA1\u6709\u8D26\u53F7",
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+              "button",
+              {
+                className: "btn btn-sm btn-ghost",
+                style: { marginLeft: 8 },
+                onClick: () => onNavigate?.("accounts"),
+                children: "\u53BB\u8D26\u53F7\u9875\u6DFB\u52A0"
+              }
+            )
+          ] }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px 16px" }, children: accs.map((a) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("label", { style: { display: "flex", alignItems: "center", gap: 5, fontSize: 13, cursor: "pointer" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("input", { type: "checkbox", checked: accountIds.includes(a.id), onChange: () => toggleAccount(a.id) }),
+            a.name,
+            !a.loggedIn && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 11.5, color: "var(--amber)" }, children: "\u672A\u767B\u5F55" })
+          ] }, a.id)) })
+        ] }, p.key);
+      }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("label", { className: "field-label", style: { marginTop: 14 }, children: [
         "\u5A92\u4F53\u9644\u4EF6 ",
-        selectedMedia.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "pv-badge", children: [
+        selectedMedia.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "pv-badge", children: [
           selectedMedia.length,
           " \u4E2A"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { style: { color: "var(--text-secondary)", fontWeight: 400, fontSize: 12 }, children: "\uFF08\u5C0F\u7EA2\u4E66/\u6296\u97F3/\u5FEB\u624B/\u5FAE\u4FE1\u89C6\u9891\u53F7/B\u7AD9\u5FC5\u9700\uFF0C\u4ECE\u5185\u5BB9\u5E93\u9009\uFF1B\u6296\u97F3\u3001\u89C6\u9891\u53F7\u3001B\u7AD9\u987B\u4E3A\u89C6\u9891\uFF09" })
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { color: "var(--text-secondary)", fontWeight: 400, fontSize: 12 }, children: "\uFF08\u5C0F\u7EA2\u4E66/\u6296\u97F3/\u5FEB\u624B/\u5FAE\u4FE1\u89C6\u9891\u53F7/B\u7AD9\u5FC5\u9700\uFF0C\u4ECE\u5185\u5BB9\u5E93\u9009\uFF1B\u6296\u97F3\u3001\u89C6\u9891\u53F7\u3001B\u7AD9\u987B\u4E3A\u89C6\u9891\uFF09" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("button", { className: "btn btn-sm", onClick: () => setShowPicker((v2) => !v2), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconSkills, { size: 13 }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "btn btn-sm", onClick: () => setShowPicker((v2) => !v2), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconSkills, { size: 13 }),
           " ",
           showPicker ? "\u6536\u8D77" : "\u9009\u62E9\u5A92\u4F53"
         ] }),
-        selectedMedia.map((path) => /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "media-chip", onClick: () => toggleMedia(path), title: "\u70B9\u51FB\u79FB\u9664", children: [
-          mediaFiles.find((f) => f.path === path)?.kind === "image" ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("img", { src: mediaUrl(path), alt: "" }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "media-vid", children: "\u{1F3AC}" }),
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "media-x", children: "\xD7" })
+        selectedMedia.map((path) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "media-chip", onClick: () => toggleMedia(path), title: "\u70B9\u51FB\u79FB\u9664", children: [
+          mediaFiles.find((f) => f.path === path)?.kind === "image" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("img", { src: mediaUrl(path), alt: "" }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "media-vid", children: "\u{1F3AC}" }),
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "media-x", children: "\xD7" })
         ] }, path))
       ] }),
-      showPicker && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "media-grid", children: [
-        mediaFiles.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "dash-empty", children: "\u5185\u5BB9\u5E93\u6682\u65E0\u56FE\u7247/\u89C6\u9891" }),
-        mediaFiles.slice(0, 40).map((f) => /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(
+      showPicker && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "media-grid", children: [
+        mediaFiles.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "dash-empty", children: "\u5185\u5BB9\u5E93\u6682\u65E0\u56FE\u7247/\u89C6\u9891" }),
+        mediaFiles.slice(0, 40).map((f) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
           "div",
           {
             className: `media-cell ${selectedMedia.includes(f.path) ? "sel" : ""}`,
             onClick: () => toggleMedia(f.path),
             title: f.path,
             children: [
-              f.kind === "image" ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("img", { src: mediaUrl(f.path), alt: f.name, loading: "lazy" }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "media-vid", children: [
+              f.kind === "image" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("img", { src: mediaUrl(f.path), alt: f.name, loading: "lazy" }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "media-vid", children: [
                 "\u{1F3AC}",
-                /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("br", {}),
+                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("br", {}),
                 f.name.slice(0, 12)
               ] }),
-              selectedMedia.includes(f.path) && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "media-check", children: "\u2713" })
+              selectedMedia.includes(f.path) && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "media-check", children: "\u2713" })
             ]
           },
           f.path
         ))
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "publish-actions", children: [
-        adapting ? /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("button", { className: "btn btn-sm", onClick: stopAdapt, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconStop, { size: 13 }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "publish-actions", children: [
+        adapting ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "btn btn-sm", onClick: stopAdapt, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconStop, { size: 13 }),
           " \u505C\u6B62\u751F\u6210"
-        ] }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("button", { className: "btn btn-sm btn-primary", disabled: empty || platforms.length === 0, onClick: adapt, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconSkills, { size: 14 }),
+        ] }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "btn btn-sm btn-primary", disabled: empty || selectedPlatformKeys.length === 0, onClick: adapt, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconSkills, { size: 14 }),
           " \u4E00\u952E\u9002\u914D\u5404\u5E73\u53F0"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("button", { className: "btn btn-sm", disabled: empty || checking || adapting, onClick: check, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconCheck, { size: 14 }),
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "btn btn-sm", disabled: empty || checking || adapting, onClick: check, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconCheck, { size: 14 }),
           " ",
           checking ? "\u9884\u68C0\u4E2D\u2026" : "\u53D1\u5E03\u524D\u9884\u68C0"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("button", { className: "btn btn-sm", disabled: empty, onClick: () => addToCalendar(platforms[0] || "xiaohongshu"), children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconCalendar, { size: 14 }),
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "btn btn-sm", disabled: empty, onClick: () => addToCalendar(selectedPlatformKeys[0]?.key || "xiaohongshu"), children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconCalendar, { size: 14 }),
           " \u5B58\u8349\u7A3F\u5E76\u6392\u671F"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
           "button",
           {
             className: "btn btn-sm btn-primary",
             disabled: empty || publishing || checking || !canPublish,
-            title: canPublish ? "\u771F\u5B9E\u53D1\u5E03\u5230\u5DF2\u767B\u5F55\u5E73\u53F0" : "\u6240\u9009\u5E73\u53F0\u65E0\u4E00\u952E\u53D1\u5E03\uFF08B\u7AD9\u8D70\u7EC8\u7AEF biliup\uFF09",
+            title: canPublish ? "\u771F\u5B9E\u53D1\u5E03\u5230\u52FE\u9009\u7684\u8D26\u53F7" : "\u8BF7\u5148\u52FE\u9009\u8981\u53D1\u5E03\u7684\u8D26\u53F7",
             onClick: publishAll,
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconPublish, { size: 14 }),
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconPublish, { size: 14 }),
               " ",
               publishing ? "\u53D1\u5E03\u4E2D\u2026" : "\u4E00\u952E\u53D1\u5E03"
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
           "button",
           {
             className: "btn btn-sm btn-ghost",
@@ -7447,51 +9579,53 @@ function PublishPage({ persona }) {
               showToast("\u5DF2\u6E05\u7A7A");
             },
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconTrash, { size: 13 }),
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconTrash, { size: 13 }),
               " \u6E05\u7A7A"
             ]
           }
-        )
+        ),
+        samePlatformMulti && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--amber)", alignSelf: "center", lineHeight: 1.5 }, children: "\u26A0\uFE0F \u540C\u5E73\u53F0\u591A\u53F7\u53D1\u540C\u4E00\u5185\u5BB9\u6709\u53BB\u91CD/\u9650\u6D41\u98CE\u9669\uFF0C\u53EF\u5728\u804A\u5929\u91CC\u8BA9 agent \u6309\u5404\u53F7\u753B\u50CF\u6539\u5199\u6587\u6848" })
       ] }),
-      adapting && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "adapt-hint", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "live-pulse" }),
+      adapting && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "adapt-hint", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "live-pulse" }),
         "AI \u6B63\u5728\u9010\u5B57\u6539\u5199\u5404\u5E73\u53F0\u7248\u672C\u2026\u53EF\u968F\u65F6\u505C\u6B62\u3002"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { className: "publish-saved-note", children: "\u8349\u7A3F\u5DF2\u81EA\u52A8\u4FDD\u5B58\uFF0C\u5207\u6362\u9875\u9762/\u5237\u65B0\u56DE\u6765\u5185\u5BB9\u90FD\u5728\u3002\u4E00\u952E\u53D1\u5E03\u4EC5\u5BF9\u300C\u5DF2\u767B\u5F55 + \u5A92\u4F53\u9F50\u5168\u300D\u7684\u5E73\u53F0\u751F\u6548\u3002" }),
-      checkResult && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "panel", style: { marginTop: 14 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "panel-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconCheck, { size: 14 }),
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { className: "publish-saved-note", children: "\u8349\u7A3F\u5DF2\u81EA\u52A8\u4FDD\u5B58\uFF0C\u5207\u6362\u9875\u9762/\u5237\u65B0\u56DE\u6765\u5185\u5BB9\u90FD\u5728\u3002\u4E00\u952E\u53D1\u5E03\u4EC5\u5BF9\u300C\u5DF2\u767B\u5F55 + \u5A92\u4F53\u9F50\u5168\u300D\u7684\u8D26\u53F7\u751F\u6548\u3002" }),
+      checkResult && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "panel", style: { marginTop: 14 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "panel-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconCheck, { size: 14 }),
           " \u53D1\u5E03\u524D\u9884\u68C0"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "skill-body-md", dangerouslySetInnerHTML: { __html: renderMarkdown(checkResult) } })
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "skill-body-md", dangerouslySetInnerHTML: { __html: renderMarkdown(checkResult) } })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "publish-previews", children: [
-      platforms.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "dash-empty", children: "\u9009\u62E9\u81F3\u5C11\u4E00\u4E2A\u5E73\u53F0\u67E5\u770B\u9884\u89C8" }),
-      PLATFORMS2.filter((p) => platforms.includes(p.key)).map((p) => {
+    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "publish-previews", children: [
+      selectedPlatformKeys.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "dash-empty", children: "\u9009\u62E9\u81F3\u5C11\u4E00\u4E2A\u8D26\u53F7\u67E5\u770B\u9884\u89C8" }),
+      selectedPlatformKeys.map((p) => {
         const text2 = effective(p.key);
         const over = text2.length > p.bodyLimit;
         const titleOver = p.titleLimit != null && title.length > p.titleLimit;
         const isEdit = editing === p.key;
-        const ps = pub[p.key];
-        const publishable = PUBLISHABLE.has(p.key);
-        const logged = loginOf(p.key);
-        return /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: `card pv-card pv-${p.key}`, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "pv-head", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "pv-plat", children: [
+        const accs = targets.filter((a) => a.platform === p.key);
+        return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: `card pv-card pv-${p.key}`, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "pv-head", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "pv-plat", children: [
               p.label,
-              overrides[p.key] != null && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "pv-badge", children: "AI \u7248" }),
-              publishable && (logged ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "pv-badge pv-badge-ok", children: "\u5DF2\u767B\u5F55" }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "pv-badge", children: "\u672A\u767B\u5F55" }))
+              overrides[p.key] != null && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "pv-badge", children: "AI \u7248" }),
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "pv-badge", children: [
+                accs.length,
+                " \u4E2A\u8D26\u53F7"
+              ] })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: `pv-count ${over ? "over" : ""}`, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: `pv-count ${over ? "over" : ""}`, children: [
               text2.length,
               "/",
               p.bodyLimit
             ] })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "pv-body", children: [
-            p.titleLimit != null && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: `pv-title ${titleOver ? "over" : ""}`, children: title || /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "pv-ph", children: "\u6807\u9898\u2026" }) }),
-            isEdit ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "pv-body", children: [
+            p.titleLimit != null && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: `pv-title ${titleOver ? "over" : ""}`, children: title || /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "pv-ph", children: "\u6807\u9898\u2026" }) }),
+            isEdit ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
               "textarea",
               {
                 className: "field",
@@ -7500,25 +9634,33 @@ function PublishPage({ persona }) {
                 autoFocus: true,
                 onChange: (e) => setOverrides((o) => ({ ...o, [p.key]: e.target.value }))
               }
-            ) : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "pv-text", children: text2 || /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "pv-ph", children: "\u6B63\u6587\u9884\u89C8\u2026" }) })
+            ) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "pv-text", children: text2 || /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "pv-ph", children: "\u6B63\u6587\u9884\u89C8\u2026" }) })
           ] }),
-          ps && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: `pv-pubstate ${ps.status}`, children: [
-            ps.status === "publishing" && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "live-pulse" }),
-            ps.status === "ok" ? "\u2705 " : ps.status === "fail" ? "\u26A0\uFE0F " : "",
-            ps.msg
-          ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "pv-foot", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("span", { className: "pv-hint", children: [
+          accs.map((a) => {
+            const st = pub[a.id];
+            return st ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: `pv-pubstate ${st.status}`, children: [
+              st.status === "publishing" && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "live-pulse" }),
+              st.status === "ok" ? "\u2705 " : st.status === "fail" ? "\u26A0\uFE0F " : "",
+              a.name,
+              " \xB7 ",
+              st.msg
+            ] }, a.id) : /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { fontSize: 12, color: "var(--text-secondary)", margin: "6px 0 0", display: "flex", alignItems: "center", gap: 6 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: a.loggedIn ? "pv-badge pv-badge-ok" : "pv-badge", children: a.loggedIn ? "\u5DF2\u767B\u5F55" : "\u672A\u767B\u5F55" }),
+              a.name
+            ] }, a.id);
+          }),
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "pv-foot", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("span", { className: "pv-hint", children: [
               p.hint,
               over ? " \xB7 \u5DF2\u8D85\u5B57\u6570" : ""
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { style: { display: "flex", gap: 6 }, children: [
-              /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("button", { className: "pv-copy", onClick: () => setEditing(isEdit ? null : p.key), children: [
-                /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconEdit, { size: 13 }),
+            /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 6 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "pv-copy", onClick: () => setEditing(isEdit ? null : p.key), children: [
+                /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconEdit, { size: 13 }),
                 isEdit ? "\u5B8C\u6210" : "\u7F16\u8F91"
               ] }),
-              /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("button", { className: "pv-copy", onClick: () => copyFor(p.key), children: [
-                copied === p.key ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconCheck, { size: 13 }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(IconCopy, { size: 13 }),
+              /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("button", { className: "pv-copy", onClick: () => copyFor(p.key), children: [
+                copied === p.key ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconCheck, { size: 13 }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(IconCopy, { size: 13 }),
                 copied === p.key ? "\u5DF2\u590D\u5236" : "\u590D\u5236"
               ] })
             ] })
@@ -7526,20 +9668,20 @@ function PublishPage({ persona }) {
         ] }, p.key);
       })
     ] }),
-    toast && /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "toast ok", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("span", { className: "toast-icon", children: "\u2713" }),
+    toast && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "toast ok", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "toast-icon", children: "\u2713" }),
       toast
     ] }),
-    pubSms && /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "overlay", onClick: (e) => {
+    pubSms && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "overlay", onClick: (e) => {
       if (e.target === e.currentTarget) setPubSms(null);
-    }, children: /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { className: "modal", onClick: (e) => e.stopPropagation(), style: { maxWidth: 380 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
+    }, children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "modal", onClick: (e) => e.stopPropagation(), style: { maxWidth: 380 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
         "\u53D1\u5E03\u9A8C\u8BC1 \xB7 ",
         pubSms.name
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("p", { style: { fontSize: 13, color: /错误|过期|失败|重新|未完成|不正确|失效/.test(pubSms.message || "") ? "var(--red)" : "var(--text-secondary)" }, children: pubSms.message || "\u5E73\u53F0\u98CE\u63A7\u8981\u6C42\u77ED\u4FE1\u9A8C\u8BC1\uFF0C\u9A8C\u8BC1\u7801\u5DF2\u53D1\u5230\u4F60\u624B\u673A\uFF0C\u8BF7\u8F93\u5165\uFF1A" }),
-      pubSms.state === "verifying" ? /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("div", { className: "dash-empty", style: { padding: 16 }, children: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" }) : /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)(import_jsx_runtime15.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("p", { style: { fontSize: 13, color: /错误|过期|失败|重新|未完成|不正确|失效/.test(pubSms.message || "") ? "var(--red)" : "var(--text-secondary)" }, children: pubSms.message || "\u5E73\u53F0\u98CE\u63A7\u8981\u6C42\u77ED\u4FE1\u9A8C\u8BC1\uFF0C\u9A8C\u8BC1\u7801\u5DF2\u53D1\u5230\u4F60\u624B\u673A\uFF0C\u8BF7\u8F93\u5165\uFF1A" }),
+      pubSms.state === "verifying" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "dash-empty", style: { padding: 16 }, children: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_jsx_runtime17.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
           "input",
           {
             inputMode: "numeric",
@@ -7563,9 +9705,9 @@ function PublishPage({ persona }) {
             }
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime15.jsxs)("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("button", { className: "btn btn-sm btn-ghost", onClick: () => setPubSms(null), children: "\u5173\u95ED" }),
-          /* @__PURE__ */ (0, import_jsx_runtime15.jsx)("button", { className: "btn btn-sm btn-primary", disabled: pubSmsBusy, onClick: submitPubSms, children: pubSmsBusy ? "\u63D0\u4EA4\u4E2D\u2026" : "\u63D0\u4EA4\u9A8C\u8BC1\u7801" })
+        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn btn-sm btn-ghost", onClick: () => setPubSms(null), children: "\u5173\u95ED" }),
+          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn btn-sm btn-primary", disabled: pubSmsBusy, onClick: () => void submitPubSms(), children: pubSmsBusy ? "\u63D0\u4EA4\u4E2D\u2026" : "\u63D0\u4EA4\u9A8C\u8BC1\u7801" })
         ] })
       ] })
     ] }) })
@@ -7573,33 +9715,33 @@ function PublishPage({ persona }) {
 }
 
 // src/features/publish.tsx
-var import_jsx_runtime16 = require("react/jsx-runtime");
-var view7 = "publish";
-var order7 = 36;
-var labels7 = { zh: "\u53D1\u5E03\u4E2D\u5FC3", en: "Publish" };
-var Icon7 = IconPublish;
-var Component7 = PublishPage;
-var plugin7 = {
+var import_jsx_runtime18 = require("react/jsx-runtime");
+var view8 = "publish";
+var order8 = 38;
+var labels8 = { zh: "\u53D1\u5E03\u4E2D\u5FC3", en: "Publish" };
+var Icon8 = IconPublish;
+var Component8 = PublishPage;
+var plugin8 = {
   name: "easel-view-publish",
   inject: ["slots", "easelShell"],
   apply(ctx) {
     const { useShellProps, t } = ctx.easelShell;
     ctx.slots.inject("main", () => ctx.slots.register({
       name: "main",
-      key: pageKey(view7),
+      key: pageKey(view8),
       inject: () => ({})
     }, function EaselPage() {
       const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Component7, { ...props }) });
+      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Component8, { ...props }) });
     }));
     ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
       name: "sidebar.panellist",
-      id: pageKey(view7),
-      order: order7,
+      id: pageKey(view8),
+      order: order8,
       locale: "easel.panel",
-      label: () => t(view7)
+      label: () => t(view8)
     }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime16.jsx)(Icon7, { size });
+      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Icon8, { size });
     }));
   }
 };
@@ -7607,20 +9749,19 @@ var plugin7 = {
 // src/features/accounts.tsx
 var accounts_exports = {};
 __export(accounts_exports, {
-  Component: () => Component8,
-  Icon: () => Icon8,
-  labels: () => labels8,
-  order: () => order8,
-  plugin: () => plugin8,
-  view: () => view8
+  Component: () => Component9,
+  Icon: () => Icon9,
+  labels: () => labels9,
+  order: () => order9,
+  plugin: () => plugin9,
+  view: () => view9
 });
 
 // src/components/AccountsPage.tsx
-var import_react10 = require("react");
-var import_jsx_runtime17 = require("react/jsx-runtime");
+var import_react11 = require("react");
+var import_jsx_runtime19 = require("react/jsx-runtime");
 var STATE_LABEL = {
   starting: "\u542F\u52A8\u4E2D\u2026",
-  window_login: "\u8BF7\u5728\u5F39\u51FA\u7684\u6D4F\u89C8\u5668\u7A97\u53E3\u91CC\u5B8C\u6210\u767B\u5F55",
   qr_ready: "\u8BF7\u626B\u7801",
   scanned: "\u626B\u7801\u6210\u529F",
   sms_required: "\u9700\u77ED\u4FE1\u9A8C\u8BC1",
@@ -7630,11 +9771,30 @@ var STATE_LABEL = {
   error: "\u767B\u5F55\u51FA\u9519",
   unknown: "\u7B49\u5F85\u4E2D\u2026"
 };
+var PLATFORM_META = [
+  { key: "xiaohongshu", label: "\u5C0F\u7EA2\u4E66", backend: "xhs" },
+  { key: "douyin", label: "\u6296\u97F3", backend: "douyin" },
+  { key: "kuaishou", label: "\u5FEB\u624B", backend: "web" },
+  { key: "weixin-channels", label: "\u5FAE\u4FE1\u89C6\u9891\u53F7", backend: "web" },
+  { key: "zhihu", label: "\u77E5\u4E4E", backend: "web" },
+  { key: "bilibili", label: "B\u7AD9", backend: "biliup" },
+  { key: "wechat-oa", label: "\u5FAE\u4FE1\u516C\u4F17\u53F7", backend: "wechat-oa" }
+];
+var WECHAT_PLACEHOLDER = {
+  id: "wechat-oa",
+  platform: "wechat-oa",
+  name: "\u5FAE\u4FE1\u516C\u4F17\u53F7",
+  persona: "",
+  backend: "wechat-oa",
+  profileDir: "",
+  loggedIn: false,
+  direct: false
+};
 function Avatar({ url, name }) {
-  const [broken, setBroken] = (0, import_react10.useState)(false);
+  const [broken, setBroken] = (0, import_react11.useState)(false);
   const initial = (name || "?").trim().charAt(0);
   if (url && !broken) {
-    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
       "img",
       {
         className: "account-avatar",
@@ -7645,13 +9805,8 @@ function Avatar({ url, name }) {
       }
     );
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "account-avatar account-avatar-fallback", children: initial });
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "account-avatar account-avatar-fallback", children: initial });
 }
-var LOGIN_MODES = [
-  { key: "qr", label: "\u626B\u7801\u767B\u5F55", title: "\u65E0\u5934\u6D4F\u89C8\u5668\u51FA\u4E8C\u7EF4\u7801\uFF0C\u624B\u673A App \u626B\u7801\uFF08\u53D7\u5E73\u53F0\u98CE\u63A7\u5F71\u54CD\u6700\u5927\uFF09" },
-  { key: "manual", label: "\u624B\u52A8\u767B\u5F55", title: "\u5F39\u51FA\u53EF\u89C1\u6D4F\u89C8\u5668\u7A97\u53E3\uFF0C\u4F60\u4EB2\u624B\u626B\u7801/\u8F93\u8D26\u53F7\u2014\u2014\u672C\u673A IP + \u771F\u7A97\u53E3\u6307\u7EB9\uFF0C\u6700\u63A8\u8350" },
-  { key: "cdp", label: "\u63A5\u7BA1 Chrome", title: "\u63A5\u7BA1\u4F60\u4EE5\u8C03\u8BD5\u7AEF\u53E3\u542F\u52A8\u7684\u81EA\u5DF1 Chrome\uFF08\u771F\u5B9E\u6307\u7EB9/\u767B\u5F55\u6001\uFF09\u3002\u9700\u5148\u7528 chrome --remote-debugging-port=9222 \u542F\u52A8\uFF0C\u7AEF\u70B9\u5728\u70ED\u70B9\u96F7\u8FBE\u8BBE\u7F6E\u91CC\u914D" }
-];
 function DeconstructSources() {
   const NAMES = { douyin: "\u6296\u97F3", xhs: "\u5C0F\u7EA2\u4E66", bili: "B\u7AD9", youtube: "YouTube" };
   const HINTS = {
@@ -7660,20 +9815,20 @@ function DeconstructSources() {
     bili: "\u516C\u5F00\u89C6\u9891\u514D\u767B\u5F55\uFF1B\u6295\u7A3F/\u8BC4\u8BBA\u6293\u53D6\u7528\u4E0A\u65B9\u626B\u7801\u767B\u5F55\u3002",
     youtube: "\u516C\u5F00\u89C6\u9891\u514D\u767B\u5F55\uFF08\u9700\u672C\u673A yt-dlp\uFF09\u3002"
   };
-  const [rows, setRows] = (0, import_react10.useState)([]);
-  const [draft, setDraft] = (0, import_react10.useState)("");
-  const [saving, setSaving] = (0, import_react10.useState)(false);
-  const [msg, setMsg] = (0, import_react10.useState)("");
-  const refresh = (0, import_react10.useCallback)(() => {
+  const [rows, setRows] = (0, import_react11.useState)([]);
+  const [draft, setDraft] = (0, import_react11.useState)("");
+  const [saving, setSaving] = (0, import_react11.useState)(false);
+  const [msg, setMsg] = (0, import_react11.useState)("");
+  const refresh = (0, import_react11.useCallback)(() => {
     fetch("/easel/api/source-status", { headers: { accept: "application/json" } }).then((r) => r.ok ? r.json() : Promise.reject(new Error("\u8BFB\u53D6\u5931\u8D25"))).then((data) => {
       setRows(data.platforms ?? []);
       setDraft("");
     }).catch(() => setMsg("\u8BFB\u53D6\u6570\u636E\u6E90\u72B6\u6001\u5931\u8D25\uFF0C\u7A0D\u540E\u91CD\u8BD5\u3002"));
   }, []);
-  (0, import_react10.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     refresh();
   }, [refresh]);
-  (0, import_react10.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     const onFocus = () => refresh();
     window.addEventListener("focus", onFocus);
     return () => window.removeEventListener("focus", onFocus);
@@ -7716,20 +9871,20 @@ function DeconstructSources() {
       setSaving(false);
     }
   };
-  const badge2 = (row2) => {
-    if (!row2.authRequired) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u514D\u767B\u5F55" });
-    if (row2.loggedIn) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u5DF2\u626B\u7801\u767B\u5F55" });
-    if (row2.cookieSet) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "cookie \u5DF2\u914D\u7F6E" });
-    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { fontSize: 12, color: "var(--amber)" }, children: "\u672A\u914D\u7F6E" });
+  const badge2 = (row) => {
+    if (!row.authRequired) return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u514D\u767B\u5F55" });
+    if (row.loggedIn) return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "\u5DF2\u626B\u7801\u767B\u5F55" });
+    if (row.cookieSet) return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { style: { fontSize: 12, color: "var(--green)" }, children: "cookie \u5DF2\u914D\u7F6E" });
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { style: { fontSize: 12, color: "var(--amber)" }, children: "\u672A\u914D\u7F6E" });
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "card", style: { marginTop: 16, padding: 14 }, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "account-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "account-card-name", children: "\u62C6\u89E3\u6570\u636E\u6E90\uFF08\u7206\u6B3E\u62C6\u89E3\u7684\u89C6\u9891\u6293\u53D6\u767B\u5F55\u6001\uFF09" }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }, children: rows.map((row2) => /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 10, alignItems: "baseline", fontSize: 13, flexWrap: "wrap" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("b", { style: { minWidth: 52 }, children: NAMES[row2.platform] ?? row2.platform }),
-      badge2(row2),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { color: "var(--text-secondary)", fontSize: 12.5 }, children: HINTS[row2.platform] ?? "" })
-    ] }, row2.platform)) }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "card", style: { marginTop: 16, padding: 14 }, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "account-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "account-card-name", children: "\u62C6\u89E3\u6570\u636E\u6E90\uFF08\u7206\u6B3E\u62C6\u89E3\u7684\u89C6\u9891\u6293\u53D6\u767B\u5F55\u6001\uFF09" }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { display: "flex", flexDirection: "column", gap: 6, marginTop: 8 }, children: rows.map((row) => /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 10, alignItems: "baseline", fontSize: 13, flexWrap: "wrap" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("b", { style: { minWidth: 52 }, children: NAMES[row.platform] ?? row.platform }),
+      badge2(row),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { style: { color: "var(--text-secondary)", fontSize: 12.5 }, children: HINTS[row.platform] ?? "" })
+    ] }, row.platform)) }),
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
       "textarea",
       {
         className: "field",
@@ -7739,81 +9894,89 @@ function DeconstructSources() {
         onChange: (e) => setDraft(e.target.value)
       }
     ),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 8 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn btn-primary btn-sm", disabled: saving || !draft.trim(), onClick: () => void save("xhs", draft), children: saving ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58\u5C0F\u7EA2\u4E66 cookie" }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn btn-ghost btn-sm", disabled: saving, onClick: () => void save("xhs", ""), children: "\u6E05\u9664" }),
-      rows.find((r) => r.platform === "xhs")?.loggedIn && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn btn-sm", disabled: saving, onClick: () => void importFromLogin(), children: "\u4ECE\u767B\u5F55\u4F1A\u8BDD\u5BFC\u5165" })
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 8 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-primary btn-sm", disabled: saving || !draft.trim(), onClick: () => void save("xhs", draft), children: saving ? "\u4FDD\u5B58\u4E2D\u2026" : "\u4FDD\u5B58\u5C0F\u7EA2\u4E66 cookie" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-ghost btn-sm", disabled: saving, onClick: () => void save("xhs", ""), children: "\u6E05\u9664" }),
+      rows.find((r) => r.platform === "xhs")?.loggedIn && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-sm", disabled: saving, onClick: () => void importFromLogin(), children: "\u4ECE\u767B\u5F55\u4F1A\u8BDD\u5BFC\u5165" })
     ] }),
-    msg && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginTop: 8 }, children: msg })
+    msg && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginTop: 8 }, children: msg })
   ] });
 }
 function AccountsPage() {
-  const [accounts, setAccounts] = (0, import_react10.useState)([]);
-  const [err, setErr] = (0, import_react10.useState)("");
-  const [loginMode, setLoginMode] = (0, import_react10.useState)(
-    () => localStorage.getItem("easel_login_mode") || "manual"
-  );
-  const pickLoginMode = (m2) => {
-    setLoginMode(m2);
-    try {
-      localStorage.setItem("easel_login_mode", m2);
-    } catch {
-    }
-  };
-  const [qr, setQr] = (0, import_react10.useState)(null);
-  const [qrNonce, setQrNonce] = (0, import_react10.useState)(0);
-  const [terminalMsg, setTerminalMsg] = (0, import_react10.useState)("");
-  const [busy, setBusy] = (0, import_react10.useState)("");
-  const [logoutBusy, setLogoutBusy] = (0, import_react10.useState)("");
-  const [smsCode, setSmsCode] = (0, import_react10.useState)("");
-  const [smsBusy, setSmsBusy] = (0, import_react10.useState)(false);
-  const [smsErr, setSmsErr] = (0, import_react10.useState)("");
-  const [whoami, setWhoami] = (0, import_react10.useState)(() => getWhoamiCache());
-  const [cred, setCred] = (0, import_react10.useState)(null);
-  const [credForm, setCredForm] = (0, import_react10.useState)({ appId: "", appSecret: "", author: "" });
-  const [credBusy, setCredBusy] = (0, import_react10.useState)(false);
-  const [credMsg, setCredMsg] = (0, import_react10.useState)("");
-  const [credErr, setCredErr] = (0, import_react10.useState)("");
-  const pollRef = (0, import_react10.useRef)(null);
-  const aliveRef = (0, import_react10.useRef)(true);
-  const qrPlatformRef = (0, import_react10.useRef)("");
-  (0, import_react10.useEffect)(() => {
+  const [accounts, setAccounts] = (0, import_react11.useState)([]);
+  const [personas, setPersonas] = (0, import_react11.useState)([]);
+  const [err, setErr] = (0, import_react11.useState)("");
+  const [loginTarget, setLoginTarget] = (0, import_react11.useState)(null);
+  const [loginErr, setLoginErr] = (0, import_react11.useState)("");
+  const [qr, setQr] = (0, import_react11.useState)(null);
+  const [direct, setDirect] = (0, import_react11.useState)(null);
+  const [qrNonce, setQrNonce] = (0, import_react11.useState)(0);
+  const [busy, setBusy] = (0, import_react11.useState)("");
+  const [logoutBusy, setLogoutBusy] = (0, import_react11.useState)("");
+  const [delBusy, setDelBusy] = (0, import_react11.useState)("");
+  const [personaBusy, setPersonaBusy] = (0, import_react11.useState)("");
+  const [rename, setRename] = (0, import_react11.useState)(null);
+  const [addTarget, setAddTarget] = (0, import_react11.useState)(null);
+  const [addName, setAddName] = (0, import_react11.useState)("");
+  const [addBusy, setAddBusy] = (0, import_react11.useState)(false);
+  const [addErr, setAddErr] = (0, import_react11.useState)("");
+  const [smsCode, setSmsCode] = (0, import_react11.useState)("");
+  const [smsBusy, setSmsBusy] = (0, import_react11.useState)(false);
+  const [smsErr, setSmsErr] = (0, import_react11.useState)("");
+  const [whoami, setWhoami] = (0, import_react11.useState)(() => getWhoamiCache());
+  const [cred, setCred] = (0, import_react11.useState)(null);
+  const [credForm, setCredForm] = (0, import_react11.useState)({ appId: "", appSecret: "", author: "" });
+  const [credBusy, setCredBusy] = (0, import_react11.useState)(false);
+  const [credMsg, setCredMsg] = (0, import_react11.useState)("");
+  const [credErr, setCredErr] = (0, import_react11.useState)("");
+  const pollRef = (0, import_react11.useRef)(null);
+  const aliveRef = (0, import_react11.useRef)(true);
+  const smsAccountRef = (0, import_react11.useRef)(null);
+  (0, import_react11.useEffect)(() => {
     aliveRef.current = true;
     return () => {
       aliveRef.current = false;
     };
   }, []);
-  const runWhoami = (0, import_react10.useCallback)((platform) => {
-    setWhoami((w2) => ({ ...w2, [platform]: "loading" }));
-    accountWhoami(platform).then((r) => {
+  const runWhoami = (0, import_react11.useCallback)((a) => {
+    setWhoami((w2) => ({ ...w2, [a.id]: "loading" }));
+    accountWhoami(a.platform, a.id).then((r) => {
       if (aliveRef.current) {
-        setWhoami((w2) => ({ ...w2, [platform]: r }));
-        setWhoamiCache(platform, r);
+        setWhoami((w2) => ({ ...w2, [a.id]: r }));
+        setWhoamiCache(a.id, r);
       }
     }).catch(() => {
       if (aliveRef.current) setWhoami((w2) => {
         const n = { ...w2 };
-        delete n[platform];
+        delete n[a.id];
         return n;
       });
     });
   }, []);
-  const load = (0, import_react10.useCallback)(() => {
+  const load = (0, import_react11.useCallback)(() => {
     setErr("");
     fetchAccounts().then((list) => {
       if (!aliveRef.current) return;
       setAccounts(list);
-      const targets = list.filter((a) => a.supported && a.backend !== "biliup").map((a) => a.platform);
-      verifyStale(targets, {
-        alive: () => aliveRef.current,
-        onUpdate: (platform, r) => setWhoami((w2) => ({ ...w2, [platform]: r }))
-      });
-    }).catch(() => setErr("\u52A0\u8F7D\u8D26\u53F7\u72B6\u6001\u5931\u8D25"));
+      const byId = new Map(list.map((a) => [a.id, a]));
+      verifyStale(
+        list.filter((a) => a.backend !== "biliup" && a.backend !== "wechat-oa").map((a) => a.id),
+        {
+          alive: () => aliveRef.current,
+          resolve: (id) => ({ platform: byId.get(id)?.platform ?? "", account: id }),
+          onUpdate: (id, r) => setWhoami((w2) => ({ ...w2, [id]: r }))
+        }
+      );
+    }).catch(() => setErr("\u52A0\u8F7D\u8D26\u53F7\u5217\u8868\u5931\u8D25"));
+    fetchStatus().then((s) => {
+      if (aliveRef.current && s?.personas) setPersonas(s.personas);
+    }).catch(() => {
+    });
   }, []);
-  (0, import_react10.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     load();
   }, [load]);
-  (0, import_react10.useEffect)(() => {
+  (0, import_react11.useEffect)(() => {
     const refresh = () => {
       if (document.visibilityState === "visible" && !pollRef.current) load();
     };
@@ -7824,31 +9987,112 @@ function AccountsPage() {
       document.removeEventListener("visibilitychange", refresh);
     };
   }, [load]);
-  const stopPoll = (0, import_react10.useCallback)(() => {
+  const stopPoll = (0, import_react11.useCallback)(() => {
     if (pollRef.current) {
       clearInterval(pollRef.current);
       pollRef.current = null;
     }
   }, []);
-  (0, import_react10.useEffect)(() => () => stopPoll(), [stopPoll]);
-  const closeQr = (0, import_react10.useCallback)(() => {
+  (0, import_react11.useEffect)(() => () => stopPoll(), [stopPoll]);
+  const closeLogin = (0, import_react11.useCallback)(() => {
     stopPoll();
+    setLoginTarget(null);
     setQr(null);
+    setDirect(null);
+    setLoginErr("");
     setSmsCode("");
     setSmsErr("");
     setSmsBusy(false);
     load();
   }, [stopPoll, load]);
-  const submitSms = (0, import_react10.useCallback)(async () => {
-    const code2 = smsCode.replace(/\D/g, "");
-    if (code2.length < 4) {
+  const openLogin = (0, import_react11.useCallback)((a) => {
+    setLoginErr("");
+    setQr(null);
+    setDirect(null);
+    setLoginTarget(a);
+  }, []);
+  const onLoginSuccess = (0, import_react11.useCallback)((a) => {
+    runWhoami(a);
+    if (a.platform === "xiaohongshu") {
+      void fetch("/easel/api/cookies/import", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ platform: "xhs", account: a.id })
+      }).catch(() => {
+      });
+    }
+    load();
+  }, [runWhoami, load]);
+  const handleLogin = (0, import_react11.useCallback)(async (a, mode) => {
+    setLoginErr("");
+    setBusy(a.id);
+    setSmsCode("");
+    setSmsErr("");
+    smsAccountRef.current = a;
+    setQrNonce((n) => n + 1);
+    try {
+      const res = await startLogin(a.platform, mode, { account: a.id });
+      if (res.mode === "credentials") {
+        setLoginTarget(null);
+        openCred(a);
+        return;
+      }
+      if (mode === "direct") {
+        stopPoll();
+        setQr(null);
+        setDirect({
+          account: a,
+          message: res.message || "\u8BF7\u5728\u6253\u5F00\u7684\u7A97\u53E3\u4E2D\u767B\u5F55\uFF0C\u5B8C\u6210\u540E\u70B9\u300C\u6821\u9A8C\u767B\u5F55\u6001\u300D",
+          checking: false,
+          verdict: ""
+        });
+        load();
+        return;
+      }
+      stopPoll();
+      setQr({ account: a, state: res.state || "starting", message: res.message || "", qr: res.qr || "" });
+      pollRef.current = setInterval(async () => {
+        try {
+          const s = await loginStatus(a.platform, a.id);
+          setQr((prev) => prev && prev.account.id === a.id ? { ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs } : prev);
+          if (["success", "expired", "error"].includes(s.state)) {
+            stopPoll();
+            if (s.state === "success") onLoginSuccess(a);
+          }
+        } catch {
+        }
+      }, 2e3);
+    } catch (e) {
+      setLoginErr(e instanceof Error ? e.message : "\u542F\u52A8\u767B\u5F55\u5931\u8D25");
+    } finally {
+      setBusy("");
+    }
+  }, [stopPoll, onLoginSuccess, load]);
+  const verifyDirect = (0, import_react11.useCallback)((a) => {
+    setDirect((d2) => d2 && d2.account.id === a.id ? { ...d2, checking: true, verdict: "" } : d2);
+    accountWhoami(a.platform, a.id).then((r) => {
+      if (!aliveRef.current) return;
+      setWhoami((w2) => ({ ...w2, [a.id]: r }));
+      setWhoamiCache(a.id, r);
+      const ok = r.loggedIn;
+      setDirect((d2) => d2 && d2.account.id === a.id ? { ...d2, checking: false, verdict: ok ? "ok" : "no" } : d2);
+      if (ok) load();
+    }).catch(() => {
+      if (aliveRef.current) setDirect((d2) => d2 && d2.account.id === a.id ? { ...d2, checking: false, verdict: "no" } : d2);
+    });
+  }, [load]);
+  const submitSms = (0, import_react11.useCallback)(async () => {
+    const target = smsAccountRef.current;
+    const code = smsCode.replace(/\D/g, "");
+    if (!target) return;
+    if (code.length < 4) {
       setSmsErr("\u8BF7\u8F93\u5165\u624B\u673A\u6536\u5230\u7684\u9A8C\u8BC1\u7801");
       return;
     }
     setSmsBusy(true);
     setSmsErr("");
     try {
-      await submitLoginSms(qrPlatformRef.current, code2);
+      await submitLoginSms(target.platform, code, target.id);
       setSmsCode("");
       setQr((prev) => prev && { ...prev, state: "verifying", message: "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\u2026" });
     } catch (e) {
@@ -7857,7 +10101,7 @@ function AccountsPage() {
       setSmsBusy(false);
     }
   }, [smsCode]);
-  const openCred = (0, import_react10.useCallback)((a) => {
+  const openCred = (0, import_react11.useCallback)((a) => {
     setCred({ platform: a.platform, name: a.name });
     setCredForm({ appId: "", appSecret: "", author: "" });
     setCredMsg("");
@@ -7867,12 +10111,12 @@ function AccountsPage() {
     }).catch(() => {
     });
   }, []);
-  const closeCred = (0, import_react10.useCallback)(() => {
+  const closeCred = (0, import_react11.useCallback)(() => {
     setCred(null);
     setCredBusy(false);
     load();
   }, [load]);
-  const submitCred = (0, import_react10.useCallback)(async () => {
+  const submitCred = (0, import_react11.useCallback)(async () => {
     if (!cred) return;
     const appId = credForm.appId.trim();
     const appSecret = credForm.appSecret.trim();
@@ -7886,7 +10130,8 @@ function AccountsPage() {
     try {
       const r = await saveCredentials(cred.platform, { appId, appSecret, name: cred.name, author: credForm.author.trim() });
       if (r.ok) {
-        runWhoami(cred.platform);
+        const entry = accounts.find((a) => a.platform === cred.platform);
+        if (entry) runWhoami(entry);
         closeCred();
       } else {
         setCredErr(r.message || "\u9A8C\u8BC1\u672A\u901A\u8FC7");
@@ -7896,74 +10141,18 @@ function AccountsPage() {
     } finally {
       setCredBusy(false);
     }
-  }, [cred, credForm, runWhoami, closeCred]);
-  const handleLogin = (0, import_react10.useCallback)(async (a, mode = loginMode) => {
-    if (!a.supported) return;
-    if (a.backend === "wechat-oa") {
-      openCred(a);
-      return;
-    }
-    setTerminalMsg("");
-    setBusy(a.platform);
-    setSmsCode("");
-    setSmsErr("");
-    qrPlatformRef.current = a.platform;
-    setQrNonce((n) => n + 1);
-    try {
-      const res = await startLogin(a.platform, mode);
-      if (res.mode === "terminal") {
-        setTerminalMsg(res.message || "\u8BF7\u5728\u7EC8\u7AEF\u767B\u5F55");
-        return;
-      }
-      if (res.mode === "credentials") {
-        openCred(a);
-        return;
-      }
-      setQr({
-        platform: a.platform,
-        name: a.name,
-        state: res.state || "starting",
-        message: res.message || "",
-        qr: res.qr || ""
-      });
-      stopPoll();
-      pollRef.current = setInterval(async () => {
-        try {
-          const s = await loginStatus(a.platform);
-          setQr((prev) => prev && { ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs });
-          if (["success", "expired", "error"].includes(s.state)) {
-            stopPoll();
-            if (s.state === "success") {
-              runWhoami(a.platform);
-              if (a.platform === "xiaohongshu") {
-                void fetch("/easel/api/cookies/import", {
-                  method: "POST",
-                  headers: { "content-type": "application/json" },
-                  body: JSON.stringify({ platform: "xhs" })
-                }).catch(() => {
-                });
-              }
-            }
-          }
-        } catch {
-        }
-      }, 2e3);
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "\u542F\u52A8\u767B\u5F55\u5931\u8D25");
-    } finally {
-      setBusy("");
-    }
-  }, [loginMode, stopPoll, runWhoami]);
-  const handleMpLogin = (0, import_react10.useCallback)(async (a) => {
-    setBusy(a.platform + ":mp");
+  }, [cred, credForm, accounts, runWhoami, closeCred]);
+  const handleMpLogin = (0, import_react11.useCallback)(async (a) => {
+    setBusy(a.id + ":mp");
     setSmsCode("");
     setSmsErr("");
     setQrNonce((n) => n + 1);
     try {
       const res = await startMpLogin(a.platform);
+      setLoginTarget(a);
       setQr({
-        platform: a.platform,
-        name: a.name + " \xB7 \u540E\u53F0\u53D6\u6570",
+        account: a,
+        title: `${a.name} \xB7 \u540E\u53F0\u53D6\u6570`,
         state: res.state || "starting",
         message: res.message || "",
         qr: res.qr || "",
@@ -7973,18 +10162,18 @@ function AccountsPage() {
       pollRef.current = setInterval(async () => {
         try {
           const s = await mpLoginStatus(a.platform);
-          setQr((prev) => prev && { ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs });
+          setQr((prev) => prev && prev.account.id === a.id ? { ...prev, state: s.state, message: s.message, qr: s.qr, qrTs: s.qrTs } : prev);
           if (["success", "expired", "error"].includes(s.state)) {
             stopPoll();
             if (s.state === "success") {
-              setAccounts((list) => list.map((x2) => x2.platform === a.platform ? { ...x2, loggedIn: true } : x2));
+              setAccounts((list) => list.map((x2) => x2.id === a.id ? { ...x2, loggedIn: true } : x2));
               setWhoami((w2) => {
                 const n = { ...w2 };
-                delete n[a.platform];
+                delete n[a.id];
                 return n;
               });
-              setWhoamiCache(a.platform, null);
-              runWhoami(a.platform);
+              setWhoamiCache(a.id, null);
+              runWhoami(a);
               load();
             }
           }
@@ -7997,18 +10186,18 @@ function AccountsPage() {
       setBusy("");
     }
   }, [stopPoll, runWhoami, load]);
-  const handleLogout = (0, import_react10.useCallback)(async (a) => {
-    if (!window.confirm(`\u786E\u5B9A\u9000\u51FA\u300C${a.name}\u300D\u7684\u767B\u5F55\uFF1F\u767B\u5F55\u6001\u5C06\u88AB\u6E05\u9664\uFF0C\u4E0B\u6B21\u53D1\u5E03\u9700\u91CD\u65B0\u626B\u7801\u3002`)) return;
-    setLogoutBusy(a.platform);
+  const handleLogout = (0, import_react11.useCallback)(async (a) => {
+    if (!window.confirm(`\u786E\u5B9A\u9000\u51FA\u300C${a.name}\u300D\u7684\u767B\u5F55\uFF1F\u8BE5\u8D26\u53F7\u7684\u767B\u5F55\u6001\u5C06\u88AB\u6E05\u9664\uFF0C\u4E0B\u6B21\u53D1\u5E03\u9700\u91CD\u65B0\u767B\u5F55\u3002`)) return;
+    setLogoutBusy(a.id);
     try {
-      await logoutAccount(a.platform);
-      setAccounts((list) => list.map((x2) => x2.platform === a.platform ? { ...x2, loggedIn: false } : x2));
+      await logoutAccount(a.platform, a.id);
+      setAccounts((list) => list.map((x2) => x2.id === a.id ? { ...x2, loggedIn: false } : x2));
       setWhoami((w2) => {
         const n = { ...w2 };
-        delete n[a.platform];
+        delete n[a.id];
         return n;
       });
-      setWhoamiCache(a.platform, null);
+      setWhoamiCache(a.id, null);
       load();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "\u9000\u51FA\u767B\u5F55\u5931\u8D25");
@@ -8016,199 +10205,457 @@ function AccountsPage() {
       setLogoutBusy("");
     }
   }, [load]);
+  const handleDelete = (0, import_react11.useCallback)(async (a) => {
+    if (!window.confirm(`\u786E\u5B9A\u5220\u9664\u8D26\u53F7\u300C${a.name}\u300D\uFF1F\u5C06\u5220\u9664\u8D26\u53F7\u6761\u76EE\u5E76\u6E05\u9664\u8BE5\u8D26\u53F7\u7684\u767B\u5F55\u6001\u4E0E\u672C\u5730\u6D4F\u89C8\u5668\u6570\u636E\uFF0C\u4E0D\u53EF\u6062\u590D\u3002`)) return;
+    setDelBusy(a.id);
+    try {
+      await deleteAccount(a.id);
+      setWhoami((w2) => {
+        const n = { ...w2 };
+        delete n[a.id];
+        return n;
+      });
+      setWhoamiCache(a.id, null);
+      load();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "\u5220\u9664\u8D26\u53F7\u5931\u8D25");
+    } finally {
+      setDelBusy("");
+    }
+  }, [load]);
+  const setPersona = (0, import_react11.useCallback)(async (a, persona) => {
+    setPersonaBusy(a.id);
+    setAccounts((list) => list.map((x2) => x2.id === a.id ? { ...x2, persona } : x2));
+    try {
+      await updateAccount(a.id, { persona: persona || null });
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "\u753B\u50CF\u7ED1\u5B9A\u5931\u8D25");
+      load();
+    } finally {
+      setPersonaBusy("");
+    }
+  }, [load]);
+  const commitRename = (0, import_react11.useCallback)(() => {
+    if (!rename) return;
+    const { id, value } = rename;
+    setRename(null);
+    const name = value.trim();
+    if (!name) return;
+    updateAccount(id, { name }).then(load).catch((e) => setErr(e instanceof Error ? e.message : "\u6539\u540D\u5931\u8D25"));
+  }, [rename, load]);
+  const submitAdd = (0, import_react11.useCallback)(async () => {
+    if (!addTarget) return;
+    const name = addName.trim();
+    if (!name) {
+      setAddErr("\u8BF7\u8F93\u5165\u8D26\u53F7\u540D\u5B57");
+      return;
+    }
+    setAddBusy(true);
+    setAddErr("");
+    try {
+      const created = await createAccount(addTarget.platform, name);
+      setAddTarget(null);
+      setAddName("");
+      load();
+      openLogin({
+        id: created.id,
+        platform: created.platform,
+        name: created.name,
+        persona: created.persona,
+        backend: PLATFORM_META.find((p) => p.key === created.platform)?.backend ?? "",
+        profileDir: created.profileDir,
+        loggedIn: false,
+        direct: false
+      });
+    } catch (e) {
+      setAddErr(e instanceof Error ? e.message : "\u521B\u5EFA\u8D26\u53F7\u5931\u8D25");
+    } finally {
+      setAddBusy(false);
+    }
+  }, [addTarget, addName, load, openLogin]);
   const effLoggedIn = (a) => {
     if (a.backend === "wechat-oa") return a.loggedIn;
-    const w2 = whoami[a.platform];
+    const w2 = whoami[a.id];
     if (w2 && w2 !== "loading") return w2.loggedIn;
     return a.loggedIn;
   };
-  const badge2 = (a) => {
-    if (!a.supported) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "badge", children: "\u5F85\u91CD\u5199" });
-    if (whoami[a.platform] === "loading") return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "badge", children: "\u6821\u9A8C\u4E2D\u2026" });
-    if (effLoggedIn(a)) return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "badge badge-ok", children: "\u2713 \u5DF2\u767B\u5F55" });
-    return /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "badge", children: "\u672A\u767B\u5F55" });
-  };
-  return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "accounts-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("h1", { className: "page-title", children: "\u8D26\u53F7\u767B\u5F55 Accounts" }),
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("p", { className: "page-subtitle", children: [
-          "\u7528\u624B\u673A App \u626B\u7801\u767B\u5F55\uFF0C\u767B\u5F55\u6001\u672C\u5730\u6301\u4E45\u5316\uFF0C\u4E4B\u540E\u53D1\u5E03\u514D\u767B\u3002",
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("br", {}),
-          "\u26A0\uFE0F \u5E73\u53F0\u53EF\u80FD\u5BF9\u673A\u623F/\u4EE3\u7406 IP \u5224\u98CE\u9669\u5BFC\u81F4\u4E8C\u7EF4\u7801\u5F39\u4E0D\u51FA\uFF0C\u9700\u5E72\u51C0/\u5BB6\u5BBD IP\uFF0C\u6216\u5728\u6B63\u5E38\u7F51\u7EDC\u767B\u5F55\u540E\u62F7\u8D1D\u767B\u5F55\u6001\u76EE\u5F55\u3002"
-        ] })
+  const groups = (0, import_react11.useMemo)(() => {
+    const m2 = /* @__PURE__ */ new Map();
+    for (const p of PLATFORM_META) m2.set(p.key, []);
+    for (const a of accounts) {
+      if (!m2.has(a.platform)) m2.set(a.platform, []);
+      m2.get(a.platform).push(a);
+    }
+    return [...m2.entries()];
+  }, [accounts]);
+  const renderRow = (a) => {
+    const w2 = whoami[a.id];
+    const info = w2 && w2 !== "loading" ? w2 : null;
+    const logged = effLoggedIn(a);
+    const isWechat = a.backend === "wechat-oa";
+    return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: "1px solid var(--border)", flexWrap: "wrap" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(Avatar, { url: info?.avatar, name: info?.name || a.name }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { flex: 1, minWidth: 150 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }, children: [
+          rename?.id === a.id ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "input",
+            {
+              className: "field",
+              style: { padding: "3px 8px", fontSize: 13, width: 150 },
+              value: rename.value,
+              autoFocus: true,
+              onChange: (e) => setRename({ id: a.id, value: e.target.value }),
+              onKeyDown: (e) => {
+                if (e.key === "Enter") commitRename();
+                if (e.key === "Escape") setRename(null);
+              },
+              onBlur: commitRename
+            }
+          ) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { style: { fontWeight: 650, fontSize: 14 }, children: a.name }),
+          logged ? w2 === "loading" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge", children: "\u6821\u9A8C\u4E2D\u2026" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge badge-ok", children: "\u2713 \u5DF2\u767B\u5F55" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge", children: "\u672A\u767B\u5F55" }),
+          a.direct && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "badge", title: "\u8BE5\u8D26\u53F7\u7684\u76F4\u542F\u767B\u5F55\u7A97\u53E3\u8FD8\u5F00\u7740", children: "\u{1FA9F} \u7A97\u53E3\u5F00\u542F" }),
+          rename?.id !== a.id && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            "button",
+            {
+              className: "icon-btn",
+              title: "\u6539\u540D",
+              style: { fontSize: 12 },
+              onClick: () => setRename({ id: a.id, value: a.name }),
+              children: "\u270E"
+            }
+          )
+        ] }),
+        logged && info?.name && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12, color: "var(--text-secondary)", marginTop: 2 }, children: info.name })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn btn-sm", onClick: load, children: "\u27F3 \u5237\u65B0" }),
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", gap: 0, borderRadius: 980, overflow: "hidden", boxShadow: "var(--shadow-sm)" }, children: LOGIN_MODES.map((m2) => /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("label", { style: { display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, color: "var(--text-secondary)" }, children: [
+        "\u753B\u50CF",
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
+          "select",
+          {
+            value: a.persona,
+            disabled: personaBusy === a.id,
+            title: "\u7ED1\u5B9A\u753B\u50CF\uFF1A\u53D1\u5E03\u5230\u8BE5\u8D26\u53F7\u65F6\u6309\u753B\u50CF\u5B9A\u4F4D\uFF1B\u672A\u7ED1\u5B9A\u8D70\u901A\u7528\u6A21\u5F0F",
+            onChange: (e) => void setPersona(a, e.target.value),
+            style: { padding: "4px 8px", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12.5, background: "var(--surface)", color: "var(--text)", maxWidth: 170 },
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("option", { value: "", children: "\u672A\u7ED1\u5B9A\uFF08\u901A\u7528\u6A21\u5F0F\uFF09" }),
+              personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("option", { value: p.name, children: p.name }, p.name))
+            ]
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 6 }, children: [
+        logged ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
           "button",
           {
-            title: m2.title,
-            onClick: () => pickLoginMode(m2.key),
-            style: {
-              padding: "5px 12px",
-              border: "none",
-              cursor: "pointer",
-              fontSize: 12,
-              fontWeight: loginMode === m2.key ? 600 : 400,
-              background: loginMode === m2.key ? "var(--accent-soft)" : "var(--surface)",
-              color: loginMode === m2.key ? "var(--accent-start)" : "var(--text-secondary)"
+            className: "btn btn-sm",
+            disabled: w2 === "loading" || busy === a.id,
+            onClick: () => runWhoami(a),
+            children: w2 === "loading" ? "\u6821\u9A8C\u4E2D\u2026" : "\u6821\u9A8C\u8D26\u53F7"
+          }
+        ) : a.direct ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm btn-primary",
+            onClick: () => {
+              setQr(null);
+              setDirect({ account: a, message: "\u8BF7\u5728\u6253\u5F00\u7684\u7A97\u53E3\u4E2D\u767B\u5F55\uFF0C\u5B8C\u6210\u540E\u70B9\u300C\u6821\u9A8C\u767B\u5F55\u6001\u300D", checking: false, verdict: "" });
+              setLoginTarget(a);
             },
-            children: m2.label
-          },
-          m2.key
-        )) })
+            children: "\u6821\u9A8C\u767B\u5F55\u6001"
+          }
+        ) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm btn-primary",
+            disabled: busy === a.id || busy === a.id + ":mp",
+            onClick: () => isWechat ? openCred(a) : openLogin(a),
+            children: busy === a.id || busy === a.id + ":mp" ? "\u542F\u52A8\u4E2D\u2026" : "\u767B\u5F55"
+          }
+        ),
+        isWechat && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm",
+            disabled: busy === a.id + ":mp",
+            title: "\u767B\u5F55\u516C\u4F17\u53F7\u540E\u53F0\uFF08\u6570\u636E\u4E2D\u5FC3\u53D6\u6570\u7528\uFF0C\u72EC\u7ACB\u4E8E AppID \u51ED\u8BC1\uFF09",
+            onClick: () => void handleMpLogin(a),
+            children: busy === a.id + ":mp" ? "\u542F\u52A8\u4E2D\u2026" : "\u767B\u5F55\u540E\u53F0"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm btn-ghost",
+            disabled: logoutBusy === a.id,
+            onClick: () => void handleLogout(a),
+            children: logoutBusy === a.id ? "\u9000\u51FA\u4E2D\u2026" : "\u9000\u51FA\u767B\u5F55"
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm btn-danger",
+            disabled: delBusy === a.id,
+            title: "\u5220\u9664\u8D26\u53F7\u6761\u76EE\u5E76\u6E05\u9664\u8BE5\u8D26\u53F7\u767B\u5F55\u6001",
+            onClick: () => void handleDelete(a),
+            children: delBusy === a.id ? "\u5220\u9664\u4E2D\u2026" : "\u5220\u9664"
+          }
+        )
       ] })
+    ] }, a.id);
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "accounts-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h1", { className: "page-title", children: "\u8D26\u53F7\u7BA1\u7406 Accounts" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("p", { className: "page-subtitle", children: [
+          "\u540C\u4E00\u5E73\u53F0\u53EF\u6DFB\u52A0\u591A\u4E2A\u8D26\u53F7\uFF0C\u5404\u81EA\u72EC\u7ACB\u767B\u5F55\u6001\u3001\u53EF\u7ED1\u5B9A\u4E0D\u540C\u753B\u50CF\uFF0C\u53D1\u5E03\u65F6\u6309\u8D26\u53F7\u5206\u53D1\u3002",
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("br", {}),
+          "\u26A0\uFE0F \u5E73\u53F0\u53EF\u80FD\u5BF9\u673A\u623F/\u4EE3\u7406 IP \u5224\u98CE\u9669\uFF1A\u63A8\u8350\u300C\u6253\u5F00\u6D4F\u89C8\u5668\u7A97\u53E3\u300D\u4EBA\u5DE5\u767B\u5F55\uFF0C\u5E72\u51C0/\u5BB6\u5BBD IP \u66F4\u7A33\u3002"
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-sm", onClick: load, children: "\u27F3 \u5237\u65B0" })
     ] }),
-    err && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { color: "var(--red)", fontSize: 13, marginTop: 12 }, children: err }),
-    terminalMsg && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "card", style: { padding: 13, fontSize: 13, marginTop: 14 }, children: terminalMsg }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "accounts-grid", children: accounts.map((a) => {
-      const w2 = whoami[a.platform];
-      const info = w2 && w2 !== "loading" ? w2 : null;
-      const logged = effLoggedIn(a);
-      return /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "card account-card", style: { opacity: a.supported ? 1 : 0.6 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "account-card-head", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "account-card-name", children: a.name }),
-          badge2(a)
+    err && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 13, marginTop: 12 }, children: err }),
+    groups.map(([platform, rows]) => {
+      const meta = PLATFORM_META.find((p) => p.key === platform);
+      const label = meta?.label ?? platform;
+      return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "card", style: { marginTop: 14, padding: 14 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "account-card-head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "account-card-name", children: label }),
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8, alignItems: "center" }, children: [
+            rows.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("span", { style: { fontSize: 12, color: "var(--text-secondary)" }, children: [
+              rows.length,
+              " \u4E2A\u8D26\u53F7"
+            ] }),
+            platform === "wechat-oa" ? rows.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-sm", onClick: () => openCred(WECHAT_PLACEHOLDER), children: "\u914D\u7F6E\u516C\u4F17\u53F7\u51ED\u8BC1" }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+              "button",
+              {
+                className: "btn btn-sm",
+                onClick: () => {
+                  setAddTarget({ platform, label });
+                  setAddName("");
+                  setAddErr("");
+                },
+                children: "\uFF0B \u6DFB\u52A0\u8D26\u53F7"
+              }
+            )
+          ] })
         ] }),
-        logged && info && /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "account-identity", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(Avatar, { url: info.avatar, name: info.name || a.name }),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { className: "account-nick", children: info.name || "\uFF08\u5DF2\u767B\u5F55\uFF09" })
-        ] }),
-        !logged && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "account-card-note", children: a.note ? a.note : `\u540E\u7AEF\uFF1A${a.name}` }),
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { display: "flex", gap: 8, marginTop: "auto" }, children: logged ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(import_jsx_runtime17.Fragment, { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-            "button",
-            {
-              className: "btn btn-sm",
-              style: { flex: 1 },
-              disabled: busy === a.platform || busy === a.platform + ":mp" || w2 === "loading",
-              onClick: () => runWhoami(a.platform),
-              children: w2 === "loading" ? "\u6821\u9A8C\u4E2D\u2026" : "\u6821\u9A8C\u8D26\u53F7"
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-            "button",
-            {
-              className: "btn btn-sm btn-ghost",
-              style: { flex: 1 },
-              disabled: logoutBusy === a.platform,
-              onClick: () => handleLogout(a),
-              children: logoutBusy === a.platform ? "\u9000\u51FA\u4E2D\u2026" : "\u9000\u51FA\u767B\u5F55"
-            }
-          )
-        ] }) : (
-          // 公众号与其它平台统一：都走扫码登录（公众号扫的是后台会话，用于发布+数据）
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-            "button",
-            {
-              className: `btn btn-block ${a.supported ? "btn-primary" : ""}`,
-              disabled: !a.supported || busy === a.platform || busy === a.platform + ":mp",
-              onClick: () => a.backend === "wechat-oa" ? handleMpLogin(a) : handleLogin(a),
-              children: busy === a.platform || busy === a.platform + ":mp" ? "\u542F\u52A8\u4E2D\u2026" : "\u767B\u5F55"
-            }
-          )
-        ) })
-      ] }, a.platform);
-    }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(DeconstructSources, {}),
-    qr && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "overlay", onClick: closeQr, children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)(
+        rows.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12.5, color: "var(--text-secondary)", padding: "10px 0 2px" }, children: platform === "wechat-oa" ? "\u516C\u4F17\u53F7\u6682\u53EA\u652F\u6301\u4E00\u4E2A\u8D26\u53F7\uFF1A\u586B AppID/AppSecret \u51ED\u8BC1\u540E\u81EA\u52A8\u5EFA\u6863\u3002" : "\u8FD8\u6CA1\u6709\u8D26\u53F7\uFF1A\u70B9\u53F3\u4E0A\u89D2\u300C\u6DFB\u52A0\u8D26\u53F7\u300D\uFF0C\u767B\u5F55\u540E\u81EA\u52A8\u51FA\u73B0\u5728\u8FD9\u91CC\u3002" }) : rows.map(renderRow)
+      ] }, platform);
+    }),
+    /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(DeconstructSources, {}),
+    loginTarget && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "overlay", onClick: closeLogin, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(
       "div",
       {
         className: "modal",
-        style: { width: 360, maxWidth: "100%", textAlign: "center" },
+        style: { width: 380, maxWidth: "100%", textAlign: "center" },
         onClick: (e) => e.stopPropagation(),
         children: [
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
-            "\u767B\u5F55 ",
-            qr.name
+          !qr && !direct && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
+              "\u767B\u5F55\u300C",
+              loginTarget.name,
+              "\u300D"
+            ] }),
+            loginTarget.backend === "wechat-oa" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginBottom: 14 }, children: "\u516C\u4F17\u53F7\u53D1\u5E03\u8D70 AppID \u51ED\u8BC1\uFF1B\u6570\u636E\u4E2D\u5FC3\u53D6\u6570\u8D70\u540E\u53F0\u626B\u7801\u3002" }),
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-primary", style: { flex: 1 }, onClick: () => {
+                  setLoginTarget(null);
+                  openCred(loginTarget);
+                }, children: "\u914D\u7F6E\u51ED\u8BC1" }),
+                /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                  "button",
+                  {
+                    className: "btn",
+                    style: { flex: 1 },
+                    disabled: busy === loginTarget.id + ":mp",
+                    onClick: () => void handleMpLogin(loginTarget),
+                    children: "\u767B\u5F55\u540E\u53F0"
+                  }
+                )
+              ] })
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 14 }, children: [
+                loginTarget.backend !== "biliup" && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                  "button",
+                  {
+                    className: "btn btn-primary",
+                    style: { flex: 1 },
+                    disabled: busy === loginTarget.id,
+                    onClick: () => void handleLogin(loginTarget, "direct"),
+                    children: busy === loginTarget.id ? "\u542F\u52A8\u4E2D\u2026" : "\u{1FA9F} \u6253\u5F00\u6D4F\u89C8\u5668\u7A97\u53E3\uFF08\u63A8\u8350\uFF09"
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                  "button",
+                  {
+                    className: `btn ${loginTarget.backend === "biliup" ? "btn-primary" : ""}`,
+                    style: { flex: 1 },
+                    disabled: busy === loginTarget.id,
+                    onClick: () => void handleLogin(loginTarget, "qr"),
+                    children: "\u626B\u7801\u767B\u5F55"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12, color: "var(--text-secondary)", marginTop: 12, lineHeight: 1.7, textAlign: "left" }, children: loginTarget.backend === "biliup" ? "B\u7AD9\u8D70 TV \u7AEF\u626B\u7801\uFF1A\u51FA\u4E8C\u7EF4\u7801\u540E\u7528\u624B\u673A B\u7AD9 App \u626B\u7801\u786E\u8BA4\u3002" : "\u63A8\u8350\u300C\u6253\u5F00\u6D4F\u89C8\u5668\u7A97\u53E3\u300D\uFF1A\u771F\u5B9E\u6D4F\u89C8\u5668\u91CC\u4EBA\u5DE5\u767B\u5F55\uFF0C\u98CE\u63A7\u6700\u7A33\uFF1B\u626B\u7801\u4E3A\u65E0\u5934\u6D4F\u89C8\u5668\u51FA\u4E8C\u7EF4\u7801\uFF0C\u53D7\u5E73\u53F0\u98CE\u63A7\u5F71\u54CD\u8F83\u5927\u3002" })
+            ] }),
+            loginErr && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 12.5, marginTop: 10 }, children: loginErr })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: {
-            fontSize: 13,
-            marginBottom: 14,
-            color: qr.state === "success" ? "var(--green)" : ["error", "expired"].includes(qr.state) ? "var(--red)" : "var(--text-secondary)"
-          }, children: [
-            STATE_LABEL[qr.state] || qr.state,
-            qr.message ? ` \u2014 ${qr.message}` : ""
-          ] }),
-          qr.state === "sms_required" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { padding: "6px 4px 2px" }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: {
+          qr && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
+              "\u767B\u5F55 ",
+              qr.title || qr.account.name
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: {
               fontSize: 13,
-              marginBottom: 10,
-              color: /错误|过期|失败|重新|未找到|未完成|不正确|失效/.test(qr.message || "") ? "var(--red)" : "var(--text-secondary)"
-            }, children: qr.message || "\u5E73\u53F0\u98CE\u63A7\u8981\u6C42\u77ED\u4FE1\u9A8C\u8BC1\uFF0C\u9A8C\u8BC1\u7801\u5DF2\u53D1\u5230\u4F60\u624B\u673A\uFF0C\u8BF7\u8F93\u5165\uFF1A" }),
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
-              "input",
-              {
-                value: smsCode,
-                onChange: (e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 8)),
-                onKeyDown: (e) => {
-                  if (e.key === "Enter") submitSms();
-                },
-                placeholder: "\u77ED\u4FE1\u9A8C\u8BC1\u7801",
-                inputMode: "numeric",
-                autoFocus: true,
-                style: {
-                  width: "100%",
-                  boxSizing: "border-box",
-                  textAlign: "center",
-                  letterSpacing: 6,
-                  fontSize: 20,
-                  padding: "10px 12px",
-                  border: "1px solid var(--border)",
-                  borderRadius: 8
+              marginBottom: 14,
+              color: qr.state === "success" ? "var(--green)" : ["error", "expired"].includes(qr.state) ? "var(--red)" : "var(--text-secondary)"
+            }, children: [
+              STATE_LABEL[qr.state] || qr.state,
+              qr.message ? ` \u2014 ${qr.message}` : ""
+            ] }),
+            qr.state === "sms_required" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { padding: "6px 4px 2px" }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: {
+                fontSize: 13,
+                marginBottom: 10,
+                color: /错误|过期|失败|重新|未找到|未完成|不正确|失效/.test(qr.message || "") ? "var(--red)" : "var(--text-secondary)"
+              }, children: qr.message || "\u5E73\u53F0\u98CE\u63A7\u8981\u6C42\u77ED\u4FE1\u9A8C\u8BC1\uFF0C\u9A8C\u8BC1\u7801\u5DF2\u53D1\u5230\u4F60\u624B\u673A\uFF0C\u8BF7\u8F93\u5165\uFF1A" }),
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                "input",
+                {
+                  value: smsCode,
+                  onChange: (e) => setSmsCode(e.target.value.replace(/\D/g, "").slice(0, 8)),
+                  onKeyDown: (e) => {
+                    if (e.key === "Enter") void submitSms();
+                  },
+                  placeholder: "\u77ED\u4FE1\u9A8C\u8BC1\u7801",
+                  inputMode: "numeric",
+                  autoFocus: true,
+                  style: {
+                    width: "100%",
+                    boxSizing: "border-box",
+                    textAlign: "center",
+                    letterSpacing: 6,
+                    fontSize: 20,
+                    padding: "10px 12px",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8
+                  }
                 }
-              }
-            ),
-            smsErr && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { color: "var(--red)", fontSize: 12, marginTop: 6 }, children: smsErr }),
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+              ),
+              smsErr && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 12, marginTop: 6 }, children: smsErr }),
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+                "button",
+                {
+                  className: "btn btn-primary btn-block",
+                  style: { marginTop: 12 },
+                  disabled: smsBusy,
+                  onClick: () => void submitSms(),
+                  children: smsBusy ? "\u63D0\u4EA4\u4E2D\u2026" : "\u63D0\u4EA4\u9A8C\u8BC1\u7801"
+                }
+              )
+            ] }) : qr.state === "qr_ready" && qr.qr ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("img", { className: "qr-img", src: `${mediaUrl(qr.qr)}?v=${qr.qrTs || qrNonce}`, alt: "\u767B\u5F55\u4E8C\u7EF4\u7801" }) : qr.state === "scanned" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "spinner" }),
+              "\u626B\u7801\u6210\u529F\uFF0C\u6B63\u5728\u8DF3\u8F6C\u9A8C\u8BC1\u2026\uFF08\u9996\u6B21\u53EF\u80FD\u7B49\u5341\u51E0\u79D2\uFF09"
+            ] }) : qr.state === "verifying" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "spinner" }),
+              "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\uFF0C\u767B\u5F55\u4E2D\u2026"
+            ] }) : qr.state === "success" ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 48, padding: 40 }, children: "\u2705" }) : ["error", "expired"].includes(qr.state) ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { fontSize: 13, color: "var(--red)", padding: 30 }, children: [
+              qr.message || "\u767B\u5F55\u5931\u8D25",
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("br", {}),
+              "\u53EF\u5173\u95ED\u540E\u91CD\u8BD5\uFF08\u6216\u6362\u5E72\u51C0 IP\uFF09\u3002"
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
+              /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "spinner" }),
+              "\u51C6\u5907\u4E8C\u7EF4\u7801\u2026"
+            ] })
+          ] }),
+          direct && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)(import_jsx_runtime19.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
+              "\u767B\u5F55 ",
+              direct.account.name
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 30, margin: "10px 0 6px" }, children: "\u{1FA9F}" }),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: {
+              fontSize: 13,
+              marginBottom: 8,
+              lineHeight: 1.7,
+              color: direct.verdict === "ok" ? "var(--green)" : direct.verdict === "no" ? "var(--red)" : "var(--text-secondary)"
+            }, children: direct.verdict === "ok" ? "\u2705 \u5DF2\u68C0\u6D4B\u5230\u767B\u5F55\u6001" : direct.verdict === "no" ? "\u8FD8\u6CA1\u6709\u68C0\u6D4B\u5230\u767B\u5F55\u6001\uFF1A\u8BF7\u5728\u7A97\u53E3\u91CC\u5B8C\u6210\u767B\u5F55\u540E\uFF0C\u518D\u70B9\u4E00\u6B21\u300C\u6821\u9A8C\u767B\u5F55\u6001\u300D\u3002" : direct.message || "\u8BF7\u5728\u6253\u5F00\u7684\u7A97\u53E3\u4E2D\u767B\u5F55\uFF0C\u5B8C\u6210\u540E\u70B9\u300C\u6821\u9A8C\u767B\u5F55\u6001\u300D\u3002" }),
+            direct.verdict !== "ok" && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
               "button",
               {
                 className: "btn btn-primary btn-block",
-                style: { marginTop: 12 },
-                disabled: smsBusy,
-                onClick: submitSms,
-                children: smsBusy ? "\u63D0\u4EA4\u4E2D\u2026" : "\u63D0\u4EA4\u9A8C\u8BC1\u7801"
+                style: { marginTop: 10 },
+                disabled: direct.checking,
+                onClick: () => verifyDirect(direct.account),
+                children: direct.checking ? "\u6821\u9A8C\u4E2D\u2026\uFF08\u8D77\u6D4F\u89C8\u5668\u5B9E\u6D4B\uFF0C\u7EA6\u51E0\u79D2\uFF09" : "\u6821\u9A8C\u767B\u5F55\u6001"
               }
-            )
-          ] }) : qr.state === "window_login" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { padding: "18px 6px", textAlign: "left", fontSize: 13, lineHeight: 1.7 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { fontSize: 30, textAlign: "center", marginBottom: 10 }, children: "\u{1FA9F}" }),
-            qr.message || "\u8BF7\u5728\u5F39\u51FA\u7684\u6D4F\u89C8\u5668\u7A97\u53E3\u91CC\u5B8C\u6210\u767B\u5F55\u3002",
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("br", {}),
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("span", { style: { color: "var(--text-secondary)" }, children: "\u5B8C\u6210\u540E\u8FD9\u91CC\u4F1A\u81EA\u52A8\u68C0\u6D4B\u5230\u767B\u5F55\u6210\u529F\uFF1B\u671F\u95F4\u4E0D\u8981\u5173\u95ED\u90A3\u4E2A\u7A97\u53E3\u3002" })
-          ] }) : qr.state === "qr_ready" && qr.qr ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("img", { className: "qr-img", src: `${mediaUrl(qr.qr)}?v=${qr.qrTs || qrNonce}`, alt: "\u767B\u5F55\u4E8C\u7EF4\u7801" }) : qr.state === "scanned" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "spinner" }),
-            "\u626B\u7801\u6210\u529F\uFF0C\u6B63\u5728\u8DF3\u8F6C\u9A8C\u8BC1\u2026\uFF08\u9996\u6B21\u53EF\u80FD\u7B49\u5341\u51E0\u79D2\uFF09"
-          ] }) : qr.state === "verifying" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "spinner" }),
-            "\u6B63\u5728\u9A8C\u8BC1\u9A8C\u8BC1\u7801\uFF0C\u767B\u5F55\u4E2D\u2026"
-          ] }) : qr.state === "success" ? /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { fontSize: 48, padding: 40 }, children: "\u2705" }) : ["error", "expired"].includes(qr.state) ? /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { fontSize: 13, color: "var(--red)", padding: 30 }, children: [
-            qr.message || "\u767B\u5F55\u5931\u8D25",
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("br", {}),
-            "\u53EF\u5173\u95ED\u540E\u91CD\u8BD5\uFF08\u6216\u6362\u5E72\u51C0 IP\uFF09\u3002"
-          ] }) : /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "spinner" }),
-            "\u51C6\u5907\u4E8C\u7EF4\u7801\u2026"
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12, color: "var(--text-secondary)", marginTop: 12, lineHeight: 1.7, textAlign: "left" }, children: "\u7A97\u53E3\u53EF\u4EE5\u4E00\u76F4\u5F00\u7740\uFF1A\u53D1\u5E03\u65F6\u4F1A\u81EA\u52A8\u9644\u8EAB\u8FD9\u4E2A\u7A97\u53E3\uFF0C\u4F60\u53EF\u968F\u65F6\u63D2\u624B\u9A8C\u8BC1\u7801/\u77ED\u4FE1\u3002\u767B\u5F55\u6001\u4FDD\u5B58\u5728\u672C\u5730\uFF0C\u5173\u6389\u7A97\u53E3\u4E5F\u4E0D\u4E22\u3002" })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn", onClick: closeQr, children: qr.state === "success" ? "\u5B8C\u6210" : "\u5173\u95ED" }) })
+          /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { marginTop: 16 }, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn", onClick: closeLogin, children: qr?.state === "success" || direct?.verdict === "ok" ? "\u5B8C\u6210" : "\u5173\u95ED" }) })
         ]
       }
     ) }),
-    cred && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { className: "overlay", onClick: closeCred, children: /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
+    addTarget && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "overlay", onClick: () => {
+      setAddTarget(null);
+      setAddErr("");
+    }, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "modal", style: { width: 360, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
+        "\u6DFB\u52A0",
+        addTarget.label,
+        "\u8D26\u53F7"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginBottom: 12, lineHeight: 1.6 }, children: "\u8D77\u4E2A\u597D\u8BA4\u7684\u540D\u5B57\uFF08\u5982\u300C\u4E3B\u53F7\u300D\u300C\u5C0F\u53F7 A\u300D\uFF09\u3002\u6BCF\u4E2A\u8D26\u53F7\u6709\u72EC\u7ACB\u767B\u5F55\u6001\uFF0C\u53EF\u7ED1\u5B9A\u4E0D\u540C\u753B\u50CF\u3002" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        "input",
+        {
+          className: "field",
+          value: addName,
+          autoFocus: true,
+          placeholder: "\u8D26\u53F7\u540D\u5B57",
+          onChange: (e) => setAddName(e.target.value),
+          onKeyDown: (e) => {
+            if (e.key === "Enter") void submitAdd();
+          }
+        }
+      ),
+      addErr && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 12.5, marginTop: 8 }, children: addErr }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 14, justifyContent: "flex-end" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-sm", onClick: () => {
+          setAddTarget(null);
+          setAddErr("");
+        }, children: "\u53D6\u6D88" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          "button",
+          {
+            className: "btn btn-sm btn-primary",
+            disabled: addBusy || !addName.trim(),
+            onClick: () => void submitAdd(),
+            children: addBusy ? "\u521B\u5EFA\u4E2D\u2026" : "\u521B\u5EFA\u5E76\u767B\u5F55"
+          }
+        )
+      ] })
+    ] }) }),
+    cred && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "overlay", onClick: closeCred, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "modal", style: { width: 420, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("h3", { style: { margin: "0 0 4px" }, children: [
         "\u914D\u7F6E ",
         cred.name
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginBottom: 14, lineHeight: 1.6 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginBottom: 14, lineHeight: 1.6 }, children: [
         "\u516C\u4F17\u53F7\u7528\u5B98\u65B9\u63A5\u53E3\u53D1\u5E03\uFF0C\u9700\u586B\u5F00\u53D1\u8005\u51ED\u8BC1\uFF08\u516C\u4F17\u5E73\u53F0 \u2192 \u8BBE\u7F6E\u4E0E\u5F00\u53D1 \u2192 \u5F00\u53D1\u63A5\u53E3\u7BA1\u7406\uFF09\u3002",
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("br", {}),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("br", {}),
         "\u26A0\uFE0F \u9700\u628A\u672C\u670D\u52A1\u5668\u51FA\u53E3 IP \u52A0\u5165\u516C\u4F17\u53F7\u300CIP \u767D\u540D\u5355\u300D\uFF0C\u5426\u5219\u62A5 40164\u3002\u6587\u7AE0\u53D1\u5230",
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("b", { children: "\u8349\u7A3F\u7BB1" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("b", { children: "\u8349\u7A3F\u7BB1" }),
         "\uFF0C\u7FA4\u53D1\u8BF7\u5230 mp \u540E\u53F0\u786E\u8BA4\u3002"
       ] }),
-      credMsg && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { fontSize: 12.5, color: "var(--green)", marginBottom: 10 }, children: credMsg }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { style: { fontSize: 12, color: "var(--text-secondary)" }, children: "AppID" }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+      credMsg && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { fontSize: 12.5, color: "var(--green)", marginBottom: 10 }, children: credMsg }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("label", { style: { fontSize: 12, color: "var(--text-secondary)" }, children: "AppID" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
         "input",
         {
           value: credForm.appId,
@@ -8226,8 +10673,8 @@ function AccountsPage() {
           }
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { style: { fontSize: 12, color: "var(--text-secondary)" }, children: "AppSecret" }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("label", { style: { fontSize: 12, color: "var(--text-secondary)" }, children: "AppSecret" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
         "input",
         {
           value: credForm.appSecret,
@@ -8245,8 +10692,8 @@ function AccountsPage() {
           }
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("label", { style: { fontSize: 12, color: "var(--text-secondary)" }, children: "\u9ED8\u8BA4\u4F5C\u8005\uFF08\u53EF\u9009\uFF09" }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("label", { style: { fontSize: 12, color: "var(--text-secondary)" }, children: "\u9ED8\u8BA4\u4F5C\u8005\uFF08\u53EF\u9009\uFF09" }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
         "input",
         {
           value: credForm.author,
@@ -8263,43 +10710,43 @@ function AccountsPage() {
           }
         }
       ),
-      credErr && /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("div", { style: { color: "var(--red)", fontSize: 12.5, marginTop: 8 }, children: credErr }),
-      /* @__PURE__ */ (0, import_jsx_runtime17.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 16 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn btn-primary", style: { flex: 1 }, disabled: credBusy, onClick: submitCred, children: credBusy ? "\u9A8C\u8BC1\u4E2D\u2026" : "\u4FDD\u5B58\u5E76\u9A8C\u8BC1" }),
-        /* @__PURE__ */ (0, import_jsx_runtime17.jsx)("button", { className: "btn", onClick: closeCred, children: "\u5173\u95ED" })
+      credErr && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 12.5, marginTop: 8 }, children: credErr }),
+      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 16 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-primary", style: { flex: 1 }, disabled: credBusy, onClick: () => void submitCred(), children: credBusy ? "\u9A8C\u8BC1\u4E2D\u2026" : "\u4FDD\u5B58\u5E76\u9A8C\u8BC1" }),
+        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn", onClick: closeCred, children: "\u5173\u95ED" })
       ] })
     ] }) })
   ] });
 }
 
 // src/features/accounts.tsx
-var import_jsx_runtime18 = require("react/jsx-runtime");
-var view8 = "accounts";
-var order8 = 37;
-var labels8 = { zh: "\u8D26\u53F7", en: "Accounts" };
-var Icon8 = IconAccounts;
-var Component8 = AccountsPage;
-var plugin8 = {
+var import_jsx_runtime20 = require("react/jsx-runtime");
+var view9 = "accounts";
+var order9 = 39;
+var labels9 = { zh: "\u8D26\u53F7", en: "Accounts" };
+var Icon9 = IconAccounts;
+var Component9 = AccountsPage;
+var plugin9 = {
   name: "easel-view-accounts",
   inject: ["slots", "easelShell"],
   apply(ctx) {
     const { useShellProps, t } = ctx.easelShell;
     ctx.slots.inject("main", () => ctx.slots.register({
       name: "main",
-      key: pageKey(view8),
+      key: pageKey(view9),
       inject: () => ({})
     }, function EaselPage() {
       const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Component8, { ...props }) });
+      return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Component9, { ...props }) });
     }));
     ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
       name: "sidebar.panellist",
-      id: pageKey(view8),
-      order: order8,
+      id: pageKey(view9),
+      order: order9,
       locale: "easel.panel",
-      label: () => t(view8)
+      label: () => t(view9)
     }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime18.jsx)(Icon8, { size });
+      return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(Icon9, { size });
     }));
   }
 };
@@ -8307,20 +10754,20 @@ var plugin8 = {
 // src/features/profile.tsx
 var profile_exports = {};
 __export(profile_exports, {
-  Component: () => Component9,
-  Icon: () => Icon9,
-  labels: () => labels9,
-  order: () => order9,
-  plugin: () => plugin9,
-  view: () => view9
+  Component: () => Component10,
+  Icon: () => Icon10,
+  labels: () => labels10,
+  order: () => order10,
+  plugin: () => plugin10,
+  view: () => view10
 });
 
 // src/components/PersonaBrowser.tsx
-var import_react13 = require("react");
+var import_react14 = require("react");
 
 // src/components/ProfilePage.tsx
-var import_react11 = require("react");
-var import_jsx_runtime19 = require("react/jsx-runtime");
+var import_react12 = require("react");
+var import_jsx_runtime21 = require("react/jsx-runtime");
 function fanTier(n) {
   if (n <= 0) return "\u65B0\u53F7 / 0";
   if (n < 500) return "\u51B7\u542F\u52A8 <500";
@@ -8374,16 +10821,16 @@ var DIM_META = {
   "memory.md": { label: "\u7ECF\u9A8C\u6C89\u6DC0", icon: "\u{1F9E0}" }
 };
 function ProfilePage({ persona, onNewProfile, onDeleted }) {
-  const [files, setFiles] = (0, import_react11.useState)([]);
-  const [drafts, setDrafts] = (0, import_react11.useState)({});
-  const [editing, setEditing] = (0, import_react11.useState)(false);
-  const [loading, setLoading] = (0, import_react11.useState)(false);
-  const [error, setError] = (0, import_react11.useState)("");
-  const [savingFile, setSavingFile] = (0, import_react11.useState)("");
-  const [deleting, setDeleting] = (0, import_react11.useState)(false);
-  const [toast, setToast] = (0, import_react11.useState)("");
-  const [fetchingWx, setFetchingWx] = (0, import_react11.useState)(false);
-  (0, import_react11.useEffect)(() => {
+  const [files, setFiles] = (0, import_react12.useState)([]);
+  const [drafts, setDrafts] = (0, import_react12.useState)({});
+  const [editing, setEditing] = (0, import_react12.useState)(false);
+  const [loading, setLoading] = (0, import_react12.useState)(false);
+  const [error, setError] = (0, import_react12.useState)("");
+  const [savingFile, setSavingFile] = (0, import_react12.useState)("");
+  const [deleting, setDeleting] = (0, import_react12.useState)(false);
+  const [toast, setToast] = (0, import_react12.useState)("");
+  const [fetchingWx, setFetchingWx] = (0, import_react12.useState)(false);
+  (0, import_react12.useEffect)(() => {
     if (!persona) {
       setFiles([]);
       return;
@@ -8456,25 +10903,25 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
     }
   };
   if (!persona) {
-    return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "profile-page", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h1", { className: "page-title", children: "\u7528\u6237\u753B\u50CF Profile" }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "empty-state", style: { height: "70%" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "empty-icon", children: "\u{1F464}" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h3", { children: "\u8FD8\u6CA1\u6709\u9009\u62E9\u753B\u50CF" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { children: "\u753B\u50CF\u6C89\u6DC0\u4F60\u7684\u5B9A\u4F4D\u3001\u98CE\u683C\u3001\u53D7\u4F17\u4E0E\u7EA2\u7EBF\uFF0C\u751F\u6210\u5185\u5BB9\u4F1A\u66F4\u8D34\u5408\u4F60\u7684\u4EBA\u8BBE\u3002" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: "btn btn-primary", onClick: onNewProfile, children: "+ \u65B0\u5EFA\u753B\u50CF" })
+    return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "profile-page", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("h1", { className: "page-title", children: "\u7528\u6237\u753B\u50CF Profile" }),
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "empty-state", style: { height: "70%" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "empty-icon", children: "\u{1F464}" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("h3", { children: "\u8FD8\u6CA1\u6709\u9009\u62E9\u753B\u50CF" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { children: "\u753B\u50CF\u6C89\u6DC0\u4F60\u7684\u5B9A\u4F4D\u3001\u98CE\u683C\u3001\u53D7\u4F17\u4E0E\u7EA2\u7EBF\uFF0C\u751F\u6210\u5185\u5BB9\u4F1A\u66F4\u8D34\u5408\u4F60\u7684\u4EBA\u8BBE\u3002" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { className: "btn btn-primary", onClick: onNewProfile, children: "+ \u65B0\u5EFA\u753B\u50CF" })
       ] })
     ] });
   }
-  return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "profile-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "profile-head", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("h1", { className: "page-title", children: persona }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("p", { className: "page-subtitle", children: "\u516D\u4E2A\u7EF4\u5EA6\u6784\u6210\u4E00\u4E2A\u5B8C\u6574\u4EBA\u8BBE\uFF0C\u53EF\u968F\u65F6\u7F16\u8F91\u4FDD\u5B58\u3002" })
+  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "profile-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "profile-head", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("h1", { className: "page-title", children: persona }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "page-subtitle", children: "\u516D\u4E2A\u7EF4\u5EA6\u6784\u6210\u4E00\u4E2A\u5B8C\u6574\u4EBA\u8BBE\uFF0C\u53EF\u968F\u65F6\u7F16\u8F91\u4FDD\u5B58\u3002" })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("button", { className: `btn ${editing ? "btn-primary" : ""}`, onClick: () => setEditing((v2) => !v2), children: editing ? "\u5B8C\u6210\u7F16\u8F91" : "\u270F\uFE0F \u7F16\u8F91\u8D44\u6599" }),
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { className: `btn ${editing ? "btn-primary" : ""}`, onClick: () => setEditing((v2) => !v2), children: editing ? "\u5B8C\u6210\u7F16\u8F91" : "\u270F\uFE0F \u7F16\u8F91\u8D44\u6599" }),
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           "button",
           {
             className: "btn",
@@ -8486,22 +10933,22 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
         )
       ] })
     ] }),
-    error && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { style: { color: "var(--red)", fontSize: 14, marginTop: 12 }, children: error }),
-    loading ? /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "loading", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "spinner" }),
+    error && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { style: { color: "var(--red)", fontSize: 14, marginTop: 12 }, children: error }),
+    loading ? /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "loading", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "spinner" }),
       "\u52A0\u8F7D\u4E2D\u2026"
     ] }) : files.map((f) => {
       const meta = DIM_META[f.filename] || { label: f.filename, icon: "\u{1F4C4}" };
       const dirty = editing && (drafts[f.filename] ?? "") !== f.content;
-      return /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "profile-dim", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "profile-dim-head", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "profile-dim-title", children: [
+      return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "profile-dim", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "profile-dim-head", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "profile-dim-title", children: [
             meta.icon,
             " ",
             meta.label
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
-            f.filename === "platforms.md" && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
+            f.filename === "platforms.md" && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
               "button",
               {
                 className: "btn btn-sm",
@@ -8511,7 +10958,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
                 children: fetchingWx ? "\u6293\u53D6\u4E2D\u2026" : "\u{1F4CA} \u6293\u53D6\u516C\u4F17\u53F7\u6570\u636E"
               }
             ),
-            editing && /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+            editing && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
               "button",
               {
                 className: "btn btn-sm btn-primary",
@@ -8522,7 +10969,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
             )
           ] })
         ] }),
-        editing ? /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        editing ? /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           "textarea",
           {
             className: "field",
@@ -8530,7 +10977,7 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
             value: drafts[f.filename] ?? "",
             onChange: (e) => setDrafts((p) => ({ ...p, [f.filename]: e.target.value }))
           }
-        ) : /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("div", { className: "card", style: { padding: "14px 18px" }, children: /* @__PURE__ */ (0, import_jsx_runtime19.jsx)(
+        ) : /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "card", style: { padding: "14px 18px" }, children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           "div",
           {
             className: "profile-content",
@@ -8539,16 +10986,16 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
         ) })
       ] }, f.filename);
     }),
-    toast && /* @__PURE__ */ (0, import_jsx_runtime19.jsxs)("div", { className: "toast ok", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime19.jsx)("span", { className: "toast-icon", children: "\u2713" }),
+    toast && /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "toast ok", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "toast-icon", children: "\u2713" }),
       toast
     ] })
   ] });
 }
 
 // src/components/OnboardingWizard.tsx
-var import_react12 = require("react");
-var import_jsx_runtime20 = require("react/jsx-runtime");
+var import_react13 = require("react");
+var import_jsx_runtime22 = require("react/jsx-runtime");
 var PLATFORMS3 = ["\u5C0F\u7EA2\u4E66", "\u6296\u97F3", "B\u7AD9", "\u89C6\u9891\u53F7", "\u516C\u4F17\u53F7", "\u5FAE\u535A", "\u77E5\u4E4E"];
 var TONES = ["\u4E13\u4E1A\u4E25\u8C28", "\u8F7B\u677E\u5E7D\u9ED8", "\u4EB2\u5207\u65E5\u5E38", "\u7280\u5229\u5410\u69FD", "\u6CBB\u6108\u6E29\u6696", "\u5E72\u8D27\u5B9E\u7528"];
 var EMPTY3 = {
@@ -8566,12 +11013,12 @@ var EMPTY3 = {
 };
 var STEPS = ["\u57FA\u7840\u4FE1\u606F", "\u793E\u5A92\u94FE\u63A5", "\u8FD0\u8425\u610F\u56FE", "\u504F\u597D\u4E0E\u7EA2\u7EBF"];
 function OnboardingWizard({ onClose, onCreated }) {
-  const [step, setStep] = (0, import_react12.useState)(0);
-  const [form, setForm] = (0, import_react12.useState)(EMPTY3);
-  const [submitting, setSubmitting] = (0, import_react12.useState)(false);
-  const [phase, setPhase] = (0, import_react12.useState)("form");
-  const [error, setError] = (0, import_react12.useState)("");
-  const taskRef = (0, import_react12.useRef)(null);
+  const [step, setStep] = (0, import_react13.useState)(0);
+  const [form, setForm] = (0, import_react13.useState)(EMPTY3);
+  const [submitting, setSubmitting] = (0, import_react13.useState)(false);
+  const [phase, setPhase] = (0, import_react13.useState)("form");
+  const [error, setError] = (0, import_react13.useState)("");
+  const taskRef = (0, import_react13.useRef)(null);
   const set = (k2, v2) => setForm((f) => ({ ...f, [k2]: v2 }));
   const togglePlatform = (p) => setForm((f) => ({
     ...f,
@@ -8619,7 +11066,7 @@ ${formToInstruction(name, form)}`;
       setSubmitting(false);
     }
   };
-  const box2 = {
+  const box = {
     width: "100%",
     padding: "10px 12px",
     marginTop: 6,
@@ -8630,7 +11077,7 @@ ${formToInstruction(name, form)}`;
     fontSize: 14,
     fontFamily: "inherit"
   };
-  const label2 = { display: "block", marginTop: 16, fontSize: 13, color: "var(--text-secondary)" };
+  const label = { display: "block", marginTop: 16, fontSize: 13, color: "var(--text-secondary)" };
   const chip = (active) => ({
     padding: "6px 13px",
     borderRadius: 999,
@@ -8640,10 +11087,10 @@ ${formToInstruction(name, form)}`;
     background: active ? "var(--accent-gradient)" : "var(--bg-elev)",
     color: active ? "#fff" : "var(--text)"
   });
-  return /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "overlay", children: /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "modal", style: { width: 560, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto" }, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("h2", { style: { margin: 0, fontSize: 20 }, children: "\u914D\u7F6E\u8D26\u53F7\u753B\u50CF" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "overlay", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { className: "modal", style: { width: 560, maxWidth: "100%", maxHeight: "90vh", overflowY: "auto" }, children: [
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("h2", { style: { margin: 0, fontSize: 20 }, children: "\u914D\u7F6E\u8D26\u53F7\u753B\u50CF" }),
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
         "button",
         {
           onClick: onClose,
@@ -8653,51 +11100,51 @@ ${formToInstruction(name, form)}`;
         }
       )
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "flex", gap: 6, margin: "16px 0 4px" }, children: STEPS.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { style: { flex: 1 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { height: 4, borderRadius: 2, background: i <= step ? "var(--accent-start)" : "var(--border)" } }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { fontSize: 11, color: i === step ? "var(--text)" : "var(--text-secondary)", marginTop: 4 }, children: s })
+    /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { display: "flex", gap: 6, margin: "16px 0 4px" }, children: STEPS.map((s, i) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { style: { flex: 1 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { height: 4, borderRadius: 2, background: i <= step ? "var(--accent-start)" : "var(--border)" } }),
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { fontSize: 11, color: i === step ? "var(--text)" : "var(--text-secondary)", marginTop: 4 }, children: s })
     ] }, s)) }),
-    submitting ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { style: { padding: "48px 0", textAlign: "center", color: "var(--text-secondary)" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "spinner", style: { margin: "0 auto 16px" } }),
+    submitting ? /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { style: { padding: "48px 0", textAlign: "center", color: "var(--text-secondary)" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "spinner", style: { margin: "0 auto 16px" } }),
       "\u6B63\u5728\u521B\u5EFA\u753B\u50CF\u57FA\u7EBF\u2026"
-    ] }) : phase === "enhancing" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { style: { padding: "40px 0", textAlign: "center", color: "var(--text-secondary)" }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "spinner", style: { margin: "0 auto 16px" } }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { color: "var(--text)", fontSize: 15, marginBottom: 6 }, children: "\u753B\u50CF\u5DF2\u521B\u5EFA \u2713\u3000AI \u6B63\u5728\u5BF9\u8BDD\u91CC\u589E\u5F3A\u2026" }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("span", { style: { fontSize: 12 }, children: [
+    ] }) : phase === "enhancing" ? /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { style: { padding: "40px 0", textAlign: "center", color: "var(--text-secondary)" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "spinner", style: { margin: "0 auto 16px" } }),
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { color: "var(--text)", fontSize: 15, marginBottom: 6 }, children: "\u753B\u50CF\u5DF2\u521B\u5EFA \u2713\u3000AI \u6B63\u5728\u5BF9\u8BDD\u91CC\u589E\u5F3A\u2026" }),
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("span", { style: { fontSize: 12 }, children: [
         "\u589E\u5F3A\u8FC7\u7A0B\u5728 dsh \u5BF9\u8BDD\u91CC\u8FDB\u884C\uFF08\u53EF\u65C1\u89C2\u3001\u53EF\u8FFD\u95EE\uFF09\uFF0C\u5B8C\u6210\u540E\u8FD9\u91CC\u4F1A\u81EA\u52A8\u8FDB\u5165\u753B\u50CF\u3002",
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("br", {}),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("br", {}),
         "\u4E5F\u53EF\u4EE5\u73B0\u5728\u5C31\u8FDB\u53BB\u7528\uFF0C\u589E\u5F3A\u4F1A\u5728\u540E\u53F0\u7EE7\u7EED\u3002"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { marginTop: 20 }, children: /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { className: "btn btn-primary", onClick: () => onCreated(form.name.trim()), children: "\u5148\u8FDB\u53BB\u7528" }) })
-    ] }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { style: { minHeight: 240 }, children: [
-      step === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u753B\u50CF\u540D *\uFF08\u4E00\u4E2A\u4EBA\u8BBE = \u4E00\u4E2A\u753B\u50CF\uFF0C\u53EF\u8DE8\u591A\u5E73\u53F0\uFF09" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { marginTop: 20 }, children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { className: "btn btn-primary", onClick: () => onCreated(form.name.trim()), children: "\u5148\u8FDB\u53BB\u7528" }) })
+    ] }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { style: { minHeight: 240 }, children: [
+      step === 0 && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(import_jsx_runtime22.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { style: label, children: "\u753B\u50CF\u540D *\uFF08\u4E00\u4E2A\u4EBA\u8BBE = \u4E00\u4E2A\u753B\u50CF\uFF0C\u53EF\u8DE8\u591A\u5E73\u53F0\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "input",
           {
-            style: box2,
+            style: box,
             value: form.name,
             placeholder: "\u5982\uFF1A\u79D1\u6280\u6570\u7801\u8FBE\u4EBA",
             onChange: (e) => set("name", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u8FD0\u8425\u5E73\u53F0\uFF08\u53EF\u591A\u9009\uFF09" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }, children: PLATFORMS3.map((p) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => togglePlatform(p), style: chip(form.platforms.includes(p)), children: p }, p)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u8D77\u53F7\u72B6\u6001" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "flex", gap: 8, marginTop: 6 }, children: ["\u5168\u65B0\u8D77\u53F7", "\u5DF2\u6709\u8D26\u53F7"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => set("accountStage", s), style: chip(form.accountStage === s), children: s }, s)) })
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { style: label, children: "\u8FD0\u8425\u5E73\u53F0\uFF08\u53EF\u591A\u9009\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }, children: PLATFORMS3.map((p) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { onClick: () => togglePlatform(p), style: chip(form.platforms.includes(p)), children: p }, p)) }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { style: label, children: "\u8D77\u53F7\u72B6\u6001" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { display: "flex", gap: 8, marginTop: 6 }, children: ["\u5168\u65B0\u8D77\u53F7", "\u5DF2\u6709\u8D26\u53F7"].map((s) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { onClick: () => set("accountStage", s), style: chip(form.accountStage === s), children: s }, s)) })
       ] }),
-      step === 1 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)", marginTop: 12 }, children: "\u8D34\u4E0A\u5404\u5E73\u53F0\u4E3B\u9875\u94FE\u63A5\uFF0CAI \u4F1A\u5C3D\u529B\u5206\u6790\u4F60\u5DF2\u53D1\u7684\u5185\u5BB9\u548C\u98CE\u683C\uFF08\u6293\u4E0D\u5230\u4F1A\u8DF3\u8FC7\uFF0C\u53EF\u7559\u7A7A\uFF09\u3002" }),
-        form.platforms.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)" }, children: "\uFF08\u672A\u9009\u5E73\u53F0\uFF0C\u53EF\u76F4\u63A5\u4E0B\u4E00\u6B65\uFF09" }),
-        form.platforms.map((p) => /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { children: [
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("label", { style: label2, children: [
+      step === 1 && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(import_jsx_runtime22.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)", marginTop: 12 }, children: "\u8D34\u4E0A\u5404\u5E73\u53F0\u4E3B\u9875\u94FE\u63A5\uFF0CAI \u4F1A\u5C3D\u529B\u5206\u6790\u4F60\u5DF2\u53D1\u7684\u5185\u5BB9\u548C\u98CE\u683C\uFF08\u6293\u4E0D\u5230\u4F1A\u8DF3\u8FC7\uFF0C\u53EF\u7559\u7A7A\uFF09\u3002" }),
+        form.platforms.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)" }, children: "\uFF08\u672A\u9009\u5E73\u53F0\uFF0C\u53EF\u76F4\u63A5\u4E0B\u4E00\u6B65\uFF09" }),
+        form.platforms.map((p) => /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("label", { style: label, children: [
             p,
             " \u4E3B\u9875\u94FE\u63A5"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
             "input",
             {
-              style: box2,
+              style: box,
               value: form.links[p] || "",
               placeholder: `https://\u2026`,
               onChange: (e) => set("links", { ...form.links, [p]: e.target.value })
@@ -8705,128 +11152,128 @@ ${formToInstruction(name, form)}`;
           )
         ] }, p))
       ] }),
-      step === 2 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u60F3\u505A\u4EC0\u4E48\u65B9\u5411\u7684\u5185\u5BB9 *\uFF08\u8D8A\u5177\u4F53\u8D8A\u597D\uFF09" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      step === 2 && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(import_jsx_runtime22.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { style: label, children: "\u60F3\u505A\u4EC0\u4E48\u65B9\u5411\u7684\u5185\u5BB9 *\uFF08\u8D8A\u5177\u4F53\u8D8A\u597D\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "input",
           {
-            style: box2,
+            style: box,
             value: form.direction,
             placeholder: "\u5982\uFF1A\u5E73\u4EF7\u62A4\u80A4\u6D4B\u8BC4",
             onChange: (e) => set("direction", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u4E3A\u4EC0\u4E48\u505A\u8FD9\u4E2A / \u4F60\u7684\u4F18\u52BF\xB7\u72EC\u7279\u7ECF\u5386" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { style: label, children: "\u4E3A\u4EC0\u4E48\u505A\u8FD9\u4E2A / \u4F60\u7684\u4F18\u52BF\xB7\u72EC\u7279\u7ECF\u5386" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "textarea",
           {
-            style: { ...box2, minHeight: 60, resize: "vertical" },
+            style: { ...box, minHeight: 60, resize: "vertical" },
             value: form.reason,
             onChange: (e) => set("reason", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u8FD0\u8425\u76EE\u6807" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { style: label, children: "\u8FD0\u8425\u76EE\u6807" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "input",
           {
-            style: box2,
+            style: box,
             value: form.goal,
             placeholder: "\u6DA8\u7C89 / \u53D8\u73B0 / \u4E2A\u4EBA\u54C1\u724C / \u5F15\u6D41\u79C1\u57DF",
             onChange: (e) => set("goal", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u60F3\u4EA7\u51FA\u7684\u5F62\u5F0F" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { style: label, children: "\u60F3\u4EA7\u51FA\u7684\u5F62\u5F0F" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "input",
           {
-            style: box2,
+            style: box,
             value: form.formats,
             placeholder: "\u56FE\u6587 / \u77ED\u89C6\u9891 / \u4E2D\u957F\u89C6\u9891 / \u957F\u6587",
             onChange: (e) => set("formats", e.target.value)
           }
         )
       ] }),
-      step === 3 && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)(import_jsx_runtime20.Fragment, { children: [
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u559C\u6B22\u770B\u7684\u5185\u5BB9 / \u5BF9\u6807\u8D26\u53F7" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+      step === 3 && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)(import_jsx_runtime22.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { style: label, children: "\u559C\u6B22\u770B\u7684\u5185\u5BB9 / \u5BF9\u6807\u8D26\u53F7" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "textarea",
           {
-            style: { ...box2, minHeight: 60, resize: "vertical" },
+            style: { ...box, minHeight: 60, resize: "vertical" },
             value: form.likes,
             onChange: (e) => set("likes", e.target.value)
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u671F\u671B\u8C03\u6027" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }, children: TONES.map((t) => /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { onClick: () => set("tone", form.tone === t ? "" : t), style: chip(form.tone === t), children: t }, t)) }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("label", { style: label2, children: "\u4E0D\u505A\u7684\u5185\u5BB9 / \u5408\u89C4\u7EA2\u7EBF" }),
-        /* @__PURE__ */ (0, import_jsx_runtime20.jsx)(
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { style: label, children: "\u671F\u671B\u8C03\u6027" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }, children: TONES.map((t) => /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { onClick: () => set("tone", form.tone === t ? "" : t), style: chip(form.tone === t), children: t }, t)) }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("label", { style: label, children: "\u4E0D\u505A\u7684\u5185\u5BB9 / \u5408\u89C4\u7EA2\u7EBF" }),
+        /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(
           "textarea",
           {
-            style: { ...box2, minHeight: 60, resize: "vertical" },
+            style: { ...box, minHeight: 60, resize: "vertical" },
             value: form.avoid,
             placeholder: "\u5982\uFF1A\u4E0D\u63A5\u533B\u7597\u529F\u6548\u3001\u4E0D\u505A\u865A\u5047\u5BA3\u4F20",
             onChange: (e) => set("avoid", e.target.value)
           }
         )
       ] }),
-      error && /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: { color: "var(--red)", fontSize: 13, marginTop: 12 }, children: error })
+      error && /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { style: { color: "var(--red)", fontSize: 13, marginTop: 12 }, children: error })
     ] }),
-    phase === "form" && !submitting && /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 20 }, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { className: "btn", onClick: () => step === 0 ? onClose() : setStep(step - 1), children: step === 0 ? "\u53D6\u6D88" : "\u4E0A\u4E00\u6B65" }),
-      step < STEPS.length - 1 ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { className: "btn btn-primary", onClick: () => canNext && setStep(step + 1), disabled: !canNext, children: "\u4E0B\u4E00\u6B65" }) : /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("button", { className: "btn btn-primary", onClick: submit, disabled: !form.name.trim() || !form.direction.trim(), children: "\u751F\u6210\u753B\u50CF" })
+    phase === "form" && !submitting && /* @__PURE__ */ (0, import_jsx_runtime22.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", marginTop: 20 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { className: "btn", onClick: () => step === 0 ? onClose() : setStep(step - 1), children: step === 0 ? "\u53D6\u6D88" : "\u4E0A\u4E00\u6B65" }),
+      step < STEPS.length - 1 ? /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { className: "btn btn-primary", onClick: () => canNext && setStep(step + 1), disabled: !canNext, children: "\u4E0B\u4E00\u6B65" }) : /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("button", { className: "btn btn-primary", onClick: submit, disabled: !form.name.trim() || !form.direction.trim(), children: "\u751F\u6210\u753B\u50CF" })
     ] })
   ] }) });
 }
 
 // src/components/PersonaBrowser.tsx
-var import_jsx_runtime21 = require("react/jsx-runtime");
+var import_jsx_runtime23 = require("react/jsx-runtime");
 function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }) {
-  const [wizardOpen, setWizardOpen] = (0, import_react13.useState)(false);
-  (0, import_react13.useEffect)(() => {
+  const [wizardOpen, setWizardOpen] = (0, import_react14.useState)(false);
+  (0, import_react14.useEffect)(() => {
     onRefresh?.();
   }, [onRefresh]);
   const handleDeleted = (name) => {
     onDeleted();
     if (name === persona) onPersonaChange("");
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "persona-browser", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("aside", { className: "persona-list", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "persona-list-head", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "persona-list-title", children: "\u8D26\u53F7\u753B\u50CF" }),
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { style: { display: "flex", gap: 6 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { className: "btn btn-sm", title: "\u91CD\u65B0\u8BFB\u53D6\u753B\u50CF\u76EE\u5F55\uFF08agent \u4F1A\u8BDD\u53EF\u80FD\u5EFA\u8FC7/\u6539\u540D\uFF09", onClick: () => onRefresh?.(), children: "\u27F3" }),
-          /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { className: "btn btn-sm", onClick: () => setWizardOpen(true), children: "+ \u65B0\u5EFA\u753B\u50CF" })
+  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "persona-browser", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("aside", { className: "persona-list", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "persona-list-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "persona-list-title", children: "\u8D26\u53F7\u753B\u50CF" }),
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { style: { display: "flex", gap: 6 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { className: "btn btn-sm", title: "\u91CD\u65B0\u8BFB\u53D6\u753B\u50CF\u76EE\u5F55\uFF08agent \u4F1A\u8BDD\u53EF\u80FD\u5EFA\u8FC7/\u6539\u540D\uFF09", onClick: () => onRefresh?.(), children: "\u27F3" }),
+          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { className: "btn btn-sm", onClick: () => setWizardOpen(true), children: "+ \u65B0\u5EFA\u753B\u50CF" })
         ] })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { className: "persona-groups", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "persona-groups", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
           "button",
           {
             className: `persona-row ${persona === "" ? "active" : ""}`,
             onClick: () => onPersonaChange(""),
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "persona-row-name", children: "\u901A\u7528\u6A21\u5F0F" }),
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "persona-row-desc", children: "\u4E0D\u6307\u5B9A\u753B\u50CF\uFF0C\u5404\u9875\u9762\u6309\u901A\u7528\u65B9\u5F0F\u751F\u6210" })
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "persona-row-name", children: "\u901A\u7528\u6A21\u5F0F" }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "persona-row-desc", children: "\u4E0D\u6307\u5B9A\u753B\u50CF\uFF0C\u5404\u9875\u9762\u6309\u901A\u7528\u65B9\u5F0F\u751F\u6210" })
             ]
           }
         ),
-        personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)(
+        personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
           "button",
           {
             className: `persona-row ${persona === p.name ? "active" : ""}`,
             onClick: () => onPersonaChange(p.name),
             title: p.description,
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "persona-row-name", children: p.name }),
-              p.description && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "persona-row-desc", children: p.description })
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "persona-row-name", children: p.name }),
+              p.description && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "persona-row-desc", children: p.description })
             ]
           },
           p.name
         )),
-        personas.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "persona-row persona-row-static", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("span", { className: "persona-row-desc", children: "\u8FD8\u6CA1\u6709\u8D26\u53F7\u753B\u50CF\u2014\u2014\u70B9\u53F3\u4E0A\u300C+ \u65B0\u5EFA\u753B\u50CF\u300D\u521B\u5EFA\u7B2C\u4E00\u4E2A\u3002" }) })
+        personas.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "persona-row persona-row-static", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "persona-row-desc", children: "\u8FD8\u6CA1\u6709\u8D26\u53F7\u753B\u50CF\u2014\u2014\u70B9\u53F3\u4E0A\u300C+ \u65B0\u5EFA\u753B\u50CF\u300D\u521B\u5EFA\u7B2C\u4E00\u4E2A\u3002" }) })
       ] })
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("div", { className: "persona-detail", children: /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "persona-detail", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
       ProfilePage,
       {
         persona,
@@ -8834,7 +11281,7 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
         onDeleted: handleDeleted
       }
     ) }),
-    wizardOpen && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+    wizardOpen && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
       OnboardingWizard,
       {
         onClose: () => setWizardOpen(false),
@@ -8849,33 +11296,33 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
 }
 
 // src/features/profile.tsx
-var import_jsx_runtime22 = require("react/jsx-runtime");
-var view9 = "profile";
-var order9 = 38;
-var labels9 = { zh: "\u753B\u50CF", en: "Profile" };
-var Icon9 = IconProfile;
-var Component9 = PersonaBrowser;
-var plugin9 = {
+var import_jsx_runtime24 = require("react/jsx-runtime");
+var view10 = "profile";
+var order10 = 38;
+var labels10 = { zh: "\u753B\u50CF", en: "Profile" };
+var Icon10 = IconProfile;
+var Component10 = PersonaBrowser;
+var plugin10 = {
   name: "easel-view-profile",
   inject: ["slots", "easelShell"],
   apply(ctx) {
     const { useShellProps, t } = ctx.easelShell;
     ctx.slots.inject("main", () => ctx.slots.register({
       name: "main",
-      key: pageKey(view9),
+      key: pageKey(view10),
       inject: () => ({})
     }, function EaselPage() {
       const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Component9, { ...props }) });
+      return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Component10, { ...props }) });
     }));
     ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
       name: "sidebar.panellist",
-      id: pageKey(view9),
-      order: order9,
+      id: pageKey(view10),
+      order: order10,
       locale: "easel.panel",
-      label: () => t(view9)
+      label: () => t(view10)
     }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime22.jsx)(Icon9, { size });
+      return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Icon10, { size });
     }));
   }
 };
@@ -8883,17 +11330,17 @@ var plugin9 = {
 // src/features/breakdown.tsx
 var breakdown_exports = {};
 __export(breakdown_exports, {
-  Component: () => Component10,
-  Icon: () => Icon10,
-  labels: () => labels10,
-  order: () => order10,
-  plugin: () => plugin10,
-  view: () => view10
+  Component: () => Component11,
+  Icon: () => Icon11,
+  labels: () => labels11,
+  order: () => order11,
+  plugin: () => plugin11,
+  view: () => view11
 });
 
 // src/components/BreakdownPage.tsx
-var import_react14 = require("react");
-var import_jsx_runtime23 = require("react/jsx-runtime");
+var import_react15 = require("react");
+var import_jsx_runtime25 = require("react/jsx-runtime");
 var FETCH_STAGES = [
   { key: "fetch", label: "\u4E0B\u8F7D\u89C6\u9891" },
   { key: "frames", label: "\u62BD\u53D6\u753B\u9762" },
@@ -8902,10 +11349,13 @@ var FETCH_STAGES = [
 var PLATFORM_NAMES = {
   douyin: "\u6296\u97F3",
   xhs: "\u5C0F\u7EA2\u4E66",
+  kuaishou: "\u5FEB\u624B",
+  sph: "\u89C6\u9891\u53F7",
   bili: "B\u7AD9",
   youtube: "YouTube",
   other: "\u901A\u7528\u94FE\u63A5"
 };
+var CHANNELS_URL_RE = /channels\.weixin\.qq\.com/i;
 function stageIndex(stage) {
   const i = FETCH_STAGES.findIndex((item) => item.key === stage);
   return i < 0 ? FETCH_STAGES.length : i;
@@ -8917,22 +11367,24 @@ function flattenCatalog(payload) {
   );
 }
 function BreakdownPage({ persona, onNavigate, remote }) {
-  const [input, setInput] = (0, import_react14.useState)("");
-  const [catalog, setCatalog] = (0, import_react14.useState)(null);
-  const [catalogError, setCatalogError] = (0, import_react14.useState)("");
-  const [asrModel, setAsrModel] = (0, import_react14.useState)("");
-  const [visionModel, setVisionModel] = (0, import_react14.useState)("");
-  const [preflight, setPreflight] = (0, import_react14.useState)(null);
-  const [gateChecking, setGateChecking] = (0, import_react14.useState)(false);
-  const [job, setJob] = (0, import_react14.useState)(null);
-  const [capturing, setCapturing] = (0, import_react14.useState)(false);
-  const [analyzeState, setAnalyzeState] = (0, import_react14.useState)("idle");
-  const [report, setReport] = (0, import_react14.useState)("");
-  const abortRef = (0, import_react14.useRef)(null);
-  (0, import_react14.useEffect)(() => () => {
+  const [input, setInput] = (0, import_react15.useState)("");
+  const [catalog, setCatalog] = (0, import_react15.useState)(null);
+  const [catalogError, setCatalogError] = (0, import_react15.useState)("");
+  const [asrModel, setAsrModel] = (0, import_react15.useState)("");
+  const [visionModel, setVisionModel] = (0, import_react15.useState)("");
+  const [preflight, setPreflight] = (0, import_react15.useState)(null);
+  const [gateChecking, setGateChecking] = (0, import_react15.useState)(false);
+  const [job, setJob] = (0, import_react15.useState)(null);
+  const [capturing, setCapturing] = (0, import_react15.useState)(false);
+  const [retrying, setRetrying] = (0, import_react15.useState)(false);
+  const [retryNote, setRetryNote] = (0, import_react15.useState)("");
+  const [analyzeState, setAnalyzeState] = (0, import_react15.useState)("idle");
+  const [report, setReport] = (0, import_react15.useState)("");
+  const abortRef = (0, import_react15.useRef)(null);
+  (0, import_react15.useEffect)(() => () => {
     abortRef.current?.();
   }, []);
-  (0, import_react14.useEffect)(() => {
+  (0, import_react15.useEffect)(() => {
     let alive = true;
     void (async () => {
       try {
@@ -8952,7 +11404,7 @@ function BreakdownPage({ persona, onNavigate, remote }) {
       alive = false;
     };
   }, [remote]);
-  const poll = (0, import_react14.useCallback)(async (id) => {
+  const poll = (0, import_react15.useCallback)(async (id) => {
     for (; ; ) {
       await new Promise((resolve) => setTimeout(resolve, 2e3));
       const res = await fetch(`/easel/api/deconstruct/${id}`, { headers: { accept: "application/json" } }).catch(() => null);
@@ -8962,7 +11414,7 @@ function BreakdownPage({ persona, onNavigate, remote }) {
       if (data.stage === "ready" || data.stage === "failed") return;
     }
   }, []);
-  const checkGate = (0, import_react14.useCallback)(async () => {
+  const checkGate = (0, import_react15.useCallback)(async () => {
     const url = input.trim();
     if (!url) return null;
     const res = await fetch("/easel/api/deconstruct/preflight", {
@@ -8994,7 +11446,8 @@ function BreakdownPage({ persona, onNavigate, remote }) {
       const res = await fetch("/easel/api/deconstruct", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url, asrModel: asrModel.split("::")[1] })
+        // 完整 provider::model：宿主按服务商解析「设置→模型」里配置的凭据。
+        body: JSON.stringify({ url, asrModel: asrModel || void 0 })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? "\u91C7\u96C6\u4EFB\u52A1\u521B\u5EFA\u5931\u8D25");
@@ -9004,6 +11457,26 @@ function BreakdownPage({ persona, onNavigate, remote }) {
       setJob({ id: "", url, stage: "failed", error: String(error.message ?? error) });
     } finally {
       setCapturing(false);
+    }
+  };
+  const retryCapture = async () => {
+    if (!job?.id || retrying || capturing) return;
+    setRetrying(true);
+    setRetryNote("");
+    try {
+      const res = await fetch(`/easel/api/deconstruct/${job.id}/retry`, { method: "POST" });
+      const data = await res.json();
+      if (res.status === 409) {
+        setRetryNote(data.detail ?? "\u5DF2\u6709\u62C6\u89E3\u91C7\u96C6\u5728\u8FD0\u884C\uFF0C\u8BF7\u7B49\u5B83\u5B8C\u6210\u6216\u5931\u8D25\u540E\u518D\u91CD\u8BD5");
+        return;
+      }
+      if (!res.ok) throw new Error(data.detail ?? data.message ?? "\u7EED\u8DD1\u542F\u52A8\u5931\u8D25");
+      setJob(data);
+      void poll(data.id);
+    } catch (error) {
+      setRetryNote(String(error.message ?? error));
+    } finally {
+      setRetrying(false);
     }
   };
   const startAnalyze = async () => {
@@ -9018,6 +11491,7 @@ function BreakdownPage({ persona, onNavigate, remote }) {
       job.srt ? `- \u5B57\u5E55\u6587\u4EF6\uFF1A${job.srt}\uFF08\u53E3\u64AD\u5168\u6587\uFF0C\u5FC5\u8BFB\uFF09` : "",
       job.framesError ? `- \u6CE8\u610F\uFF1A\u62BD\u5E27\u5931\u8D25\uFF08${job.framesError}\uFF09\uFF0C\u672C\u6B21\u53EA\u9760\u5B57\u5E55\u62C6\u89E3` : ""
     ].filter(Boolean).join("\n");
+    const roster = await rosterPrompt();
     const prompt = `\u4F60\u662F\u7206\u6B3E\u5185\u5BB9\u62C6\u89E3\u4E13\u5BB6\u3002\u7D20\u6750\u5DF2\u7531\u6D41\u6C34\u7EBF\u91C7\u96C6\u5B8C\u6210\uFF0C\u76F4\u63A5\u57FA\u4E8E\u4EE5\u4E0B\u7D20\u6750\u505A\u62C6\u89E3${visionModel ? `\uFF08\u672C\u4F1A\u8BDD\u5DF2\u5207\u5230\u89C6\u89C9\u6A21\u578B ${visionModel.split("::")[1]}\uFF0C\u52A1\u5FC5 Read \u770B\u5E27\u5F15\u7528\u753B\u9762\u8BC1\u636E\uFF09` : ""}\uFF1A
 ${assets}
 
@@ -9028,8 +11502,7 @@ ${assets}
 4. **\u4E3A\u4EC0\u4E48\u4F1A\u706B**\uFF1A\u60C5\u7EEA/\u5171\u9E23/\u5B9E\u7528/\u4E89\u8BAE\u70B9
 5. **\u53EF\u590D\u5236\u6A21\u677F**\uFF1A\u628A\u5957\u8DEF\u62BD\u8C61\u6210\u80FD\u76F4\u63A5\u5957\u7528\u7684\u7ED3\u6784\u6846\u67B6
 6. **\u501F\u8FD9\u4E2A\u5957\u8DEF${persona ? `\u3001\u7ED3\u5408\u6211\u7684\u753B\u50CF\u300C${persona}\u300D` : ""}\u53EF\u505A\u7684 3 \u4E2A\u9009\u9898**
-
-\u3010\u5B8C\u6210\u540E\u5FC5\u987B\u6267\u884C\u3011
+${roster}${roster ? "\n" : ""}\u3010\u5B8C\u6210\u540E\u5FC5\u987B\u6267\u884C\u3011
 a) \u628A\u4E0A\u9762 1-6 \u70B9\u7684\u5B8C\u6574 Markdown \u62A5\u544A\u5199\u5165 outputs/_deconstruct/${job.id}/report.md\uFF1B
 b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C\u5728\u6700\u524D\u63D2\u5165\u4E00\u6761\uFF1A
 {"id":"<12\u4F4D\u968F\u673Ahex>","title":${JSON.stringify(ideaTitle)},"note":"<\u5B8C\u6574\u62A5\u544AMarkdown>","source":"\u7206\u6B3E\u62C6\u89E3","status":"pending","deconstruct":"${job.id}","created":<\u5F53\u524Dunix\u79D2>}\uFF0C
@@ -9058,10 +11531,12 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
   const captureReady = job?.stage === "ready";
   const currentStage = job ? stageIndex(job.stage) : -1;
   const models = flattenCatalog(catalog);
-  const anyModalitiesDeclared = models.some((entry) => entry.model.inputModalities !== void 0);
-  const visionModels = models.filter((entry) => !anyModalitiesDeclared || (entry.model.inputModalities?.includes("image") ?? false));
+  const visionModels = [
+    ...models.filter((entry) => entry.model.inputModalities?.includes("image") === true),
+    ...models.filter((entry) => entry.model.inputModalities?.includes("image") !== true)
+  ];
   const gatePlatform = preflight ? PLATFORM_NAMES[preflight.platform] ?? preflight.platform : "";
-  const modelSelect = (value, onChange, allowEmpty, emptyLabel, list, disabled) => /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+  const modelSelect = (value, onChange, allowEmpty, emptyLabel, list, disabled) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
     "select",
     {
       className: "field",
@@ -9070,26 +11545,26 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
       disabled,
       onChange: (e) => onChange(e.target.value),
       children: [
-        allowEmpty && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("option", { value: "", children: emptyLabel }),
-        !allowEmpty && models.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("option", { value: "", children: "\uFF08\u65E0\u53EF\u7528\u6A21\u578B\uFF09" }),
+        allowEmpty && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("option", { value: "", children: emptyLabel }),
+        !allowEmpty && models.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("option", { value: "", children: "\uFF08\u65E0\u53EF\u7528\u6A21\u578B\uFF09" }),
         catalog?.groups.map((group) => {
           const groupModels = list.filter((entry) => entry.provider === group.id);
           if (groupModels.length === 0) return null;
-          return /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("optgroup", { label: group.name, children: groupModels.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("option", { value: `${group.id}::${entry.model.id}`, children: entry.model.name }, `${group.id}::${entry.model.id}`)) }, group.id);
+          return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("optgroup", { label: group.name, children: groupModels.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("option", { value: `${group.id}::${entry.model.id}`, children: entry.model.name }, `${group.id}::${entry.model.id}`)) }, group.id);
         })
       ]
     }
   );
-  return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "page-scroll breakdown-page", children: [
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "page-head", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("h1", { className: "page-title", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(IconFire, { size: 21 }),
+  return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "page-scroll breakdown-page", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "page-head", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("h1", { className: "page-title", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 21 }),
         " \u7206\u6B3E\u62C6\u89E3"
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { className: "page-subtitle", children: "\u8D34\u4E00\u6761\u89C6\u9891\u94FE\u63A5\uFF08\u6296\u97F3/\u5C0F\u7EA2\u4E66/B\u7AD9/\u2026\uFF09\uFF0C\u6D41\u6C34\u7EBF\u81EA\u52A8\u4E0B\u8F7D\u3001\u62BD\u5E27\u3001\u8F6C\u5199\u5B57\u5E55\uFF0C\u518D\u7531 AI \u7ED3\u5408\u753B\u9762\u4E0E\u53E3\u64AD\u62C6\u51FA\u94A9\u5B50\u3001\u7ED3\u6784\u3001\u706B\u7684\u539F\u56E0\u4E0E\u53EF\u590D\u5236\u6A21\u677F\uFF0C\u62A5\u544A\u5B58\u6863\u5E76\u81EA\u52A8\u5165\u5E93\u9009\u9898\u5E93\u3002" })
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { className: "page-subtitle", children: "\u8D34\u4E00\u6761\u89C6\u9891\u94FE\u63A5\uFF08\u6296\u97F3/\u5C0F\u7EA2\u4E66/\u5FEB\u624B/\u89C6\u9891\u53F7/B\u7AD9/\u2026\uFF09\uFF0C\u6D41\u6C34\u7EBF\u81EA\u52A8\u4E0B\u8F7D\u3001\u62BD\u5E27\u3001\u8F6C\u5199\u5B57\u5E55\uFF0C\u518D\u7531 AI \u7ED3\u5408\u753B\u9762\u4E0E\u53E3\u64AD\u62C6\u51FA\u94A9\u5B50\u3001\u7ED3\u6784\u3001\u706B\u7684\u539F\u56E0\u4E0E\u53EF\u590D\u5236\u6A21\u677F\uFF0C\u62A5\u544A\u5B58\u6863\u5E76\u81EA\u52A8\u5165\u5E93\u9009\u9898\u5E93\u3002" })
     ] }) }),
-    /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "breakdown-body", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
+    /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "breakdown-body", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
         "textarea",
         {
           className: "field",
@@ -9100,16 +11575,16 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
           onChange: (e) => setInput(e.target.value)
         }
       ),
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { style: { marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("label", { style: { fontSize: 12.5, color: "var(--text-secondary)" }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("label", { style: { fontSize: 12.5, color: "var(--text-secondary)" }, children: [
           "ASR \u6A21\u578B",
           modelSelect(asrModel, setAsrModel, false, "", models, capturing)
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("label", { style: { fontSize: 12.5, color: "var(--text-secondary)" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("label", { style: { fontSize: 12.5, color: "var(--text-secondary)" }, children: [
           "\u89C6\u89C9\u6A21\u578B",
           modelSelect(visionModel, setVisionModel, true, "\u8DDF\u968F\u4F1A\u8BDD\u5F53\u524D\u6A21\u578B", visionModels, capturing)
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)(
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(
           "button",
           {
             className: "btn btn-primary",
@@ -9117,59 +11592,83 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
             disabled: capturing || !input.trim() || captureReady && analyzeState !== "idle",
             onClick: startCapture,
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(IconSkills, { size: 15 }),
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconSkills, { size: 15 }),
               " ",
               capturing ? "\u68C0\u67E5\u4E2D\u2026" : "\u2460 \u5F00\u59CB\u91C7\u96C6"
             ]
           }
         )
       ] }),
-      catalogError && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { style: { fontSize: 12.5, color: "var(--amber, #d97706)", margin: "8px 0 0" }, children: [
+      catalogError && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { style: { fontSize: 12.5, color: "var(--amber, #d97706)", margin: "8px 0 0" }, children: [
         "\u6A21\u578B\u76EE\u5F55\u8BFB\u53D6\u5931\u8D25\uFF08",
         catalogError,
         "\uFF09\u3002\u8BF7\u5728\u300C\u8BBE\u7F6E \u2192 \u6A21\u578B\u300D\u786E\u8BA4\u6A21\u578B\u914D\u7F6E\u540E\u5237\u65B0\u672C\u9875\uFF1B \u91C7\u96C6\u4E0E\u62C6\u89E3\u9700\u8981\u53EF\u7528\u6A21\u578B\u3002"
       ] }),
-      !anyModalitiesDeclared && models.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", margin: "8px 0 0" }, children: "\u6A21\u578B\u672A\u6807\u6CE8\u89C6\u89C9\u80FD\u529B\uFF1A\u8BF7\u81EA\u884C\u786E\u8BA4\u6240\u9009\u89C6\u89C9\u6A21\u578B\u652F\u6301\u56FE\u50CF\u8F93\u5165\uFF0C\u5426\u5219\u770B\u5E27\u62C6\u89E3\u4F1A\u9000\u5316\u3002" }),
-      preflight?.blocked && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "panel", style: { marginTop: 16, borderColor: "var(--amber, #d97706)" }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "panel-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(IconFire, { size: 14 }),
+      visionModel !== "" && models.length > 0 && !models.some((entry) => `${entry.provider}::${entry.model.id}` === visionModel && entry.model.inputModalities?.includes("image") === true) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", margin: "8px 0 0" }, children: "\u6240\u9009\u89C6\u89C9\u6A21\u578B\u672A\u6807\u6CE8\u56FE\u50CF\u8F93\u5165\uFF1A\u82E5\u7F51\u5173\u5B9E\u9645\u652F\u6301\u770B\u56FE\uFF0C\u53EF\u5728 \u8BBE\u7F6E\u2192\u6A21\u578B \u5C55\u5F00\u8BE5\u6A21\u578B\u884C\u52FE\u9009\u300C\u56FE\u50CF\u300D\uFF0C \u4E0B\u62C9\u91CC\u5B83\u4F1A\u6392\u5230\u524D\u9762\uFF1B\u672A\u6807\u6CE8\u65F6\u770B\u5E27\u62C6\u89E3\u53EF\u80FD\u9000\u5316\u6216\u5931\u8D25\u3002" }),
+      preflight?.blocked && (preflight?.channels ? /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 16, borderColor: "var(--amber, #d97706)" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 14 }),
+          " \u89C6\u9891\u53F7\u8FD8\u6CA1\u51C6\u5907\u597D"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)", margin: "8px 0 10px" }, children: "\u62C6\u89E3\u89C6\u9891\u53F7\u89C6\u9891\u9700\u8981\u300C\u5FAE\u4FE1 PC \u7AEF\u5DF2\u767B\u5F55\u300D\u548C\u300C\u89C6\u9891\u53F7\u4E0B\u8F7D\u5668\u300D\uFF0C\u5F53\u524D\u72B6\u6001\uFF1A" }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("ul", { style: { fontSize: 13, color: "var(--text-secondary)", margin: "0 0 10px", paddingLeft: 20, lineHeight: 1.9 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("li", { children: [
+            "\u5FAE\u4FE1\uFF1A",
+            !preflight.channels.wechat.running ? "\u672A\u8FD0\u884C\u2014\u2014\u8BF7\u542F\u52A8\u5FAE\u4FE1\u5E76\u767B\u5F55" : preflight.channels.wechat.loggedIn ? "\u5DF2\u767B\u5F55 \u2713" : "\u5728\u8FD0\u884C\u4F46\u672A\u767B\u5F55\u2014\u2014\u8BF7\u5728\u5FAE\u4FE1\u91CC\u767B\u5F55"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("li", { children: [
+            "\u4E0B\u8F7D\u5668\uFF1A",
+            !preflight.channels.tool.installed ? "\u672A\u5B89\u88C5\u2014\u2014\u628A wx_video_download \u5B89\u88C5\u76EE\u5F55\u586B\u5165\u63D2\u4EF6\u914D\u7F6E channelsDownloader\uFF08\u9996\u6B21\u8BF7\u624B\u52A8\u4EE5\u7BA1\u7406\u5458\u8FD0\u884C\u4E00\u6B21\u88C5\u8BC1\u4E66\uFF09" : preflight.channels.tool.running ? "\u8FD0\u884C\u4E2D \u2713" : "\u5DF2\u5B89\u88C5\uFF0C\u672A\u8FD0\u884C\u2014\u2014\u901A\u8FC7\u95E8\u63A7\u540E\u4F1A\u81EA\u52A8\u62C9\u8D77"
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12, color: "var(--text-tertiary, #9ca3af)", margin: "10px 0 0" }, children: "\u5FAE\u4FE1\u767B\u5F55\u662F\u542F\u52A8\u524D\u7F6E\uFF1A\u8865\u4E0A\u4E4B\u540E\u56DE\u5230\u672C\u9875\u91CD\u65B0\u70B9\u300C\u5F00\u59CB\u91C7\u96C6\u300D\u5373\u53EF\u7EE7\u7EED\u3002" })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 16, borderColor: "var(--amber, #d97706)" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 14 }),
           " ",
           gatePlatform,
           "\u8FD8\u6CA1\u51C6\u5907\u597D"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { style: { fontSize: 13, color: "var(--text-secondary)", margin: "8px 0 10px" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { style: { fontSize: 13, color: "var(--text-secondary)", margin: "8px 0 10px" }, children: [
           gatePlatform,
           "\u6293\u53D6\u9700\u8981\u767B\u5F55\u6001\uFF1A\u8FD8\u6CA1\u6709\u53EF\u7528\u7684 cookie\uFF0C\u4E5F\u6CA1\u6709\u626B\u7801\u767B\u5F55\u3002\u5148\u628A\u8FD9\u4E00\u6B65\u8865\u4E0A\uFF0C \u62C6\u89E3\u5DE5\u4F5C\u6D41\u624D\u80FD\u542F\u52A8\u3002"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { className: "btn btn-sm", onClick: () => onNavigate?.("accounts"), children: "\u53BB\u8D26\u53F7\u9875\uFF08\u586B cookie / \u626B\u7801\u767B\u5F55\uFF09" }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { className: "btn btn-ghost", onClick: () => onNavigate?.("chat"), children: "\u8BA9 Agent \u5728\u5BF9\u8BDD\u91CC\u767B\u5F55" })
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { display: "flex", gap: 8, flexWrap: "wrap" }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "btn btn-sm", onClick: () => onNavigate?.("accounts"), children: "\u53BB\u8D26\u53F7\u9875\uFF08\u586B cookie / \u626B\u7801\u767B\u5F55\uFF09" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "btn btn-ghost", onClick: () => onNavigate?.("chat"), children: "\u8BA9 Agent \u5728\u5BF9\u8BDD\u91CC\u767B\u5F55" })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { style: { fontSize: 12, color: "var(--text-tertiary, #9ca3af)", margin: "10px 0 0" }, children: "\u5B8C\u6210\u4EFB\u610F\u4E00\u79CD\u540E\u56DE\u5230\u672C\u9875\u91CD\u65B0\u70B9\u300C\u5F00\u59CB\u91C7\u96C6\u300D\u5373\u53EF\uFF1B\u6296\u97F3\u65E0\u9700\u767B\u5F55\u3002" })
-      ] }),
-      job !== null && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "panel", style: { marginTop: 16 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "panel-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(IconFire, { size: 14 }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12, color: "var(--text-tertiary, #9ca3af)", margin: "10px 0 0" }, children: "\u5B8C\u6210\u4EFB\u610F\u4E00\u79CD\u540E\u56DE\u5230\u672C\u9875\u91CD\u65B0\u70B9\u300C\u5F00\u59CB\u91C7\u96C6\u300D\u5373\u53EF\uFF1B\u6296\u97F3\u65E0\u9700\u767B\u5F55\u3002" })
+      ] })),
+      job !== null && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 16 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 14 }),
           " \u91C7\u96C6\u6D41\u6C34\u7EBF"
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { style: { display: "flex", gap: 8, alignItems: "center", marginTop: 10, flexWrap: "wrap" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { display: "flex", gap: 8, alignItems: "center", marginTop: 10, flexWrap: "wrap" }, children: [
           FETCH_STAGES.map((stage, i) => {
             const done = captureReady || currentStage > i && !captureFailed;
             const active = job.stage === stage.key;
             const color = done ? "var(--green, #16a34a)" : active ? "var(--amber, #d97706)" : captureFailed && currentStage === i ? "var(--red)" : "var(--text-tertiary, #9ca3af)";
-            return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { style: { fontSize: 13, color }, children: [
+            return /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("span", { style: { fontSize: 13, color }, children: [
               done ? "\u2713" : active ? "\u25D0" : captureFailed && currentStage === i ? "\u2715" : "\u25CB",
               " ",
               stage.label
             ] }, stage.key);
           }),
-          captureReady && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { style: { fontSize: 13, color: "var(--green, #16a34a)" }, children: "\u2713 \u91C7\u96C6\u5B8C\u6210" }),
-          captureFailed && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { style: { fontSize: 13, color: "var(--red)" }, children: "\u2715 \u91C7\u96C6\u5931\u8D25" }),
-          (capturing || !captureReady && !captureFailed) && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "loading", style: { padding: 0 }, children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "spinner" }) })
+          captureReady && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { style: { fontSize: 13, color: "var(--green, #16a34a)" }, children: "\u2713 \u91C7\u96C6\u5B8C\u6210" }),
+          captureFailed && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { style: { fontSize: 13, color: "var(--red)" }, children: "\u2715 \u91C7\u96C6\u5931\u8D25" }),
+          (capturing || !captureReady && !captureFailed) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { className: "loading", style: { padding: 0 }, children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "spinner" }) })
         ] }),
-        captureFailed && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { style: { fontSize: 13, color: "var(--red)", margin: "10px 0 0" }, children: job.error }),
-        captureReady && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", margin: "10px 0 0" }, children: [
-          job.title && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { style: { display: "block", color: "var(--text)", marginBottom: 2 }, children: [
+        job.stage === "fetch" && CHANNELS_URL_RE.test(job.url) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12.5, color: "var(--amber, #d97706)", margin: "10px 0 0" }, children: "\u89C6\u9891\u53F7\u4EFB\u52A1\uFF1A\u8BF7\u5728\u5FAE\u4FE1 PC \u7AEF\u6253\u5F00\u8FD9\u6761\u89C6\u9891\uFF0C\u70B9\u64AD\u653E\u5668\u4E0B\u65B9\u7684\u300C\u4E0B\u8F7D\u300D\u6309\u94AE\uFF1B \u6D41\u6C34\u7EBF\u5728\u7B49\u4E0B\u8F7D\u5668\u4EA7\u7269\uFF08wxdl_ \u5F00\u5934\u7684\u65B0\u6587\u4EF6\uFF0C\u6700\u957F\u7B49 8 \u5206\u949F\uFF09\u3002" }),
+        captureFailed && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)(import_jsx_runtime25.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 13, color: "var(--red)", margin: "10px 0 0" }, children: job.error }),
+          job.id !== "" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { marginTop: 10, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "btn btn-sm", disabled: retrying || capturing, onClick: retryCapture, children: retrying ? "\u7EED\u8DD1\u4E2D\u2026" : "\u4ECE\u5931\u8D25\u5904\u7EE7\u7EED" }),
+            retryNote && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("span", { style: { fontSize: 12.5, color: "var(--amber, #d97706)" }, children: retryNote })
+          ] })
+        ] }),
+        captureReady && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", margin: "10px 0 0" }, children: [
+          job.title && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("span", { style: { display: "block", color: "var(--text)", marginBottom: 2 }, children: [
             "\u300A",
             job.title,
             "\u300B"
@@ -9183,76 +11682,76 @@ b) \u8BFB\u53D6 outputs/_ideas.json\uFF08\u4E0D\u5B58\u5728\u5F53 []\uFF09\uFF0C
           " \xB7 \u5B57\u5E55\u5DF2\u751F\u6210"
         ] })
       ] }),
-      captureReady && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "panel", style: { marginTop: 14 }, children: [
-        /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "panel-title", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(IconFire, { size: 14 }),
+      captureReady && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 14 }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 14 }),
           " AI \u62C6\u89E3"
         ] }),
-        analyzeState === "idle" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { style: { marginTop: 10 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("button", { className: "btn btn-primary", onClick: startAnalyze, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(IconFire, { size: 15 }),
+        analyzeState === "idle" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { marginTop: 10 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("button", { className: "btn btn-primary", onClick: startAnalyze, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 15 }),
             " \u2461 \u5F00\u59CB AI \u62C6\u89E3"
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { className: "btn btn-ghost", style: { marginLeft: 8 }, onClick: () => onNavigate?.("chat"), children: "\u5728\u5BF9\u8BDD\u4E2D\u8DDF\u8FDB" })
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "btn btn-ghost", style: { marginLeft: 8 }, onClick: () => onNavigate?.("chat"), children: "\u5728\u5BF9\u8BDD\u4E2D\u8DDF\u8FDB" })
         ] }),
-        analyzeState === "running" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "loading", style: { marginTop: 10 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "spinner" }),
+        analyzeState === "running" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "loading", style: { marginTop: 10 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "spinner" }),
           "AI \u6B63\u5728\u770B\u7D20\u6750\u62C6\u89E3\uFF08\u5BF9\u8BDD\u91CC\u53EF\u5BA1\u6279/\u8FFD\u95EE\uFF09\u2026"
         ] }),
-        analyzeState === "error" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { style: { marginTop: 10 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { style: { fontSize: 13, color: "var(--red)", margin: "0 0 8px" }, children: "\u62C6\u89E3\u56DE\u5408\u672A\u6B63\u5E38\u5B8C\u6210\uFF0C\u8BE6\u60C5\u89C1\u5BF9\u8BDD\u3002" }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { className: "btn btn-sm", onClick: startAnalyze, children: "\u91CD\u8BD5" })
+        analyzeState === "error" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { marginTop: 10 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 13, color: "var(--red)", margin: "0 0 8px" }, children: "\u62C6\u89E3\u56DE\u5408\u672A\u6B63\u5E38\u5B8C\u6210\uFF0C\u8BE6\u60C5\u89C1\u5BF9\u8BDD\u3002" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "btn btn-sm", onClick: startAnalyze, children: "\u91CD\u8BD5" })
         ] }),
-        analyzeState === "done" && /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { style: { marginTop: 10 }, children: [
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "markdown-body", dangerouslySetInnerHTML: { __html: renderMarkdown(report) } }),
-          /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 12 }, children: [
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("button", { className: "btn btn-sm", onClick: () => onNavigate?.("ideas"), children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(IconIdea, { size: 13 }),
+        analyzeState === "done" && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { marginTop: 10 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { className: "markdown-body", dangerouslySetInnerHTML: { __html: renderMarkdown(report) } }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { display: "flex", gap: 8, marginTop: 12 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("button", { className: "btn btn-sm", onClick: () => onNavigate?.("ideas"), children: [
+              /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconIdea, { size: 13 }),
               " \u53BB\u9009\u9898\u5E93"
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("button", { className: "btn btn-sm", onClick: () => onNavigate?.("chat"), children: "\u67E5\u770B\u5BF9\u8BDD" })
+            /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "btn btn-sm", onClick: () => onNavigate?.("chat"), children: "\u67E5\u770B\u5BF9\u8BDD" })
           ] })
         ] })
       ] }),
-      job === null && !capturing && !preflight?.blocked && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginTop: 14 }, children: "\u5C0F\u7EA2\u4E66\u9700\u8981\u767B\u5F55\u6001\uFF08\u8BBE\u7F6E\u91CC\u586B cookie \u6216\u8D26\u53F7\u9875\u626B\u7801\uFF09\uFF1B\u6296\u97F3\u514D\u767B\u5F55\u76F4\u8FDE\u3002\u7D20\u6750\u4E0E\u62A5\u544A\u5F52\u6863\u5728 outputs/_deconstruct/<\u4EFB\u52A1id>/ \u4E0B\u3002" })
+      job === null && !capturing && !preflight?.blocked && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", marginTop: 14 }, children: "\u5C0F\u7EA2\u4E66\u9700\u8981\u767B\u5F55\u6001\uFF08\u8BBE\u7F6E\u91CC\u586B cookie \u6216\u8D26\u53F7\u9875\u626B\u7801\uFF09\uFF1B\u6296\u97F3/\u5FEB\u624B\u514D\u767B\u5F55\u76F4\u8FDE\uFF1B \u89C6\u9891\u53F7\u9700\u5FAE\u4FE1\u5DF2\u767B\u5F55\u548C\u89C6\u9891\u53F7\u4E0B\u8F7D\u5668\uFF08\u8BC6\u522B\u5230\u89C6\u9891\u53F7\u94FE\u63A5\u65F6\u624D\u4F1A\u68C0\u67E5\uFF09\u3002\u7D20\u6750\u4E0E\u62A5\u544A\u5F52\u6863\u5728 outputs/_deconstruct/<\u4EFB\u52A1id>/ \u4E0B\u3002" })
     ] })
   ] });
 }
 
 // src/features/breakdown.tsx
-var import_jsx_runtime24 = require("react/jsx-runtime");
-var view10 = "breakdown";
-var order10 = 39;
-var labels10 = { zh: "\u7206\u6B3E\u62C6\u89E3", en: "Breakdown" };
-var Icon10 = IconSkills;
-var Component10 = BreakdownPage;
-var plugin10 = {
+var import_jsx_runtime26 = require("react/jsx-runtime");
+var view11 = "breakdown";
+var order11 = 33;
+var labels11 = { zh: "\u7206\u6B3E\u62C6\u89E3", en: "Breakdown" };
+var Icon11 = IconSkills;
+var Component11 = BreakdownPage;
+var plugin11 = {
   name: "easel-view-breakdown",
   inject: ["slots", "easelShell"],
   apply(ctx) {
     const { useShellProps, t } = ctx.easelShell;
     ctx.slots.inject("main", () => ctx.slots.register({
       name: "main",
-      key: pageKey(view10),
+      key: pageKey(view11),
       inject: () => ({})
     }, function EaselPage() {
       const props = useShellProps();
-      return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Component10, { ...props }) });
+      return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { className: "easel-scope", children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Component11, { ...props }) });
     }));
     ctx.slots.inject("sidebar.panellist", () => ctx.slots.register({
       name: "sidebar.panellist",
-      id: pageKey(view10),
-      order: order10,
+      id: pageKey(view11),
+      order: order11,
       locale: "easel.panel",
-      label: () => t(view10)
+      label: () => t(view11)
     }, function EaselRailIcon({ size }) {
-      return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(Icon10, { size });
+      return /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(Icon11, { size });
     }));
   }
 };
 
 // src/lib/media-preview.tsx
-var import_react15 = require("react");
+var import_react16 = require("react");
 
 // src/lib/media-url.js
 var VIDEO_EXTENSIONS = ["mp4", "m4v", "mov", "webm", "mkv"];
@@ -9286,7 +11785,7 @@ function workspaceMediaPath(absolutePath, projectRoot2) {
 }
 
 // src/lib/media-preview.tsx
-var import_jsx_runtime25 = require("react/jsx-runtime");
+var import_jsx_runtime27 = require("react/jsx-runtime");
 var MEDIA_BODY_ID = "easel-media-player";
 var MEDIA_COPY = {
   zh: {
@@ -9333,10 +11832,10 @@ var AUDIO_STYLE = { width: "100%" };
 function MediaBody(props) {
   const { content, resolve, t } = props;
   const file = parseFileAddress(props.resourceAddress);
-  const [state, setState] = (0, import_react15.useState)(null);
-  const [error, setError] = (0, import_react15.useState)("");
+  const [state, setState] = (0, import_react16.useState)(null);
+  const [error, setError] = (0, import_react16.useState)("");
   const revision = content.kind === "renderer" ? content.revision : void 0;
-  (0, import_react15.useEffect)(() => {
+  (0, import_react16.useEffect)(() => {
     if (revision === void 0) return;
     const controller = new AbortController();
     setState(null);
@@ -9367,7 +11866,7 @@ function MediaBody(props) {
   }, [props.resourceAddress, revision]);
   if (content.kind !== "renderer" || revision === void 0) return null;
   if (error !== "") {
-    return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { style: STAGE_STYLE, "data-easel-media-state": "unavailable", children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { margin: 0, textAlign: "center", opacity: 0.75 }, children: error }) });
+    return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { style: STAGE_STYLE, "data-easel-media-state": "unavailable", children: /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("p", { style: { margin: 0, textAlign: "center", opacity: 0.75 }, children: error }) });
   }
   if (state === null) return null;
   const reportLoaded = () => {
@@ -9378,7 +11877,7 @@ function MediaBody(props) {
     setState(null);
     content.failed?.();
   };
-  return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { style: STAGE_STYLE, "data-easel-media-state": "playing", children: state.kind === "video" ? /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+  return /* @__PURE__ */ (0, import_jsx_runtime27.jsx)("div", { style: STAGE_STYLE, "data-easel-media-state": "playing", children: state.kind === "video" ? /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
     "video",
     {
       controls: true,
@@ -9388,7 +11887,7 @@ function MediaBody(props) {
       onLoadedMetadata: reportLoaded,
       onError: onDecodeError
     }
-  ) : /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(
+  ) : /* @__PURE__ */ (0, import_jsx_runtime27.jsx)(
     "audio",
     {
       controls: true,
@@ -9434,7 +11933,7 @@ function registerMediaPreview(ctx) {
 }
 
 // src/features/media.ts
-var plugin11 = {
+var plugin12 = {
   name: "easel-media",
   inject: ["slots", "locale"],
   apply(ctx) {
@@ -9443,6 +11942,828 @@ var plugin11 = {
     } catch (error) {
       console.warn("easel-media: registration failed", error);
     }
+  }
+};
+
+// src/components/BackupSettings.tsx
+var import_react17 = require("react");
+
+// src/lib/backup-api.ts
+var BASE2 = "/easel/api/backup";
+async function request2(url, options) {
+  const res = await fetch(`${BASE2}${url}`, { cache: "no-store", ...options });
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const body = await res.json();
+      detail = body?.detail ?? body?.message ?? "";
+    } catch {
+    }
+    throw new Error(detail || `\u8BF7\u6C42\u5931\u8D25\uFF08${res.status} ${res.statusText}\uFF09`);
+  }
+  return res.json();
+}
+function getBackupConfig() {
+  return request2("/config");
+}
+function putBackupConfig(config, secrets) {
+  return request2("/config", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ config, secrets }) });
+}
+function testBackupDestination() {
+  return request2("/test", { method: "POST" });
+}
+function runBackup(groups) {
+  return request2("/run", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ groups }) });
+}
+function getBackupStatus() {
+  return request2("/status");
+}
+function listRemoteBackups() {
+  return request2("/remote");
+}
+function restoreBackup(group, stamp, confirm) {
+  return request2("/restore", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ group, stamp, confirm }) });
+}
+function connectSmb(root, username, password) {
+  return request2("/connect-smb", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ root, username, password }) });
+}
+
+// src/components/BackupSettings.tsx
+var import_jsx_runtime28 = require("react/jsx-runtime");
+var GROUPS = [
+  { id: "config", title: "scopeConfig", hint: "scopeConfigHint" },
+  { id: "sessions", title: "scopeSessions", hint: "scopeSessionsHint" },
+  { id: "workspace", title: "scopeWorkspace", hint: "scopeWorkspaceHint" }
+];
+var WEEKDAYS3 = [0, 1, 2, 3, 4, 5, 6];
+var BACKUP_STYLES = `
+.ebk-root { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
+.ebk-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
+.ebk-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 22px; font-weight: 500; }
+.ebk-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 4px 0; }
+.ebk-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ebk-field label { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-input, .ebk-select {
+  box-sizing: border-box; width: 100%; height: 36px; padding: 0 10px;
+  border: 0.5px solid var(--dsw-alias-border-l2); border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-fill-primary); color: var(--dsw-alias-label-primary);
+  font-family: inherit; font-size: 14px; line-height: 22px;
+}
+.ebk-select { width: auto; min-width: 140px; }
+.ebk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+.ebk-check { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; cursor: pointer; }
+.ebk-check input { margin-top: 3px; accent-color: var(--dsw-alias-state-business-primary); }
+.ebk-check-main { display: flex; flex-direction: column; gap: 2px; }
+.ebk-check-hint { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ebk-btn {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-family: inherit;
+  height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md);
+  font-size: 14px; line-height: 22px; color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-fill-secondary);
+  transition: transform 100ms ease-out, background-color 120ms ease-out;
+}
+.ebk-btn:disabled { opacity: 0.5; cursor: default; }
+.ebk-btn-primary { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-business-primary); }
+.ebk-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ebk-ok { color: var(--dsw-alias-state-success-primary, #2e9e63); font-size: 12px; line-height: 18px; }
+.ebk-error { color: var(--dsw-alias-state-danger-primary, #d4453f); font-size: 12px; line-height: 18px; word-break: break-all; }
+.ebk-progress { display: flex; flex-direction: column; gap: 4px; }
+.ebk-bar { height: 4px; border-radius: 2px; background: var(--dsw-alias-border-l2); overflow: hidden; }
+.ebk-bar-fill { height: 100%; background: var(--dsw-alias-state-business-primary); transition: width 200ms ease-out; }
+.ebk-history { display: flex; flex-direction: column; }
+.ebk-history-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 0; }
+.ebk-history-row + .ebk-history-row { border-top: 0.5px solid var(--dsw-alias-border-l2); }
+.ebk-badge { flex: none; padding: 1px 8px; border-radius: 999px; font-size: 11px; line-height: 16px; background: var(--dsw-alias-fill-secondary); }
+.ebk-badge-failed { color: var(--dsw-alias-state-danger-primary, #d4453f); }
+.ebk-badge-ok { color: var(--dsw-alias-state-success-primary, #2e9e63); }
+`;
+var formatBytes = (bytes) => {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(1)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${bytes} B`;
+};
+var formatTime = (ms) => new Date(ms).toLocaleString();
+function BackupSettings({ t }) {
+  const [config, setConfig] = (0, import_react17.useState)(null);
+  const [secrets, setSecrets] = (0, import_react17.useState)(null);
+  const [engineReady, setEngineReady] = (0, import_react17.useState)(true);
+  const [secretInputs, setSecretInputs] = (0, import_react17.useState)({});
+  const [status, setStatus] = (0, import_react17.useState)(null);
+  const [remote, setRemote] = (0, import_react17.useState)(null);
+  const [restoreGroup, setRestoreGroup] = (0, import_react17.useState)("config");
+  const [restoreStamp, setRestoreStamp] = (0, import_react17.useState)("");
+  const [plan, setPlan] = (0, import_react17.useState)(null);
+  const [notice, setNotice] = (0, import_react17.useState)(null);
+  const [saving, setSaving] = (0, import_react17.useState)(false);
+  const [testing, setTesting] = (0, import_react17.useState)(false);
+  const [restoring, setRestoring] = (0, import_react17.useState)(false);
+  const pollRef = (0, import_react17.useRef)(void 0);
+  const refreshStatus = (0, import_react17.useCallback)(async () => {
+    try {
+      const next = await getBackupStatus();
+      setStatus(next);
+      return next;
+    } catch {
+      return null;
+    }
+  }, []);
+  (0, import_react17.useEffect)(() => {
+    let active = true;
+    getBackupConfig().then((data) => {
+      if (!active) return;
+      setConfig(data.config);
+      setSecrets(data.secrets);
+      setEngineReady(data.engineReady);
+    }).catch((error) => setNotice({ kind: "error", text: error.message }));
+    refreshStatus();
+    return () => {
+      active = false;
+      if (pollRef.current !== void 0) window.clearInterval(pollRef.current);
+    };
+  }, [refreshStatus]);
+  const busy = status?.busy === true;
+  (0, import_react17.useEffect)(() => {
+    if (!busy) {
+      if (pollRef.current !== void 0) {
+        window.clearInterval(pollRef.current);
+        pollRef.current = void 0;
+      }
+      return;
+    }
+    pollRef.current = window.setInterval(() => {
+      void refreshStatus().then((next) => {
+        if (next !== null && !next.busy) {
+          void listRemoteBackups().then(setRemote).catch(() => {
+          });
+        }
+      });
+    }, 1e3);
+    return () => {
+      if (pollRef.current !== void 0) window.clearInterval(pollRef.current);
+    };
+  }, [busy, refreshStatus]);
+  if (config === null || secrets === null) {
+    return /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "ebk-root", children: notice?.kind === "error" ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "ebk-error", children: notice.text }) : null });
+  }
+  const patch = (changes) => setConfig({ ...config, ...changes });
+  const secretValue = (key) => secretInputs[key] ?? "";
+  const collectSecrets = () => {
+    const out = {};
+    for (const [key, value] of Object.entries(secretInputs)) {
+      if (value.length > 0) out[key] = value;
+    }
+    return out;
+  };
+  const save = async () => {
+    setSaving(true);
+    setNotice(null);
+    try {
+      const saved = await putBackupConfig(config, collectSecrets());
+      setConfig(saved.config);
+      setSecrets(saved.secrets);
+      setSecretInputs({});
+      setNotice({ kind: "ok", text: t("saved") });
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setSaving(false);
+    }
+  };
+  const test = async () => {
+    setTesting(true);
+    setNotice(null);
+    try {
+      await testBackupDestination();
+      setNotice({ kind: "ok", text: t("testOk") });
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setTesting(false);
+    }
+  };
+  const run = async () => {
+    const groups = GROUPS.filter((group) => config.groups[group.id]).map((group) => group.id);
+    if (groups.length === 0) {
+      setNotice({ kind: "error", text: t("noGroups") });
+      return;
+    }
+    setNotice(null);
+    try {
+      await runBackup(groups);
+      await refreshStatus();
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    }
+  };
+  const openRestore = async () => {
+    setRestoring(true);
+    setNotice(null);
+    setPlan(null);
+    try {
+      const listing = await listRemoteBackups();
+      setRemote(listing);
+      const first = listing.groups[restoreGroup][0];
+      setRestoreStamp(first?.stamp ?? "");
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setRestoring(false);
+    }
+  };
+  const previewRestore = async () => {
+    setRestoring(true);
+    setNotice(null);
+    try {
+      const response = await restoreBackup(restoreGroup, restoreStamp, false);
+      setPlan(response.plan ?? null);
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setRestoring(false);
+    }
+  };
+  const confirmRestore = async () => {
+    setRestoring(true);
+    setNotice(null);
+    try {
+      const response = await restoreBackup(restoreGroup, restoreStamp, true);
+      setPlan(null);
+      setNotice({ kind: "ok", text: `${t("restoreApplied").replace("{count}", String(response.applied ?? 0))}${(response.skipped?.length ?? 0) > 0 ? ` ${t("restoreSkipped").replace("{count}", String(response.skipped?.length ?? 0))}` : ""}` });
+      await refreshStatus();
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    } finally {
+      setRestoring(false);
+    }
+  };
+  const connectSmbShare = async () => {
+    setNotice(null);
+    try {
+      await connectSmb(config.root, secretValue("smbUser"), secretValue("smbPassword"));
+      setNotice({ kind: "ok", text: t("testOk") });
+    } catch (error) {
+      setNotice({ kind: "error", text: error.message });
+    }
+  };
+  const progress = status?.progress ?? null;
+  const phaseLabel = progress === null ? "" : t(`phase${progress.phase[0].toUpperCase()}${progress.phase.slice(1)}`);
+  const history = status?.history ?? [];
+  return /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "ebk-intro", children: t("intro") }),
+    !engineReady ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "ebk-error", children: t("engineMissing") }) : null,
+    notice !== null && notice.text !== "" ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: notice.kind === "ok" ? "ebk-ok" : "ebk-error", children: notice.text }) : null,
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { children: t("destinationTitle") }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "ebk-actions", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { type: "button", className: "ebk-btn", disabled: testing, onClick: () => void test(), children: testing ? t("testing") : t("test") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: saving, onClick: () => void save(), children: saving ? t("saving") : t("save") })
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("protocol") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
+            "select",
+            {
+              className: "ebk-select",
+              value: config.protocol,
+              onChange: (event) => patch({ protocol: event.target.value }),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("option", { value: "webdav", children: t("protocolWebdav") }),
+                /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("option", { value: "s3", children: t("protocolS3") }),
+                /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("option", { value: "smb", children: t("protocolSmb") })
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("remoteDir") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              placeholder: t("remoteDirPlaceholder"),
+              value: config.remoteDir,
+              onChange: (event) => patch({ remoteDir: event.target.value })
+            }
+          )
+        ] })
+      ] }),
+      config.protocol === "webdav" ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("endpoint") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              placeholder: t("endpointPlaceholder"),
+              value: config.endpoint,
+              onChange: (event) => patch({ endpoint: event.target.value })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-grid", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("username") }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("input", { className: "ebk-input", value: config.username, onChange: (event) => patch({ username: event.target.value }) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("label", { children: [
+              t("password"),
+              secrets.webdavPassword ? ` \xB7 ${t("passwordSaved")}` : ""
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                type: "password",
+                value: secretValue("webdavPassword"),
+                onChange: (event) => setSecretInputs({ ...secretInputs, webdavPassword: event.target.value })
+              }
+            )
+          ] })
+        ] })
+      ] }) : null,
+      config.protocol === "s3" ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-grid", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("s3Endpoint") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("input", { className: "ebk-input", value: config.endpoint, onChange: (event) => patch({ endpoint: event.target.value }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("s3Region") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("input", { className: "ebk-input", value: config.region, onChange: (event) => patch({ region: event.target.value }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("s3Bucket") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("input", { className: "ebk-input", value: config.bucket, onChange: (event) => patch({ bucket: event.target.value }) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: "\xA0" }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("label", { className: "ebk-check", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("input", { type: "checkbox", checked: config.pathStyle, onChange: (event) => patch({ pathStyle: event.target.checked }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "ebk-check-hint", children: t("s3PathStyle") })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("label", { children: [
+            t("s3AccessKeyId"),
+            secrets.s3Keys ? ` \xB7 ${t("passwordSaved")}` : ""
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              type: "password",
+              value: secretValue("s3AccessKeyId"),
+              onChange: (event) => setSecretInputs({ ...secretInputs, s3AccessKeyId: event.target.value })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("s3SecretAccessKey") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              type: "password",
+              value: secretValue("s3SecretAccessKey"),
+              onChange: (event) => setSecretInputs({ ...secretInputs, s3SecretAccessKey: event.target.value })
+            }
+          )
+        ] })
+      ] }) : null,
+      config.protocol === "smb" ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("smbRoot") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            "input",
+            {
+              className: "ebk-input",
+              placeholder: t("smbRootPlaceholder"),
+              value: config.root,
+              onChange: (event) => patch({ root: event.target.value })
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-grid", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("smbUser") }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                value: secretValue("smbUser"),
+                onChange: (event) => setSecretInputs({ ...secretInputs, smbUser: event.target.value })
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("smbPassword") }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                type: "password",
+                value: secretValue("smbPassword"),
+                onChange: (event) => setSecretInputs({ ...secretInputs, smbPassword: event.target.value })
+              }
+            )
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { type: "button", className: "ebk-btn", onClick: () => void connectSmbShare(), children: t("smbConnect") }) })
+      ] }) : null
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { children: t("scopeTitle") }) }),
+      GROUPS.map((group) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("label", { className: "ebk-check", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+          "input",
+          {
+            type: "checkbox",
+            checked: config.groups[group.id],
+            onChange: (event) => patch({ groups: { ...config.groups, [group.id]: event.target.checked } })
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "ebk-check-main", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { children: t(group.title) }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "ebk-check-hint", children: t(group.hint) })
+        ] })
+      ] }, group.id))
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { children: t("encryptionTitle") }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("p", { className: "ebk-muted", style: { margin: 0 }, children: t("encryptionHint") }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("label", { className: "ebk-check", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+          "input",
+          {
+            type: "checkbox",
+            checked: config.encryption.enabled,
+            onChange: (event) => patch({ encryption: { enabled: event.target.checked } })
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "ebk-check-main", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { children: t("encryptionOn") }) })
+      ] }),
+      config.encryption.enabled ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("label", { children: [
+          t("passphrase"),
+          secrets.passphrase ? ` \xB7 ${t("passwordSaved")}` : ""
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+          "input",
+          {
+            className: "ebk-input",
+            type: "password",
+            value: secretValue("passphrase"),
+            onChange: (event) => setSecretInputs({ ...secretInputs, passphrase: event.target.value })
+          }
+        )
+      ] }) : null
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { children: t("scheduleTitle") }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: "\xA0" }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(
+            "select",
+            {
+              className: "ebk-select",
+              value: config.schedule.mode,
+              onChange: (event) => patch({ schedule: { ...config.schedule, mode: event.target.value } }),
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("option", { value: "off", children: t("scheduleOff") }),
+                /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("option", { value: "daily", children: t("scheduleDaily") }),
+                /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("option", { value: "weekly", children: t("scheduleWeekly") })
+              ]
+            }
+          )
+        ] }),
+        config.schedule.mode !== "off" ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)(import_jsx_runtime28.Fragment, { children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("scheduleAt") }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                style: { width: 120 },
+                type: "time",
+                value: config.schedule.at,
+                onChange: (event) => patch({ schedule: { ...config.schedule, at: event.target.value } })
+              }
+            )
+          ] }),
+          config.schedule.mode === "weekly" ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("scheduleWeekday") }),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              "select",
+              {
+                className: "ebk-select",
+                value: config.schedule.weekday,
+                onChange: (event) => patch({ schedule: { ...config.schedule, weekday: Number(event.target.value) } }),
+                children: WEEKDAYS3.map((day) => /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("option", { value: day, children: t(`weekday${day}`) }, day))
+              }
+            )
+          ] }) : null
+        ] }) : null,
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("retention") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "ebk-row", style: { gap: 6 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+              "input",
+              {
+                className: "ebk-input",
+                style: { width: 90 },
+                type: "number",
+                min: 1,
+                max: 100,
+                value: config.retention,
+                onChange: (event) => patch({ retention: Number(event.target.value) })
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "ebk-muted", children: t("retentionUnit") })
+          ] })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { children: t("runTitle") }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: busy, onClick: () => void run(), children: t("run") })
+      ] }),
+      progress !== null ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "ebk-progress", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "ebk-muted", children: `${t("running")} \xB7 ${progress.group} \xB7 ${phaseLabel} \xB7 ${progress.fileCount} \xB7 ${formatBytes(progress.totalBytes)}` }) }) : null,
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-history", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "ebk-muted", children: t("historyTitle") }),
+        history.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { className: "ebk-muted", children: t("historyEmpty") }) : history.map((entry) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-history-row", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "ebk-muted", children: [
+            formatTime(entry.startedAt),
+            " \xB7 ",
+            entry.trigger === "manual" ? t("historyManual") : t("historySchedule"),
+            " \xB7 ",
+            entry.groups.map((item) => item.group).join(", ") || "\u2014"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: `ebk-badge ${entry.status === "completed" ? "ebk-badge-ok" : "ebk-badge-failed"}`, children: [
+            entry.status === "completed" ? t("historyCompleted") : t("historyFailed"),
+            entry.status === "failed" && entry.error !== void 0 ? ` \u2014 ${entry.error}` : ""
+          ] })
+        ] }, entry.startedAt))
+      ] })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("section", { className: "ebk-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "ebk-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("span", { children: t("restoreTitle") }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || busy, onClick: () => void openRestore(), children: t("restorePreview") }) }),
+      remote !== null ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("restorePickGroup") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)(
+            "select",
+            {
+              className: "ebk-select",
+              value: restoreGroup,
+              onChange: (event) => {
+                const group = event.target.value;
+                setRestoreGroup(group);
+                setRestoreStamp(remote.groups[group][0]?.stamp ?? "");
+                setPlan(null);
+              },
+              children: GROUPS.map((group) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("option", { value: group.id, children: [
+                t(group.title),
+                "\uFF08",
+                remote.groups[group.id].length,
+                "\uFF09"
+              ] }, group.id))
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("label", { children: t("restorePickStamp") }),
+          /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("select", { className: "ebk-select", value: restoreStamp, onChange: (event) => {
+            setRestoreStamp(event.target.value);
+            setPlan(null);
+          }, children: remote.groups[restoreGroup].length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("option", { value: "", children: "\u2014" }) : remote.groups[restoreGroup].map((item) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("option", { value: item.stamp, children: [
+            item.stamp,
+            " \xB7 ",
+            formatBytes(item.size)
+          ] }, item.stamp)) })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { type: "button", className: "ebk-btn", disabled: restoring || restoreStamp === "", onClick: () => void previewRestore(), children: t("restorePreview") }) })
+      ] }) : null,
+      plan !== null ? /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("div", { className: "ebk-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "ebk-muted", children: [
+          t("restorePlan").replace("{count}", String(plan.fileCount)),
+          " \xB7 ",
+          formatBytes(plan.bytes)
+        ] }),
+        plan.preview.slice(0, 8).map((file) => /* @__PURE__ */ (0, import_jsx_runtime28.jsxs)("span", { className: "ebk-muted", style: { wordBreak: "break-all" }, children: [
+          file.path,
+          " \xB7 ",
+          formatBytes(file.size)
+        ] }, file.path)),
+        /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("div", { className: "ebk-actions", children: /* @__PURE__ */ (0, import_jsx_runtime28.jsx)("button", { type: "button", className: "ebk-btn ebk-btn-primary", disabled: restoring, onClick: () => void confirmRestore(), children: t("restoreConfirm") }) })
+      ] }) : null
+    ] })
+  ] });
+}
+
+// src/locales/backup.ts
+var BACKUP_COPY = {
+  en: {
+    nav: "Backup",
+    intro: "Back up configuration, sessions, and workspace files to your own WebDAV, SMB, or S3 server, and restore them here. Backups are full archives grouped by scope.",
+    engineMissing: "The backup engine is missing from this install. Reinstall Easel to enable backups.",
+    destinationTitle: "Destination",
+    protocol: "Protocol",
+    protocolWebdav: "WebDAV",
+    protocolS3: "S3",
+    protocolSmb: "SMB (network share)",
+    endpoint: "WebDAV URL",
+    endpointPlaceholder: "https://dav.example.com/dav",
+    username: "Username",
+    password: "Password",
+    passwordSaved: "Saved \u2014 leave blank to keep",
+    remoteDir: "Remote subdirectory (optional)",
+    remoteDirPlaceholder: "easel-backup",
+    s3Endpoint: "Endpoint (optional, blank for AWS)",
+    s3Region: "Region",
+    s3Bucket: "Bucket",
+    s3AccessKeyId: "Access key id",
+    s3SecretAccessKey: "Secret access key",
+    s3PathStyle: "Path-style addressing (MinIO and most NAS gateways)",
+    smbRoot: "Share path",
+    smbRootPlaceholder: "\\\\server\\share or a mapped drive",
+    smbConnect: "Connect with credentials (Windows)",
+    smbUser: "Username (optional)",
+    smbPassword: "Password (optional)",
+    test: "Test connection",
+    testing: "Testing\u2026",
+    testOk: "Destination reachable.",
+    scopeTitle: "What to back up",
+    scopeConfig: "Configuration & credentials",
+    scopeConfigHint: "Profile patches, API keys, personas, skills, state stores",
+    scopeSessions: "Sessions & attachments",
+    scopeSessionsHint: "Conversation logs and durable attachments",
+    scopeWorkspace: "Projects & outputs (media)",
+    scopeWorkspaceHint: "Projects and the full outputs tree \u2014 can be large",
+    encryptionTitle: "Encryption",
+    encryptionHint: "Backups include API keys. Encrypt with a passphrase (AES-256-GCM) before uploading to a cloud drive.",
+    encryptionOn: "Encrypt backups",
+    passphrase: "Passphrase",
+    scheduleTitle: "Schedule",
+    scheduleOff: "Manual only",
+    scheduleDaily: "Daily",
+    scheduleWeekly: "Weekly",
+    scheduleAt: "Time",
+    scheduleWeekday: "Day",
+    weekday0: "Sunday",
+    weekday1: "Monday",
+    weekday2: "Tuesday",
+    weekday3: "Wednesday",
+    weekday4: "Thursday",
+    weekday5: "Friday",
+    weekday6: "Saturday",
+    retention: "Keep",
+    retentionUnit: "copies per group",
+    save: "Save",
+    saving: "Saving\u2026",
+    saved: "Saved.",
+    runTitle: "Back up now",
+    run: "Back up",
+    running: "Backing up",
+    phaseCollect: "collecting",
+    phaseArchive: "archiving",
+    phaseUpload: "uploading",
+    phasePrune: "pruning",
+    noGroups: "Pick at least one scope above.",
+    historyTitle: "Recent backups",
+    historyEmpty: "No backups yet.",
+    historyManual: "manual",
+    historySchedule: "scheduled",
+    historyCompleted: "completed",
+    historyFailed: "failed",
+    restoreTitle: "Restore",
+    restorePickGroup: "Group",
+    restorePickStamp: "Copy",
+    restorePreview: "Preview restore",
+    restoreConfirm: "Overwrite now",
+    restorePlan: "{count} files will be overwritten with the archived copies. Confirm to proceed.",
+    restoreApplied: "{count} files restored. Restart the app if sessions were restored.",
+    restoreSkipped: "{count} entries skipped (unknown scope)."
+  },
+  zh: {
+    nav: "\u5907\u4EFD",
+    intro: "\u628A\u914D\u7F6E\u3001\u4F1A\u8BDD\u4E0E\u5DE5\u4F5C\u533A\u6587\u4EF6\u5907\u4EFD\u5230\u4F60\u81EA\u5DF1\u7684 WebDAV\u3001SMB \u6216 S3 \u670D\u52A1\u5668\uFF0C\u5E76\u53EF\u5728\u6B64\u6062\u590D\u3002\u5907\u4EFD\u6309\u8303\u56F4\u5206\u7EC4\u6253\u5305\u6210\u5B8C\u6574\u538B\u7F29\u5305\u3002",
+    engineMissing: "\u672C\u5B89\u88C5\u7F3A\u5C11\u5907\u4EFD\u5F15\u64CE\uFF0C\u91CD\u65B0\u5B89\u88C5 Easel \u540E\u53EF\u7528\u3002",
+    destinationTitle: "\u76EE\u6807\u7AEF",
+    protocol: "\u534F\u8BAE",
+    protocolWebdav: "WebDAV",
+    protocolS3: "S3",
+    protocolSmb: "SMB\uFF08\u7F51\u7EDC\u5171\u4EAB\uFF09",
+    endpoint: "WebDAV \u5730\u5740",
+    endpointPlaceholder: "https://dav.example.com/dav",
+    username: "\u7528\u6237\u540D",
+    password: "\u5BC6\u7801",
+    passwordSaved: "\u5DF2\u4FDD\u5B58\u2014\u2014\u7559\u7A7A\u4FDD\u6301\u4E0D\u53D8",
+    remoteDir: "\u8FDC\u7AEF\u5B50\u76EE\u5F55\uFF08\u53EF\u9009\uFF09",
+    remoteDirPlaceholder: "easel-backup",
+    s3Endpoint: "Endpoint\uFF08\u7559\u7A7A\u4E3A AWS\uFF09",
+    s3Region: "\u533A\u57DF",
+    s3Bucket: "\u5B58\u50A8\u6876",
+    s3AccessKeyId: "Access Key Id",
+    s3SecretAccessKey: "Secret Access Key",
+    s3PathStyle: "Path-style \u5BFB\u5740\uFF08MinIO \u4E0E\u591A\u6570 NAS \u7F51\u5173\uFF09",
+    smbRoot: "\u5171\u4EAB\u8DEF\u5F84",
+    smbRootPlaceholder: "\\\\\u670D\u52A1\u5668\\\u5171\u4EAB \u6216\u6620\u5C04\u76D8",
+    smbConnect: "\u5E26\u51ED\u636E\u8FDE\u63A5\uFF08Windows\uFF09",
+    smbUser: "\u7528\u6237\u540D\uFF08\u53EF\u9009\uFF09",
+    smbPassword: "\u5BC6\u7801\uFF08\u53EF\u9009\uFF09",
+    test: "\u6D4B\u8BD5\u8FDE\u63A5",
+    testing: "\u6D4B\u8BD5\u4E2D\u2026",
+    testOk: "\u76EE\u6807\u7AEF\u53EF\u8FBE\u3002",
+    scopeTitle: "\u5907\u4EFD\u5185\u5BB9",
+    scopeConfig: "\u914D\u7F6E\u4E0E\u51ED\u636E",
+    scopeConfigHint: "profiles \u8865\u4E01\u3001API \u5BC6\u94A5\u3001\u4EBA\u8BBE\u3001skills\u3001\u72B6\u6001\u5E93",
+    scopeSessions: "\u4F1A\u8BDD\u4E0E\u9644\u4EF6",
+    scopeSessionsHint: "\u4F1A\u8BDD\u65E5\u5FD7\u4E0E\u6301\u4E45\u9644\u4EF6",
+    scopeWorkspace: "\u9879\u76EE\u4E0E\u4EA7\u51FA\uFF08\u5A92\u4F53\uFF09",
+    scopeWorkspaceHint: "\u9879\u76EE\u4E0E\u5B8C\u6574 outputs \u6811\u2014\u2014\u53EF\u80FD\u5F88\u5927",
+    encryptionTitle: "\u52A0\u5BC6",
+    encryptionHint: "\u5907\u4EFD\u5305\u542B API \u5BC6\u94A5\u3002\u4E0A\u4F20\u5230\u4E91\u7AEF\u524D\u5EFA\u8BAE\u7528\u53E3\u4EE4\u52A0\u5BC6\uFF08AES-256-GCM\uFF09\u3002",
+    encryptionOn: "\u52A0\u5BC6\u5907\u4EFD",
+    passphrase: "\u53E3\u4EE4",
+    scheduleTitle: "\u5B9A\u65F6",
+    scheduleOff: "\u4EC5\u624B\u52A8",
+    scheduleDaily: "\u6BCF\u5929",
+    scheduleWeekly: "\u6BCF\u5468",
+    scheduleAt: "\u65F6\u523B",
+    scheduleWeekday: "\u661F\u671F",
+    weekday0: "\u5468\u65E5",
+    weekday1: "\u5468\u4E00",
+    weekday2: "\u5468\u4E8C",
+    weekday3: "\u5468\u4E09",
+    weekday4: "\u5468\u56DB",
+    weekday5: "\u5468\u4E94",
+    weekday6: "\u5468\u516D",
+    retention: "\u4FDD\u7559",
+    retentionUnit: "\u4EFD\uFF08\u6BCF\u7EC4\uFF09",
+    save: "\u4FDD\u5B58",
+    saving: "\u4FDD\u5B58\u4E2D\u2026",
+    saved: "\u5DF2\u4FDD\u5B58\u3002",
+    runTitle: "\u7ACB\u5373\u5907\u4EFD",
+    run: "\u5907\u4EFD",
+    running: "\u5907\u4EFD\u4E2D",
+    phaseCollect: "\u6536\u96C6",
+    phaseArchive: "\u6253\u5305",
+    phaseUpload: "\u4E0A\u4F20",
+    phasePrune: "\u6E05\u7406",
+    noGroups: "\u8BF7\u5148\u5728\u4E0A\u9762\u52FE\u9009\u81F3\u5C11\u4E00\u9879\u5907\u4EFD\u5185\u5BB9\u3002",
+    historyTitle: "\u6700\u8FD1\u5907\u4EFD",
+    historyEmpty: "\u8FD8\u6CA1\u6709\u5907\u4EFD\u8BB0\u5F55\u3002",
+    historyManual: "\u624B\u52A8",
+    historySchedule: "\u5B9A\u65F6",
+    historyCompleted: "\u5B8C\u6210",
+    historyFailed: "\u5931\u8D25",
+    restoreTitle: "\u6062\u590D",
+    restorePickGroup: "\u5206\u7EC4",
+    restorePickStamp: "\u5907\u4EFD\u4EFD",
+    restorePreview: "\u9884\u89C8\u6062\u590D",
+    restoreConfirm: "\u786E\u8BA4\u8986\u76D6",
+    restorePlan: "\u5C06\u7528\u5F52\u6863\u526F\u672C\u8986\u76D6 {count} \u4E2A\u6587\u4EF6\uFF0C\u786E\u8BA4\u540E\u6267\u884C\u3002",
+    restoreApplied: "\u5DF2\u6062\u590D {count} \u4E2A\u6587\u4EF6\u3002\u82E5\u6062\u590D\u4E86\u4F1A\u8BDD\u8BB0\u5F55\uFF0C\u5EFA\u8BAE\u91CD\u542F\u5E94\u7528\u3002",
+    restoreSkipped: "\u8DF3\u8FC7 {count} \u4E2A\u672A\u77E5\u8303\u56F4\u6761\u76EE\u3002"
+  }
+};
+
+// src/features/backup.tsx
+var NS = "easel.backup";
+var STYLE_ID = "easel-backup-settings-styles";
+var plugin13 = {
+  name: "easel-backup-settings",
+  inject: ["slots", "locale"],
+  apply(ctx) {
+    ctx.effect(() => ctx.locale.register(NS, BACKUP_COPY), "easel: backup dictionaries");
+    ctx.effect(() => {
+      const style = document.createElement("style");
+      style.id = STYLE_ID;
+      style.textContent = BACKUP_STYLES;
+      document.head.append(style);
+      return () => {
+        style.remove();
+      };
+    }, "easel: backup styles");
+    const t = ctx.locale.bind(NS);
+    ctx.slots.inject("settings.section", () => ctx.slots.register({
+      name: "settings.section",
+      id: "easel-backup",
+      order: 70,
+      locale: NS,
+      label: () => t("nav"),
+      inject: () => ({ t })
+    }, BackupSettings));
   }
 };
 
@@ -9458,6 +12779,7 @@ var EDITABLE_SELECTOR = [
 var CHAT_FLOW_SELECTOR = "[data-chat-flow]";
 var CHAT_NODE_SELECTOR = "[data-chat-node-key]";
 var PRESENTED_FILE_SELECTOR = "[data-presented-file]";
+var TREND_ROW_SELECTOR = "[data-easel-trend]";
 var FILE_LINK_SELECTOR = "button[title]";
 var MESSAGE_KINDS = /* @__PURE__ */ new Set(["user", "assistant-step"]);
 function dataOf(element, name) {
@@ -9488,26 +12810,51 @@ function fileLinkSurface(target) {
   }
   return null;
 }
+function trendPayloadOf(element) {
+  const raw = element?.dataset?.easelTrend;
+  if (typeof raw !== "string" || raw === "") return null;
+  try {
+    const data = JSON.parse(raw);
+    if (data === null || typeof data !== "object") return null;
+    const title = typeof data.title === "string" ? data.title.trim() : "";
+    if (title === "") return null;
+    return {
+      title,
+      url: typeof data.url === "string" ? data.url : "",
+      source: typeof data.source === "string" ? data.source : "",
+      platform: typeof data.platform === "string" ? data.platform : "",
+      ...typeof data.rank === "number" ? { rank: data.rank } : {},
+      ...typeof data.hot === "string" && data.hot !== "" ? { hot: data.hot } : {}
+    };
+  } catch {
+    return null;
+  }
+}
 function resolveSurface(target, selection) {
   if (target == null || typeof target.closest !== "function") return null;
-  const row2 = target.closest(FILE_ROW_SELECTOR);
-  if (row2 != null && typeof row2.closest === "function") {
-    const root = row2.closest(FILE_ROOT_SELECTOR);
-    const path = dataOf(row2, "filesPath");
-    const entry = dataOf(row2, "filesEntry");
+  const row = target.closest(FILE_ROW_SELECTOR);
+  if (row != null && typeof row.closest === "function") {
+    const root = row.closest(FILE_ROOT_SELECTOR);
+    const path = dataOf(row, "filesPath");
+    const entry = dataOf(row, "filesEntry");
     if (root != null && typeof path === "string" && path !== "" && entry !== "other") {
       return {
         kind: "file",
-        row: row2,
+        row,
         path,
         root: dataOf(root, "filesRoot"),
         entry,
-        preview: row2.querySelector?.("button") ?? null
+        preview: row.querySelector?.("button") ?? null
       };
     }
   }
   const link = fileLinkSurface(target);
   if (link !== null) return link;
+  const trendRow = target.closest(TREND_ROW_SELECTOR);
+  if (trendRow != null) {
+    const trend = trendPayloadOf(trendRow);
+    if (trend !== null) return { kind: "trend", element: trendRow, trend };
+  }
   const editable = target.closest(EDITABLE_SELECTOR);
   if (editable != null) return { kind: "editable", element: editable };
   const chat = target.closest(CHAT_FLOW_SELECTOR);
@@ -9565,11 +12912,12 @@ function fileNameOf(path) {
 }
 
 // src/features/context-menu.js
-var STYLE_ID = "easel-context-menu-style";
+var STYLE_ID2 = "easel-context-menu-style";
 var MENU_CLASS = "easel-ctx-menu";
 var ITEM_CLASS = "easel-ctx-menu__item";
 var SEPARATOR_CLASS = "easel-ctx-menu__separator";
 var HINT_CLASS = "easel-ctx-menu__hint";
+var TOAST_CLASS = "easel-ctx-toast";
 var CSS = `
 .${MENU_CLASS} {
   position: fixed;
@@ -9628,9 +12976,28 @@ var CSS = `
   margin: 4px 6px;
   background: var(--dsw-alias-border-l1, rgba(15, 23, 42, 0.08));
 }
+.${TOAST_CLASS} {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  z-index: 2147483000;
+  max-width: min(70vw, 460px);
+  padding: 9px 16px;
+  border-radius: var(--dsw-radius-md, 8px);
+  background: var(--dsw-menu-surface-fill, var(--dsw-alias-bg-elevated, #ffffff));
+  box-shadow: var(--dsw-elevation-prominent, 0 12px 32px rgba(15, 23, 42, 0.2));
+  color: var(--dsw-alias-label-primary, #1f2329);
+  font: var(--dsw-text-body-font, 13px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif);
+  text-align: center;
+  pointer-events: none;
+}
+.${TOAST_CLASS}--ok { color: var(--dsh-success-text, #0f9d58); }
+.${TOAST_CLASS}--warn { color: var(--dsh-warning-text, #b45309); }
+.${TOAST_CLASS}--error { color: var(--dsh-error-text, #dc2626); }
 `;
 var SEPARATOR = Object.freeze({ separator: true });
-var plugin12 = {
+var plugin14 = {
   name: "easel-context-menu",
   inject: [
     "sessions",
@@ -9646,10 +13013,10 @@ var plugin12 = {
   }
 };
 function installStyles() {
-  if (document.getElementById(STYLE_ID) !== null) return () => {
+  if (document.getElementById(STYLE_ID2) !== null) return () => {
   };
   const style = document.createElement("style");
-  style.id = STYLE_ID;
+  style.id = STYLE_ID2;
   style.textContent = CSS;
   document.head.append(style);
   return () => {
@@ -9704,6 +13071,7 @@ function installListener(ctx) {
 }
 function itemsFor(ctx, surface) {
   if (surface.kind === "file") return fileItems(ctx, surface);
+  if (surface.kind === "trend") return trendItems(surface.trend);
   if (surface.kind === "editable") return editableItems(surface.element);
   return [
     menuRow("\u590D\u5236", () => copyOrThrow(surface.text)),
@@ -9712,6 +13080,76 @@ function itemsFor(ctx, surface) {
     menuRow("\u6DFB\u52A0\u5230\u5F53\u524D\u4EFB\u52A1", () => addToTask(ctx, surface.text), { disabled: currentInput(ctx) === void 0 }),
     menuRow("\u5728\u8F85\u52A9\u5BF9\u8BDD\u4E2D\u63D0\u95EE", () => askInAuxiliaryConversation(ctx, surface.text), { disabled: currentSessionId(ctx) === void 0 })
   ];
+}
+function trendItems(trend) {
+  const { title, url, source } = trend;
+  return [
+    menuRow("\u6293\u53D6\u6B63\u6587\u5E76\u5165\u5E93", () => captureTrend(trend), {
+      disabled: url === "",
+      hint: url === "" ? "\u65E0\u539F\u6587\u94FE\u63A5" : void 0
+    }),
+    menuRow("\u4EC5\u6536\u85CF\u6807\u9898\u5230\u9009\u9898\u5E93", () => saveTrendTitle(title, source)),
+    SEPARATOR,
+    menuRow("\u590D\u5236\u6807\u9898", () => copyOrThrow(title)),
+    menuRow("\u590D\u5236\u539F\u6587\u94FE\u63A5", () => copyOrThrow(url), { disabled: url === "" }),
+    menuRow("\u6253\u5F00\u539F\u6587", () => openTrendUrl(url), { disabled: url === "" })
+  ];
+}
+async function captureTrend(trend) {
+  contextToast("\u6B63\u5728\u6293\u53D6\u6B63\u6587\u2026", "info");
+  try {
+    const result = await captureTrendArticle({
+      title: trend.title,
+      url: trend.url,
+      source: trend.source,
+      platform: trend.platform,
+      rank: trend.rank,
+      hot: trend.hot
+    });
+    if (typeof result.warning === "string" && result.warning !== "") {
+      contextToast(`\u5DF2\u5165\u5E93 \xB7 ${result.warning}`, "warn");
+    } else {
+      contextToast(result.reused === true ? "\u6B63\u6587\u5DF2\u66F4\u65B0" : "\u5DF2\u5B58\u5165\u5185\u5BB9\u5E93\u4E0E\u9009\u9898\u5E93", "ok");
+    }
+    notifyTrendSaved(trend.title);
+  } catch (error) {
+    contextToast(`\u6293\u53D6\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
+  }
+}
+function saveTrendTitle(title, source) {
+  createIdea({ title, source }).then(() => {
+    contextToast("\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93", "ok");
+    notifyTrendSaved(title);
+  }).catch((error) => {
+    contextToast(`\u6536\u85CF\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
+  });
+}
+function notifyTrendSaved(title) {
+  window.dispatchEvent(new CustomEvent("easel:trend-saved", { detail: { title } }));
+}
+function openTrendUrl(url) {
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.target = "_blank";
+  anchor.rel = "noreferrer";
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+}
+var contextToastTimer = null;
+function contextToast(message, kind) {
+  const previous = document.querySelector(`.${TOAST_CLASS}`);
+  if (previous !== null) previous.remove();
+  if (contextToastTimer !== null) clearTimeout(contextToastTimer);
+  const toast = document.createElement("div");
+  toast.className = `${TOAST_CLASS} ${TOAST_CLASS}--${kind}`;
+  toast.setAttribute("role", "status");
+  toast.textContent = message;
+  document.body.append(toast);
+  contextToastTimer = setTimeout(() => toast.remove(), 2600);
+}
+function messageOf(error) {
+  return error instanceof Error ? error.message : String(error);
 }
 function fileItems(ctx, surface) {
   const { path, root, entry, preview } = surface;
@@ -9734,7 +13172,39 @@ function fileItems(ctx, surface) {
   items.push(menuRow("\u590D\u5236\u76F8\u5BF9\u8DEF\u5F84", () => copyOrThrow(relative)));
   items.push(menuRow("\u590D\u5236\u7EDD\u5BF9\u8DEF\u5F84", () => copyOrThrow(absolute)));
   if (entry === "file") items.push(menuRow("\u590D\u5236\u6587\u4EF6\u540D", () => copyOrThrow(fileNameOf(absolute))));
+  items.push(SEPARATOR);
+  items.push(menuRow("\u63A8\u9001\u5230\u8BBE\u5907\u2026", (menu) => showPushTargets(ctx, surface, menu, items), { keepOpen: true }));
   return items;
+}
+async function showPushTargets(ctx, surface, menu, previousItems) {
+  menu.render([{ label: "\u6B63\u5728\u67E5\u627E\u5DF2\u914D\u5BF9\u8BBE\u5907\u2026", disabled: true }]);
+  const path = await resolveHostPath(ctx, surface);
+  let status;
+  try {
+    status = await fetchHandoffPaired();
+  } catch {
+    status = { available: false, paired: [] };
+  }
+  const items = [];
+  if (status.available !== true || status.paired.length === 0) {
+    items.push({ label: status.available ? "\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907" : "\u9694\u7A7A\u4F20\u9001\u672A\u542F\u7528", disabled: true });
+  } else {
+    for (const device of status.paired) {
+      items.push(menuRow(`\u63A8\u9001\u5230\u300C${device.name}\u300D`, () => pushToDevice(device.id, device.name, path)));
+    }
+  }
+  items.push(SEPARATOR);
+  items.push(menuRow("\u2190 \u8FD4\u56DE", (row) => row.render(previousItems), { keepOpen: true }));
+  menu.render(items);
+}
+async function pushToDevice(peerId, deviceName, path) {
+  contextToast(`\u6B63\u5728\u63A8\u9001\u5230\u300C${deviceName}\u300D\u2026`, "info");
+  try {
+    await pushFileToPeer(peerId, path);
+    contextToast(`\u5DF2\u63A8\u9001\u5230\u300C${deviceName}\u300D`, "ok");
+  } catch (error) {
+    contextToast(`\u63A8\u9001\u5931\u8D25\uFF1A${messageOf(error)}`, "error");
+  }
 }
 function editableItems(element) {
   const selected = hasSelection(element);
@@ -9753,8 +13223,8 @@ function editableItems(element) {
     menuRow("\u5168\u9009", () => selectAll(element), { hint: `${mod}A` })
   ];
 }
-function menuRow(label2, action, options = {}) {
-  return { label: label2, action, hint: options.hint, disabled: options.disabled === true, keepOpen: options.keepOpen === true };
+function menuRow(label, action, options = {}) {
+  return { label, action, hint: options.hint, disabled: options.disabled === true, keepOpen: options.keepOpen === true };
 }
 function showMenu({ x: x2, y: y2, items, onClosed, onError }) {
   const menu = document.createElement("div");
@@ -9859,9 +13329,9 @@ function itemElement(item, close, restoreFocus, render, onError) {
   button.className = ITEM_CLASS;
   button.setAttribute("role", "menuitem");
   button.disabled = item.disabled === true;
-  const label2 = document.createElement("span");
-  label2.textContent = item.label;
-  button.append(label2);
+  const label = document.createElement("span");
+  label.textContent = item.label;
+  button.append(label);
   if (typeof item.hint === "string" && item.hint !== "") {
     const hint = document.createElement("span");
     hint.className = HINT_CLASS;
@@ -9991,13 +13461,13 @@ function addToTask(ctx, text2) {
   if (input === void 0) throw new Error("\u5F53\u524D\u6CA1\u6709\u53EF\u7528\u7684\u8F93\u5165\u6846");
   const block = draftBlock(text2);
   if (block === "") return;
-  const actions2 = input.actions;
-  if (typeof actions2?.captureInsertion === "function" && typeof actions2?.insertText === "function") {
-    if (actions2.insertText(block, actions2.captureInsertion())) {
+  const actions = input.actions;
+  if (typeof actions?.captureInsertion === "function" && typeof actions?.insertText === "function") {
+    if (actions.insertText(block, actions.captureInsertion())) {
       input.focus();
       return;
     }
-    if (actions2.insertText(block, actions2.captureInsertion())) {
+    if (actions.insertText(block, actions.captureInsertion())) {
       input.focus();
       return;
     }
@@ -10126,52 +13596,754 @@ function reportError(ctx, error) {
   }
 }
 
+// src/components/HandoffSettings.tsx
+var import_react18 = require("react");
+
+// src/lib/handoff-api.ts
+var BASE3 = "/easel";
+async function request3(url, options) {
+  const res = await fetch(`${BASE3}${url}`, { cache: "no-store", ...options });
+  if (!res.ok) {
+    let detail = "";
+    try {
+      const payload = await res.json();
+      detail = payload && (payload.detail || payload.error) || "";
+    } catch {
+    }
+    throw new Error(detail || `\u8BF7\u6C42\u5931\u8D25\uFF08${res.status} ${res.statusText}\uFF09`);
+  }
+  return res.json();
+}
+function getHandoffStatus() {
+  return request3("/api/handoff/status");
+}
+function getHandoffWorkspaces() {
+  return request3("/api/handoff/workspaces");
+}
+function pairWithPeer(peerId) {
+  return request3("/api/handoff/pair", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ peerId })
+  });
+}
+function acceptPairing(id) {
+  return request3(`/api/handoff/pair/${encodeURIComponent(id)}/accept`, { method: "POST" });
+}
+function rejectPairing(id) {
+  return request3(`/api/handoff/pair/${encodeURIComponent(id)}/reject`, { method: "POST" });
+}
+function sendHandoff(peerId, workspacePath, payload) {
+  return request3("/api/handoff/send", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ peerId, workspacePath, payload })
+  });
+}
+
+// src/components/HandoffSettings.tsx
+var import_jsx_runtime29 = require("react/jsx-runtime");
+var COPY = {
+  en: {
+    nav: "Air Transfer",
+    intro: "Send a project and its agent sessions to another device on this network, or receive one. Both devices stay on the same network with the app open.",
+    unavailable: "Air Transfer is not enabled in this profile.",
+    device: "This device",
+    port: "port",
+    refresh: "Refresh",
+    paired: "Paired devices",
+    pairedBadge: "Paired",
+    noPaired: "Nothing paired yet. Pair a nearby device first.",
+    nearby: "Nearby devices",
+    noNearby: "No devices found. Keep both apps open on the same network, then refresh.",
+    pair: "Pair",
+    pending: "Waiting for confirmation",
+    sasHint: "Check that both screens show this number, then confirm on each. Only pair when they match.",
+    confirm: "They match \u2014 pair",
+    reject: "Decline",
+    sendTitle: "Send a project",
+    pickWorkspace: "Choose a project",
+    pickPeer: "Choose a device",
+    payloadTitle: "Include",
+    withSessions: "Sessions (agent continuation)",
+    withMaterials: "Project materials (\u7D20\u6750/)",
+    withLibrary: "Content library (outputs/)",
+    withConfig: "Config (.env / profiles / skills)",
+    configHint: "Contains API keys \u2014 only sent when selected, merged into the receiving device\u2019s own config on arrival.",
+    send: "Send",
+    sending: "Sending\u2026",
+    sent: "Handoff complete.",
+    failed: "Handoff failed"
+  },
+  zh: {
+    nav: "\u9694\u7A7A\u4F20\u9001",
+    intro: "\u628A\u9879\u76EE\u8FDE\u540C agent \u4F1A\u8BDD\u53D1\u5230\u672C\u7F51\u7EDC\u7684\u53E6\u4E00\u53F0\u8BBE\u5907\uFF0C\u6216\u4ECE\u53E6\u4E00\u53F0\u8BBE\u5907\u63A5\u6536\u3002\u4E24\u53F0\u8BBE\u5907\u9700\u5728\u540C\u4E00\u7F51\u7EDC\u5E76\u90FD\u4FDD\u6301\u5E94\u7528\u5F00\u542F\u3002",
+    unavailable: "\u5F53\u524D profile \u672A\u542F\u7528\u9694\u7A7A\u4F20\u9001\u3002",
+    device: "\u672C\u673A",
+    port: "\u7AEF\u53E3",
+    refresh: "\u5237\u65B0",
+    paired: "\u5DF2\u914D\u5BF9\u8BBE\u5907",
+    pairedBadge: "\u5DF2\u914D\u5BF9",
+    noPaired: "\u8FD8\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907\uFF0C\u5148\u5728\u9644\u8FD1\u8BBE\u5907\u91CC\u914D\u5BF9\u3002",
+    nearby: "\u9644\u8FD1\u8BBE\u5907",
+    noNearby: "\u5C1A\u672A\u53D1\u73B0\u8BBE\u5907\u3002\u8BF7\u8BA9\u4E24\u53F0\u8BBE\u5907\u90FD\u5F00\u7740\u5E94\u7528\u5E76\u5904\u4E8E\u540C\u4E00\u7F51\u7EDC\uFF0C\u7136\u540E\u5237\u65B0\u3002",
+    pair: "\u914D\u5BF9",
+    pending: "\u7B49\u5F85\u786E\u8BA4",
+    sasHint: "\u8BF7\u6838\u5BF9\u4E24\u53F0\u5C4F\u5E55\u663E\u793A\u7684\u662F\u540C\u4E00\u4E32\u6570\u5B57\uFF0C\u518D\u5206\u522B\u5728\u5404\u81EA\u8BBE\u5907\u4E0A\u786E\u8BA4\uFF1B\u4E00\u81F4\u624D\u914D\u5BF9\u3002",
+    confirm: "\u4E00\u81F4\uFF0C\u914D\u5BF9",
+    reject: "\u62D2\u7EDD",
+    sendTitle: "\u53D1\u9001\u9879\u76EE",
+    pickWorkspace: "\u9009\u62E9\u9879\u76EE",
+    pickPeer: "\u9009\u62E9\u8BBE\u5907",
+    payloadTitle: "\u968F\u5305\u5185\u5BB9",
+    withSessions: "\u4F1A\u8BDD\uFF08agent \u7EED\u4F5C\u4E0A\u4E0B\u6587\uFF09",
+    withMaterials: "\u9879\u76EE\u7D20\u6750\uFF08\u7D20\u6750/\uFF09",
+    withLibrary: "\u5185\u5BB9\u5E93\uFF08outputs/\uFF09",
+    withConfig: "\u914D\u7F6E\u9879\uFF08.env / \u753B\u50CF / \u6280\u80FD\uFF09",
+    configHint: "\u914D\u7F6E\u9879\u542B API \u5BC6\u94A5\uFF0C\u53EA\u5728\u52FE\u9009\u540E\u968F\u5305\u53D1\u9001\uFF1B\u5230\u8FBE\u540E\u5408\u5E76\u8FDB\u5BF9\u65B9\u672C\u673A\u914D\u7F6E\u3002",
+    send: "\u53D1\u9001",
+    sending: "\u53D1\u9001\u4E2D\u2026",
+    sent: "\u4EA4\u63A5\u5B8C\u6210\u3002",
+    failed: "\u4EA4\u63A5\u5931\u8D25"
+  }
+};
+var HANDOFF_STYLES = `
+.ehs-root {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 0;
+  font-size: 13px;
+  line-height: 22px;
+  color: var(--dsw-alias-label-primary);
+}
+.ehs-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 0.5px solid var(--dsw-alias-settings-card-stroke);
+  border-radius: var(--dsw-radius-xl);
+  background: var(--dsw-alias-settings-card-fill);
+}
+.ehs-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 500;
+}
+.ehs-pending { border-color: var(--dsw-alias-state-business-primary); }
+.ehs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+}
+.ehs-row + .ehs-row { border-top: 0.5px solid var(--dsw-alias-border-l2); }
+.ehs-row-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.ehs-row-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ehs-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-device { display: flex; flex-direction: column; gap: 2px; }
+.ehs-device-name { font-size: 14px; line-height: 22px; }
+.ehs-device-meta { display: flex; align-items: center; gap: 8px; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-device-meta code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 0.02em; }
+.ehs-sas-block { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 0 2px; text-align: center; }
+.ehs-sas {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  padding-left: 0.18em;
+}
+.ehs-actions { display: flex; gap: 8px; justify-content: center; }
+.ehs-empty { padding: 6px 0; color: var(--dsw-alias-label-secondary); }
+.ehs-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--dsw-radius-sm);
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--dsw-alias-label-primary);
+  background: transparent;
+  transition: transform 100ms ease-out, background-color 120ms ease-out;
+}
+.ehs-btn-md { height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md); font-size: 14px; line-height: 22px; }
+.ehs-btn:active:not(:disabled) { transform: scale(0.97); }
+.ehs-btn:disabled { cursor: not-allowed; opacity: 0.4; }
+.ehs-btn:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.ehs-btn-primary { background: var(--dsw-alias-button-primary-fill); color: var(--dsw-alias-label-primary-foreground); }
+.ehs-btn-primary:hover:not(:disabled) { background: var(--dsw-alias-button-primary-hover); }
+.ehs-btn-outline { border: 0.5px solid var(--dsw-alias-border-l3); }
+.ehs-btn-outline:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
+.ehs-btn-ghost:hover:not(:disabled) { background: var(--dsw-alias-interactive-bg-hover); }
+.ehs-chip {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: var(--dsw-radius-sm);
+  background: var(--dsw-alias-interactive-bg-hover);
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+.ehs-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.ehs-field { display: flex; flex-direction: column; gap: 4px; min-width: 160px; flex: 1; }
+.ehs-field > span { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-payload { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.ehs-payload-row { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.ehs-check { display: inline-flex; align-items: center; gap: 7px; color: var(--dsw-alias-label-primary); font-size: 13px; line-height: 20px; cursor: pointer; }
+.ehs-check input { width: 14px; height: 14px; margin: 0; accent-color: var(--dsw-alias-state-business-primary); cursor: pointer; }
+.ehs-check input:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
+.ehs-hint { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.ehs-select {
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 8px;
+  border: 0.5px solid var(--dsw-alias-border-l4);
+  border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-bg-layer-1);
+  color: var(--dsw-alias-label-primary);
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 22px;
+}
+.ehs-select:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+.ehs-outcome { font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); }
+.ehs-outcome[data-tone='ok'] { color: var(--dsw-alias-state-success-primary); }
+.ehs-outcome[data-tone='fail'] { color: var(--dsw-alias-state-error-primary); }
+.ehs-error { margin: 0; color: var(--dsw-alias-state-error-primary); font-size: 12px; line-height: 18px; }
+@media (prefers-reduced-motion: reduce) {
+  .ehs-btn { transition: none; }
+  .ehs-btn:active:not(:disabled) { transform: none; }
+}
+`;
+function HandoffSettings({ t }) {
+  const [status, setStatus] = (0, import_react18.useState)(void 0);
+  const [workspaces, setWorkspaces] = (0, import_react18.useState)([]);
+  const [error, setError] = (0, import_react18.useState)("");
+  const [busy, setBusy] = (0, import_react18.useState)(void 0);
+  const [workspacePath, setWorkspacePath] = (0, import_react18.useState)("");
+  const [peerId, setPeerId] = (0, import_react18.useState)("");
+  const [payload, setPayload] = (0, import_react18.useState)({ sessions: true, materials: true, library: false, config: false });
+  const mounted = (0, import_react18.useRef)(true);
+  (0, import_react18.useEffect)(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  const refresh = (0, import_react18.useCallback)(async () => {
+    try {
+      const next = await getHandoffStatus();
+      if (!mounted.current) return;
+      setStatus(next);
+      if (next.available) {
+        const listing = await getHandoffWorkspaces();
+        if (!mounted.current) return;
+        setWorkspaces(listing.workspaces);
+        setWorkspacePath((current) => current !== "" && listing.workspaces.some((item) => item.path === current) ? current : listing.workspaces[0]?.path ?? "");
+        setPeerId((current) => current !== "" && next.paired.some((item) => item.id === current) ? current : next.paired[0]?.id ?? "");
+      }
+    } catch (failure) {
+      if (mounted.current) setError(failure instanceof Error ? failure.message : String(failure));
+    }
+  }, []);
+  (0, import_react18.useEffect)(() => {
+    void refresh();
+    const timer = setInterval(() => {
+      if (!document.hidden) void refresh();
+    }, 3e3);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [refresh]);
+  const run = async (action, work) => {
+    setBusy(action);
+    setError("");
+    try {
+      await work();
+      await refresh();
+    } catch (failure) {
+      if (mounted.current) setError(failure instanceof Error ? failure.message : String(failure));
+    } finally {
+      if (mounted.current) setBusy(void 0);
+    }
+  };
+  if (status === void 0) {
+    return /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-root", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "ehs-muted", children: error || "\u2026" }) });
+  }
+  const pending = status.pending;
+  const unpaired = status.discovered.filter((peer) => !status.paired.some((paired) => paired.id === peer.id));
+  const last = status.last ?? void 0;
+  const canSend = workspacePath !== "" && peerId !== "";
+  return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "ehs-intro", children: t("intro") }),
+    status.available && status.device !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("device") }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "ehs-btn ehs-btn-ghost",
+            disabled: busy !== void 0,
+            onClick: () => {
+              void run("refresh", refresh);
+            },
+            children: t("refresh")
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-device", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-device-name", children: status.device.name }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-device-meta", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("code", { children: status.device.id.slice(0, 12) }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: "\xB7" }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { children: [
+            t("port"),
+            " ",
+            status.device.port
+          ] })
+        ] })
+      ] })
+    ] }),
+    !status.available && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "ehs-empty", children: status.reason ?? t("unavailable") }),
+    status.available && pending.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "ehs-card ehs-pending", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("pending") }) }),
+      pending.map((offer) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-sas-block", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { children: [
+          offer.peer.name,
+          " ",
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "ehs-muted", children: [
+            "(",
+            offer.peer.platform,
+            ")"
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-sas", "aria-label": `${offer.sas}`, children: offer.sas }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-muted", children: t("sasHint") }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-actions", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+            "button",
+            {
+              type: "button",
+              className: "ehs-btn ehs-btn-outline",
+              disabled: busy !== void 0,
+              onClick: () => {
+                void run(`reject:${offer.id}`, () => rejectPairing(offer.id));
+              },
+              children: t("reject")
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+            "button",
+            {
+              type: "button",
+              className: "ehs-btn ehs-btn-primary",
+              disabled: busy !== void 0,
+              onClick: () => {
+                void run(`accept:${offer.id}`, () => acceptPairing(offer.id));
+              },
+              children: t("confirm")
+            }
+          )
+        ] })
+      ] }, offer.id))
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("nearby") }) }),
+      unpaired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-empty", children: t("noNearby") }) : unpaired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-row-main", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-row-title", children: peer.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "ehs-muted", children: [
+            peer.platform,
+            peer.compatible === false ? " \xB7 \u26A0" : ""
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "ehs-btn ehs-btn-outline",
+            disabled: busy !== void 0,
+            onClick: () => {
+              void run(`pair:${peer.id}`, () => pairWithPeer(peer.id));
+            },
+            children: t("pair")
+          }
+        )
+      ] }, peer.id))
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("paired") }) }),
+      status.paired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-empty", children: t("noPaired") }) : status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-row-main", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-row-title", children: peer.name }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "ehs-muted", children: [
+            peer.platform,
+            " \xB7 ",
+            peer.id.slice(0, 8)
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-chip", children: t("pairedBadge") })
+      ] }, peer.id))
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("sendTitle") }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-form", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("label", { className: "ehs-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("pickWorkspace") }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+            "select",
+            {
+              className: "ehs-select",
+              value: workspacePath,
+              onChange: (event) => {
+                setWorkspacePath(event.target.value);
+              },
+              children: [
+                workspaces.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("option", { value: "", children: t("pickWorkspace") }),
+                workspaces.map((workspace) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("option", { value: workspace.path, children: workspace.title }, workspace.path))
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("label", { className: "ehs-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("pickPeer") }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)(
+            "select",
+            {
+              className: "ehs-select",
+              value: peerId,
+              onChange: (event) => {
+                setPeerId(event.target.value);
+              },
+              children: [
+                status.paired.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("option", { value: "", children: t("pickPeer") }),
+                status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("option", { value: peer.id, children: peer.name }, peer.id))
+              ]
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "ehs-btn ehs-btn-md ehs-btn-primary",
+            disabled: busy !== void 0 || !canSend,
+            onClick: () => {
+              void run("send", () => sendHandoff(peerId, workspacePath, payload));
+            },
+            children: busy === "send" ? t("sending") : t("send")
+          }
+        ),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-payload", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-hint", children: t("payloadTitle") }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-payload-row", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("label", { className: "ehs-check", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: payload.sessions,
+                  onChange: (event) => {
+                    setPayload((current) => ({ ...current, sessions: event.target.checked }));
+                  }
+                }
+              ),
+              t("withSessions")
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("label", { className: "ehs-check", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: payload.materials,
+                  onChange: (event) => {
+                    setPayload((current) => ({ ...current, materials: event.target.checked }));
+                  }
+                }
+              ),
+              t("withMaterials")
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("label", { className: "ehs-check", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: payload.library,
+                  onChange: (event) => {
+                    setPayload((current) => ({ ...current, library: event.target.checked }));
+                  }
+                }
+              ),
+              t("withLibrary")
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("label", { className: "ehs-check", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+                "input",
+                {
+                  type: "checkbox",
+                  checked: payload.config,
+                  onChange: (event) => {
+                    setPayload((current) => ({ ...current, config: event.target.checked }));
+                  }
+                }
+              ),
+              t("withConfig")
+            ] })
+          ] }),
+          payload.config && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-hint", children: t("configHint") })
+        ] })
+      ] }),
+      last !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-outcome", "data-tone": last.ok ? "ok" : "fail", "aria-live": "polite", children: last.ok ? t("sent") : `${t("failed")}\uFF1A${last.detail}` })
+    ] }),
+    error !== "" && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "ehs-error", role: "alert", children: error })
+  ] });
+}
+
+// src/features/handoff.tsx
+var NS2 = "easel.handoff";
+var STYLE_ID3 = "easel-handoff-settings-styles";
+var plugin15 = {
+  name: "easel-handoff-settings",
+  inject: ["slots", "locale"],
+  apply(ctx) {
+    ctx.effect(() => ctx.locale.register(NS2, COPY), "easel: handoff dictionaries");
+    ctx.effect(() => {
+      const style = document.createElement("style");
+      style.id = STYLE_ID3;
+      style.textContent = HANDOFF_STYLES;
+      document.head.append(style);
+      return () => {
+        style.remove();
+      };
+    }, "easel: handoff styles");
+    const t = ctx.locale.bind(NS2);
+    ctx.slots.inject("settings.section", () => ctx.slots.register({
+      name: "settings.section",
+      id: "easel-handoff",
+      order: 60,
+      locale: NS2,
+      label: () => t("nav"),
+      inject: () => ({ t })
+    }, HandoffSettings));
+  }
+};
+
 // src/features/index.ts
-var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
+var views = [dashboard_exports, trends_exports, ideas_exports, calendar_exports, schedules_exports, skills_exports, outputs_exports, publish_exports, accounts_exports, profile_exports, breakdown_exports];
 var FEATURES = views.map((module2) => ({
   view: module2.view,
   order: module2.order,
   labels: module2.labels,
   plugin: module2.plugin
 }));
-var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin11, plugin12];
+var CLIENT_PLUGINS = [...FEATURES.map((feature) => feature.plugin), plugin12, plugin13, plugin14, plugin15];
+
+// src/lib/hostUpdate.js
+var EVENT_PROGRESS = "easel://update-progress";
+var EVENT_AVAILABLE = "easel://update-available";
+function detectHostUpdateBridge(win) {
+  if (win === void 0) {
+    if (typeof window === "undefined") return void 0;
+    win = window;
+  }
+  const host = win.__easelHostUpdate;
+  return host !== void 0 && typeof host.rpc === "function" ? host : void 0;
+}
+function createUpdateStore(bridge) {
+  let seq = 0;
+  let state = {
+    supported: bridge !== void 0,
+    /** The shell snapshot has been read at least once. */
+    ready: false,
+    /** Running shell version; desktop only. */
+    version: void 0,
+    endpoints: [],
+    /** `default` | `override` | `error` — the update-source seam state. */
+    source: "default",
+    lastCheckMs: void 0,
+    /** `up-to-date` | `available` | `error` — outcome of the last check. */
+    lastCheckStatus: void 0,
+    /** The newest found release `{version, notes?, pubDateMs?}`, when the last check saw one. */
+    latest: void 0,
+    lastError: void 0,
+    /** The live notice payload `{version, notes?, pubDateMs?, seq}`; drives the dialog. */
+    announce: void 0,
+    /** Latest install progress `{phase, percent?, version?}`, cleared on failure. */
+    progress: void 0,
+    checking: false
+  };
+  const readers = /* @__PURE__ */ new Set();
+  const notify = () => {
+    for (const read of readers) read();
+  };
+  const set = (patch) => {
+    state = { ...state, ...patch };
+    notify();
+  };
+  const applyStatePayload = (payload) => {
+    if (payload === void 0 || typeof payload !== "object") return;
+    set({
+      ready: true,
+      version: payload.version,
+      endpoints: Array.isArray(payload.endpoints) ? payload.endpoints : [],
+      source: payload.source ?? "default",
+      sourceKey: payload.sourceKey ?? "default",
+      customUrl: payload.customUrl,
+      lastCheckMs: payload.lastCheckMs,
+      lastCheckStatus: payload.lastCheckStatus,
+      latest: payload.latest,
+      lastError: payload.lastError
+    });
+  };
+  const refresh = async () => {
+    if (bridge === void 0) return;
+    try {
+      const res = await bridge.rpc("update-state");
+      if (res.ok) applyStatePayload(res.data);
+      else set({ ready: true, lastError: res.error });
+    } catch {
+    }
+  };
+  const check = async () => {
+    if (bridge === void 0) return { status: "error", detail: "unsupported" };
+    set({ checking: true, lastError: void 0 });
+    try {
+      const res = await bridge.rpc("update-check");
+      if (res.ok) {
+        const data = res.data ?? {};
+        set({
+          checking: false,
+          lastCheckStatus: data.status,
+          latest: data.status === "available" ? { version: data.version, notes: data.notes, pubDateMs: data.pubDateMs } : void 0,
+          lastError: data.status === "error" ? data.detail : void 0
+        });
+        return data;
+      }
+      set({ checking: false, lastError: res.error });
+      return { status: "error", detail: res.error };
+    } catch (err) {
+      set({ checking: false, lastError: String(err) });
+      return { status: "error", detail: String(err) };
+    }
+  };
+  const install = async () => {
+    if (bridge === void 0) return { status: "error", detail: "unsupported" };
+    set({ progress: { phase: "downloading", percent: 0, version: state.latest?.version } });
+    try {
+      const res = await bridge.rpc("update-install");
+      if (res.ok && res.data === "started") return { status: "started" };
+      if (res.ok && res.data === "up-to-date") {
+        set({ progress: void 0 });
+        return { status: "up-to-date" };
+      }
+      set({ progress: void 0, lastError: res.error ?? "install failed" });
+      return { status: "error", detail: res.error };
+    } catch (err) {
+      set({ progress: void 0, lastError: String(err) });
+      return { status: "error", detail: String(err) };
+    }
+  };
+  const setSource = async (source, url) => {
+    if (bridge === void 0) return { ok: false, error: "unsupported" };
+    try {
+      const res = await bridge.rpc("update-source-set", { source, url });
+      if (res.ok) {
+        applyStatePayload(res.data);
+        return { ok: true };
+      }
+      set({ lastError: res.error });
+      return { ok: false, error: res.error };
+    } catch (err) {
+      set({ lastError: String(err) });
+      return { ok: false, error: String(err) };
+    }
+  };
+  const offProgress = bridge?.onEvent?.(EVENT_PROGRESS, (payload) => {
+    if (payload?.phase === "failed") {
+      set({ progress: payload });
+      void refresh();
+    } else {
+      set({ progress: payload });
+    }
+  });
+  const offAvailable = bridge?.onEvent?.(EVENT_AVAILABLE, (payload) => {
+    if (payload?.version === void 0) return;
+    seq += 1;
+    set({ announce: { ...payload, seq } });
+  });
+  return {
+    subscribe: (read) => {
+      readers.add(read);
+      return () => readers.delete(read);
+    },
+    snapshot: () => state,
+    refresh,
+    check,
+    install,
+    setSource,
+    dismiss: () => set({ announce: void 0 }),
+    dispose: () => {
+      offProgress?.();
+      offAvailable?.();
+      readers.clear();
+    }
+  };
+}
 
 // src/components/DataRootSection.tsx
-var import_react16 = require("react");
-var import_jsx_runtime26 = require("react/jsx-runtime");
-var box = { display: "flex", flexDirection: "column", gap: 12, fontSize: 13 };
-var row = { display: "flex", flexDirection: "column", gap: 4 };
-var label = { opacity: 0.7 };
-var code = { fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12, wordBreak: "break-all" };
-var actions = { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" };
-var inputStyle = {
-  flex: "1 1 320px",
-  minWidth: 0,
-  padding: "6px 8px",
-  borderRadius: 6,
-  border: "1px solid rgba(127,127,127,.35)",
-  background: "transparent",
-  color: "inherit",
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-  fontSize: 12
-};
-var buttonStyle = {
-  padding: "5px 10px",
-  borderRadius: 6,
-  border: "1px solid rgba(127,127,127,.35)",
-  background: "transparent",
-  color: "inherit",
-  cursor: "pointer"
-};
-var primaryStyle = {
-  ...buttonStyle,
-  border: "none",
-  background: "var(--dsw-accent, #4f7cff)",
-  color: "#fff"
-};
-var warningStyle = { margin: 0, padding: "8px 10px", borderRadius: 6, background: "rgba(214,158,46,.12)", color: "inherit" };
-var errorStyle = { margin: 0, color: "var(--dsw-danger, #d14)", whiteSpace: "pre-wrap" };
-async function request2(path, init) {
+var import_react19 = require("react");
+var import_jsx_runtime30 = require("react/jsx-runtime");
+var DATA_ROOT_STYLES = `
+.dtr-root { display: flex; flex-direction: column; gap: 16px; padding: 8px 0; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
+.dtr-intro { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.dtr-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
+.dtr-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 14px; line-height: 22px; font-weight: 500; }
+.dtr-badge { flex: none; padding: 1px 8px; border-radius: 999px; font-size: 11px; line-height: 16px; font-weight: 400; background: var(--dsw-alias-fill-secondary); color: var(--dsw-alias-label-secondary); }
+.dtr-path { margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 20px; word-break: break-all; }
+.dtr-muted { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; word-break: break-all; }
+.dtr-note { margin: 0; padding: 8px 10px; border-radius: var(--dsw-radius-md, 8px); font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-primary); }
+.dtr-note-warn { background: rgba(214,158,46,.12); }
+.dtr-note-info { background: var(--dsw-alias-fill-secondary); }
+.dtr-error { margin: 0; color: var(--dsw-alias-state-danger-primary, #d4453f); font-size: 12px; line-height: 18px; word-break: break-all; }
+.dtr-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.dtr-field label { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.dtr-input {
+  box-sizing: border-box; width: 100%; height: 36px; padding: 0 10px;
+  border: 0.5px solid var(--dsw-alias-border-l2); border-radius: var(--dsw-radius-md);
+  background: var(--dsw-alias-fill-primary); color: var(--dsw-alias-label-primary);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 22px;
+}
+.dtr-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dtr-btn {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-family: inherit;
+  height: 36px; padding: 0 14px; border-radius: var(--dsw-radius-md);
+  font-size: 14px; line-height: 22px; color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-fill-secondary);
+  transition: transform 100ms ease-out, background-color 120ms ease-out;
+}
+.dtr-btn:disabled { opacity: 0.5; cursor: default; }
+.dtr-btn-primary { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-business-primary); }
+.dtr-btn-danger { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-danger-primary, #d4453f); }
+.dtr-link { border: none; background: none; padding: 0; cursor: pointer; font-family: inherit; font-size: 12px; line-height: 18px; color: var(--dsw-alias-state-business-primary); }
+`;
+async function request4(path, init) {
   const headers = {
     accept: "application/json",
     ...init?.body === void 0 ? {} : { "content-type": "application/json" },
@@ -10186,14 +14358,15 @@ async function request2(path, init) {
   return data;
 }
 function DataRootSection({ t }) {
-  const [status, setStatus] = (0, import_react16.useState)(null);
-  const [value, setValue] = (0, import_react16.useState)("");
-  const [busy, setBusy] = (0, import_react16.useState)(false);
-  const [error, setError] = (0, import_react16.useState)(null);
-  const [notice, setNotice] = (0, import_react16.useState)(null);
-  (0, import_react16.useEffect)(() => {
+  const [status, setStatus] = (0, import_react19.useState)(null);
+  const [value, setValue] = (0, import_react19.useState)("");
+  const [busy, setBusy] = (0, import_react19.useState)(false);
+  const [armed, setArmed] = (0, import_react19.useState)(false);
+  const [error, setError] = (0, import_react19.useState)(null);
+  const [notice, setNotice] = (0, import_react19.useState)(null);
+  (0, import_react19.useEffect)(() => {
     let active = true;
-    request2("/data-root").then((next) => {
+    request4("/data-root").then((next) => {
       if (!active) return;
       setStatus(next);
       setValue(next.current ?? next.default ?? "");
@@ -10205,24 +14378,23 @@ function DataRootSection({ t }) {
     };
   }, []);
   if (status !== null && !status.supported) {
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { style: box, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: t("nav") }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: t("onlyDesktop") })
-    ] });
+    return /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("div", { className: "dtr-root", children: /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-muted", children: t("onlyDesktop") }) });
   }
   if (status === null) {
-    return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { style: box, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: t("nav") }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { children: t("loading") }),
-      error === null ? null : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: errorStyle, role: "alert", children: error })
+    return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-root", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-muted", children: t("loading") }),
+      error === null ? null : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-error", role: "alert", children: error })
     ] });
   }
   const choose = async () => {
     setBusy(true);
     setError(null);
     try {
-      const picked = await request2("/data-root/pick", { method: "POST" });
-      if (picked.path) setValue(picked.path);
+      const picked = await request4("/data-root/pick", { method: "POST" });
+      if (picked.path) {
+        setValue(picked.path);
+        setArmed(false);
+      }
     } catch (err) {
       const message = err.message;
       setNotice(message === "picker-unavailable" ? t("pickUnavailable") : message);
@@ -10233,8 +14405,9 @@ function DataRootSection({ t }) {
   const migrate = async () => {
     setBusy(true);
     setError(null);
+    setArmed(false);
     try {
-      await request2("/data-root", { method: "POST", body: JSON.stringify({ path: value.trim() }) });
+      await request4("/data-root", { method: "POST", body: JSON.stringify({ path: value.trim() }) });
       setNotice(t("migrating"));
     } catch (err) {
       setError(err.message);
@@ -10245,55 +14418,79 @@ function DataRootSection({ t }) {
   const trimmed = value.trim().replace(/[\\/]+$/, "");
   const current = (status.current ?? "").replace(/[\\/]+$/, "");
   const unchanged = trimmed.length === 0 || trimmed === current;
-  return /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("section", { style: box, children: [
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("h2", { children: t("nav") }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: { margin: 0 }, children: t("intro") }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: row, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { style: label, children: t("current") }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { style: code, children: status.current })
+  return /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-intro", children: t("intro") }),
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("section", { className: "dtr-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { children: t("currentTitle") }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { className: "dtr-badge", children: status.isDefault ? t("badgeDefault") : t("badgeCustom") })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-path", children: status.current }),
+      status.isDefault || status.default === void 0 ? null : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-muted", children: t("defaultLine").replace("{path}", status.default) }),
+      status.cloudSynced ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-note dtr-note-warn", children: t("cloudWarning") }) : null,
+      status.pending ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-note dtr-note-info", children: t("pending") }) : null,
+      status.lastError ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-error", role: "alert", children: status.lastError }) : null
     ] }),
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: row, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("span", { style: label, children: t("default") }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("code", { style: code, children: status.default })
-    ] }),
-    status.isDefault ? null : /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("div", { style: actions, children: /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-      "button",
-      {
-        type: "button",
-        style: buttonStyle,
-        disabled: busy,
-        onClick: () => {
-          setValue(status.default ?? "");
-          setNotice(null);
-        },
-        children: t("useDefault")
-      }
-    ) }),
-    status.cloudSynced ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: warningStyle, children: t("cloudWarning") }) : null,
-    status.pending ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: { margin: 0 }, children: t("pending") }) : null,
-    status.lastError ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: errorStyle, role: "alert", children: status.lastError }) : null,
-    notice ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: { margin: 0 }, children: notice }) : null,
-    error ? /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("p", { style: errorStyle, role: "alert", children: error }) : null,
-    /* @__PURE__ */ (0, import_jsx_runtime26.jsxs)("div", { style: actions, children: [
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)(
-        "input",
-        {
-          style: inputStyle,
-          value,
-          spellCheck: false,
-          onChange: (event) => {
-            setValue(event.target.value);
-            setNotice(null);
-          },
-          "aria-label": t("current")
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", style: buttonStyle, disabled: busy, onClick: () => {
-        void choose();
-      }, children: t("choose") }),
-      /* @__PURE__ */ (0, import_jsx_runtime26.jsx)("button", { type: "button", style: primaryStyle, disabled: busy || unchanged, onClick: () => {
-        void migrate();
-      }, children: t("migrate") })
+    /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("section", { className: "dtr-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("span", { children: t("moveToTitle") }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("span", { className: "dtr-actions", children: [
+          armed ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { type: "button", className: "dtr-btn dtr-btn-danger", disabled: busy, onClick: () => {
+            void migrate();
+          }, children: t("confirmMigrate") }) : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+            "button",
+            {
+              type: "button",
+              className: "dtr-btn dtr-btn-primary",
+              disabled: busy || unchanged,
+              onClick: () => {
+                setArmed(true);
+                setNotice(null);
+              },
+              children: t("migrate")
+            }
+          ),
+          armed ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { type: "button", className: "dtr-btn", disabled: busy, onClick: () => setArmed(false), children: t("cancel") }) : null
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-field", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("label", { children: t("newLocation") }),
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          "input",
+          {
+            className: "dtr-input",
+            value,
+            spellCheck: false,
+            placeholder: t("newLocationPlaceholder"),
+            onChange: (event) => {
+              setValue(event.target.value);
+              setArmed(false);
+              setNotice(null);
+            }
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsxs)("div", { className: "dtr-actions", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("button", { type: "button", className: "dtr-btn", disabled: busy, onClick: () => {
+          void choose();
+        }, children: t("choose") }),
+        status.isDefault || status.default === void 0 ? null : /* @__PURE__ */ (0, import_jsx_runtime30.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "dtr-link",
+            disabled: busy,
+            onClick: () => {
+              setValue(status.default ?? "");
+              setArmed(false);
+            },
+            children: t("useDefault")
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-muted", children: t("moveToHint") }),
+      notice ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-note dtr-note-info", children: notice }) : null,
+      error ? /* @__PURE__ */ (0, import_jsx_runtime30.jsx)("p", { className: "dtr-error", role: "alert", children: error }) : null
     ] })
   ] });
 }
@@ -10302,51 +14499,412 @@ function DataRootSection({ t }) {
 var DATA_ROOT_COPY = {
   zh: {
     nav: "\u6570\u636E\u4F4D\u7F6E",
-    intro: "\u9879\u76EE\u548C\u4F1A\u8BDD\u5B58\u653E\u5728\u8FD9\u91CC\u3002\u8FC1\u79FB\u4F1A\u628A\u6574\u4E2A\u6570\u636E\u76EE\u5F55\u79FB\u5230\u65B0\u4F4D\u7F6E\uFF0C\u65E7\u8DEF\u5F84\u4FDD\u7559\u94FE\u63A5\uFF0C\u5DF2\u6709\u9879\u76EE\u4ECD\u53EF\u76F4\u63A5\u6253\u5F00\u3002",
-    current: "\u5F53\u524D\u76EE\u5F55",
-    default: "\u9ED8\u8BA4\u4F4D\u7F6E",
-    useDefault: "\u4F7F\u7528\u9ED8\u8BA4\u4F4D\u7F6E",
-    choose: "\u9009\u62E9\u6587\u4EF6\u5939\u2026",
-    migrate: "\u8FC1\u79FB\u5E76\u91CD\u542F",
-    migrating: "\u6B63\u5728\u8FC1\u79FB\uFF0C\u5E94\u7528\u4F1A\u81EA\u52A8\u91CD\u542F\u2026",
+    intro: "\u9879\u76EE\u3001\u4F1A\u8BDD\u548C\u914D\u7F6E\u90FD\u5B58\u653E\u5728\u8FD9\u4E2A\u76EE\u5F55\u91CC\u3002\u8FC1\u79FB\u4F1A\u79FB\u52A8\u6574\u4E2A\u6570\u636E\u76EE\u5F55\uFF0C\u65E7\u8DEF\u5F84\u4FDD\u7559\u94FE\u63A5\uFF0C\u5DF2\u6709\u9879\u76EE\u4ECD\u53EF\u6253\u5F00\u3002",
+    currentTitle: "\u5F53\u524D\u4F4D\u7F6E",
+    badgeDefault: "\u9ED8\u8BA4",
+    badgeCustom: "\u81EA\u5B9A\u4E49",
+    defaultLine: "\u9ED8\u8BA4\u4F4D\u7F6E\uFF1A{path}",
+    cloudWarning: "\u8FD9\u4E2A\u4F4D\u7F6E\u5728\u4E91\u540C\u6B65\u76EE\u5F55\u4E0B\uFF08OneDrive/iCloud \u7B49\uFF09\uFF0C\u5927\u9879\u76EE\u4F1A\u968F\u4E4B\u4E0A\u4F20\u3002\u53EF\u4EE5\u5728\u4E0B\u65B9\u6362\u5230\u4E0D\u540C\u6B65\u7684\u76EE\u5F55\u3002",
     pending: "\u5DF2\u6709\u4E00\u6B21\u8FC1\u79FB\u5728\u7B49\u5F85\u91CD\u542F\u540E\u6267\u884C\u3002",
-    cloudWarning: "\u8FD9\u4E2A\u4F4D\u7F6E\u5728\u4E91\u540C\u6B65\u76EE\u5F55\u4E0B\uFF08OneDrive/iCloud \u7B49\uFF09\uFF0C\u5927\u9879\u76EE\u4F1A\u968F\u4E4B\u4E0A\u4F20\u3002\u53EF\u4EE5\u6362\u5230\u4E0D\u540C\u6B65\u7684\u76EE\u5F55\u3002",
+    moveToTitle: "\u8FC1\u79FB\u6570\u636E",
+    newLocation: "\u65B0\u4F4D\u7F6E",
+    newLocationPlaceholder: "\u8F93\u5165\u6216\u9009\u62E9\u4E00\u4E2A\u7A7A\u6587\u4EF6\u5939",
+    moveToHint: "\u8FC1\u79FB\u4F1A\u79FB\u52A8\u6574\u4E2A\u6570\u636E\u76EE\u5F55\uFF0C\u5B8C\u6210\u540E\u5E94\u7528\u81EA\u52A8\u91CD\u542F\uFF1B\u8FD0\u884C\u4E2D\u7684\u4EFB\u52A1\u4F1A\u4E2D\u65AD\uFF0C\u8BF7\u5148\u4FDD\u5B58\u3002",
+    choose: "\u9009\u62E9\u6587\u4EF6\u5939\u2026",
+    useDefault: "\u4F7F\u7528\u9ED8\u8BA4\u4F4D\u7F6E",
+    migrate: "\u8FC1\u79FB\u5E76\u91CD\u542F",
+    confirmMigrate: "\u786E\u8BA4\u8FC1\u79FB\u5E76\u91CD\u542F",
+    cancel: "\u53D6\u6D88",
+    migrating: "\u6B63\u5728\u8FC1\u79FB\uFF0C\u5E94\u7528\u4F1A\u81EA\u52A8\u91CD\u542F\u2026",
     onlyDesktop: "\u4EC5\u684C\u9762\u7248\u652F\u6301\u4FEE\u6539\u6570\u636E\u4F4D\u7F6E\u3002",
     loading: "\u8BFB\u53D6\u4E2D\u2026",
     pickUnavailable: "\u7CFB\u7EDF\u6CA1\u6709\u53EF\u7528\u7684\u76EE\u5F55\u9009\u62E9\u5668\uFF0C\u8BF7\u76F4\u63A5\u8F93\u5165\u8DEF\u5F84\u3002"
   },
   en: {
     nav: "Data location",
-    intro: "Projects and sessions live here. Moving the data root keeps the old path as a link, so existing projects stay reachable.",
-    current: "Current folder",
-    default: "Default folder",
-    useDefault: "Use default",
-    choose: "Choose folder\u2026",
-    migrate: "Move and restart",
-    migrating: "Moving the data root; the app will restart automatically\u2026",
+    intro: "Projects, sessions, and configuration live in this folder. Moving it keeps the old path as a link, so existing projects stay reachable.",
+    currentTitle: "Current location",
+    badgeDefault: "Default",
+    badgeCustom: "Custom",
+    defaultLine: "Default: {path}",
+    cloudWarning: "This folder is inside a cloud-sync location (OneDrive/iCloud, etc.), so large projects will be uploaded. Pick a non-synced folder below if that is not desired.",
     pending: "A move is queued and will run after the next restart.",
-    cloudWarning: "This folder is inside a cloud-sync location (OneDrive/iCloud, etc.), so large projects will be uploaded. Pick a non-synced folder if that is not desired.",
+    moveToTitle: "Move data",
+    newLocation: "New location",
+    newLocationPlaceholder: "Enter or pick an empty folder",
+    moveToHint: "The whole data folder moves and the app restarts when it is done; running tasks are interrupted, save your work first.",
+    choose: "Choose folder\u2026",
+    useDefault: "Use default",
+    migrate: "Move and restart",
+    confirmMigrate: "Confirm move and restart",
+    cancel: "Cancel",
+    migrating: "Moving the data root; the app will restart automatically\u2026",
     onlyDesktop: "Changing the data location is available in the desktop app only.",
     loading: "Loading\u2026",
     pickUnavailable: "No folder picker is available; type the path instead."
   }
 };
 
+// src/components/AboutSection.tsx
+var import_react20 = require("react");
+
+// src/assets/app-icon.png
+var app_icon_default = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAADDPmHLAAAnm0lEQVR42u1dB3gUZfr/zcz2zWYT0gktlCC9Q0DpgoDlzobtPHvjf7YD9O70fE7Pcip33nNN787HsxdUxAYWOkhRuhhqaAkhve5uts///b6Z2WxCKoSwJDs6ZHd2dnZ33vd7y+9tOrRyW7x4sXTNNdcIoij6tWN5eYXDLRbjRJ1ON16nkwYKgpAqCLDTS0Z6LCC6nfYm00Z/PPRvJT0s8PsD2X6/f5PPF1yXktJll3ZeMBjUffTRR/LcuXMDrbl+i4lDH8DOlTTC5+bm9rPb7Tfo9YafS5I0VK/XSVFytd/m8/kCgUBwt8/nXVpZWfle9+7dD2qMQH8CRCe5zRiAXVQjfEFBwZCYmJjHifBzDQZ9+GmBsGsKrWGu6NYyYRC2sy204LxeHzwe72KXy/F0amrqj/VpdkYMoF1o9eo9MSNH9nzearXMkyRRe5l9gEiiSYxK+nZXDaB7HmQkol3HV2AgCKfT9a/t2489OnXqYEdLmEBoSuTTxggbKC4un2q1mt4xm01pYYSXoqs8oqRDQGOEmhr3SafTcVNSUtJqYhSJ9mBjKkFogviMw+Ty8spfx8XF/llTPXQxfXS1R7RU8NFDrpsrKqrmx8fb/0LHBfZaQ0wgNGLsMSs/SBd40W63LVA5LBiud6JbRG9MGjA9LVRWVi+iBbyQ6Mqey/WZQDyFIwRGe078F1Ti++sbHdEt4jeNVn5GQ0ZLRlNG2/onivUNPqbzSew/RG9cGNX15/UmqLRjTLCwpKT8IUZb1U08VQVoFmNRUdnkpKT4NWHuRpT457+ByOlYXFw8JTk5eW24dyBqep8d2Llzp9Vms7yj8USU+B1GEjBawmaLfefrr3daGa1VWy+kArjOyMjo84LJZExn1n5U53c4m8DHaJuV1eeFcJqLDNtnHJGbWzA0JsY6T4Wf9dF71uFcRE7TmBjLPIbmMpoz2guaPnA4HIutVuu1quGn6xS4arDWIxLFTqHtOG0dDueHNlvMXG70g0fzijKTk+P3U0BHAxOiS6bjAkUskEQgUQXRPPmgqBgH5l8w4jMO6SzEr/H4sW1PAX7YeQK7swvh9wc7vjWo0Nav1+thNJpvChmBRPyfNwYMdbSNBUzY9vHyvbjijvdx1yNf4upb3sWGzUfV1+WOfgs0ml/JnxQVFY2k6N5gVUSIncUpdtb4YCANaDXrIJI97HR5653RYdUApzHlcAwm1T9C1OuNkwwGA5MNgc4g/rVfSNlLYMhowO9jkQ9InSSfRaVxgHI5RMrimqQjThjXWQEy9h80eFyWO90doPS9LFoI0oDOCPlSiJwTnSBQhRk6FwMIihoQB7DgT9fOifmrWWsy44NOl8GmwMCimMZ8v9hOG/QhfSij84n+MFrbmQQwdPZAWWfFveh3kyMkdOKIX6f+8dwjEHRAp8ZG0dk3sTPROkj/BOWGNaJmC/DzgnKn4Q1dZyE+0/NM4ItK/At6naioAIYD0Al69bhOJ57yvigDdADiVzq9KKuq4UwQF2NEUVk1JEGRChKFgguL3Sgvr0GVw0NiUUCXLmZYrYYOzwSCx+ORCQru0MR3EO5/7e+X4djxElgIApZ9AQTcXggBEWIwSDtJAFFPz/2QCBNwOwO4cHx3vPSXyzt0eNzr9XZsCcD0Olvx5dVuHM0tpho2Iq7bQ4Qm0UcE1wnEIT5iAEniMQHZz2wEFi9348SJinDsPGoEnp9oh0I8O4n8rokW+APE8ZT3wPS9212D0nIHKqs9KCV14PX6YTBIRPAArfoAUlOtUBJmO7Y12KFVQPhWVkU6nmwASoCEUS9hz/4C7N5bBKvJCLfLg7Ej0pHRswu8lCjCHILERCu3ATryxlRARDKA5q6difBlK5dZ+q8s3YWPV+5FgsVAzw0IUuZPkFKiDBJJApYHSDaATjLC43LD7yEJIZFqEHX02IPqcieuv24krrl2KKmFAMPOG0AShVNyCASEo61y6CxREqM2QEuITyXJONMcTUm9wKptudh9sAixRj3LeFAy5AOK4cf+gjKARMqRkOghZciCmQXsOfMKqyscSF+fwxlAr5eagNSFtujBEVUBGvH3llXhP9v3oYQIYKDVKLEl5OdIDhGINHtAecyMOpERlB0Laq8zw0bkK1umlf7drnyUV3jBU178CoH5zggfrH0scAYAvw5jBHbtIOWKpCSZMWZUN8jsHFn9fOZesP8Dynk8lsi+O7THmoFFCScBMi7pemOm9MXF1wyKqoDmiL+7uAxj3llOXy6INGade4KQ/AqBxICgECegEI2vWlYHS4WvIieiygCMKfz0gs+PWJOJIh56/pwTmhOO3iur1+QMISgMxdstyKHHEiHlATIOHdUufm3OcDJCzAKNAfhrUKWHCjjRzoxJWfZxRirP9eOepyfj5gVZCDLmk4SoCmiIAV7PPgSv24Xvb70SY1IT4SQCKNJcaF6gyvUfCCqsKzeID2inhXt62qlCbbzoFFdQaPRzG0jDZmibQYcnb/sES17dhOsfGAM9eRuRAjDpIi1EXUMrNSkxjhOfbVaDrkPk4vcaEoft3x2Cn3AHxgC1BmSUAeoCE4TUMWngI1GvJ6s7KMs4n4O2TNxLZFH6PRR/IG+jdtUL0VhAw0smyO4aVwcaEtcRsDidJEbk79BFosjsqFlakRhiFiPzLrX9qpdVt18jAnvcniivwtdyVAK0JE1LTdZtOz3M3D0RCPe8NFBOe609QlNRFXAONrbSGbFLqoP42zcO/HjUz3GA3skiHr7Uhu5JunZkgsirPNNFYqJuW+lKJuIZ8Q8U+HDDP0tw9GQAVvrFDAT6IVvG5l0u/PehJAzqaWgHJhB4P4JaNRAZbqAYkVF8Odhm2oRtD75dhmOFXqTZKQ9aYqpAQNc4CYXlHjzxekm7pYZHYvWRGLEVO2e4sXJ/dpUl2whVPOJBlxgRDjeBTPE6ZKToUVkTQKyV4g6Ha7DjgJszQDB4tm2AyKtAEiO+jvs038pyO90+GX9aVg6jTmkBU+EK4lezbVh0WzxcngB1SRI57PDRmqp2UM8Cr0OMNCAoIt1A+QzvT0D1717b6MBe0v8WCgU6vTKG9jLiqjEWDOtlwPAMA5xuGRajgJVbqlBY6uf2QkultBKglPkut1QdCVEV0OySV0q2z8zf1tFqL6HEzn+uroDdQqtOZAwAzLvEDrNBufj1E23wUMSRdcZxOvxYsbmyxSlgQdWlY2VVWmmV3CIcIAoENRsMYnn6Z7JQAuoSfmkFGX4lHpgYgT0yxvUz4bosS2iFzxptRTIZgj5SE1aTgKUry+Glx5IkNCkFGPEZqFvkd+OF/Gz8LS8bVX6vygRyM5aNEGWAFtetyqfn9rHVf7jUh3e2uhAfI7GEH4owynhwpk1pmakigomxEmaNscLlDsJEaiDnaA3W/1AVCk03JqMY8WsoVnH5vtV49MhWPHh4C27M+a5OEmrjP02MMkCzKiCouoGnsVg0uj2/ohQVbj9M5PNVEYGnD7Jg1hATf53pee3ScyfZYCbi+4lLDDoZn32juIRiIz6hxhhbqkuws7oMvQxWpFtjsYGeZ9dUhSTE+QQFRxxLCqfpK2uI35ZjNfh4ZyXsRjLQ6KCBcvkemRUbkhBKYwSFIAPJKBxzgRmumiCsFglbd1Uge79DdQnlRoVTpjkWSSYz8inVp8DpRFJQQjeDpXkpIAejDNCs7OeuUuu/lpZE+syqUmV2CsXgy11+XDHMgrFk8WsMUn81XzU5Vmkdx6x5+rtqbckpkTvGDDyNS5UMXQ1mvJUxAdPsyZjRpSveumAiYiWdmrvQyK8To7WBLa/ZbyUs5ycCMd2/ZE8lVh+qRiLl81O6GwE9BsyfaW8Q6dOIOWVkDHqlGVBSUAMb2QzrNxbjpmvTER+v5z0D2WlaG1lvjZ8T2WTRY2pcKt/rGIeC0KJClZYkkUBon/a1EcmXQit+uAL6CNz3X7SuECaJJWoGyAaQccv4WGQm6ziD1L8koxUjsFEv4LKJdp6EyrLP8vNqsHJFIZQmSgInwtG9pXj192vx28sW4/E5H+P1322gRFFPrXRQM4KbjXE0mwuj5C+K6ud2WiRQPg3Q599by7CL8H4bNX6sIRw4jaz8ByYrul9qZGVqN/nSifFUPiZRuVgAZnIJ1605yZkje1sRXnxgJR6buwQr3slGWb4TFcXVWPbfrXht4aoQI4ltEEhgq54xPpN+qz/JxrP3LoWzynPWE0l0EYkEtjBTQwN9Sl0+vPTdCcQYBO5BVHkF/ObieCQR/q+ph8bQOeYBdE3WI2tYDNasdiHBJCEv14H5t65E4f5i+KhiKNZigqgP8DoDxjTxaTHYv6UAZSer0SXN1qIKYrmJHIcgSy8nA8VFpemLHvocaz/dDwtVMt3zh+mwxhrPauRQPJ9zpzTQZ9GmAhyv8hLoI/A08sxkA+7MstepEGooSYRJD52aJXLxhXGKi0gvBCkz+ejRKlCVGKw2A5WIebgBbzBKvLLIR/UGOjL6DWZ96wpVG4AMmQphxK8oceLBn72BlUt/gpFi1mkZsbAnWFtlO3QcG6CFdQRsZe8vdeHVnQWIs5AVTm90UvHIw5MTYCHdzla/0IC7GMoQovcXEGj06uKT+Md/DlOo2EevB1iICGarmasBPxF71s0DMW/RVLIJ9FxMe8m7GJTVDTFxJkV0t1AF1EULlTY0TKKwz/nNL9/DgT0nkUAShRWrpvXqQpXMouKOCp3KC2hZTb52G5/ZmItqjw/JtDqrSRWM6m7HzSPrrn5ZS/0Sal3Bfcc9eO+rUqzeVAZHWQ1iBD8sVNbDbjg3EAkWTk2Px/znxqFnZhesfP8nFJ+sQEKyja4jYtxlmadl3Ahh9YQ0sIF168S7f9+EH7ecQEKKldcNsO8weGz3kGGIs2gQRqANILRI9DPDbmN+JT7KKabVb2SZ5PAJEhZMSgoZh8w486uSQiP8hmwX3ltZiU07q+AiIyueVGxcrA6eqgAcziA9V2oAJWKGsiK32kUU2LQ0hyBjPa1+Wp197BgwPr1VHougNZsQatUcI34NdSlfvngnYuxGalIR4MfNNh1GT+vdao+o42QEtbDxw5NbDpMqCPLYfyXp/ul9Y3HFBTZOfFk18hQXEVi+04WrXziJWxbl4+vvK0ncC0iK09PgiCDKKgPokW7GE78ZhKkXJVGLGD8VcchkhXuxcslhVBQ5cGRPMSzUaMLrCmDUzD4wUJSJGW+tcwDkU4Co3MMlKC4qhZ6SFnSEWjor3Rg2vhcyLkjmq/9su4ORmRPYhBcQAn2OFOObgkokW8ygYByt2iDmj0+sI/orKOvn/S3VeI/yAnKoONNACyyOJQXS+eVEXAsReeQAG66Z1gUzyAjUk92QnihhzbKjtBoBCwFJP246gWCNk0LHPrBJG6Ke3jOzF1qdR8bb0obXIyrv7ZIYQ4kpOjgqavgxW6wNdz8+o92yBnUR6wU08Os10IeJ9Se3HoKRSVTZj1K3gKv7J2JSzxh+3mEKA7+z3YmPvnfgWL4HMTQRIs5MBZmk10urA7AR4acRAnjLrARkDbGGTRORMWhIPPqQJDmWXY5YcivLafVv+IyaS9lo9ZNkyBicir4jUlo9aIq7iqJwym+yWE349Z8uxdK3tlCPIhH3PzkbvQcmh1zDzpkWLggNsj7T/SwB4+V91PSBeggk6a3wULQvyWbG8zN64VCZF4vWl+DL7eWodIiwG0xIizOQVR1EYaUPqRTwuW5SLG67mHR4D0OdxpBSWNHAzEt74pVdpZANAcVwpPJygdBFH7WPGTu7L+dMFj+QWkEghk8Eg/46IBSTdPOvfRMmswH3PzEHA0al13ENO29tYCM4gAa3fp5XCMmg+OBeulmD7Do8s64ASykWQJXliKNWMMkxSnu4k04BGXFG3DExFr+cZEePJF0IB2CWAlMXGvG1FT1+cgre+xc1dyCvQgq1lafzyEAcPKVbkyHjxmNcbEJJ3S4jb/9tA7K3n4DfRQkrU/txBvB5A2r1MDp3ZVBT+ECAIm8SR9AC1PdPRHaJGztyi5BAx2PMIqrohlaQZBiYYMAvZyfixrGxpPvFEA4gQKsBEE75aLb64rqYkDU1DV+8vhcpZCgGySCoLHAia05vdM9MUGr7mxH/TOTzcjS/Iin8rLEFMUFAnU528ngFPnx5M4WhzTAnGzH9msEKQfRiJy8OhTbFo+F0LLYiZ6TEYRX1/WGl5ALpdzbyzkx3u8JJKoIMvdHdCAkcm4Qrh8aQNS+EjEe2apuTrJpxdteC0fyzdq44CpliBBdd2Q+3U4eP5oo6AtwzUII57FIGo3KLTZSbGBTdhCwa+fM3Fn1HbijByzTLcezMDCR1tZ2TziG6iOzt15gKUInz6KAM/ERBmbdp3p8+SPrZRUAO/ZTZ/RNw3+gUTMmw1vEaGGaga6m/rn683iDint+NQfW8obyULDbBVKfhQ0OEZytdswtclIW6P7sIe6lHUVF+OXasPYFcwi1e+8sqXHjxAHy7ZCesdhNqyCi94f8uCl2DNa2MFoc2ol+FsLX31pShuL1fGbYRWGMgIk/uZsewlJg6UUK2CnWn4UdrTMCIbYsz1iJyDaCUGnKoEX7lt/ux7JN9+HHbcUITfUhJtiMhwYihWd0xYnxPdMtIxvsvbyBi+1Hj9GD8zAt4fkFBXgVSu8W1uxTQRWZhkNAMnq5sU9O70F43KVRWmz9LZwigaL2BZNV5b0jnh3sCX321H//86zqUFFZh6uR+eOK5ORg2thslmRjrvOfI3mL86f5PEBtnoQBQNa66ayQ++NdGfPHmDjzzxg2YSBAzYzahnfIBIk8FEM4uN4IDnGIMyrV9/UUtLi8IbS6QGvoiGvELC6sx/5HP8dOuk7jztrG46eZRZEQq+YGe0hoa160WkajW/avPr6XvqSO00YdhWb0wfEIGBozshuTUODwy9y089Kc5uO6B8e0mCXQROc6thSFBqQmPAWd5/Cwj/g/bTuCeeR9hyIBEfLnsTnTtqgShfJSRvHwedSdfcRiZsy7A9H/M4MTfszUXm1YeQEysCa5yL66fp+h+A8UYbn10EtJ62vHsnUspFGzHpMsHthpr6CClYUCkzx5mRFm9/ihuuftj3HbLGLzx+k0h4rPt0Of7se/DnyCbROx8ewc9P8CPv//yJt6V3FVdg8Hj0nHh7MyQivFTK9pLrh+G6+ePw1/nU59E8jzY55ztguKILAxpL/13usTfRhPH7/rVh1j48EW4f94EVFAA539vbcdXy/YrN5U8iABrEEl5A6zKKTbZirwTldi66hhsdgtv0HjDA1mqEam4jdpKv/WRaZSUosfyd3aFXu9kRqAYkSM6ZDV8W0XJoHc/tAQ3XTcMt/1iJI8f3P/bz7Bxw1HoKcj0SP4k3H5nFi56ZDJyvjqAPveORteJPfDn331JFcke6P06XDhjIMZN66dC0GIo7MsYzEwBqEHjU7Hl24P42R0jz/q8AjEihxtHYCWlJoqfemE14il2/+TvZvLnx2iwxC7CI7ql20i367Fh/RF+fOITk3HLxrsw8fFJKC12YPWXe2GySjzN7LZHpzT5WV0zElBWUNXqgFOHYABtpm8k1VEGVUwh+0Axvvh6P575/ewQNtC7RzwGUuw+74QDVVVOTJysJHIwnR5UYd8Vn+xBJaWuuUklzJo7BJlDUhTQpx5xtTB4dYWT8g2lOsc6jxvIiE95eLLWTJe5ek0AQ03ZkUKbtnYR8PYHP2I0DZYYN1pJ1/KrlUBv/vVqvPXBDqSnxGLWrP6Kh6ITuTRj7txKyvJlI2oSKEJ1B+n4UDRQluuoAZ3akn7b6sOYctXAEPNJnSkljAVN9BYL3TDxtGf2tPXtYgRyUurWqnX78NtfKwT86kAuHvl0M/wVfjw2awTuIG+gvtRgUcbvVhzAvh/zyLDT4Y6FU2HvYg6tfsX4E0JMxiKBf1+4DB5HENeScdkeKiByuoWryE+cxUrdOqqpyKOUoN0EFctXM2rkUxtANVx9IzeAGzYiKoS6iWaydhG18QMjFpsluGtPAWrcbkwYo4SD71++CTknS5HgN2Dh62sxmiDe/t26hNSFxrhfffwTTy2bdnkfzL5usFL5o77O5hS99txqbFx2gM8WKCkqg4WKTp969xpKEI1pFzBIFymuv0Fd8Y+NGoil2QcxZfE3GEjM4KdePiJzv2RRGfAQ0GYHqH37+XwAgU/+gPoa1PPE8EESQXUoBB8yIfAhDux6PMeARfA0BqIQszL8gQI7FL+XKduU5QcWlHrQv28qdTKPQTmNlqmk99gplGvzCKgiN7CqxnuKzZCzrwjfrTqAZML4H3zqklOGUT5zz6fYsSEHty6cDDMVgphjqEBlRn8yFvVqUkgnQAK1OQEHqhx4Zcde2OnGZXVNxyfZR7C9pBAs8s+J6VMJxoZGsAESAeW5QMMitOdCUKjLHKFJILI6LELgr9UyhDIuhhWDqBkitcd5OweRM5MIH/UTIuh26BD+neONVLUzvC+e/WoHHMUu3DiiL8b0Sw2JbB7zp79rlh9EcX41nnp5OgWB4uFnuQHq6j9KBuX3Kw7iP6vuQvd+CaeUibVXQChiGODtfTlU3rWNvpEROiKknfwlk5lsATII2c0QWMGkXyF6kP4JZwA2EIQTPlhv/EsAilRQp4hwBtEqQ4iRZHV2kCCTe8bewCWEqEoApUoIsjJj0BtwcEmgWeZ/nDYal/XrQcIjiAk9U+v0AWQGYFVlDV7/51rMuHIIrib7gDenkESlFgBKroDb60JFqbMOA7TXyo84G0DPEvspo0cwGuGvdqKUiVQimMT67QfUVe1XCBdH6WB6lXkEmslTSoEVmY5LKgMgoDGCzJmgljkUxmFMYSVda9JJPE+PrXVHtZdGxnn5mBiJUZ1UgdJdmtkAlFfoEygzWCEwz02kd42joRYbCRL+IT8XY2jSqBI9lEOEnDanP+6eP+3UfAE6pWe/JFxy7SgsuOotTLlyAEwmCybMysS4Gb0719AozQ7Ld7iw7NhJnurFuzxqE7y0ztFcl7OhCyL+seonHMong4m9RBLioVmj0DXexmv2BDlscFNQNehkRfmyYyzb1kpJmJ9+ewDffZ+LGKoo8nncuOOGMehJlUBessSZmGbSgWESbLXHxprxzeqDOJRTik8/uEXx1QkRvP2297BvVwExr4C7fzUB9z48Uc0PEOoYqeFBnaoKN+UYmBSDk77Ph69sxK6NR2iULXUoWXUUv3h0PMHBk0N2BDr6zCDNTu8aY8Gdg/o0e34NWc5/WLKJj3VzEcGHpCfgoctGtfpz9+eUYdX6w4g16/liv/Ti/ujTK6HR81PTYnHT7e/gyNFSZNB53xIDZf9ICGBaHNwkPZYtzcYt94zjxlyoJX0gGHIjd289gT8/thzlhS7KETDg4WcvwehJGZh73wS+s+3zN7biH49+jUt/MYJSxGLbJS9AjJQcEHbTmMvX2O5hZVO0Ldmegzwa+coaQLnI+Js8UAFlPGwgNEmN0B5oeGcrnDMSGXVaZ2qJkjUdTsWKZwMiw89nhhsT6wMyk6lriAUr1h7m58XYjNzYcxE+UFFOZeKJRk78cBdVC/KcoATQBbcuQebArvjLu9cji8q+nrzvY9L/LuUz1e805YrBiImxIf9IebsNmBAjKRNMp6ZwNbTrVTfxm725XA2wjGDq/INpA7qFRrKwsbChXWpsF05J69Z8c221hu8MA2DimM0Vvu7qUXjzvV3EFAHMnJGJu+4diy6UKzh2Qg/87unZpzSa1OyBbz/bh7TucXjspTnoS0Uf9z0xnYge5JnB4Qxz8lgZqp0VlH9obrdusuL5MnmLEaiQ4ugbDhfwSWIuMtj6UhbNmN4pbYCYNR180q595y9HUWaPG08/v5I/n79wOj749Hb8992bkTkgpQ4jhW+JKWbk5BxH9s58khYuPPV/Sykh1II+xAzhaOd7f92I3gO68rpAyO3TI+i8GBjB+/7TvVh36CQKaIhjqtmIIqrSnTKwB/X1kTh8rGtts3+5Hk4oNB2hZOrARAWhLzw9B7fevYQCQN0w9+qB/Fh4KnhdxlG+05yrh2Ltimzcc82bMFK5mYnyBV743008ZZxDxiRlPn11K1Yt3Yd/fXtbu7qD59XEkK9+OsonigVpl8iknzm4x2l30JDrDH5u/gpMHTBCT5zQG4uenYMFj36OooIy/IpSupXMHbmWEdRUNSWWpUiFF/99Aw7vL4KTDMbMwSkwmvQh6fLac2vw+rPrsfDvczBoTHq71QWeFwygdPcUUFbjwfojBbCZDGT8BdA3PQnj+3Y9I/Evq02fG0v8bJgJZFx5Ba18SvZdsPBTbFh7CI89fgmGDE2rU1+odPzSJFiQW/O9+yfXud42yh14+YkVOLQnH0+9dR2m/PwCFQUUozODwpFClvy5LuckTlCcPIWaQRSSFzCuVxK1gdfB6w9wow+t6Cqm1F4IvNOHZoEF1NQrrbdAQzaB1m/ER7D07EsGYsjgdPzxD8tw41X/w3CK8V89dxRGjOmO9J5xPLQr1Hunj1zY3MOl2LYuF1+8uxUHd+djxhUj8fQb1yK1R1y0Mqip7eu9xzkqp0CpQcwd3ZcfZzYAWjVWXjmfSv35ylSYjGYJWRSRrNeJzTqtWvFOt3Q7/v3fG3A8txx/f2YFnqQOX8kULEqnqGBCioUkE3X7MJs4c5UVOZF7pBQlNBw7wR6Hi2Zm4jcvXY4BI9JPAYuiDFBP/FdSD6D1RwqpDZyO4wHJCfFU/BnAmr15vM2bqK1YddfazQvaMcjqMaUk20b+et5J6hKiU57rCILesj0fpWVugoMDSi9hXkQaNrY2KIe8Bc2FZC1dmL5OpkSQKdMGYMe641yg5OwvwIljwJhJfXgDSsYIPfvFY9plF6D/0FSeEcQ6jIS7jeeC+BEBBTcrrokBPs8+hrn/+4YaNJPnT506DATc0Nem0fIBjv/zCF9ACf6IaniYxwI49i+HRsTz8HBA6RevZyuZVj4LJrH/fORW8nCErAWMlPdp4+IZNMyDRKxMHMpz2a+EjlmQiRWhGlkbObp+wO9HDKmqdzfMI3BI32wRKaLj45velu87RjeMIXcEs1KwpqTKpUQBZaXFGjX4UoivRvzEgKwSWlaOyXUjhYTkUKsXA606HUkZv4JCkl5nyB57G88P0AJIQTkUVxA5E4EPttbOYfYJixr6qBeB1yURzGsiiSKhJN+FVZ/sxaU3DeVIn6bbBUGokwaOaLPoxoNEkqg0flx9uBBWisH7qBmQ2WDELdOH0wpWiiZYOFfUkkDkWrGvrEzleOg5CwbRqmWi//tdxdQavhhUu8ELNa+YPRCJ8SYCeoJcxPPcxKDWQqR2lll4kEnQsASWxka2SBW1m1v12W7OWKxb+SZKB2MMwPx8MUJrHSKWAbRkyHVH8nGotAIpZEyVE+Y+qXcanrtqwhlf/4X/bMTWHcc5Iud11+BOCsD07plwxtf98YfDKDzuoopfajD1/VHqQk7dy1Nb1k4W0YERp2b2frE/j1ZogLVVhJ9W1qyhivXPjEFmIyh7MOyx3GRQyOtTAi8u6gEs86XNXEFavWpj5vrBoJbuXo/S/2fspP5wkzrQE+JXXebDHmoA2dJhVOeEAeQIHGepdQNzksG36nA+Yql40kOh30RqBjU1U3Gb9Dz4I6h7+GOh6aCQKopZIwbFnAso9f2q+9d4EKnpXae6o+Mp0idKCsTEOp189/XB085ubocYi0wMAG8kin+2rT9eiJyScsreMcJBK3N4Wjx6xSvi9ExbtIsMDxBqq5HPlEBa3H7QyK7U6MFOFcJBGMkD2LXpKC8K0eoAIszN9jK2r4q0ulzti3yZkw8fD93SNyVxPntQrzpdws80wsgzftoo5sobTLFUM8oTGDa2J7WA9fGS8FJqLrXzu9xIUwPqF5GrmArIjyQG0MS/h/T+Nzm51PVb4uI/njKGZvbv3roWbS3oQ6CsfLlNVqfW5Hb89D50vQB3E5idsenbgxE0LLaW1oz2IiU37I0kBtB66G46UYwDZZXc/XNSr52h1BksM9GuzO5rAwZg9oGSRKJTmnG3AQNort4IShBJTLVyVJGpgd2bj8NBtQOiGjWMFAagbKe9JAECmyOxCnfpoTwVdpVRQ1b2zP496gRtznSrIeSvnIhSUelEeYWjTcQzrwWk68QnWjFwZDo1gfLysG9xngO7N+W2S7FnazZa/Jt1BAWv83p9QQMN2DvXvmpoABR9j5VH8/jMP1aAaaEEEI0BznT1a7/vsmmZhPxRuhl5AXZC7/pkJLWJMagVkmZN7Yu1n+/lEUeWer6JuodNmNUvIrKr6DdKjOYul2edLjk5eYfLVbOHHKuh9ELwXGIDWuh3LbWC3UN1cma6l6XU8Xso1QiOSI1vEwbQrPGs4d35Xl/6nCn/a99v5KSeNPfHjGqSMgyq3EL9gpyUSs6MxLb4nDNYAJzGhK3s6dYteYeogB/+paEaTZz7UTFJNKRpaGoCMsjvz4iPwf1Zg/gdC7SR+NREtQLiKH/biiiCymBdqW/AnBuHokuqkRo+xKMv5Q5ECP4fVGn+Seie5+UVZSYnx+1n/fDPuRoII4SbgjYs14/tcmRZ0S3eNIRQaxl7Lle/RlsfGdVFRUX9u3XrdoACWUG6v6K/utrxYUyM9RpmG5zrGEH9mxSpOHrrf8c5b3/EaetwOD+y2WKu5bT/6CMlVcLlcj6tuijSuXZVBKFOfsd5Sfy6LWdbP2DkbKx+Rlum+hit2RNGe0FtRcalQGVl5cuxsbH3MhVBux7RrSNtnKYVFVWvxMfb79NorlklPER25MiRBTU17nyV+IHoPeswG6Ol3u32nDh27MiCcJoLtQEYhSOKi4unJCYmrj4LvZai27kNrQgFBSVT09KS1mi0rpMPwA6wF5KSktaQmHhYJXwg8pu3RrdmiM9oKFRUVDxcn/gNrm4yFgiLEQLEBC/a7bYFquUoRSXB+bURYi6T98yIr6usrF4UFxe7UKMtmsoIopMIkJMF9gZ644thLmHUJjiPdL5aK0PEr3yR0ZJWPov8BptNCSPxICsNDIMivfGR8vKqh9TVz6SALwITiKJbXVfPp0lsRru4uLhHGC3Zy4y2Le6pSG8iaUHAJokMQo0m22y2d00mU1dNr9CH6c5X/7wjEp5oEVLVbrc7v7q6+kaK86xlYp+t/IaI32RSKHsDI/7WrVv17EKbN+f0r6pyvCIr05Q14vuVGE5UKpyj1c6rHFRa6AjkEZifz2jFaMZox2jYGPFb7OKFW455eYXD7Xbr41RNdLXBoK/va4am/kSNxrNi0cthXplUW+HjY1U+HxPC98eUlJRd9WmGtmiry1SCkkijXDQ3t6ifzWa6wWjUXylJ0hAKJElRGrXfRgEdqkAL/EjE/6S62v1e9+7JBzXCK0agKJ+VvsqLF8sSQQXC1KlTQ9xVWFg43Gi0TKRqmLH0wReQ6dCdpBKboWIUoobCGadu0x8P/VtJqjyXwtd7KXz9g8fjWk+rfWe4lGbY/ty5Qqu8tf8Hbk8nRT+Uk9IAAAAASUVORK5CYII=";
+
+// src/components/AboutSection.tsx
+var import_jsx_runtime31 = require("react/jsx-runtime");
+var ABOUT_STYLES = `
+.eau-root { display: flex; flex-direction: column; gap: 14px; padding: 4px 0 8px; font-size: 13px; line-height: 22px; color: var(--dsw-alias-label-primary); }
+.eau-card { border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl); background: var(--dsw-alias-settings-card-fill); }
+.eau-hero { padding: 18px 18px 4px; }
+.eau-brand { display: flex; align-items: flex-start; gap: 12px; }
+.eau-mark {
+  flex: none; width: 44px; height: 44px; border-radius: 11px; display: block; object-fit: contain;
+  background: #fff; box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+.eau-id { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding-top: 1px; }
+.eau-name { font-size: 15px; line-height: 22px; font-weight: 600; letter-spacing: 0.01em; }
+.eau-tagline { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
+.eau-version {
+  align-self: flex-start; margin-top: 5px; padding: 0 8px; border-radius: 999px;
+  font-size: 11px; line-height: 18px; font-variant-numeric: tabular-nums;
+  background: var(--dsw-alias-fill-secondary); color: var(--dsw-alias-label-secondary);
+}
+.eau-grow { flex: 1; }
+.eau-btn {
+  box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center;
+  border: none; cursor: pointer; font-family: inherit; white-space: nowrap;
+  height: 34px; padding: 0 14px; border-radius: var(--dsw-radius-md);
+  font-size: 13px; line-height: 20px; color: var(--dsw-alias-label-primary);
+  background: var(--dsw-alias-fill-secondary);
+  transition: transform 100ms ease-out, background-color 120ms ease-out, opacity 120ms ease-out;
+}
+.eau-btn:hover:not(:disabled) { background: var(--dsw-alias-fill-tertiary, var(--dsw-alias-fill-secondary)); }
+.eau-btn:active:not(:disabled) { transform: scale(0.98); }
+.eau-btn:disabled { opacity: 0.5; cursor: default; }
+.eau-btn-primary { color: var(--dsw-alias-text-on-primary, #fff); background: var(--dsw-alias-state-business-primary); }
+.eau-btn-primary:hover:not(:disabled) { background: var(--dsw-alias-state-business-primary); opacity: 0.92; }
+.eau-status { display: flex; align-items: center; gap: 6px; margin: 10px 0 0 56px; font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); }
+.eau-status.is-available { color: var(--dsw-alias-state-business-primary); }
+.eau-status.is-error { color: var(--dsw-alias-state-danger-primary, #d4453f); }
+.eau-dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; flex: none; }
+.eau-progress { display: flex; align-items: center; gap: 10px; margin: 12px 0 2px 56px; }
+.eau-progress-track { flex: 1; min-width: 120px; height: 4px; border-radius: 999px; background: var(--dsw-alias-fill-secondary); overflow: hidden; }
+.eau-progress-fill { height: 100%; border-radius: 999px; background: var(--dsw-alias-state-business-primary); transition: width 200ms ease-out; }
+.eau-muted { margin: 0; color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; word-break: break-all; }
+.eau-divider { height: 0; border-top: 0.5px solid var(--dsw-alias-settings-card-stroke); margin: 14px -18px 0; }
+.eau-row { display: flex; align-items: center; gap: 12px; min-height: 46px; }
+.eau-row + .eau-row { border-top: 0.5px solid var(--dsw-alias-settings-card-stroke); }
+.eau-row-label { flex: none; color: var(--dsw-alias-label-primary); }
+.eau-row-body { flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
+.eau-select, .eau-input {
+  box-sizing: border-box; height: 32px; padding: 0 8px; font-family: inherit; font-size: 13px;
+  color: var(--dsw-alias-label-primary); background: transparent;
+  border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-md);
+}
+.eau-select { max-width: 220px; cursor: pointer; }
+.eau-input { flex: 1; min-width: 0; }
+.eau-source-note { display: flex; flex-direction: column; gap: 8px; padding: 0 0 12px; }
+.eau-hint { margin: 0; font-size: 11px; line-height: 16px; color: var(--dsw-alias-label-tertiary, var(--dsw-alias-label-secondary)); }
+.eau-custom { display: flex; align-items: center; gap: 8px; }
+.eau-links { padding: 2px 18px; }
+.eau-link-row {
+  display: flex; align-items: center; gap: 12px; min-height: 50px;
+  color: var(--dsw-alias-label-primary); text-decoration: none;
+}
+.eau-link-row + .eau-link-row { border-top: 0.5px solid var(--dsw-alias-settings-card-stroke); }
+.eau-link-icon { flex: none; display: flex; color: var(--dsw-alias-label-secondary); transition: color 120ms ease-out; }
+.eau-link-label { flex: 1; min-width: 0; }
+.eau-link-action { flex: none; display: flex; align-items: center; gap: 2px; font-size: 12px; color: var(--dsw-alias-label-secondary); transition: color 120ms ease-out; }
+.eau-link-row:hover .eau-link-icon, .eau-link-row:hover .eau-link-action { color: var(--dsw-alias-state-business-primary); }
+.eau-root :is(.eau-btn, .eau-link-row, .eau-select, .eau-input):focus-visible {
+  outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .eau-root :is(.eau-btn, .eau-link-icon, .eau-link-action, .eau-progress-fill) { transition: none; }
+}
+
+.eau-overlay { position: fixed; inset: 0; z-index: 1200; display: flex; align-items: center; justify-content: center; }
+.eau-overlay-mask { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.4); }
+.eau-dialog {
+  position: relative; box-sizing: border-box; width: 440px; max-width: calc(100vw - 48px);
+  display: flex; flex-direction: column; gap: 12px; padding: 20px 24px;
+  border: 0.5px solid var(--dsw-alias-settings-card-stroke); border-radius: var(--dsw-radius-xl);
+  background: var(--dsw-alias-fill-primary); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+.eau-dialog h2 { margin: 0; font-size: 16px; line-height: 24px; font-weight: 500; color: var(--dsw-alias-label-primary); }
+.eau-dialog-actions { justify-content: flex-end; margin-top: 4px; }
+`;
+var WEBSITE_URL = "https://easel.xyern.com/";
+var CHANGELOG_URL = `${WEBSITE_URL}changelog/`;
+var REPO_URL = "https://github.com/laochenfei233/easel-dsh";
+var ISSUES_URL = "https://github.com/laochenfei233/easel-dsh/issues";
+function AboutSection({ t, update }) {
+  const state = (0, import_react20.useSyncExternalStore)(update.subscribe, update.snapshot);
+  const [draftSource, setDraftSource] = (0, import_react20.useState)(void 0);
+  const [customUrl, setCustomUrl] = (0, import_react20.useState)("");
+  const [sourceBusy, setSourceBusy] = (0, import_react20.useState)(false);
+  const [sourceNote, setSourceNote] = (0, import_react20.useState)(void 0);
+  (0, import_react20.useEffect)(() => {
+    void update.refresh();
+  }, [update]);
+  (0, import_react20.useEffect)(() => {
+    setCustomUrl(state.customUrl ?? "");
+  }, [state.customUrl]);
+  const links = [
+    { href: WEBSITE_URL, label: t("websiteLink"), Icon: IconGlobe },
+    { href: CHANGELOG_URL, label: t("changelogLink"), Icon: IconFile },
+    { href: REPO_URL, label: t("repoLink"), Icon: IconGithub },
+    { href: ISSUES_URL, label: t("feedbackLink"), Icon: IconChat }
+  ].map(({ href, label, Icon: Icon12 }) => /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("a", { className: "eau-link-row", href, target: "_blank", rel: "noreferrer", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-link-icon", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(Icon12, { size: 16 }) }),
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-link-label", children: label }),
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "eau-link-action", children: [
+      t("openLink"),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(IconChevron, { size: 14 })
+    ] })
+  ] }, href));
+  if (!state.supported) {
+    return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-root", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("desktopOnly") }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("section", { className: "eau-card eau-links", children: links })
+    ] });
+  }
+  const installing = state.progress?.phase === "installing";
+  const downloading = state.progress?.phase === "downloading";
+  const buttonLabel = state.checking ? t("checking") : state.lastCheckStatus === "error" ? t("retry") : state.lastCheckStatus === "available" ? t("install") : t("checkUpdate");
+  const buttonBusy = state.checking || downloading || installing;
+  const checkOrInstall = () => {
+    void (state.lastCheckStatus === "available" ? update.install() : update.check());
+  };
+  const statusText = state.lastCheckStatus === "up-to-date" ? t("upToDate") : state.lastCheckStatus === "available" && state.latest ? t("availableFound").replace("{version}", state.latest.version) : state.lastCheckStatus === "error" ? state.lastError ?? t("sourceUnavailable") : null;
+  const statusClass = state.lastCheckStatus === "available" ? "is-available" : state.lastCheckStatus === "error" ? "is-error" : "";
+  const applies = async (source, url) => {
+    setSourceBusy(true);
+    setSourceNote(void 0);
+    const result = await update.setSource(source, url);
+    setSourceBusy(false);
+    if (result.ok) {
+      setDraftSource(void 0);
+      setSourceNote(t("saved"));
+    }
+  };
+  const choice = draftSource ?? state.sourceKey;
+  const onSourceChange = (value) => {
+    setDraftSource(value);
+    setSourceNote(void 0);
+    if (value !== "custom") void applies(value);
+  };
+  const saveCustom = () => {
+    if (!/^https?:\/\/\S+$/i.test(customUrl.trim())) {
+      setSourceNote(t("invalidUrl"));
+      return;
+    }
+    void applies("custom", customUrl.trim());
+  };
+  return /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-root", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("section", { className: "eau-card eau-hero", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-brand", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("img", { className: "eau-mark", src: app_icon_default, alt: "", width: 44, height: 44 }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-id", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-name", children: t("appName") }),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-tagline", children: t("tagline") }),
+          state.version ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("span", { className: "eau-version", children: [
+            "v",
+            state.version
+          ] }) : null
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-grow" }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+          "button",
+          {
+            type: "button",
+            className: state.lastCheckStatus === "available" ? "eau-btn eau-btn-primary" : "eau-btn",
+            disabled: buttonBusy,
+            onClick: checkOrInstall,
+            children: buttonLabel
+          }
+        )
+      ] }),
+      downloading || installing ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : installing ? t("installing") : t("downloading") })
+      ] }) : statusText ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("p", { className: `eau-status ${statusClass}`, role: "status", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-dot" }),
+        statusText
+      ] }) : null,
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-divider" }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-row", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("span", { className: "eau-row-label", children: t("sourceLabel") }),
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("div", { className: "eau-row-body", children: /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)(
+          "select",
+          {
+            className: "eau-select",
+            "aria-label": t("sourceLabel"),
+            value: choice,
+            disabled: sourceBusy || installing,
+            onChange: (event) => onSourceChange(event.target.value),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("option", { value: "default", children: t("sourceDefault") }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("option", { value: "github", children: t("sourceGithub") }),
+              /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("option", { value: "custom", children: t("sourceCustom") })
+            ]
+          }
+        ) })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-source-note", children: [
+        choice === "custom" ? /* @__PURE__ */ (0, import_jsx_runtime31.jsxs)("div", { className: "eau-custom", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)(
+            "input",
+            {
+              className: "eau-input",
+              "aria-label": t("customUrlLabel"),
+              placeholder: "https://\u2026/latest.json",
+              value: customUrl,
+              disabled: sourceBusy || installing,
+              spellCheck: false,
+              onChange: (event) => {
+                setCustomUrl(event.target.value);
+                setSourceNote(void 0);
+              },
+              onKeyDown: (event) => {
+                if (event.key === "Enter") saveCustom();
+              }
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("button", { type: "button", className: "eau-btn", disabled: sourceBusy || installing, onClick: saveCustom, children: t("save") })
+        ] }) : null,
+        /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-hint", role: "status", children: sourceNote ?? (choice === "default" ? t("sourceHint") : choice === "custom" && state.sourceKey !== "custom" ? t("customUrlHint") : state.endpoints.length > 0 ? state.endpoints.join(" \xB7 ") : t("sourceUnavailable")) })
+      ] }),
+      state.lastCheckMs && !statusText ? /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("p", { className: "eau-muted", children: t("lastChecked").replace("{time}", new Date(state.lastCheckMs).toLocaleString()) }) : null
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime31.jsx)("section", { className: "eau-card eau-links", children: links })
+  ] });
+}
+
+// src/components/UpdateNotice.tsx
+var import_react21 = require("react");
+var import_jsx_runtime32 = require("react/jsx-runtime");
+function UpdateNotice({ t, update }) {
+  const state = (0, import_react21.useSyncExternalStore)(update.subscribe, update.snapshot);
+  if (!state.supported || state.announce === void 0) return null;
+  const notes = (state.announce.notes ?? "").trim();
+  const summary = notes.slice(0, notes.indexOf("\n") === -1 ? notes.length : notes.indexOf("\n")).trim();
+  const busy = state.progress?.phase === "downloading" || state.progress?.phase === "installing";
+  const downloading = state.progress?.phase === "downloading";
+  return /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-overlay", role: "dialog", "aria-modal": "true", "aria-labelledby": "eau-notice-title", children: [
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-overlay-mask", "aria-hidden": "true", onClick: update.dismiss }),
+    /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-dialog", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("h2", { id: "eau-notice-title", children: t("noticeTitle").replace("{version}", state.announce.version) }),
+      summary ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "eau-muted", children: summary }) : null,
+      busy ? /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-progress", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-progress-track", "aria-hidden": "true", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-progress-fill", style: { width: `${state.progress?.percent ?? 0}%` } }) }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("span", { className: "eau-muted", role: "status", children: downloading && state.progress?.percent !== void 0 ? t("downloadProgress").replace("{percent}", String(state.progress.percent)) : state.progress?.phase === "installing" ? t("installing") : t("downloading") })
+      ] }) : /* @__PURE__ */ (0, import_jsx_runtime32.jsxs)("div", { className: "eau-row eau-dialog-actions", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "eau-btn", onClick: update.dismiss, children: t("noticeLater") }),
+        /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("button", { type: "button", className: "eau-btn eau-btn-primary", onClick: () => {
+          void update.install();
+        }, children: t("noticeInstallNow") })
+      ] }),
+      state.progress?.phase === "failed" && state.lastError ? /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("p", { className: "eau-error", role: "alert", children: state.lastError }) : null,
+      /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("div", { className: "eau-row", children: /* @__PURE__ */ (0, import_jsx_runtime32.jsx)("a", { className: "eau-link", href: CHANGELOG_URL, target: "_blank", rel: "noreferrer", children: t("noticeFullChangelog") }) })
+    ] })
+  ] });
+}
+
+// src/locales/easelAbout.ts
+var EASEL_ABOUT_COPY = {
+  zh: {
+    nav: "\u5173\u4E8E",
+    appName: "Easel-dsh",
+    tagline: "\u672C\u5730\u4F18\u5148\u7684\u793E\u5A92\u521B\u4F5C\u5DE5\u4F5C\u53F0",
+    checkUpdate: "\u68C0\u67E5\u66F4\u65B0",
+    checking: "\u6B63\u5728\u68C0\u67E5\u2026",
+    retry: "\u91CD\u8BD5",
+    upToDate: "\u5DF2\u662F\u6700\u65B0\u7248\u672C",
+    availableFound: "\u53D1\u73B0\u65B0\u7248\u672C {version}",
+    install: "\u7ACB\u5373\u66F4\u65B0",
+    downloadProgress: "\u6B63\u5728\u4E0B\u8F7D\u2026 {percent}%",
+    downloading: "\u6B63\u5728\u4E0B\u8F7D\u2026",
+    installing: "\u6B63\u5728\u5B89\u88C5\uFF0C\u5E94\u7528\u5373\u5C06\u9000\u51FA\u2026",
+    lastChecked: "\u4E0A\u6B21\u68C0\u67E5\uFF1A{time}",
+    sourceLabel: "\u66F4\u65B0\u6E90",
+    sourceDefault: "\u5B98\u65B9\u7AD9\u70B9\uFF08\u4F18\u5148\uFF09",
+    sourceGithub: "GitHub\uFF08Release\uFF09",
+    sourceCustom: "\u81EA\u5B9A\u4E49\u2026",
+    sourceHint: "\u5B98\u65B9\u7AD9\u70B9\u4E0D\u53EF\u7528\u65F6\u81EA\u52A8\u56DE\u9000\u5230 GitHub\u3002",
+    customUrlHint: "\u586B\u5165 latest.json \u5730\u5740\u540E\u70B9\u300C\u4FDD\u5B58\u300D\u3002",
+    sourceUnavailable: "\u4E0D\u53EF\u7528",
+    customUrlLabel: "\u5730\u5740",
+    save: "\u4FDD\u5B58",
+    saved: "\u5DF2\u4FDD\u5B58",
+    invalidUrl: "\u8BF7\u586B\u5199 http(s) \u94FE\u63A5",
+    websiteLink: "\u5B98\u65B9\u7F51\u7AD9",
+    changelogLink: "\u66F4\u65B0\u65E5\u5FD7",
+    repoLink: "\u6E90\u7801\u4ED3\u5E93",
+    feedbackLink: "\u610F\u89C1\u53CD\u9988",
+    openLink: "\u6253\u5F00",
+    desktopOnly: "\u5E94\u7528\u7248\u672C\u4E0E\u66F4\u65B0\u68C0\u67E5\u4EC5\u5728\u684C\u9762\u7248\u63D0\u4F9B\u3002",
+    noticeTitle: "\u53D1\u73B0\u65B0\u7248\u672C {version}",
+    noticeInstallNow: "\u7ACB\u5373\u66F4\u65B0",
+    noticeLater: "\u6682\u4E0D",
+    noticeFullChangelog: "\u67E5\u770B\u5B8C\u6574\u66F4\u65B0\u65E5\u5FD7"
+  },
+  en: {
+    nav: "About",
+    appName: "Easel-dsh",
+    tagline: "A local-first studio for social content",
+    checkUpdate: "Check for updates",
+    checking: "Checking\u2026",
+    retry: "Retry",
+    upToDate: "You are up to date",
+    availableFound: "New version {version} available",
+    install: "Install update",
+    downloadProgress: "Downloading\u2026 {percent}%",
+    downloading: "Downloading\u2026",
+    installing: "Installing; the app will exit shortly\u2026",
+    lastChecked: "Last checked: {time}",
+    sourceLabel: "Update source",
+    sourceDefault: "Official site (preferred)",
+    sourceGithub: "GitHub release",
+    sourceCustom: "Custom\u2026",
+    sourceHint: "Falls back to GitHub when the official site is unavailable.",
+    customUrlHint: "Enter a latest.json URL, then save.",
+    sourceUnavailable: "Unavailable",
+    customUrlLabel: "URL",
+    save: "Save",
+    saved: "Saved",
+    invalidUrl: "Enter an http(s) URL",
+    websiteLink: "Website",
+    changelogLink: "Changelog",
+    repoLink: "Source code",
+    feedbackLink: "Feedback",
+    openLink: "Open",
+    desktopOnly: "The app version and update check are available in the desktop app only.",
+    noticeTitle: "New version {version} available",
+    noticeInstallNow: "Install update",
+    noticeLater: "Not now",
+    noticeFullChangelog: "View the full changelog"
+  }
+};
+
 // src/client.tsx
-var NS = "easel.panel";
-var STYLE_ID2 = "dsh-plugin-easel-style";
+var NS3 = "easel.panel";
+var STYLE_ID4 = "dsh-plugin-easel-style";
+var DATA_ROOT_STYLE_ID = "easel-data-root-settings-styles";
+var ABOUT_STYLE_ID = "easel-about-settings-styles";
 var STYLES = EASEL_CSS;
-var COPY = {
+var COPY2 = {
   zh: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.zh])),
   en: Object.fromEntries(FEATURES.map((feature) => [feature.view, feature.labels.en]))
 };
 var client_default = {
   inject: ["slots", "locale", "uiSidebarPanels", "sessions", "uiWorkspace", "remote", "remote.session"],
   apply(ctx) {
-    ctx.effect(() => ctx.locale.register(NS, COPY), "easel: rail dictionaries");
+    ctx.effect(() => ctx.locale.register(NS3, COPY2), "easel: rail dictionaries");
     ctx.effect(() => {
       const style = document.createElement("style");
-      style.id = STYLE_ID2;
+      style.id = STYLE_ID4;
       style.textContent = STYLES;
       document.head.append(style);
       return () => style.remove();
@@ -10356,6 +14914,13 @@ var client_default = {
       () => ctx.locale.register("settings.dataRoot", DATA_ROOT_COPY),
       "easel: data root dictionaries"
     );
+    ctx.effect(() => {
+      const style = document.createElement("style");
+      style.id = DATA_ROOT_STYLE_ID;
+      style.textContent = DATA_ROOT_STYLES;
+      document.head.append(style);
+      return () => style.remove();
+    }, "easel: data root section styles");
     ctx.slots.inject("settings.section", () => ctx.slots.register({
       name: "settings.section",
       id: "data-root",
@@ -10364,9 +14929,38 @@ var client_default = {
       locale: "settings.dataRoot",
       inject: () => ({})
     }, DataRootSection));
-    const t = ctx.locale.bind(NS);
+    const update = createUpdateStore(detectHostUpdateBridge());
+    ctx.effect(() => () => {
+      update.dispose();
+    }, "easel: host update store lifecycle");
+    ctx.effect(
+      () => ctx.locale.register("settings.easelAbout", EASEL_ABOUT_COPY),
+      "easel: about dictionaries"
+    );
+    ctx.effect(() => {
+      const style = document.createElement("style");
+      style.id = ABOUT_STYLE_ID;
+      style.textContent = ABOUT_STYLES;
+      document.head.append(style);
+      return () => style.remove();
+    }, "easel: about styles");
+    ctx.slots.inject("settings.section", () => ctx.slots.register({
+      name: "settings.section",
+      id: "easel.about",
+      order: 90,
+      label: () => ctx.locale.bind("settings.easelAbout")("nav"),
+      locale: "settings.easelAbout",
+      inject: () => ({ update })
+    }, AboutSection));
+    ctx.slots.inject("shell.overlay", () => ctx.slots.register({
+      name: "shell.overlay",
+      id: "easel.update-notice",
+      locale: "settings.easelAbout",
+      inject: () => ({ update })
+    }, UpdateNotice));
+    const t = ctx.locale.bind(NS3);
     ctx.provide("easelShell", createShellBridge(ctx, t));
-    for (const plugin13 of CLIENT_PLUGINS) ctx.plugin(plugin13);
+    for (const plugin16 of CLIENT_PLUGINS) ctx.plugin(plugin16);
   }
 };
 

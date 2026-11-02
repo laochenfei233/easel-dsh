@@ -32,7 +32,8 @@ layer: produce
 ### 1. 带时间轴转录
 ```bash
 BASE=$(node -e "const j=require('./outputs/_easel_api.json');process.stdout.write(j.base+j.basePath)")
-curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" \
+TOKEN=$(node -e "const j=require('./outputs/_easel_api.json');process.stdout.write(j.runnerToken)")
+curl -s -X POST "$BASE/api/asr" -H "Content-Type: application/json" -H "X-Easel-Runner: $TOKEN" \
   -d '{"path":"<视频>","format":"json"}'
 # 输出 outputs/<输入名>/<输入名>.json，需要就 mv 到 outputs/主题名/transcript.json
 ```

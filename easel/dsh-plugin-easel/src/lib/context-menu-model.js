@@ -21,6 +21,8 @@ export const CHAT_FLOW_SELECTOR = '[data-chat-flow]'
 export const CHAT_NODE_SELECTOR = '[data-chat-node-key]'
 /** Presented deliverables: the card row and its hidden preview button. */
 export const PRESENTED_FILE_SELECTOR = '[data-presented-file]'
+/** Hotspot-trend rows in the Easel pages; the attribute carries the row payload as JSON. */
+export const TREND_ROW_SELECTOR = '[data-easel-trend]'
 /** Inline file mentions and presented-file preview buttons carry the path in `title`. */
 export const FILE_LINK_SELECTOR = 'button[title]'
 
@@ -77,14 +79,45 @@ function fileLinkSurface(target) {
 }
 
 /**
+ * Parse the `data-easel-trend` JSON payload of a hotspot row. A payload without
+ * a title is not a menu surface.
+ * @param {Element | null | undefined} element - the row carrying the attribute.
+ * @returns {null | { title: string, url: string, source: string, platform: string, rank?: number, hot?: string }}
+ *   the row payload, or null when absent or malformed.
+ */
+export function trendPayloadOf(element) {
+  const raw = element?.dataset?.easelTrend
+  if (typeof raw !== 'string' || raw === '') return null
+  try {
+    const data = JSON.parse(raw)
+    if (data === null || typeof data !== 'object') return null
+    const title = typeof data.title === 'string' ? data.title.trim() : ''
+    if (title === '') return null
+    return {
+      title,
+      url: typeof data.url === 'string' ? data.url : '',
+      source: typeof data.source === 'string' ? data.source : '',
+      platform: typeof data.platform === 'string' ? data.platform : '',
+      ...(typeof data.rank === 'number' ? { rank: data.rank } : {}),
+      ...(typeof data.hot === 'string' && data.hot !== '' ? { hot: data.hot } : {}),
+    }
+  } catch {
+    return null
+  }
+}
+
+/**
  * Classify what a context-menu event landed on.
  *
  * Order matters: the composer sits inside the conversation frame, so editables
  * win over the surrounding chat flow. A file row wins over both because the
- * sidebar can sit inside the same page frame.
+ * sidebar can sit inside the same page frame. A trend row wins over everything
+ * below it for the same reason — its rows live in a ported page, not in dsh's
+ * own surfaces.
  * @param {Element | null | undefined} target - `event.target`, possibly a text node's parent.
  * @param {Selection | null | undefined} selection - the live selection.
  * @returns {null | { kind: 'file', row?: Element, path: string, root: string | undefined, entry: string, preview: Element | null }
+ *   | { kind: 'trend', element: Element, trend: { title: string, url: string, source: string, platform: string, rank?: number, hot?: string } }
  *   | { kind: 'editable', element: Element }
  *   | { kind: 'conversation', element: Element, text: string }} the handled surface.
  */
@@ -108,6 +141,14 @@ export function resolveSurface(target, selection) {
   // they are files, not conversation text.
   const link = fileLinkSurface(target)
   if (link !== null) return link
+
+  // Hotspot rows carry their payload in data-easel-trend; act on that news
+  // item (capture body / save / copy) instead of the WebView menu.
+  const trendRow = target.closest(TREND_ROW_SELECTOR)
+  if (trendRow != null) {
+    const trend = trendPayloadOf(trendRow)
+    if (trend !== null) return { kind: 'trend', element: trendRow, trend }
+  }
 
   const editable = target.closest(EDITABLE_SELECTOR)
   if (editable != null) return { kind: 'editable', element: editable }

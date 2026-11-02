@@ -1,7 +1,8 @@
 // 拆解数据源门控（spec easel-breakdown-fullpage 设计增补）：平台判定、
 // cookie 状态与写入。video_fetch.mjs 的既有约定是 outputs/_deconstruct/cookies.json
-// （{platform: Cookie 头字符串}，值也可为 dict）；抖音免 cookie，小红书必需。
-// 扫码登录的状态文件在 outputs/_login/<platform>.json（runner 舰队四件套）。
+// （{platform: Cookie 头字符串}，值也可为 dict）；抖音/快手免 cookie（快手可选
+// 游客 cookie），小红书必需。扫码登录的状态文件在 outputs/_login/<platform>.json
+// （runner 舰队四件套）。
 
 import { existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
@@ -42,13 +43,17 @@ async function platformLoggedIn(projectRoot, platform) {
 
 /**
  * 从分享链接/口令文本判平台。只认拆解流水线真实支持的域：
- * 抖音（含 v.douyin.com 短链与口令文本）、小红书（xiaohongshu/xhslink）；
+ * 抖音（含 v.douyin.com 短链与口令文本）、小红书（xiaohongshu/xhslink）、
+ * 快手（kuaishou/chenzhongtech，免登录）、视频号（channels.weixin.qq.com，
+ * 走下载器 + 微信登录门控，不走 cookies.json）；
  * bilibili/youtube 免登录直连；认不出按 'other'（免登录，让下载器自己报错）。
  */
 export function parsePlatform(raw) {
   const text = String(raw ?? '')
   if (/douyin|iesdouyin|amemv|snssdk/i.test(text)) return 'douyin'
   if (/xiaohongshu|xhslink/i.test(text)) return 'xhs'
+  if (/kuaishou|chenzhongtech/i.test(text)) return 'kuaishou'
+  if (/channels\.weixin\.qq\.com/i.test(text)) return 'sph'
   if (/bilibili|b23\.tv/i.test(text)) return 'bili'
   if (/youtube|youtu\.be/i.test(text)) return 'youtube'
   return 'other'
@@ -84,7 +89,7 @@ function cookieSet(value) {
  */
 export async function sourceStatus(projectRoot) {
   const cookies = await readCookies(projectRoot)
-  const platforms = ['douyin', 'xhs', 'bili', 'youtube']
+  const platforms = ['douyin', 'xhs', 'kuaishou', 'bili', 'youtube']
   const rows = await Promise.all(platforms.map(async (platform) => ({
     platform,
     authRequired: AUTH_REQUIRED.has(platform),

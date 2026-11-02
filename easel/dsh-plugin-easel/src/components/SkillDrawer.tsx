@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { fetchSkillDetail, fetchOutputContent, saveEnv } from '../lib/api';
 import type { SkillDetail } from '../lib/api';
 import { pushTask } from '../lib/task';
+import { rosterPrompt } from '../lib/roster';
 import { renderMarkdown } from '../lib/sanitize';
 import { displayName } from '../lib/skillDisplayNames';
 
@@ -71,9 +72,11 @@ export default function SkillDrawer({ skillName, persona, onClose, onConfigured,
     setRunErr('');
     setResult('');
     const batch = `skill-${Date.now().toString(36)}.md`;
+    const roster = await rosterPrompt();
     const prompt =
       `请严格执行技能「${skillName}」：读取 skills/openclaw/${skillName}/SKILL.md，按它的流程、数据源与工具执行。\n` +
       (persona ? `执行时使用我的画像「${persona}」（profiles/${persona}/ 下的六维文件）。\n` : '') +
+      roster +
       `任务输入：\n${input.trim()}\n\n` +
       `【交付方式】完成后，把最终产出全文写入 outputs/_adapt/${batch}（Markdown，内容只有产出本身）。除该文件外不要写其它文件。`;
     try {

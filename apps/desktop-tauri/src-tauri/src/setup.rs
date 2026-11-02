@@ -93,19 +93,30 @@ fn sanitize_rows(rows: Vec<Yaml>) -> Vec<Yaml> {
     rows.into_iter().filter(|row| row.is_mapping()).collect()
 }
 
+/// Read a profile patch as sanitized rows: empty when the file is absent or
+/// unparseable, so the shell re-adds what it maintains.
+fn read_patch_rows(patch_path: &Path) -> Vec<Yaml> {
+    fs::read_to_string(patch_path)
+        .ok()
+        .and_then(|raw| serde_yaml::from_str(&raw).ok())
+        .map(sanitize_rows)
+        .unwrap_or_default()
+}
+
+/// Serialize rows back to a profile patch file.
+fn write_patch_rows(patch_path: &Path, rows: &[Yaml]) -> Result<(), String> {
+    fs::write(
+        patch_path,
+        serde_yaml::to_string(rows).map_err(|e| e.to_string())?,
+    )
+    .map_err(|e| e.to_string())
+}
+
 fn write_preset_patch(home: &Path, preset: &str) -> Result<(), String> {
     let patch_path = profile_web_dir(home).join("cordis.patch.yml");
     fs::create_dir_all(patch_path.parent().unwrap()).map_err(|e| e.to_string())?;
 
-    let mut rows: Vec<Yaml> = if patch_path.exists() {
-        fs::read_to_string(&patch_path)
-            .ok()
-            .and_then(|raw| serde_yaml::from_str(&raw).ok())
-            .map(sanitize_rows)
-            .unwrap_or_default()
-    } else {
-        Vec::new()
-    };
+    let mut rows: Vec<Yaml> = read_patch_rows(&patch_path);
 
     let mut found = false;
     for row in rows.iter_mut() {
@@ -127,11 +138,7 @@ fn write_preset_patch(home: &Path, preset: &str) -> Result<(), String> {
         );
     }
 
-    fs::write(
-        &patch_path,
-        serde_yaml::to_string(&rows).map_err(|e| e.to_string())?,
-    )
-    .map_err(|e| e.to_string())
+    write_patch_rows(&patch_path, &rows)
 }
 
 /// Installs one plugin. `spec` is either a package/Git spec passed to
@@ -211,11 +218,7 @@ fn install_local_plugin(app: &AppHandle, name: &str) -> Result<String, String> {
         rows.push(serde_yaml::from_str(
             "insert:\n  - id: win-terminal-inspector\n    name: ./plugins/dsh-win-terminal-inspector/index.js\n",
         ).map_err(|e| format!("build patch row: {e}"))?);
-        fs::write(
-            &patch_path,
-            serde_yaml::to_string(&rows).map_err(|e| e.to_string())?,
-        )
-        .map_err(|e| e.to_string())?;
+        write_patch_rows(&patch_path, &rows)?;
     }
     Ok(format!("installed {name}"))
 }
@@ -253,11 +256,7 @@ pub(crate) fn ensure_default_plugins(app: &AppHandle) -> Result<(), String> {
     }
 
     let patch_path = profile.join("cordis.patch.yml");
-    let mut rows: Vec<Yaml> = fs::read_to_string(&patch_path)
-        .ok()
-        .and_then(|raw| serde_yaml::from_str(&raw).ok())
-        .map(sanitize_rows)
-        .unwrap_or_default();
+    let mut rows: Vec<Yaml> = read_patch_rows(&patch_path);
     // EASEL-DIVERGENCE: the plugin market is not part of Easel-dsh; older
     // shells preinstalled and registered it. Heal every trace on each start.
     heal_market_removal(&home, &profile, &mut rows);
@@ -399,15 +398,43 @@ pub(crate) fn ensure_easel_bundle(app: &AppHandle) -> Result<(), String> {
     ensure_easel_bundle_at(&runtime_easel, &runtime_payload, &easel_home(), &home)
 }
 
+/// The mountable feature-plugin payloads the shell owns. They re-export the
+/// core package's exports map and resolve its bare specifier against the
+/// sibling payload, so they stage and refresh together with it.
+pub(crate) const EASEL_MOUNT_PAYLOADS: &[&str] = &[
+    "@easel-dsh/easel-automation",
+    "@easel-dsh/easel-deconstruct",
+];
+
+/// Re-copy the mountable feature-plugin payloads into
+/// `$DSH_HOME/profiles/node_modules` on every start — the same update channel
+/// as the core payload: no market self-update, the shell is the only one.
+fn refresh_mount_payloads(runtime_plugins: &Path, home: &Path) -> Result<(), String> {
+    for name in EASEL_MOUNT_PAYLOADS {
+        let source = runtime_plugins.join(name);
+        if !source.join("package.json").exists() {
+            continue;
+        }
+        let dest = home.join("profiles").join("node_modules").join(name);
+        if dest.exists() {
+            fs::remove_dir_all(&dest).map_err(|e| format!("clear mount payload {name}: {e}"))?;
+        }
+        fs::create_dir_all(dest.parent().unwrap()).map_err(|e| format!("prepare mount payload {name}: {e}"))?;
+        copy_dir(&source, &dest)?;
+    }
+    Ok(())
+}
+
 /// Deploy the bundled Easel tree, refresh the profile payload, and write the
 /// registration rows. Every step is idempotent and user data (outputs/, real
 /// profiles, .env, existing patch rows' config) is never overwritten:
 ///
 /// 1. stamp-gated sync of `skills/` + `dsh-plugin-easel/` into EASEL_HOME
 ///    (replaced) and `profiles/_template` + README + LICENSE (missing only);
-/// 2. the profile payload in `$DSH_HOME/profiles/node_modules` is re-copied
-///    on every start — the plugin has no market self-update, the shell is its
-///    only update channel;
+/// 2. the profile payloads in `$DSH_HOME/profiles/node_modules` (the core
+///    plugin and the `@easel-dsh/*` mounts) are re-copied on every start —
+///    the plugins have no market self-update, the shell is their only
+///    update channel;
 /// 3. patch rows are insert-if-absent by id across both row shapes: a plain
 ///    config-override row (pre-bundle installs) converts in place, keeping
 ///    its config, and the skills row's default root follows the converted
@@ -463,22 +490,19 @@ pub(crate) fn ensure_easel_bundle_at(
     }
     fs::create_dir_all(payload_dest.parent().unwrap()).map_err(|e| e.to_string())?;
     copy_dir(runtime_payload, &payload_dest)?;
+    refresh_mount_payloads(runtime_payload.parent().ok_or("runtime payload has no parent")?, home)?;
 
     let profile = profile_web_dir(home);
     fs::create_dir_all(&profile).map_err(|e| e.to_string())?;
     remove_bundle_listing(&profile, EASEL_PLUGIN_NAME)?;
 
     let patch_path = profile.join("cordis.patch.yml");
-    let mut rows: Vec<Yaml> = fs::read_to_string(&patch_path)
-        .ok()
-        .and_then(|raw| serde_yaml::from_str(&raw).ok())
-        .map(sanitize_rows)
-        .unwrap_or_default();
+    let mut rows: Vec<Yaml> = read_patch_rows(&patch_path);
 
     // Paths go through the YAML serializer so backslashes and non-ASCII are
     // quoted by it, never hand-escaped.
     let project_root = yaml_scalar(easel_root.to_string_lossy().as_ref())?;
-    let converted_root = ensure_easel_row(
+    let converted_root = ensure_bundle_row(
         &mut rows,
         "easel",
         &format!(
@@ -494,26 +518,74 @@ pub(crate) fn ensure_easel_bundle_at(
             .join("openclaw")
             .to_string_lossy(),
     )?;
-    ensure_easel_row(
+    ensure_bundle_row(
         &mut rows,
         "easel-skills",
         &format!(
             "insert:\n  - id: easel-skills\n    name: '@deepseek-ai/dsh-skill-filesystem'\n    config:\n      providerName: easel\n      includeDefaultRoots: false\n      customSkillDirs: [{skills_dir}]\n"
         ),
     )?;
-    // Feature plugins split out of the core easel plugin: each mounts its own
-    // routes into the core `easelApi` registry, so disabling one row turns one
-    // feature off without touching the workbench. Both resolve through the core
-    // package's exports map (dsh-plugin-easel/<name>).
-    ensure_easel_row(
+    // Feature plugins are thin mount packages (@easel-dsh/*) over the core
+    // package's exports map: the implementation stays in dsh-plugin-easel and
+    // shares its helpers, while the loader rows name Easel-owned packages.
+    ensure_bundle_row(
         &mut rows,
         "easel-automation",
-        "insert:\n  - id: easel-automation\n    name: dsh-plugin-easel/automation\n",
+        "insert:\n  - id: easel-automation\n    name: '@easel-dsh/easel-automation'\n",
     )?;
-    ensure_easel_row(
+    ensure_bundle_row(
         &mut rows,
         "easel-deconstruct",
-        "insert:\n  - id: easel-deconstruct\n    name: dsh-plugin-easel/deconstruct\n",
+        "insert:\n  - id: easel-deconstruct\n    name: '@easel-dsh/easel-deconstruct'\n",
+    )?;
+    // 隔空传送 (air transfer): the package ships inside the CLI deploy closure;
+    // this row mounts its service, received projects land under the project
+    // root's `projects` directory beside the 立项 workspaces, and pushed data
+    // files (.env / profiles / skills / outputs) land on the data root itself.
+    let handoff_dir = yaml_scalar(&Path::new(&root_dir).join("projects").to_string_lossy())?;
+    let data_dir = yaml_scalar(&root_dir)?;
+    ensure_bundle_row(
+        &mut rows,
+        "easel-lan-handoff",
+        &format!(
+            "insert:\n  - id: easel-lan-handoff\n    name: '@easel-dsh/easel-air-transfer'\n    config:\n      handoffDirectory: {handoff_dir}\n      dataDirectory: {data_dir}\n"
+        ),
+    )?;
+    // Installs that mounted these rows before a rename keep their insert-row
+    // package names verbatim; rewrite the known old names, or the upgraded
+    // runtime resolves packages the closure no longer carries. `dataDirectory`
+    // gets the same treatment for rows that predate it.
+    const ROW_NAME_MIGRATIONS: &[(&str, &str, &str)] = &[
+        (
+            "easel-lan-handoff",
+            "@deepseek-ai/dsh-lan-handoff",
+            "@easel-dsh/easel-air-transfer",
+        ),
+        ("easel-automation", "dsh-plugin-easel/automation", "@easel-dsh/easel-automation"),
+        ("easel-deconstruct", "dsh-plugin-easel/deconstruct", "@easel-dsh/easel-deconstruct"),
+    ];
+    for (id, old_name, new_name) in ROW_NAME_MIGRATIONS {
+        if let Some(entry) = rows
+            .iter_mut()
+            .find(|row| row_has_id(row, id))
+            .and_then(|row| row.get_mut("insert"))
+            .and_then(|insert| insert.as_sequence_mut())
+            .and_then(|sequence| sequence.first_mut())
+        {
+            if entry.get("config").and_then(|config| config.get("dataDirectory")).is_none()
+                && *id == "easel-lan-handoff"
+            {
+                entry["config"]["dataDirectory"] = Yaml::String(root_dir.clone());
+            }
+            if entry.get("name").and_then(Yaml::as_str) == Some(*old_name) {
+                entry["name"] = Yaml::String((*new_name).into());
+            }
+        }
+    }
+    ensure_bundle_row(
+        &mut rows,
+        "easel-backup",
+        "insert:\n  - id: easel-backup\n    name: dsh-plugin-easel/backup\n",
     )?;
     if !rows
         .iter()
@@ -525,16 +597,11 @@ pub(crate) fn ensure_easel_bundle_at(
         );
     }
 
-    fs::write(
-        &patch_path,
-        serde_yaml::to_string(&rows).map_err(|e| e.to_string())?,
-    )
-    .map_err(|e| e.to_string())
+    write_patch_rows(&patch_path, &rows)
 }
 
 /// Serialize a string as a YAML scalar (quoted when the value requires it).
-fn yaml_scalar(value: &str) -> Result<String, String> {
-    serde_yaml::to_string(value)
+fn yaml_scalar(value: &str) -> Result<String, String> {    serde_yaml::to_string(value)
         .map(|text| text.trim().to_string())
         .map_err(|e| format!("yaml scalar: {e}"))
 }
@@ -558,7 +625,7 @@ fn row_has_id(row: &Yaml, id: &str) -> bool {
 /// bundle patch that provided its insert counterpart is gone, so convert in
 /// place, keeping the user's config and `disabled` flag. Returns the plain
 /// row's `projectRoot` when one was converted.
-fn ensure_easel_row(
+fn ensure_bundle_row(
     rows: &mut Vec<Yaml>,
     id: &str,
     row_yaml: &str,
@@ -627,6 +694,78 @@ fn remove_bundle_listing(profile: &Path, name: &str) -> Result<(), String> {
     .map_err(|e| e.to_string())
 }
 
+// ---------------------------------------------------------------------------
+// Bundled Jimeng (Dreamina) CLIs.
+//
+// runtime/dreamina ships the two AIGC CLI binaries the agent drives through
+// shell commands — `dreamina` (image/video generation) and `dreamina-canvas`
+// (collaborative canvas) — plus the skills the CLIs publish for agents. The
+// shell adds bin/ to the spawned PATH after the inherited PATH, so a CLI
+// installed through the vendor's own installer keeps precedence over the copy
+// pinned into the bundle.
+//
+// The skills mount through a dedicated skill-filesystem provider row whose
+// `bundledSkillDir` points at the staged tree: bundled roots read host-trusted
+// paths directly, which the install resource directory is and the fs service's
+// workspace roots are not. Registered at the deployment level like the easel
+// rows, so every preset's agent reads the merged catalog; a user's own
+// `~/.agents/skills/dreamina-canvas-cli` (preset layer) wins the same-name
+// merge, keeping their installed CLI's skill paired with their binary.
+
+/// Content root of the staged Dreamina CLI tree, `None` where absent (dev
+/// without staging). `EASEL_DREAMINA_DIR` overrides for dev, mirroring
+/// EASEL_BUNDLE_DIR.
+fn runtime_dreamina_dir(app: &AppHandle) -> Option<PathBuf> {
+    let skills_marker = |dir: &Path| {
+        dir.join("skills")
+            .join("dreamina-cli")
+            .join("SKILL.md")
+            .exists()
+    };
+    if let Ok(dir) = app.path().resource_dir() {
+        let bundled = dir.join("runtime").join("dreamina");
+        if skills_marker(&bundled) {
+            return Some(bundled);
+        }
+    }
+    std::env::var("EASEL_DREAMINA_DIR")
+        .ok()
+        .map(PathBuf::from)
+        .filter(|dir| skills_marker(dir))
+}
+
+/// Directory of the bundled CLI binaries for the spawned dsh PATH.
+pub(crate) fn dreamina_bin_dir(app: &AppHandle) -> Option<PathBuf> {
+    runtime_dreamina_dir(app).map(|dir| dir.join("bin")).filter(|dir| dir.exists())
+}
+
+/// Entry point on the spawn path. No-op wherever the staged tree is absent.
+pub(crate) fn ensure_dreamina_skills(app: &AppHandle) -> Result<(), String> {
+    let Some(dir) = runtime_dreamina_dir(app) else {
+        return Ok(());
+    };
+    ensure_dreamina_skills_at(&dir, &dsh_home())
+}
+
+/// Insert-if-absent registration row for the bundled Dreamina skills, the
+/// same patch row shape the easel rows use. A user-edited insert row (for
+/// example disabled) is left as-is.
+fn ensure_dreamina_skills_at(staged: &Path, home: &Path) -> Result<(), String> {
+    let profile = profile_web_dir(home);
+    fs::create_dir_all(&profile).map_err(|e| e.to_string())?;
+    let patch_path = profile.join("cordis.patch.yml");
+    let mut rows: Vec<Yaml> = read_patch_rows(&patch_path);
+    let skills_dir = yaml_scalar(staged.join("skills").to_string_lossy().as_ref())?;
+    ensure_bundle_row(
+        &mut rows,
+        "easel-dreamina-skills",
+        &format!(
+            "insert:\n  - id: easel-dreamina-skills\n    name: '@deepseek-ai/dsh-skill-filesystem'\n    config:\n      providerName: dreamina\n      includeDefaultRoots: false\n      bundledSkillDir: {skills_dir}\n"
+        ),
+    )?;
+    write_patch_rows(&patch_path, &rows)
+}
+
 #[cfg(test)]
 mod easel_tests {
     use super::*;
@@ -648,7 +787,8 @@ mod easel_tests {
     }
 
     /// A minimal bundled runtime: the runtime/easel content tree plus the
-    /// plugin payload. Calling again with a different version restages it.
+    /// plugin payload and the mountable feature-plugin payloads. Calling
+    /// again with a different version restages it.
     fn stage_bundle(root: &Path, version: &str, skill: &str) -> (PathBuf, PathBuf) {
         let tree = root.join("runtime").join("easel");
         write(&tree.join("VERSION"), version);
@@ -660,6 +800,11 @@ mod easel_tests {
         let payload = root.join("runtime").join("plugins").join("dsh-plugin-easel");
         write(&payload.join("package.json"), "{\"name\":\"dsh-plugin-easel\"}");
         write(&payload.join("index.js"), "// plugin");
+        for mount in EASEL_MOUNT_PAYLOADS {
+            let dir = root.join("runtime").join("plugins").join(mount);
+            write(&dir.join("package.json"), &format!("{{\"name\":\"{mount}\"}}"));
+            write(&dir.join("index.js"), "// mount");
+        }
         (tree, payload)
     }
 
@@ -689,11 +834,28 @@ mod easel_tests {
                 .unwrap(),
             "// plugin"
         );
+        // The mountable feature-plugin payloads ride the same refresh.
+        for mount in EASEL_MOUNT_PAYLOADS {
+            assert_eq!(
+                fs::read_to_string(
+                    home.join("profiles")
+                        .join("node_modules")
+                        .join(mount)
+                        .join("index.js")
+                )
+                .unwrap(),
+                "// mount",
+                "mount payload {mount} missing"
+            );
+        }
         let patch = patch_text(&home);
         assert!(patch.contains("id: easel"));
         assert!(patch.contains("id: easel-skills"));
         assert!(patch.contains("id: ui-plugin-manager"));
         assert!(patch.contains("disabled: true"));
+        assert!(patch.contains("@easel-dsh/easel-automation"));
+        assert!(patch.contains("@easel-dsh/easel-deconstruct"));
+        assert!(patch.contains("@easel-dsh/easel-air-transfer"));
         // The skills row must point inside the deployed root, not at it.
         assert!(patch.contains(
             easel.join("skills").join("openclaw").to_string_lossy().as_ref()
@@ -801,7 +963,7 @@ mod easel_tests {
         assert!(patch.contains("disabled: true"));
         assert!(patch.contains("C:\\repo"));
         // The user's easel row plus the fresh rows this shell maintains, one each.
-        for id in ["easel", "easel-skills", "easel-automation", "easel-deconstruct"] {
+        for id in ["easel", "easel-skills", "easel-automation", "easel-deconstruct", "easel-backup"] {
             assert_eq!(patch.matches(&format!("- id: {id}\n")).count(), 1, "row {id}");
         }
     }
@@ -860,6 +1022,63 @@ mod easel_tests {
         let written = serde_yaml::to_string(&rows).unwrap();
         assert!(!written.contains("dsh-plugin"));
         assert!(written.contains("keep-me"));
+    }
+
+    #[test]
+    fn renames_legacy_insert_row_package_names() {
+        let root = temp_dir("rename");
+        let (tree, payload) = stage_bundle(&root, "0.1.0", "v1");
+        let home = root.join("home");
+        let easel = root.join("easel-home");
+        let profile = profile_web_dir(&home);
+        fs::create_dir_all(&profile).unwrap();
+        fs::write(
+            profile.join("cordis.patch.yml"),
+            "insert:\n  - id: easel-lan-handoff\n    name: '@deepseek-ai/dsh-lan-handoff'\n    config:\n      handoffDirectory: keep-me\n  - id: easel-automation\n    name: dsh-plugin-easel/automation\n  - id: easel-deconstruct\n    name: dsh-plugin-easel/deconstruct\n",
+        )
+        .unwrap();
+
+        ensure_easel_bundle_at(&tree, &payload, &easel, &home).unwrap();
+
+        // The insert rows keep their config but carry the current package
+        // names — the upgraded runtime resolves nothing else.
+        let patch = patch_text(&home);
+        assert!(patch.contains("@easel-dsh/easel-air-transfer"));
+        assert!(patch.contains("@easel-dsh/easel-automation"));
+        assert!(patch.contains("@easel-dsh/easel-deconstruct"));
+        assert!(!patch.contains("@deepseek-ai/dsh-lan-handoff"));
+        assert!(!patch.contains("dsh-plugin-easel/automation"));
+        assert!(!patch.contains("dsh-plugin-easel/deconstruct"));
+        eprintln!("PATCH:
+{patch}");
+    }
+
+    #[test]
+    fn dreamina_skills_row_registered_and_idempotent() {
+        let root = temp_dir("dreamina");
+        let staged = root.join("runtime").join("dreamina");
+        write(&staged.join("skills/dreamina-cli/SKILL.md"), "skill");
+        write(&staged.join("skills/dreamina-canvas-cli/SKILL.md"), "skill");
+        let home = root.join("home");
+
+        ensure_dreamina_skills_at(&staged, &home).unwrap();
+
+        let patch = patch_text(&home);
+        assert!(patch.contains("id: easel-dreamina-skills"));
+        assert!(patch.contains("providerName: dreamina"));
+        assert!(patch.contains("bundledSkillDir"));
+        assert!(patch.contains(staged.join("skills").to_string_lossy().as_ref()));
+        serde_yaml::from_str::<Vec<Yaml>>(&patch).unwrap();
+
+        // A user-edited row (disabled) survives the next start.
+        write(
+            &profile_web_dir(&home).join("cordis.patch.yml"),
+            "- insert:\n    - id: easel-dreamina-skills\n      name: '@deepseek-ai/dsh-skill-filesystem'\n      disabled: true\n",
+        );
+        ensure_dreamina_skills_at(&staged, &home).unwrap();
+        let patch = patch_text(&home);
+        assert!(patch.contains("disabled: true"));
+        assert_eq!(patch.matches("id: easel-dreamina-skills").count(), 1);
     }
 }
 

@@ -1,0 +1,9 @@
+{
+  "name": "@easel-dsh/easel-automation",
+  "version": "0.2.19",
+  "private": true,
+  "description": "Mountable Easel automation plugin (login runners, publishing, WeChat MP, analytics). A thin mount: the implementation lives in dsh-plugin-easel and shares its helpers; this package exists so the loader row names an Easel-owned package.",
+  "type": "module",
+  "main": "index.js",
+  "license": "Apache-2.0"
+}

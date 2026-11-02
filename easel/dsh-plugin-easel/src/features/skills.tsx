@@ -8,7 +8,7 @@ import SkillPage from '../components/SkillPage'
 import { pageKey } from '../lib/shell'
 
 export const view = 'skills'
-export const order = 34
+export const order = 35
 export const labels = { zh: '技能库', en: 'Skills' }
 export const Icon = IconSkills
 export const Component = SkillPage

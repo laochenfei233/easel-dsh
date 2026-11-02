@@ -46,3 +46,12 @@ python $WP publish --platform weixin-channels --media out.mp4 --title "标题" -
 ## 参考来源
 
 视频号助手网页发布流程；复用统一 Playwright 框架。微信登录需扫码，选择器按平台现状维护。
+
+## 多账号（可选）
+
+数据根 `outputs/_accounts.json` 是账号注册表，支持同平台多账号（账号页管理：每账号独立登录态 + 可绑定画像）。
+
+- 默认不传参 = 该平台默认账号，行为不变。
+- 指定账号：`--profile-dir "<浏览器 profile 根下该账号的 profileDir>"`（账号 id / profileDir 见账号页或注册表；profile 根默认 `~/.easel-browser-profiles`）。
+- 该账号的直启登录窗口开着时：`--cdp-endpoint http://127.0.0.1:<端口>` 直接附身那个可见窗口（用户可随时插手验证码/短信，脚本结束后不要关它）。
+- 走宿主 API（`POST /easel/api/publish/<平台>`、login/logout/whoami）时带 `account: <账号id>` 即可，profile 解析由宿主负责。

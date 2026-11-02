@@ -68,13 +68,81 @@ patch 文件」——所以本包不带自己的启动器，只作为一个 bund
 
 | 路由 | 作用 |
 |---|---|
-| `GET /easel/status` | 项目根、后端可达性、技能数。后端挂掉也照样回答，面板因此能说出「为什么是空的」 |
-| `GET /easel/skills` | 只读浏览目录，直接读盘。**不是**技能 provider |
-| `ANY /easel/api/*` | 透传到 Easel 后端，`/easel/api/skills` → `/api/skills`。流式响应（SSE）不缓冲 |
+| `GET /easel/status` | 项目根、后端可达性、技能数（需登录态）。后端挂掉也照样回答，面板因此能说出「为什么是空的」 |
+| `GET /easel/skills` | 只读浏览目录，直接读盘（需登录态）。**不是**技能 provider |
+| `/easel/api/*` | 本地数据面（排期/选题/热点雷达/CalDAV 等），全部由 `index.js` 的 `CORE_ROUTES` 本地应答；Easel 的 Python 后端与反向代理已退役，无路由认领的请求 404 |
 
 `/easel/skills` 与 `easel-skills` 行刻意分开：前者是给 UI 看的投影（多带一个 `layer` 字段，
 dsh 的技能加载器不用它），后者才是真正的加载路径，复用随附 provider 做 frontmatter 解析、
 kebab-case 校验与调用策略。**同一个后端不该有两套解析逻辑**，所以本包不自己写 provider。
+
+`/easel/api/*` 回答的是文件系统状态（内容库、cookie、登录/发布状态），所以和 dsh 的 `/api`
+同一道门：Host/Origin 栅栏 + 已认证 Peer；`/easel/status` 与 `/easel/skills` 同样在门内（它们
+会回显项目根与技能绝对路径）。**没有 cookie 的 Origin-less 请求不再放行**。唯一的例外是转写
+技能：它们用 `curl` 调 `POST /easel/api/asr`，凭 `outputs/_easel_api.json` 里的 `runnerToken`
+（每次启动换新，只对这一条路由有效，文件 0600 原子写）通过。读侧另有保护集：`outputs/` 下的
+`_deconstruct/cookies.json`、`_easel_api.json`、`_accounts.json`、`_accounts/`、`_login`（除二维码 PNG）、选题/排期/雷达 store
+与系统目录（含 `analytics/`、`wechat/`），一律 403；匹配按真实路径 + 大小写不敏感，符号链接
+指向 `outputs/` 之外同样拒绝。生成的 HTML/SVG/XML 经 `/easel/api/media` 返回时带
+`content-security-policy: sandbox allow-scripts` 与 `x-content-type-options: nosniff`，新标签页
+打开也拿不到 workbench 身份。
+
+### 内容日历：节假日底图与 CalDAV 订阅
+
+节假日底图为纯客户端数据，不发网络请求：`src/data/holidays-cn.js`（法定节假日+调休，vendor
+自 holiday-cn，现覆盖 2025–2026）+ `src/lib/lunar.js`（农历传统节日，经典位表 1900–2100）+
+`src/lib/festivals.js`（合并固定/浮日国际与电商节日，法定优先、同名去重）。国务院每年 11 月
+公布次年安排后，随版本更新数据文件即可。
+
+CalDAV 为单向只读订阅（协议实现见 `caldav.js`，零依赖）：
+
+| 路由 | 作用 |
+|---|---|
+| `GET/PUT /easel/api/caldav/accounts` | 订阅账号（`outputs/_caldav_config.json`）。GET 密码一律掩码；PUT 空密码保留原值。凭据明文存本机工作区 |
+| `POST /easel/api/caldav/accounts/:aid/discover` | 自动发现可订阅日历（current-user-principal → calendar-home-set；直填日历 URL 时直接返回） |
+| `POST /easel/api/caldav/accounts/:aid/sync` | REPORT calendar-query 拉取 −60d..+300d 事件，RRULE 展开后写 `outputs/_caldav_cache.json` |
+| `GET /easel/api/caldav/events` | 读事件缓存，客户端按可见月份过滤展示 |
+
+排期条目新增可选 `repeat: 'yearly'`（仅此值合法），客户端按月/日展开进渲染窗口；更新时
+不带该字段保留原值，显式空串清除。
+
+### 定时任务（Host schedule 引擎）
+
+「定时任务」视图（rail order 34）是 Host schedule 引擎的产品入口：创建走
+`POST /easel/api/automation/tasks`（引擎 `create()` 是 host 进程 API，remote 面没有
+create 方法），表单的四种时机形状（仅一次/每天/每周/每 N 小时或分钟）在宿主侧映射为
+ScheduleCreateRequest，引擎校验错误映射为可读中文。目录、编辑时机、删除与运行记录走
+dsh 的 `remote.schedule`，变更事件 `schedule/changed` 驱动刷新。cron 任务在 easel 页面
+只读展示，深度编辑走 dsh 自带的自动化任务页（设置 → 自动化任务；其 rail 行本包保持隐藏）。
+
+### 多账户（同平台多号 + 画像绑定 + 直启窗口）
+
+账号注册表 `outputs/_accounts.json` 支持同平台多账号：条目 `{id, platform, name, persona, profileDir, cookieFile?}`，
+每个账号独立登录态（浏览器 profile 目录在 `~/.easel-browser-profiles`，B站 per-account cookie 文件在
+`outputs/_accounts/<id>/cookies.json`）。升级零迁移：首次加载探测 legacy 登录态（`<平台>Profile` 目录、
+根 `cookies.json`、公众号凭证），自动注册为各平台「默认账号」，默认账号 id = 平台 key，故存量
+`_login/<platform>.json`、`_publish/<platform>.json` 文件名天然继续有效。
+
+登录与操作通道是「直启窗口」：Node 侧直启真实 Chromium（Playwright 自带 → 系统 Chrome → Edge）带
+`--remote-debugging-port` + 账号 `--user-data-dir`，用户在可见窗口人工登录；实例开着时 whoami/发布经
+`--cdp-endpoint` 附身同一窗口（可插手验证码/短信），实例不在则回落无头 persistent context（无人值守定时
+发布不受影响）。登录模式收敛为 `qr`（runner 截码）与 `direct`（直启窗口），原 `cdp`（接管日常 Chrome）
+与 `manual`（Playwright 托管有头）已下线。依据是实测：Playwright 托管 profile 会被部分平台反爬拦截，
+干净 profile 触发 IP 风控，无头容器登录受「设备超限」墙；Firefox 的调试端口是 WebDriver BiDi 不是
+CDP，直启器支持面锁定 Chromium 系。
+
+相关 API：`GET/POST /easel/api/accounts`、`PUT/DELETE /easel/api/accounts/:id`；login/logout/whoami/
+publish/analytics 均带 `account` 参数（缺省 = 默认账号）。agent 侧靠提示词名册（技能推送、发布预检、
+拆解选题自动注入），技能文档带 `--profile-dir` / `--cdp-endpoint` / `account` 参数说明。
+
+工作台「创作数据」按账号看：`GET /easel/api/analytics/overview` 一次返回各账号的最新归档与增长窗口
+（读归档、不启浏览器），`GET /easel/api/analytics/:p?account=<id>` 实时抓取并写入该账号自己的归档
+`outputs/_analytics/<accountId>.jsonl`。默认账号 id 就是平台 key，升级前的 `<platform>.jsonl` 天然
+继续有效、无需迁移。B 站（biliup stats）不写归档，全览如实标记；公众号由 `weixin_mp_stats.py` 写入
+同一目录，因此也出现在全览里。
+
+运维取舍：浏览器 profile 是大体积二进制且 Chromium 用户目录在网络盘不可靠，因此登录态留在本地家目录、
+**不进** WebDAV/SMB/S3 备份与隔空传送载荷；注册表本身无凭据，随数据根正常备份。
 
 ## 未验证 / 已知缺口
 

@@ -15,8 +15,10 @@ import { createPortal } from 'react-dom'
 import clsx from 'clsx'
 import {
   ConnectionIndicator, Tooltip, useModalLayer,
-  IconAgentPresetOutlineMedium, IconArchiveOutlineMedium, IconCloseOutlineRegular, IconDataOutlineMedium,
-  IconPersonalizationOutlineMedium, IconSettingsOutlineMedium, IconUserOutlineMedium,
+  IconAgentPresetOutlineMedium, IconArchiveCheckOutlineMedium, IconArchiveOutlineMedium,
+  IconCloseOutlineRegular, IconDatabaseOutlineMedium, IconDataOutlineMedium,
+  IconInfoOutlineMedium, IconPersonalizationOutlineMedium, IconSendOutlineMedium,
+  IconSettingsOutlineMedium, IconUserOutlineMedium,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ConnectionIndicatorState } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { SettingsRootComponentProps, SettingsSectionRow } from './shell-contract.ts'
@@ -35,6 +37,11 @@ function navIcon(id: string) {
   if (id === 'agent-presets') return <IconAgentPresetOutlineMedium className={css.navIcon} size={16} />
   if (id === 'plugins') return <IconPersonalizationOutlineMedium className={css.navIcon} size={16} />
   if (id === 'archived-sessions') return <IconArchiveOutlineMedium className={css.navIcon} size={16} />
+  // Easel's sections carry their own meaning; a gear reads as "General".
+  if (id === 'data-root') return <IconDatabaseOutlineMedium className={css.navIcon} size={16} />
+  if (id === 'easel-handoff') return <IconSendOutlineMedium className={css.navIcon} size={16} />
+  if (id === 'easel-backup') return <IconArchiveCheckOutlineMedium className={css.navIcon} size={16} />
+  if (id === 'easel.about') return <IconInfoOutlineMedium className={css.navIcon} size={16} />
   return <IconSettingsOutlineMedium className={css.navIcon} size={16} />
 }
 

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Easel-dsh — 桌面版社媒运营工作台</title>
+<meta name="description" content="Easel-dsh 是基于 DeepSeek Harness 的桌面版社媒运营工作台：账号、选题、热点、日历、拆解与发布在一处完成，数据留在本机。">
+<meta name="theme-color" content="#f7f4ee">
+<meta property="og:title" content="Easel-dsh — 桌面版社媒运营工作台">
+<meta property="og:description" content="把选题变成可以发布的内容。Windows / macOS / Linux 一个安装包，数据留在本机。">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+<header class="site-header" id="top">
+  <div class="shell">
+    <a class="wordmark" href="#top">
+      <img src="assets/mark.svg" width="28" height="28" alt="">
+      Easel-dsh
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      <a href="#download">下载</a>
+      <a href="#changelog">更新日志</a>
+      <a href="#updates">更新源</a>
+      <a href="{{REPO_URL}}" rel="noopener">GitHub</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <section class="hero" id="download">
+    <div class="shell hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">桌面版社媒运营工作台</p>
+        <h1>让 AI 技能，把选题变成可以发布的内容。</h1>
+        <p class="hero-lead">Easel-dsh 基于 DeepSeek Harness 构建：账号、选题、热点、日历、拆解与发布在同一个桌面工作台里完成。</p>
+        <ul class="hero-meta">
+          <li>Windows · macOS · Linux</li>
+          <li>内置运行时，无需另装环境</li>
+          <li>数据留在本机</li>
+        </ul>
+      </div>
+      <div class="stage">
+        <img class="stage-easel" src="assets/easel-hero.svg" alt="" width="640" height="540">
+        <div class="download-card">
+          <!--SITE:DOWNLOAD-->
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="files shell" id="files" aria-labelledby="files-title">
+    <div class="files-head">
+      <h2 id="files-title">直链与校验和</h2>
+      <p>下载后可用 sha256sum 或 Get-FileHash 核对。</p>
+    </div>
+    <!--SITE:FILES-->
+  </section>
+  <section class="section" id="changelog">
+    <div class="shell">
+      <div class="section-head">
+        <p class="section-label">更新日志</p>
+        <div>
+          <h2>每个版本改了什么</h2>
+          <p>按日期归档，只写用户能感知的变化。同一天多次构建时，合并为当天最终版本。</p>
+        </div>
+      </div>
+      <!--SITE:CHANGELOG-->
+    </div>
+  </section>
+  <section class="section" id="updates">
+    <div class="shell">
+      <div class="section-head">
+        <p class="section-label">更新源</p>
+        <div class="source-body">
+          <h2>应用内更新从这里读取。</h2>
+          <p>桌面端会定期检查这个地址，发现新版本后提示一次；下载、校验和安装都在应用内完成，不需要卸载重装。</p>
+          <div class="endpoint">
+            <code>{{ENDPOINT}}</code>
+            <button class="copy" type="button" data-copy="{{ENDPOINT}}">复制</button>
+          </div>
+          <ol class="flow">
+            <li><span class="flow-n">1</span><div><strong>发布</strong><p>每个版本在 GitHub Release 产出安装包与签名文件。</p></div></li>
+            <li><span class="flow-n">2</span><div><strong>镜像</strong><p>本站服务器定期同步新版本，sha256 校验通过后才原子切换 <code>latest.json</code>。</p></div></li>
+            <li><span class="flow-n">3</span><div><strong>更新</strong><p>应用读取版本信息，下载后验签并安装；同步失败不会影响已发布的版本。</p></div></li>
+          </ol>
+          <p class="override-note">内网或自建镜像：在应用数据目录放置 <code>update-source.json</code>，内容形如 <code>{"endpoints":["https://example.internal/updates/latest.json"]}</code>，应用会改用该地址。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<footer class="site-footer">
+  <div class="shell footer-grid">
+    <div>
+      <a class="wordmark" href="#top">
+        <img src="assets/mark.svg" width="28" height="28" alt="">
+        Easel-dsh
+      </a>
+      <p>基于 DeepSeek Harness 的桌面发行版。<br>账号、选题、素材与成品都留在本机。</p>
+    </div>
+    <div>
+      <h3>链接</h3>
+      <ul class="footer-links">
+        <li><a href="{{REPO_URL}}" rel="noopener">GitHub 仓库</a></li>
+        <li><a href="{{RELEASES_URL}}" rel="noopener">全部 Release</a></li>
+        <li><a href="#changelog">更新日志</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>已知限制</h3>
+      <details class="limits">
+        <summary>当前版本的已知限制</summary>
+        <ul>
+          <!--SITE:KNOWN-->
+        </ul>
+      </details>
+    </div>
+  </div>
+  <div class="shell footer-base">
+    <p>本站是纯静态页面，版本数据在构建时写入。</p>
+    <p>© 2026 Easel-dsh</p>
+  </div>
+</footer>
+<script>
+  (() => {
+    // Windows on ARM reports arm64 in the user agent; prefer that installer
+    // when two architectures exist. Everything else keeps the x64 default.
+    const arch = /arm64|aarch64/i.test(navigator.userAgent) ? 'arm64' : 'x64'
+    for (const button of document.querySelectorAll('.dl-btn[data-arch]')) {
+      button.classList.toggle('is-default', button.dataset.arch === arch)
+    }
+    for (const button of document.querySelectorAll('[data-copy]')) {
+      button.addEventListener('click', async () => {
+        const text = button.dataset.copy
+        try {
+          await navigator.clipboard.writeText(text)
+        } catch {
+          const field = document.createElement('textarea')
+          field.value = text
+          document.body.append(field)
+          field.select()
+          document.execCommand('copy')
+          field.remove()
+        }
+        const label = button.textContent
+        button.textContent = '已复制'
+        button.disabled = true
+        setTimeout(() => {
+          button.textContent = label
+          button.disabled = false
+        }, 1600)
+      })
+    }
+  })()
+</script>
+</body>
+</html>

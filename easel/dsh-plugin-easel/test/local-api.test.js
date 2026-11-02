@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { CORE_ROUTES, createRouteRegistry, dispatchLocalApi, parseHotJson, parseRssItems, resolveSettings } from '../index.js'
+import { CORE_ROUTES, createRouteRegistry, dispatchLocalApi, parseHotJson, parseRssItems, resolveSettings, safeLinkUrl } from '../index.js'
 import { AUTOMATION_ROUTES } from '../lib/plugins/automation.js'
 import { DECONSTRUCT_ROUTES } from '../lib/plugins/deconstruct.js'
 
@@ -33,6 +33,14 @@ writeFileSync(join(root, 'outputs', 'demo-project', '.easel.json'),
 writeFileSync(join(root, 'outputs', 'demo-project', 'cover.png'), Buffer.from([0x89, 0x50, 0x4e, 0x47]))
 writeFileSync(join(root, 'outputs', 'demo-project', 'note.md'), 'hello', 'utf8')
 mkdirSync(join(root, 'outputs', '_login'), { recursive: true })
+
+// 多账户夹具：浏览器 profile 根注入 tmp（迁移探测不碰真实 home），
+// 预置三个 legacy profile 目录 → 升级迁移注册 xiaohongshu/kuaishou/douyin 默认账号。
+const browserProfiles = join(root, 'browser-profiles')
+process.env.EASEL_BROWSER_PROFILES = browserProfiles
+for (const legacy of ['XiaohongshuProfile', 'KuaishouProfile', 'DouyinProfile']) {
+  mkdirSync(join(browserProfiles, legacy), { recursive: true })
+}
 
 const call = (method, path, body, query = '') =>
   dispatchLocalApi(settings, method, path.split('/').filter(Boolean), new URLSearchParams(query),
@@ -137,6 +145,7 @@ test('schedule CRUD: kind/status validation, source frozen at create', async () 
 test('radar config: round trip, defaults on corrupt file', async () => {
   const saved = await call('POST', 'radar/config', {
     proxyUrl: 'http://127.0.0.1:7890', proxyEnabled: true, cdpEndpoint: '',
+    keywords: ['AI', 'ai ', '', '大模型'],
     sources: [{ name: 'HN', url: 'https://hnrss.org/frontpage', kind: 'rss', category: '科技', enabled: true }],
   })
   assert.equal(saved.json.ok, true)
@@ -144,10 +153,41 @@ test('radar config: round trip, defaults on corrupt file', async () => {
   assert.equal(got.json.proxyEnabled, true)
   assert.equal(got.json.cdpEndpoint, 'http://127.0.0.1:9222', 'empty cdp falls back to default')
   assert.equal(got.json.sources[0].name, 'HN')
+  assert.deepEqual(got.json.keywords, ['AI', '大模型'], 'keywords normalized case-insensitively')
   writeFileSync(join(root, 'outputs', '_radar_config.json'), '{oops', 'utf8')
   const fresh = await call('GET', 'radar/config')
   assert.equal(fresh.json.proxyUrl, '')
   assert.equal(fresh.json.sources.length, 0)
+  assert.deepEqual(fresh.json.keywords, [])
+})
+
+test('radar article: unsafe urls are refused locally without any network', async () => {
+  await assert.rejects(
+    call('POST', 'radar/article', { title: 'T', url: 'http://127.0.0.1:9222/admin' }),
+    error => error.status === 400 && /内网/.test(error.detail),
+  )
+  await assert.rejects(
+    call('POST', 'radar/article', { title: 'T', url: 'file:///C:/Windows/win.ini' }),
+    error => error.status === 400,
+  )
+  await assert.rejects(call('POST', 'radar/article', { url: 'https://x.com/a' }), error => error.status === 400, 'missing title')
+})
+
+test('radar trends: answers locally with an empty selection and no keywords', async () => {
+  const res = await call('GET', 'trends', null, 'platforms=&limit=5')
+  assert.deepEqual(res.json.trends, [])
+  assert.deepEqual(res.json.watch, [])
+  assert.equal(typeof res.json.updated, 'number')
+})
+
+test('ideas writes serialize: concurrent creates all land', async () => {
+  const rounds = await Promise.all(
+    Array.from({ length: 8 }, (_, i) => call('POST', 'ideas', { title: `并发${i}` })),
+  )
+  const listed = await call('GET', 'ideas')
+  assert.equal(listed.json.length, 8, 'no lost updates between concurrent writers')
+  assert.equal(new Set(rounds.map(r => r.json.id)).size, 8)
+  for (const round of rounds) await call('DELETE', `ideas/${round.json.id}`)
 })
 
 test('parseHotJson normalizes weibo/zhihu shapes', () => {
@@ -195,14 +235,14 @@ test('media route returns the file with its content type', async () => {
   assert.equal(media.headers['content-type'], 'image/png')
 })
 
-test('accounts and analytics platforms reflect the status/cookie files', async () => {
+test('accounts come from the registry; analytics platforms read the default account', async () => {
   const accounts = (await call('GET', 'accounts')).json
-  assert.equal(accounts.length, 7)
-  assert.equal(accounts[0].platform, 'xiaohongshu')
-  let bilibili = accounts.find(a => a.platform === 'bilibili')
-  assert.equal(bilibili.loggedIn, false)
+  assert.equal(accounts.length, 3)
+  assert.equal(accounts[0].id, 'xiaohongshu')
+  assert.equal(accounts[0].name, '小红书')
+  assert.equal(accounts[0].loggedIn, false)
   writeFileSync(join(root, 'cookies.json'), '{}', 'utf8')
-  bilibili = (await call('GET', 'accounts')).json.find(a => a.platform === 'bilibili')
+  const bilibili = (await call('GET', 'accounts')).json.find(a => a.platform === 'bilibili')
   assert.equal(bilibili.loggedIn, true)
   const platforms = (await call('GET', 'analytics/platforms')).json
   assert.equal(platforms.length, 7)
@@ -240,11 +280,15 @@ test('publish status and sms mirror the file protocol', async () => {
 })
 
 test('logout removes browser profile state; wechat-oa clears credentials locally', async () => {
+  writeFileSync(join(root, 'cookies.json'), '{}', 'utf8')
   writeFileSync(join(root, 'outputs', '_login', 'bilibili.json'), '{}', 'utf8')
   const result = await call('POST', 'logout/bilibili')
   assert.ok(result.json.deleted.includes('cookies.json'))
   assert.ok(result.json.deleted.includes('bilibili.json'))
   assert.ok(!existsSync(join(root, 'cookies.json')))
+  mkdirSync(join(root, 'skills', 'openclaw', 'skill-wechat-publisher'), { recursive: true })
+  writeFileSync(join(root, 'skills', 'openclaw', 'skill-wechat-publisher', 'wechat-publisher.yaml'),
+    "default: 'web'\naccounts:\n  web:\n    name: '我的号'\n", 'utf8')
   const wx = await call('POST', 'logout/wechat-oa')
   assert.equal(wx.json.ok, true)
   assert.ok(wx.json.deleted.includes('wechat-publisher.yaml:accounts.web'))
@@ -357,6 +401,82 @@ test('settings canonicalize a junction projectRoot so status and media agree wit
   else unlinkSync(alias)
 })
 
+test('output and media reads refuse host-owned state but keep legit previews', async () => {
+  mkdirSync(join(root, 'outputs', '_deconstruct', 'batch1'), { recursive: true })
+  writeFileSync(join(root, 'outputs', '_deconstruct', 'cookies.json'),
+    JSON.stringify({ xhs: 'session=DUMMY' }), 'utf8')
+  writeFileSync(join(root, 'outputs', '_deconstruct', 'batch1', 'report.md'), '# 报告', 'utf8')
+  writeFileSync(join(root, 'outputs', '_easel_api.json'), '{"runnerToken":"x"}', 'utf8')
+  writeFileSync(join(root, 'outputs', '_login', 'xhs.png'), Buffer.from([0x89, 0x50]), 'utf8')
+  writeFileSync(join(root, 'outputs', '_login', 'xhs.code'), '123456', 'utf8')
+  writeFileSync(join(root, 'outputs', '_login', 'xhs.json'), '{"state":"success"}', 'utf8')
+  mkdirSync(join(root, 'outputs', '_adapt'), { recursive: true })
+  writeFileSync(join(root, 'outputs', '_adapt', 'card.html'), '<html></html>', 'utf8')
+  mkdirSync(join(root, 'outputs', 'analytics'), { recursive: true })
+  writeFileSync(join(root, 'outputs', 'analytics', 'accounts.json'), '{"followers":1}', 'utf8')
+  // Atomic-write sidecars: a crash can leave them behind, and the runner token
+  // sidecar holds a live capability.
+  writeFileSync(join(root, 'outputs', '_ideas.json.tmp'), '[]', 'utf8')
+  writeFileSync(join(root, 'outputs', '.easel-api.json.123.456.tmp'), '{"runnerToken":"x"}', 'utf8')
+  // 多账户注册表与 per-account B站 cookie：注册表只有引用，但 cookie 是真凭据。
+  writeFileSync(join(root, 'outputs', '_accounts.json'), '{"version":1,"accounts":[]}', 'utf8')
+  mkdirSync(join(root, 'outputs', '_accounts', 'bilibili-x1'), { recursive: true })
+  writeFileSync(join(root, 'outputs', '_accounts', 'bilibili-x1', 'cookies.json'),
+    JSON.stringify({ cookie_info: { cookies: [{ name: 'SESSDATA', value: 'DUMMY' }] } }), 'utf8')
+
+  const forbidden = [
+    ['GET', 'output/_deconstruct/cookies.json'],
+    ['GET', 'media/_deconstruct/cookies.json'],
+    ['GET', 'output/_easel_api.json'],
+    ['GET', 'media/_easel_api.json'],
+    ['GET', 'media/_login/xhs.code'],
+    ['GET', 'media/_login/xhs.json'],
+    ['GET', 'output/analytics/accounts.json'],
+    ['GET', 'output/_ideas.json.tmp'],
+    ['GET', 'media/.easel-api.json.123.456.tmp'],
+    ['GET', 'output/_accounts.json'],
+    ['GET', 'media/_accounts/bilibili-x1/cookies.json'],
+    ['GET', 'output/_accounts/bilibili-x1/cookies.json'],
+    // Windows and APFS resolve this to the same file; the guard compares case-insensitively.
+    ['GET', 'output/_DECONSTRUCT/COOKIES.JSON'],
+    ['GET', 'media/_EASEL_API.JSON'],
+    ['GET', 'media/_LOGIN/XHS.CODE'],
+    ['GET', 'media/_ACCOUNTS/BILIBILI-X1/COOKIES.JSON'],
+  ]
+  for (const [method, path] of forbidden) {
+    await assert.rejects(call(method, path), error => error.status === 403, `${method} ${path} is refused`)
+  }
+
+  const report = await call('GET', 'output/_deconstruct/batch1/report.md')
+  assert.equal(report.json.content, '# 报告')
+  const qr = await call('GET', 'media/_login/xhs.png')
+  assert.equal(qr.file, join(root, 'outputs', '_login', 'xhs.png'))
+
+  const card = await call('GET', 'media/_adapt/card.html')
+  assert.equal(card.headers['content-security-policy'], 'sandbox allow-scripts',
+    'generated HTML is pinned to an opaque origin')
+  assert.equal(card.headers['x-content-type-options'], 'nosniff')
+})
+
+test('a deconstruct id that escapes the batch directory is a 404', async () => {
+  // The route decodes before dispatch; the handler must not resolve `..` segments.
+  const escaped = ['deconstruct', decodeURIComponent('..%2F..%2F..%2Foutside')]
+  await assert.rejects(
+    dispatchLocalApi(settings, 'GET', escaped, new URLSearchParams(), async () => ({}), {}, ALL_ROUTES),
+    error => error.status === 404,
+  )
+})
+
+test('trend links are reduced to http(s) before they reach an href', () => {
+  assert.equal(safeLinkUrl('https://weibo.com/1'), 'https://weibo.com/1')
+  assert.equal(safeLinkUrl('http://example.com/a'), 'http://example.com/a')
+  assert.equal(safeLinkUrl('javascript:document.title=1'), '')
+  assert.equal(safeLinkUrl('data:text/html,<script>'), '')
+  assert.equal(safeLinkUrl('//evil.example/x'), '')
+  assert.equal(safeLinkUrl(''), '')
+  assert.equal(safeLinkUrl(undefined), '')
+})
+
 test('route registry: feature plugins extend the table and withdraw it on unmount', async () => {
   const registry = createRouteRegistry(settings)
   assert.equal(await dispatchLocalApi(settings, 'GET', ['accounts'], new URLSearchParams(), async () => ({}), {}, registry.snapshot()), null,
@@ -377,4 +497,37 @@ test('route registry: feature plugins extend the table and withdraw it on unmoun
 
 test('cleanup', () => {
   rmSync(root, { recursive: true, force: true })
+})
+
+// ── 视频号 sidecar 门控（spec easel-breakdown-channels）──
+
+const sphSettings = () => ({ ...settings, channelsDownloader: join(root, 'missing-tools') })
+
+test('channels preflight blocks sph until wechat login and downloader exist', async () => {
+  const result = await dispatchLocalApi(sphSettings(), 'POST', ['deconstruct', 'preflight'],
+    new URLSearchParams(), async () => ({ url: 'https://channels.weixin.qq.com/web/pages/feed?profile=1' }),
+    {}, ALL_ROUTES)
+  assert.equal(result.json.platform, 'sph')
+  assert.equal(result.json.blocked, true, 'tool missing must block')
+  assert.equal(result.json.row, null, 'sph does not join the cookies gate')
+  assert.equal(result.json.channels.tool.installed, false)
+  // 其他平台的识别分支保持现状，不触碰微信探测。
+  const other = await call('POST', 'deconstruct/preflight', { url: 'https://www.bilibili.com/video/BV1x' })
+  assert.equal(other.json.platform, 'bili')
+})
+
+test('channels status reports shape without launching anything', async () => {
+  const result = await dispatchLocalApi(sphSettings(), 'GET', ['channels', 'status'],
+    new URLSearchParams(), async () => ({}), {}, ALL_ROUTES)
+  assert.equal(result.json.tool.installed, false)
+  assert.ok('running' in result.json.wechat)
+  assert.ok('loggedIn' in result.json.wechat)
+})
+
+test('sph create refuses when the downloader is missing, before spawning anything', async () => {
+  await assert.rejects(
+    dispatchLocalApi(sphSettings(), 'POST', ['deconstruct'], new URLSearchParams(),
+      async () => ({ url: 'https://channels.weixin.qq.com/web/pages/feed?profile=1' }), {}, ALL_ROUTES),
+    error => error.status === 400 && /视频号下载器/.test(error.message),
+  )
 })

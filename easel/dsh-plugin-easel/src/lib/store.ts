@@ -5,7 +5,7 @@
 export interface PublishDraft {
   title: string;
   body: string;
-  platforms: string[];
+  accounts: string[];   // 选中的发布目标账号 id（平台 → 账号多选）
   overrides: Record<string, string>;
   tags: string;   // 话题标签，逗号分隔（小红书绑话题；其它平台按需写入）
 }
@@ -25,7 +25,7 @@ function readMigratedLocalValue(key: string, suffix: string): string | null {
 }
 
 const PUBLISH_DEFAULT: PublishDraft = {
-  title: '', body: '', platforms: ['xiaohongshu', 'douyin'], overrides: {}, tags: '',
+  title: '', body: '', accounts: [], overrides: {}, tags: '',
 };
 export function loadPublishDraft(): PublishDraft {
   try {

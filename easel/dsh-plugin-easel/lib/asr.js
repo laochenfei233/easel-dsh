@@ -13,15 +13,16 @@
  *   rejects any extra text part with 400) → segment bounds are the timestamps
  *   → SRT/ASS/TXT/JSON writer ported 1:1 from asr.py (_wrap_line 18-char
  *   Chinese wrapping, _split_long_segment char-proportional timing, ASS header
- *   font size = short side x 0.05) → outputs/<stem>/<stem>.<format>.
+ *   font size = short side x 0.05) → outputs/<stem>/<stem>.<format> (default;
+ *   `outDir`/`outStem` re-route the file, e.g. a deconstruct batch directory).
  *
  * Credentials never live here as defaults: the caller resolves
  * MIMO_BASE_URL / MIMO_API_KEY / MIMO_ASR_MODEL (env, or the project `.env`
  * registry) and passes them in via `credentials`.
  */
-import { open, readFile, rm, mkdir, writeFile } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
-import { basename, extname, join } from 'node:path'
+import { open, readFile, rename, rm, mkdir, writeFile } from 'node:fs/promises'
+import { existsSync, statSync } from 'node:fs'
+import { basename, dirname, extname, join } from 'node:path'
 import { spawn } from 'node:child_process'
 
 /** An ASR failure carrying the HTTP status the route should answer with. */
@@ -314,23 +315,30 @@ async function transcribeSegment(credentials, wavPath, { timeoutMs = 120_000, fe
     throw new AsrError(502, `mimo ASR 请求失败：${error?.cause?.message ?? error?.message ?? error}`)
   }
   const text = await answer.text()
+  // 错误路径不把原始响应体回显给用户（可能是网关 HTML 页或带敏感头的代理报错）：
+  // 只透传 mimo 官方错误字段（error.message / message），原文 head 进服务端日志。
   if (!answer.ok) {
-    let detail = text.slice(0, 300)
+    let detail = '响应体非 JSON，详见服务端日志'
     try {
       const parsed = JSON.parse(text)
-      detail = parsed?.error?.message ?? parsed?.message ?? detail
-    } catch { /* 非 JSON → 用原文 */ }
+      const message = parsed?.error?.message ?? parsed?.message
+      if (typeof message === 'string' && message !== '') detail = message
+      else detail = '响应体未含错误说明，详见服务端日志'
+    } catch { /* 非 JSON → 固定文案 */ }
+    console.error(`easel asr: mimo ASR HTTP ${answer.status} 响应体：${text.slice(0, 300)}`)
     throw new AsrError(502, `mimo ASR 调用失败（HTTP ${answer.status}）：${detail}`)
   }
   let body
   try {
     body = JSON.parse(text)
   } catch {
-    throw new AsrError(502, `mimo ASR 返回非 JSON：${text.slice(0, 300)}`)
+    console.error(`easel asr: mimo ASR 非 JSON 响应体：${text.slice(0, 300)}`)
+    throw new AsrError(502, 'mimo ASR 返回非 JSON（详见服务端日志）')
   }
   const content = body?.choices?.[0]?.message?.content
   if (typeof content !== 'string') {
-    throw new AsrError(502, `mimo ASR 响应缺少 choices[0].message.content：${text.slice(0, 300)}`)
+    console.error(`easel asr: mimo ASR 缺少 choices 的响应体：${text.slice(0, 300)}`)
+    throw new AsrError(502, 'mimo ASR 响应缺少 choices[0].message.content（详见服务端日志）')
   }
   const billed = Number(body?.usage?.seconds)
   return { text: content, billedSeconds: Number.isFinite(billed) ? billed : null }
@@ -500,7 +508,27 @@ export function renderJson(cues, meta) {
 // ── 编排：文件 → 字幕 ────────────────────────────────────────────────
 
 /**
+ * 原子 JSON 写（tmp + rename）：崩溃最多留下一个点前缀的临时文件，目标文件
+ * 永远是完整 JSON（asr.js 依赖方向上不能 import index.js 的 writeJsonFile）。
+ */
+async function writeJsonAtomic(file, value) {
+  const scratch = join(dirname(file), `.${basename(file)}.${process.pid}.${Date.now()}.tmp`)
+  await writeFile(scratch, JSON.stringify(value, null, 2), 'utf8')
+  await rename(scratch, file)
+}
+
+/**
  * Transcribe one audio/video file into a subtitle file.
+ *
+ * Per-segment checkpoint: every transcribed segment is appended atomically to
+ * `<input dir>/<input stem>.asr-partial.json` as
+ * `{src: {mtimeMs, size}, segments: [{index, start, end, text}]}`. A failed run
+ * keeps the sidecar; the next call re-transcribes only missing indices (reused
+ * segments add no billed seconds — they were billed on the earlier run) and the
+ * sidecar is deleted once every segment has succeeded. A sidecar whose src
+ * identity no longer matches the input is ignored and rebuilt; a missing input
+ * takes its sidecar with it.
+ *
  * @param options.input - absolute input path (existence checked here → 404).
  * @param options.format - 'srt' | 'ass' | 'txt' | 'json' (default srt).
  * @param options.language - recorded in meta only: the confirmed mimo gateway
@@ -508,6 +536,11 @@ export function renderJson(cues, meta) {
  *   send a language hint.
  * @param options.projectRoot - output base; file lands at
  *   `outputs/<stem>/<stem>.<format>` (asr.py `-o` default behavior).
+ * @param options.outDir - optional output directory, projectRoot-relative with
+ *   forward slashes (default `outputs/<input stem>`).
+ * @param options.outStem - optional output file stem (default the input stem);
+ *   deconstruct passes its batch id so concurrent jobs never overwrite each
+ *   other's subtitles.
  * @param options.credentials - `{ apiKey, baseUrl?, model? }` from
  *   `resolveMimoCredentials`; missing key → 400.
  * @returns `{ file, segments, seconds, meta }` — `file` is projectRoot-relative
@@ -519,6 +552,8 @@ export async function transcribeToSubtitle({
   format = 'srt',
   language,
   projectRoot,
+  outDir,
+  outStem,
   credentials,
   ffmpegBin = 'ffmpeg',
   ffprobeBin = 'ffprobe',
@@ -532,7 +567,14 @@ export async function transcribeToSubtitle({
     throw new AsrError(400, '未配置 mimo ASR 凭据：请设置 MIMO_API_KEY（环境变量或项目 .env）')
   }
   const src = String(input)
-  if (!existsSync(src)) throw new AsrError(404, `输入文件不存在: ${src}`)
+  const srcStem = basename(src, extname(src))
+  // 分段检查点 sidecar：与输入同目录，逐段落盘供续跑。
+  const partialPath = join(dirname(src), `${srcStem}.asr-partial.json`)
+  if (!existsSync(src)) {
+    // 输入已不在：检查点随之失效，顺手清掉，不给素材目录留孤儿 sidecar。
+    await rm(partialPath, { force: true })
+    throw new AsrError(404, `输入文件不存在: ${src}`)
+  }
   const ext = extname(src).toLowerCase()
   if (!VIDEO_EXTS.has(ext) && !AUDIO_EXTS.has(ext)) {
     throw new AsrError(400, `不支持的文件类型「${ext || '(无扩展名)'}」：仅支持音频 ${[...AUDIO_EXTS].join(' ')} 与视频 ${[...VIDEO_EXTS].join(' ')}`)
@@ -552,11 +594,38 @@ export async function transcribeToSubtitle({
 
     const { segments, duration } = await detectSpeechSegments(ffmpegBin, ffprobeBin, wav)
 
+    // 分段检查点：sidecar 存在且 src 身份（mtimeMs 取整 + size）匹配 → 复用
+    // 已完成分段，只转缺失 index；身份不匹配（换了输入）或损坏 → 忽略重建。
+    const stat = statSync(src)
+    const srcId = { mtimeMs: Math.round(stat.mtimeMs), size: stat.size }
+    const reused = new Map()
+    if (existsSync(partialPath)) {
+      try {
+        const saved = JSON.parse(await readFile(partialPath, 'utf8'))
+        if (saved?.src?.mtimeMs === srcId.mtimeMs && saved?.src?.size === srcId.size && Array.isArray(saved.segments)) {
+          for (const seg of saved.segments) {
+            if (seg !== null && typeof seg === 'object' && Number.isInteger(seg.index) && typeof seg.text === 'string') {
+              reused.set(seg.index, seg)
+            }
+          }
+        }
+      } catch { /* 半截或损坏的 sidecar → 当作无检查点，全量重转 */ }
+    }
+
     // 逐段 base64 调 mimo（串行，不并发）；段边界即时间戳。
     const cues = []
     let seconds = 0
+    const checkpoint = []
     for (let i = 0; i < segments.length; i++) {
       const [start, end] = segments[i]
+      const cached = reused.get(i)
+      if (cached !== undefined) {
+        // 检查点命中：该段上次已转写成功，直接复用文本（时间戳仍取本次分段
+        // 结果），不再切片也不再请求网关。
+        if (cached.text) cues.push(...splitLongSegment(cached.text, start, end, maxLineChars))
+        checkpoint.push({ index: i, start, end, text: cached.text })
+        continue
+      }
       const segPath = join(tempDir, `seg-${String(i).padStart(3, '0')}.wav`)
       const cut = await spawnCapture([ffmpegBin, '-y', '-ss', start.toFixed(3), '-i', wav,
         '-t', (end - start).toFixed(3), segPath])
@@ -573,10 +642,16 @@ export async function transcribeToSubtitle({
           .trim()
         if (transcript) cues.push(...splitLongSegment(transcript, start, end, maxLineChars))
         seconds += billedSeconds ?? (end - start)
+        // 成功即原子追加检查点：之后任何一段失败，重跑只补缺失段。
+        checkpoint.push({ index: i, start, end, text: transcript })
+        await writeJsonAtomic(partialPath, { src: srcId, segments: checkpoint })
       } finally {
         await rm(segPath, { force: true })
       }
     }
+
+    // 全部段成功：检查点使命完成，删除 sidecar；失败路径保留供续跑。
+    await rm(partialPath, { force: true })
 
     const meta = {
       source: src,
@@ -600,12 +675,13 @@ export async function transcribeToSubtitle({
       content = renderSrt(cues, maxLineChars)
     }
 
-    // 输出 outputs/<输入名>/<输入名>.<format>（对齐 asr.py -o 缺省行为）。
-    const stem = basename(src, extname(src))
-    const relFile = ['outputs', stem, `${stem}.${format}`].join('/')
-    const outAbs = join(projectRoot, 'outputs', stem, `${stem}.${format}`)
-    await mkdir(join(projectRoot, 'outputs', stem), { recursive: true })
-    await writeFile(outAbs, content, 'utf8')
+    // 输出落位：缺省 outputs/<输入名>/<输入名>.<format>（对齐 asr.py -o 缺省
+    // 行为）；deconstruct 传 outDir/outStem 把字幕落进批次目录，任务互不覆盖。
+    const stem = outStem ?? srcStem
+    const dirRel = (outDir ?? ['outputs', stem].join('/')).split('\\').join('/')
+    const relFile = `${dirRel}/${stem}.${format}`
+    await mkdir(join(projectRoot, dirRel), { recursive: true })
+    await writeFile(join(projectRoot, relFile), content, 'utf8')
 
     const round3 = x => Math.round(x * 1000) / 1000
     return {
@@ -626,18 +702,32 @@ export async function transcribeToSubtitle({
  * base without knowing the dsh web port (`_` prefix stays out of the content
  * library). Refreshed at plugin activation and on every /asr call, so the port
  * is correct even when activation ran before the server bound its port.
+ *
+ * `runnerToken` is the per-process capability the ASR route accepts in place of
+ * the dsh cookie (`x-easel-runner`). The file carries it because a skill runs as
+ * the same user and has no other channel; it never leaves the data root.
  * @param projectRoot - Easel project root (outputs/ lives under it).
  * @param port - the dsh webServer port (`ctx.webServer.port`).
  * @param basePath - this plugin's route base, e.g. `/easel`.
+ * @param runnerToken - the easel plugin's runner capability, when it has one.
  */
-export async function writeApiDiscovery(projectRoot, port, basePath = '/easel') {
+export async function writeApiDiscovery(projectRoot, port, basePath = '/easel', runnerToken = '') {
   if (!Number.isInteger(port) || port <= 0) return false
   const payload = JSON.stringify({
     base: `http://127.0.0.1:${port}`,
     basePath,
+    ...(runnerToken ? { runnerToken } : {}),
     updatedAt: new Date().toISOString(),
   }, null, 2) + '\n'
-  await mkdir(join(projectRoot, 'outputs'), { recursive: true })
-  await writeFile(join(projectRoot, 'outputs', '_easel_api.json'), payload, 'utf8')
+  const outputs = join(projectRoot, 'outputs')
+  await mkdir(outputs, { recursive: true })
+  const file = join(outputs, '_easel_api.json')
+  // Atomic and owner-only: a skill may read the capability, another local
+  // account may not, and a crash must not leave a half-written JSON file.
+  const scratch = join(outputs, `.${basename(file)}.${process.pid}.${Date.now()}.tmp`)
+  // Dot-prefixed: a leftover sidecar is not content and the read routes refuse
+  // dot segments, so a crashed write can never serve the capability.
+  await writeFile(scratch, payload, { encoding: 'utf8', mode: 0o600 })
+  await rename(scratch, file)
   return true
 }

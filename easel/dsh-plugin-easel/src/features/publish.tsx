@@ -8,7 +8,7 @@ import PublishPage from '../components/PublishPage'
 import { pageKey } from '../lib/shell'
 
 export const view = 'publish'
-export const order = 36
+export const order = 38
 export const labels = { zh: '发布中心', en: 'Publish' }
 export const Icon = IconPublish
 export const Component = PublishPage

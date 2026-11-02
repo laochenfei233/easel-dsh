@@ -6,7 +6,8 @@
 把邻近的账号ID/曝光数等误当指标（曾把小红书账号号当获赞数）。数字解析/多窗口增长为纯函数，selftest 覆盖。
 
 返回：概览(粉丝/获赞/关注) + 平台近7日各指标含环比 + 最新笔记链接 + 我方快照多窗口增长(较上次/日/周/月/年)。
-子命令：check / fetch / selftest
+归档：`outputs/_analytics/<归档键>.jsonl`，键默认平台、传 `--history-key` 则按账号（多账户）。
+子命令：check / fetch / history / selftest（history 只读归档，不起浏览器，供工作台全览）。
 真实抓取需：playwright + chromium + 已登录 + 干净网络（xhs 直连、其它走 env 代理，同发布层）。
 """
 from __future__ import annotations
@@ -18,6 +19,9 @@ import re
 import sys
 import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 ANALYTICS_DIR = PROJECT_ROOT / "outputs" / "_analytics"
@@ -260,12 +264,18 @@ def growth_windows(history: list[dict], current: dict) -> dict:
     return out
 
 
-def _history_path(platform: str) -> Path:
-    return ANALYTICS_DIR / f"{platform}.jsonl"
+def _history_key(key: str | None, platform: str) -> str:
+    """归档键：账号 id（多账户）；缺省 = 平台 key（默认账号的 id 恰好也是平台 key，存量文件零迁移）。"""
+    return key or platform
 
 
-def load_history(platform: str) -> list[dict]:
-    p = _history_path(platform)
+def _history_path(key: str) -> Path:
+    return ANALYTICS_DIR / f"{key}.jsonl"
+
+
+def load_history(key: str) -> list[dict]:
+    """读某归档键的全部快照（调用方先经 _history_key 归一）。"""
+    p = _history_path(key)
     if not p.is_file():
         return []
     out = []
@@ -320,19 +330,19 @@ def should_record(history: list[dict], snap: dict) -> bool:
     last = history[-1]
     if _local_day(last.get("ts", 0)) != _local_day(snap.get("ts", 0)):
         return True
-    return any(last.get(k) != snap.get(k) for k in ("followers", "likes", "posts"))
+    return any(last.get(k) != snap.get(k) for k in ("followers", "likes", "posts", "following"))
 
 
-def record_snapshot(platform: str, snap: dict) -> None:
+def record_snapshot(key: str, snap: dict) -> None:
     """数据较上一条有变化才追加；写入前做分层保留 compaction（老数据自动稀疏化，文件永不膨胀）。"""
-    h = load_history(platform)
+    h = load_history(key)
     if not should_record(h, snap):
         return
     h.append(snap)
     h = compact(h, snap["ts"])
     ANALYTICS_DIR.mkdir(parents=True, exist_ok=True)
     body = "\n".join(json.dumps(x, ensure_ascii=False) for x in h)
-    _history_path(platform).write_text(body + ("\n" if body else ""), encoding="utf-8")
+    _history_path(key).write_text(body + ("\n" if body else ""), encoding="utf-8")
 
 
 # --------------------------------------------------------------------------- #
@@ -373,34 +383,41 @@ def _platform_logged_in(page, cfg: dict) -> bool:
     return False
 
 
-def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) -> dict:
+def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None,
+            profile_dir: str | None = None, cdp_endpoint: str | None = None) -> dict:
     from playwright.sync_api import sync_playwright
     cfg = PLATFORMS[platform]
     r = {"nickname": "", "followers": None, "likes": None, "following": None,
          "posts": None, "metrics": [], "notes": [], "logged_in": True}
-    profile = _profile_dir(platform, base)
-    profile.mkdir(parents=True, exist_ok=True)
+    profile = browser_session.pick_profile(profile_dir, _profile_dir(platform, base))
     xhs_lock = None
-    if platform == "xiaohongshu":
-        # 同一个 XiaohongshuProfile 目录，xhs_publish.py 的登录/发布/whoami 都用 _ProfileLock
-        # 互斥（见其模块注释：并发打开会把内核打成 exit 21）；看数据这条路径也走同一个目录，
-        # 必须一起遵守，否则就是那个锁没堵住的后门。锁在起 playwright 之前拿，确保启动失败
-        # 也不会漏放（finally 包住整段，不只是 ctx 的生命周期）。
-        from xhs_publish import _launch as _xhs_launch, _clear_stale_chrome_locks, _ProfileLock
-        xhs_lock = _ProfileLock(profile)
-        xhs_lock.acquire(20)
+    if not cdp_endpoint:
+        # 自起模式才建/占持久 profile；CDP 附身的是运行中实例，不碰目录。
+        profile.mkdir(parents=True, exist_ok=True)
+        if platform == "xiaohongshu":
+            # 同一个 XiaohongshuProfile 目录，xhs_publish.py 的登录/发布/whoami 都用 _ProfileLock
+            # 互斥（见其模块注释：并发打开会把内核打成 exit 21）；看数据这条路径也走同一个目录，
+            # 必须一起遵守，否则就是那个锁没堵住的后门。锁在起 playwright 之前拿，确保启动失败
+            # 也不会漏放（finally 包住整段，不只是 ctx 的生命周期）。
+            from xhs_publish import _launch as _xhs_launch, _clear_stale_chrome_locks, _ProfileLock
+            xhs_lock = _ProfileLock(profile)
+            xhs_lock.acquire(20)
     try:
         with sync_playwright() as p:
-            if platform == "xiaohongshu":
+            if cdp_endpoint:
+                # CDP 附身运行中实例（账号直启的窗口）：登录态在实例里，不碰持久 profile。
+                ctx, owned = browser_session.open_browser(p, cdp_endpoint=cdp_endpoint, launch=None)
+            elif platform == "xiaohongshu":
                 # 与发布/登录共用 Cloak + 同一套启动参数；禁图版 Chromium 会把创作中心打回登录页。
+                # （_xhs_launch/_clear_stale_chrome_locks 已在上面拿锁时导入——能走到这里必然非 CDP。）
                 _clear_stale_chrome_locks(profile)
-                ctx = _xhs_launch(p, headed, base, proxy)
+                ctx, owned = _xhs_launch(p, headed, base, proxy, profile_dir=profile_dir), True
             else:
                 kwargs = dict(headless=not headed, locale="zh-CN", args=LAUNCH_ARGS)
                 if proxy:
                     kwargs["proxy"] = {"server": proxy}
-                ctx = p.chromium.launch_persistent_context(str(profile), **kwargs)
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+                ctx, owned = p.chromium.launch_persistent_context(str(profile), **kwargs), True
+            page = browser_session.open_page(ctx, owned)
             try:
                 page.goto(cfg["url"], wait_until="domcontentloaded", timeout=30000)
                 ov, d = cfg["overview"], cfg.get("overview_dir", "after")
@@ -473,7 +490,8 @@ def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None) ->
                 # 最新笔记放最后抓——小红书会跳转到笔记管理页，之后不再读首页
                 r["notes"] = _scrape_notes(platform, page, cfg)
             finally:
-                ctx.close()
+                # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                browser_session.close_session(ctx, owned)
     finally:
         if xhs_lock is not None:
             xhs_lock.release()
@@ -824,14 +842,16 @@ def cmd_fetch(a) -> int:
     except Exception as e:
         _die(f"需要 playwright：{e}", 3)
     disable = True if a.no_proxy else (False if a.proxy else None)
-    s = _scrape(a.platform, a.headed, a.profile_base, _proxy(a.platform, a.proxy, disable))
+    s = _scrape(a.platform, a.headed, a.profile_base, _proxy(a.platform, a.proxy, disable),
+                profile_dir=a.profile_dir, cdp_endpoint=browser_session.resolve_endpoint(a))
 
     now = int(time.time())
-    snap = {"ts": now, "followers": s["followers"], "likes": s["likes"], "posts": s["posts"]}
-    history = load_history(a.platform)
+    snap = {"ts": now, "followers": s["followers"], "likes": s["likes"], "following": s["following"], "posts": s["posts"]}
+    key = _history_key(a.history_key, a.platform)
+    history = load_history(key)
     growth = growth_windows(history, snap)
     if any(snap[k] is not None for k in ("followers", "likes", "posts")):
-        record_snapshot(a.platform, snap)
+        record_snapshot(key, snap)
 
     out = {
         "platform": a.platform, "name": PLATFORMS[a.platform]["name"],
@@ -846,6 +866,41 @@ def cmd_fetch(a) -> int:
             {"key": "following", "label": "关注", "value": s["following"]},
         ],
         "growth": growth, "fetched_at": now,
+    }
+    print(json.dumps(out, ensure_ascii=False))
+    return 0
+
+
+def cmd_history(a) -> int:
+    """只读归档（不起浏览器）：给工作台全览供数。growth 语义与 fetch 完全一致。
+
+    不校验 platform 是否在 PLATFORMS：公众号（wechat-oa）由 weixin_mp_stats.py 写归档、
+    不在此表内，但同样要能读；归档只取决于键，平台名只用于缺省键。
+    """
+    key = _history_key(a.history_key, a.platform)
+    history = load_history(key)
+    if not history:
+        print(json.dumps({
+            "platform": a.platform, "historyKey": key,
+            "latest": None, "growth": None, "points": [], "ageDays": None,
+        }, ensure_ascii=False))
+        return 0
+    latest = history[-1]
+    # fetch 的 growth 是在 append 之前算的（last=对上一条），这里同样把 latest 排除在基线外。
+    growth = growth_windows(history[:-1], latest)
+    out = {
+        "platform": a.platform,
+        "historyKey": key,
+        "latest": {
+            "ts": latest.get("ts"),
+            "followers": latest.get("followers"),
+            "likes": latest.get("likes"),
+            "following": latest.get("following"),
+            "posts": latest.get("posts"),
+        },
+        "growth": growth,
+        "points": history[-20:],
+        "ageDays": round((int(time.time()) - latest.get("ts", 0)) / 86400, 1),
     }
     print(json.dumps(out, ensure_ascii=False))
     return 0
@@ -934,6 +989,18 @@ def cmd_selftest(_a) -> int:
             assert c.get(f), f"{k} 缺 {f}"
         assert set(c["overview"]) >= {"followers", "likes"}
     assert _proxy("xiaohongshu", None, None) is None and _proxy("douyin", "http://x:1", False) == "http://x:1"
+    # 归档键（多账户）：缺省 = 平台（默认账号的 id 也是平台 key，存量文件零迁移）；显式键互相隔离
+    assert _history_key(None, "douyin") == "douyin"
+    assert _history_key("douyin-x1", "douyin") == "douyin-x1"
+    assert _history_path("douyin") == ANALYTICS_DIR / "douyin.jsonl"
+    assert _history_path("douyin-x1") != _history_path("douyin")
+    assert _history_key("", "douyin") == "douyin", "空串按缺省处理"
+    # 账号参数化（browser_session）：--profile-dir / --cdp-endpoint 解析契约
+    browser_session.selftest_args()
+    assert browser_session.pick_profile(None, _profile_dir("zhihu", None)) == _profile_dir("zhihu", None), \
+        "未传 --profile-dir 默认=现状路由"
+    assert browser_session.pick_profile("~/pd", _profile_dir("zhihu", None)) == Path.home() / "pd", \
+        "显式覆盖生效"
     # 接口 JSON 递归提取 note→token（可靠取 xhs 笔记 token）
     assert _extract_note_tokens({"d": {"notes": [{"note_id": "n1", "xsec_token": "t1"},
                                                  {"id": "n2", "xsecToken": "t2"}, {"noteId": "n3"}]}}) \
@@ -944,7 +1011,7 @@ def cmd_selftest(_a) -> int:
     assert is_public_xhs_note({"title": "(无标题)"}) is False
     assert is_public_xhs_note({"title": "还没写完", "text": "草稿 编辑"}) is False
     assert is_public_xhs_note({"title": "有标题草稿", "href": "https://creator.xiaohongshu.com/publish/publish?id=1"}) is False
-    print("✅ selftest 通过（解析 + 概览分方向取数(修获赞bug) + 近7日环比 + 多窗口增长 + 配置/代理 + 接口token提取 + 排除草稿）")
+    print("✅ selftest 通过（解析 + 概览分方向取数(修获赞bug) + 近7日环比 + 多窗口增长 + 配置/代理 + 账号参数 profile-dir/cdp-endpoint + 接口token提取 + 排除草稿）")
     return 0
 
 
@@ -955,10 +1022,16 @@ def main() -> int:
     pf = sub.add_parser("fetch", help="抓某平台账号数据 → JSON")
     pf.add_argument("--platform", required=True, help=f"平台：{', '.join(PLATFORMS)}")
     pf.add_argument("--profile-base", help="登录态根目录（默认 ~/.easel-browser-profiles）")
+    browser_session.add_args(pf, default_hint="~/.easel-browser-profiles/<平台>Profile")
     pf.add_argument("--proxy", help="外网代理（默认按平台：xhs 直连、其它走 env）")
     pf.add_argument("--no-proxy", action="store_true", help="强制直连")
     pf.add_argument("--headed", action="store_true", help="有头模式（首次校准）")
+    pf.add_argument("--history-key", help="归档键（多账户用账号 id；缺省 = 平台）")
     pf.set_defaults(func=cmd_fetch)
+    hz = sub.add_parser("history", help="读归档快照与增长（不起浏览器）→ JSON")
+    hz.add_argument("--platform", required=True, help="平台 key（读归档不校验；公众号传 wechat-oa）")
+    hz.add_argument("--history-key", help="归档键（多账户用账号 id；缺省 = 平台）")
+    hz.set_defaults(func=cmd_history)
     sub.add_parser("selftest", help="离线自检").set_defaults(func=cmd_selftest)
     a = ap.parse_args()
     if not getattr(a, "func", None):

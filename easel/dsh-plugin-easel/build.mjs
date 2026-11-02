@@ -88,6 +88,9 @@ const result = await esbuild.build({
   // footer hands the module's default export back as the plugin descriptor.
   banner: { js: "window.__ModuleLoader__.load({\n  id: 'dsh-plugin-easel',\n  factory(require) {\n    const module = { exports: {} };\n    const exports = module.exports;\n" },
   footer: { js: "\n    return module.exports.default ?? module.exports;\n  },\n})\n" },
+  // The About page shows the shipped app icon; a data URL keeps the bundle a
+  // single file (the client is served as one classic script by the host).
+  loader: { '.png': 'dataurl' },
   legalComments: 'none',
   logLevel: 'info',
   write: false,

@@ -1,9 +1,9 @@
 ---
 feature: easel-dsh-upgrade
 status: delivered
-updated: 2026-10-21
-branch: feat/easel-upgrade-layout（dsh 工作区）
-commits: 50d0920420..b96b76b055（含 6bdfe0f9b4、7a0c9e0477）；Easel f9bebc6
+updated: 2026-10-24
+branch: feat/easel-upgrade-layout（dsh 工作区）；2026-10-24 增补在 master
+commits: 50d0920420..b96b76b055（含 6bdfe0f9b4、7a0c9e0477）；Easel f9bebc6；增补 e4e2444fa0 之后
 ---
 
 # Easel-dsh 安装与升级：不再卸载重装
@@ -95,12 +95,13 @@ POSTUNINSTALL 的 MessageBox 包在 `${If} $UpdateMode <> 1` 里。真正的卸�
 - 安装器被传入 `/UPDATE` 时，`PageLeaveReinstall` 直接 `reinst_done`
   （`installer.nsi:314`），不运行旧卸载器，数据目录零触碰。这是推荐的升级
   方式。
-- 双击安装包的 GUI 路径：在「已安装」页选择第二项「不卸载，直接安装」；
-  `docs/INSTALL-DESKTOP.md` 明确写出来。
-- **首次从 alpha.21（旧钩子）升级**：必须用 `/UPDATE` 或第二项，避免旧卸载
+- **GUI 升级不再出现「已安装」选择页（2026-10-24，用户拍板）**：升级场景
+  （SemverCompare = 1）下页面直接跳过，`PageLeaveReinstall` 强制
+  `reinst_done`——双击安装包与 `/UPDATE` 行为完全一致，用户一路「下一步」
+  也不可能走进卸载。同版本重装仍默认「添加/重装」，降级仍走原页面
+  （降级默认卸载后装，作为修复路径保留）。
+- **首次从 alpha.21（旧钩子）升级**：必须用 `/UPDATE` 或免卸载路径，避免旧卸载
   器留下 `RMDir /REBOOTOK` 删除队列，在下次重启时把新装的文件删掉。
-- 本 spec 不引入自定义 NSIS 模板（要长期跟随 Tauri 模板演进，维护成本高于
-  收益），也不改默认单选；用文档 + 后续 app 内更新入口绕开这一页。
 
 **为什么不是别的方案**
 
@@ -176,6 +177,11 @@ POSTUNINSTALL 的 MessageBox 包在 `${If} $UpdateMode <> 1` 里。真正的卸�
 - 自定义 NSIS 模板把默认安装目录改到 `%LOCALAPPDATA%\Easel-dsh\app`；Rust 侧
   `layout.rs` 把数据迁到 `data\workspace` / `data\home`，旧路径保留 junction，
   `node_modules` junction 重指 `app\runtime\dsh\node_modules`。
+- **2026-10-24 增补**：升级场景（SemverCompare = 1）不再出现「已安装」选择页，
+  `PageLeaveReinstall` 强制免卸载——GUI 双击与 `/UPDATE` 完全一致；随
+  `Easel-dsh_0.2.1-alpha.31_x64-setup.exe` 交付（同包还含备份区块翻译修复，
+  plugin 0.2.22）。生成的 `target/release/nsis/x64/installer.nsi` 已核对包含
+  两处改动；同版本重装与降级路径不变。
 
 **Verification** —
 

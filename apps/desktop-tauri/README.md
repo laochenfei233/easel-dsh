@@ -9,7 +9,7 @@ A Tauri 2 desktop shell that embeds the dsh web UI in a native window, with a bu
 ```
 src-tauri/            Rust shell
   src/dsh_runner.rs   dsh child-process lifecycle: spawn `dsh web --port 3081 --no-open`, port health probe, crash auto-restart (does not race when dsh-plugin restarts itself)
-  src/tray.rs         tray residency: closing the window hides it; only tray Quit ends the process tree
+  src/tray.rs         tray residency: closing the window hides it; tray Quit ends the process tree (the installer stop hook asks for the same graceful exit with --quit)
   src/setup.rs        first-run wizard commands: write preset into the profile patch (agent-presets.config.default), install plugins (dsh plugin / local copy)
 ui/dist/              shell frontend (pure static, no build): index.html full-window iframe + error banner; wizard.html first-run wizard
 scripts/bundle-runtime.mjs  pack Node runtime + pnpm-deployed dsh closure + local plugins → runtime/
@@ -32,7 +32,7 @@ pnpm tauri dev              # from apps/desktop-tauri; dev mode uses PATH node +
 ```
 
 Dev mode needs built CLI artifacts (`pnpm run build`); you can also override runtime resolution with environment variables:
-`DSH_DESKTOP_NODE` (node executable), `DSH_DESKTOP_DSH_BIN` (dsh CLI entry), `DSH_DESKTOP_PLUGINS_DIR` (local plugins directory).
+`DSH_DESKTOP_NODE` (node executable), `DSH_DESKTOP_DSH_BIN` (dsh CLI entry), `DSH_DESKTOP_PLUGINS_DIR` (local plugins directory), `EASEL_BUNDLE_DIR` / `EASEL_DREAMINA_DIR` (staged `runtime/easel` / `runtime/dreamina` trees).
 
 ## Building a release
 
@@ -42,7 +42,17 @@ node scripts/bundle-runtime.mjs --platform win   # win|mac|linux; generates runt
 pnpm tauri build            # package installers (runtime/ is bundled as resources)
 ```
 
-CI (`.github/workflows/desktop-release.yml`) runs the same flow on a three-platform matrix and uploads to GitHub Release; trigger with a `v*` tag or manual dispatch.
+CI (`.github/workflows/desktop-release.yml`) runs the same flow on a platform matrix and uploads the installers to a GitHub Release; trigger with a `v*` tag or manual dispatch (`.github/workflows/easel-package.yml` is the hosted trial-build variant; it stages artifacts only).
+
+## In-app updater (Windows)
+
+The shell integrates `tauri-plugin-updater`; Settings → About in the GUI shows the current version, runs a manual check, and installs a found release. The release manifest is the Tauri updater's standard `{version, notes, pub_date, platforms}` JSON; the signed `.sig` and the manifest are produced and distributed by the release pipeline (spec `easel-website.md`).
+
+- **Update source**: the manifest endpoints default to the product site's mirror (`https://easel.xyern.com/downloads/updates/latest.json`) and fall back to the manifest GitHub publishes with every Release (`…/releases/latest/download/latest.json`); the updater tries them in order and needs only one to answer (`tauri.conf.json` `plugins.updater.endpoints`). A `<data_root>/home/update-source.json` of `{"endpoints": ["https://…"]}` replaces the list wholesale — that is how intranet deployments point the updater at an internal mirror. A malformed file is a loud misconfiguration: the About section shows the reason and the deferred boot check skips the round.
+- **Deferred boot check**: one GET 30 seconds after launch; failures are recorded in `<data_root>/home/update-state.json` and stay silent. A reminder only fires when the found version is newer than the running shell AND at least 24 hours past the release's `pub_date`, so every user sees the notice on the same schedule; `notedVersion` in the same file deduplicates the boot dialog. After that, the About section keeps the persistent "new version available" hint until the update lands.
+- **Install**: the command stops the bundled dsh process first (the updater exits the shell process itself, without `RunEvent::Exit`, so the runtime node would otherwise be orphaned behind the installer), then downloads and launches the NSIS installer with the plugin's `basicUi` mode — the installer always receives `/UPDATE`, the same flag the installer hooks already handle, so the in-app path and a manual `/UPDATE` run end in the identical overwrite install with no uninstall step.
+- **Signing**: updates are minisign-signed; the public key is embedded in `tauri.conf.json` (`plugins.updater.pubkey`), and the private key is a GitHub Actions secret (`TAURI_SIGNING_PRIVATE_KEY`).
+- **Platform scope**: the updater and its GUI live only where the host bridge relay exists — the WebView2 iframe (Windows). Browsers, CLI `dsh web`, and the WebKit app window degrade to the About section's desktop-only line; macOS auto-update is a separate future feature.
 
 ## First launch
 
@@ -50,5 +60,6 @@ CI (`.github/workflows/desktop-release.yml`) runs the same flow on a three-platf
 - Default plugins: `dsh-plugin` (plugin center/market), `dsh-win-terminal-inspector` (Windows only; local copy + patch insert)
 - Optional plugins: `dsh-better-sidebar`, `dsh-notification`, `dsh-session-context-menu`, `@xmanrui/dsh-im` (WeCom/Feishu/DingTalk/WeChat/QQ and 9 channels), `dsh-lark`, `dsh-qqbot`, `dsh-vision-router`, `graph-memory`, `aegis`
 - Data location: `<Documents>/Easel-dsh` by default (the OS Documents folder, including OneDrive redirection); Settings → Data location can move it. Old paths remain as junctions/symlinks, so existing projects keep working without rewriting project files.
+- Bundled Jimeng CLIs: `dreamina` (image/video generation) and `dreamina-canvas` (collaborative canvas) under `runtime/dreamina/bin`, last on the agent PATH so a CLI installed through its own installer wins, plus the CLIs' published agent skills under `runtime/dreamina/skills` (registered by the `easel-dreamina-skills` row). Staging (`stageDreamina` in `scripts/bundle-runtime.mjs`) fetches them at build time, checksum-verifies the canvas CLI, and can be re-run alone with `--only dreamina`.
 
 Plugin install/update/uninstall all go through official dsh mechanisms (`dsh plugin` / the dsh-plugin center); the runtime ships pnpm from the same version family.

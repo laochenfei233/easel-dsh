@@ -103,6 +103,20 @@ const modelPolicy: z<ModelCompactPolicyConfig> = z.object({
 })
 
 /**
+ * Structured diagnostic fields for one actual compaction trigger. Pressure
+ * carries the routed model's resolved capacity budgets; context overflow
+ * bypasses the threshold, so it records only the measured pressure.
+ */
+type CompactionTriggerRecord =
+  | {
+    readonly contextWindow: number
+    readonly thresholdTokens: number
+    readonly totalTokens: number
+    readonly trigger: 'pressure'
+  }
+  | { readonly totalTokens: number; readonly trigger: 'context-overflow' }
+
+/**
  * Dependency-light compaction backend using `ctx.tokenMeter` for pressure,
  * retention, cited source events, and summary-convergence pricing.
  *
@@ -298,6 +312,7 @@ export class BasicCompactionEngine extends CompactionEngine {
       }
       const range = selectCompactableRange(agent.session, measurement, 0)
       if (range === null) return null
+      this.logTrigger({ totalTokens: measurement.totalTokens, trigger })
       return this.compactRegion(range.start, range.end, agent, signal)
     }
 
@@ -335,6 +350,12 @@ export class BasicCompactionEngine extends CompactionEngine {
         /* v8 ignore next -- paired with the defensive post-success branch above. */
         break
       }
+      this.logTrigger({
+        contextWindow: spec.contextWindow,
+        thresholdTokens: spec.thresholdTokens,
+        totalTokens: measurement.totalTokens,
+        trigger,
+      })
       result = await this.compactRegion(range.start, range.end, agent, signal)
       measurement = meter.measure(agent.session)
       if (measurement.totalTokens < spec.thresholdTokens) return result
@@ -432,6 +453,11 @@ export class BasicCompactionEngine extends CompactionEngine {
         { cause: error },
       )
     }
+  }
+
+  /** Log the structured record for one actual compaction trigger. */
+  private logTrigger(record: CompactionTriggerRecord): void {
+    this.ctx.logger.info('compaction (trigger): %o', record)
   }
 
   /** Bind the effective token meter and dynamically dispatched summarizer hook. */

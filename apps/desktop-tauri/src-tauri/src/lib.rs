@@ -6,6 +6,7 @@
 //! keeps the app resident when the window closes, and the first-run wizard
 //! that picks an agent preset and installs plugins.
 
+mod app_update;
 mod dsh_runner;
 mod layout;
 mod setup;
@@ -181,23 +182,51 @@ fn hide_child_consoles() {
 #[cfg(not(windows))]
 fn hide_child_consoles() {}
 
+/// Command-line flag the installer's stop hook passes to a running shell. The
+/// single-instance guard hands it to the resident instance, which exits through
+/// `app.exit` so Windows removes the tray icon; a forced kill leaves a ghost
+/// entry in the notification area until the user hovers it.
+const QUIT_ARG: &str = "--quit";
+
+/// Whether a launch only asks the resident shell to shut down. The release
+/// single-instance callback forwards the installer's flag to the resident
+/// instance; the setup check covers the race where no resident exists by the
+/// time the flag is delivered.
+fn is_quit_request(args: &[String]) -> bool {
+    args.iter().any(|arg| arg == QUIT_ARG)
+}
+
 pub fn run() {
     hide_child_consoles();
     let builder = tauri::Builder::default();
     // Release only: a second launch of the installed shell must surface the
     // resident instance instead of stacking another tray-resident one (window
     // close only hides to tray) whose forced kill would leave a ghost tray
-    // icon behind. The plugin's mutex keys on the shared `ai.easel.desktop`
-    // identifier, so a dev build beside an installed shell would bounce off
-    // it — dev builds stay multi-instance.
+    // icon behind. The installer/uninstaller stop hook launches the shell with
+    // `--quit`, which exits through `app.exit` here so Windows removes the tray
+    // icon instead of being force-killed by the installer. The plugin's mutex
+    // keys on the shared `ai.easel.desktop` identifier, so a dev build beside
+    // an installed shell would bounce off it — dev builds stay multi-instance.
     #[cfg(not(debug_assertions))]
-    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+    let builder = builder.plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
+        if is_quit_request(&args) {
+            app.exit(0);
+            return;
+        }
         tray::show_main_window(app);
     }));
     builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
+            // A `--quit` launch that became the primary (the resident exited
+            // between the stop hook's process check and this launch) must not
+            // build a window, tray icon, or dsh child just to be forced down.
+            if is_quit_request(&std::env::args().collect::<Vec<_>>()) {
+                app.handle().exit(0);
+                return Ok(());
+            }
             // EASEL-DIVERGENCE(easel-dsh-layout): relocate user data before the
             // first-run state or the dsh home is read. Installed-only; this runs
             // after the single-instance guard so a second launch cannot migrate
@@ -207,6 +236,8 @@ pub fn run() {
             let handle = DshHandle::spawn(app.handle())?;
             app.manage(handle);
             tray::build(app.handle())?;
+            // EASEL-DIVERGENCE(easel-app-update): deferred boot check, 30s in.
+            app_update::init(app.handle());
             Ok(())
         })
         .on_window_event(|window, event| {
@@ -228,6 +259,10 @@ pub fn run() {
             dsh_runner::navigate_main,
             dsh_runner::restart_dsh,
             dsh_runner::open_ui,
+            app_update::easel_check_update,
+            app_update::easel_update_state,
+            app_update::easel_set_update_source,
+            app_update::easel_install_update,
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
@@ -238,4 +273,17 @@ pub fn run() {
                 }
             }
         });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_quit_request;
+
+    #[test]
+    fn quit_flag_from_the_installer_is_recognized() {
+        let exe = r"C:\Users\me\AppData\Local\Easel-dsh\dsh-desktop.exe".to_string();
+        assert!(is_quit_request(&[exe.clone(), "--quit".into()]));
+        assert!(!is_quit_request(&[exe, "--quiet".into()]));
+        assert!(!is_quit_request(&[]));
+    }
 }

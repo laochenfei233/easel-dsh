@@ -1,0 +1,63 @@
+# Easel-dsh site and release mirror. Replace easel.example.cn with the real
+# host; keep the two cache policies distinct:
+#   - latest.json is the updater pointer: never cache it.
+#   - releases/ is content-addressed by version: cache it for a year.
+# The 80/443 flow assumes ICP filing is complete; on an unfiled host, serve
+# the same block on a non-standard port until filing lands.
+
+limit_conn_zone $binary_remote_addr zone=easel_download:10m;
+
+server {
+    listen 80;
+    server_name easel.example.cn;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name easel.example.cn;
+
+    ssl_certificate /etc/letsencrypt/live/easel.example.cn/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/easel.example.cn/privkey.pem;
+
+    root /srv/easel-site/web;
+    index index.html;
+    charset utf-8;
+
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
+
+    gzip on;
+    gzip_types text/css application/json image/svg+xml text/plain;
+
+    # Updater pointer and download metadata: always revalidate.
+    location = /updates/latest.json {
+        default_type application/json;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    location = /updates/downloads.json {
+        default_type application/json;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    # Versioned installers never change; keep browsers off the origin after
+    # the first download and cap one client's share of the link.
+    location /releases/ {
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        limit_conn easel_download 4;
+        limit_rate 2m;
+    }
+
+    location /assets/ {
+        add_header Cache-Control "public, max-age=604800" always;
+    }
+}

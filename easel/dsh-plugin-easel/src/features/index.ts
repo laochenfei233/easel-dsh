@@ -5,6 +5,7 @@ import * as dashboard from './dashboard'
 import * as trends from './trends'
 import * as ideas from './ideas'
 import * as calendar from './calendar'
+import * as schedules from './schedules'
 import * as skills from './skills'
 import * as outputs from './outputs'
 import * as publish from './publish'
@@ -12,9 +13,11 @@ import * as accounts from './accounts'
 import * as profile from './profile'
 import * as breakdown from './breakdown'
 import { plugin as media } from './media'
+import { plugin as backup } from './backup'
 import { plugin as contextMenu } from './context-menu.js'
+import { plugin as handoff } from './handoff'
 
-const views = [dashboard, trends, ideas, calendar, skills, outputs, publish, accounts, profile, breakdown]
+const views = [dashboard, trends, ideas, calendar, schedules, skills, outputs, publish, accounts, profile, breakdown]
 
 /** Rail/page descriptors, one per view (labels feed the shared dictionaries). */
 export const FEATURES = views.map(module => ({
@@ -25,4 +28,4 @@ export const FEATURES = views.map(module => ({
 }))
 
 /** Every client plugin the core mounts: the views, the media previewer, and the context menu. */
-export const CLIENT_PLUGINS = [...FEATURES.map(feature => feature.plugin), media, contextMenu]
+export const CLIENT_PLUGINS = [...FEATURES.map(feature => feature.plugin), media, backup, contextMenu, handoff]

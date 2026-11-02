@@ -110,6 +110,12 @@ export interface ProfileBuildResponse {
   log?: string;
 }
 
+/** 画像六维文件（/api/persona/:name/files；缺文件时 content 为空串）。 */
+export interface PersonaFile {
+  filename: string;
+  content: string;
+}
+
 export function fetchPersonaFiles(name: string): Promise<{ name: string; files: PersonaFile[] }> {
   return request(`/api/persona/${encodeURIComponent(name)}/files`);
 }
@@ -127,10 +133,84 @@ export function deletePersona(name: string): Promise<{ ok: boolean; deleted: str
 }
 
 // ---- 热点雷达 ----
-export interface TrendItem { title: string; hot: string; url: string; }
-export interface TrendGroup { platform: string; label: string; items: TrendItem[]; ok?: boolean; }
-export function fetchTrends(platforms: string, limit = 12): Promise<{ trends: TrendGroup[]; updated: number }> {
-  return request(`/api/trends?platforms=${encodeURIComponent(platforms)}&limit=${limit}`);
+export interface TrendItem {
+  title: string; hot: string; url: string;
+  /** 真实榜位（1 起），不随排序变化。 */
+  rank?: number;
+  /** 相对上一份快照的名次变化：正=上升，负=下降；新上榜时缺省。 */
+  delta?: number;
+  /** 上一份新近快照里没有（「新上榜」徽标）。 */
+  isNew?: boolean;
+  /** 首次出现至今分钟数。 */
+  ageMin?: number;
+  /** 命中的关注词。 */
+  watch?: string[];
+}
+export interface TrendGroup {
+  platform: string; label: string; items: TrendItem[]; ok?: boolean;
+  /** 自定义源的类型标签。 */
+  category?: string;
+  /** 该源数据时间（秒）。 */
+  at?: number;
+  /** 内容来自内存/落盘快照，不是本轮抓的。 */
+  stale?: boolean;
+}
+/** 我关注/聚合卡里的条目：源内条目信息 + 来源平台。 */
+export interface TrendRef extends TrendItem { platform: string; label: string; }
+export interface WatchGroup { keyword: string; items: TrendRef[]; }
+export interface TrendCluster {
+  id: string; title: string;
+  /** 参与聚类的平台键与展示名（去重，与 items 对应）。 */
+  platforms: string[]; labels: string[];
+  bestRank: number; firstSeen: number; isNew: boolean;
+  items: TrendRef[];
+}
+export interface TrendsResponse { trends: TrendGroup[]; updated: number; watch: WatchGroup[]; clusters?: TrendCluster[]; }
+export function fetchTrends(platforms: string, limit = 12, options: { view?: 'list' | 'cluster'; force?: boolean } = {}): Promise<TrendsResponse> {
+  const params = new URLSearchParams({ platforms, limit: String(limit) });
+  if (options.view) params.set('view', options.view);
+  if (options.force) params.set('force', '1');
+  return request(`/api/trends?${params}`);
+}
+
+/** 右键抓取正文（spec easel-hotspot-radar D6）：正文进内容库，选题进选题库。 */
+export interface TrendCaptureInput {
+  title: string; source: string;
+  url?: string; platform?: string; rank?: number; hot?: string;
+}
+export interface TrendCaptureResult {
+  ok: boolean;
+  idea: Idea;
+  /** outputs 相对路径；正文不可得时缺省。 */
+  bodyPath?: string;
+  chars?: number;
+  reused?: boolean;
+  warning?: string;
+}
+export function captureTrendArticle(input: TrendCaptureInput): Promise<TrendCaptureResult> {
+  return request('/api/radar/article', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
+}
+
+// ---- 隔空传送（右键快推，spec easel-handoff-payload §S2） ----
+/** 快推需要的已配对设备投影。 */
+export interface PushDevice { id: string; name: string }
+/** /api/handoff/status 里快推用得到的字段。 */
+export interface HandoffStatusLite { available: boolean; paired: PushDevice[] }
+/** 读取已配对设备列表（右键推送的设备子菜单）。 */
+export function fetchHandoffPaired(): Promise<HandoffStatusLite> {
+  return request<HandoffStatusLite>('/api/handoff/status');
+}
+/** 把一个文件/目录快推到已配对设备（无会话、无配置，接收端并入同名项目目录）。 */
+export function pushFileToPeer(peerId: string, path: string): Promise<{ ok: boolean }> {
+  return request('/api/handoff/push', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ peerId, path }),
+  });
 }
 
 // ---- 内容排期 ----
@@ -142,6 +222,9 @@ export interface ScheduleItem {
   source?: string;        // manual | publish-page | chat | scheduler
   event_type?: string;    // event 专属：节日/电商/平台活动/行业
   end_date?: string;      // event 专属：活动区间结束日
+  repeat?: string;        // '' | 'yearly'（每年重复，日历客户端按月/日展开）
+  accountId?: string;     // 发布页成功回写时带的目标账号（旧条目缺省）
+  accountName?: string;   // 账号展示名（有 accountId 才有）
 }
 export type ScheduleInput = Omit<ScheduleItem, 'id'>;
 export interface ScheduleContext {
@@ -171,6 +254,42 @@ export function deleteSchedule(id: string): Promise<{ ok: boolean }> {
   return request(`/api/schedule/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
+// ---- CalDAV 订阅 ----
+export interface CaldavAccount {
+  id: string; name: string; url: string; username: string;
+  /** GET 返回掩码；保存时空串 = 保留服务端已存密码 */
+  password: string;
+  enabled: boolean; calendars: string[];
+  color?: string;
+  syncedAt?: number | null;
+}
+export interface CaldavCalendarRef { href: string; displayname: string }
+export interface CaldavEvent {
+  uid: string; title: string; allDay: boolean;
+  /** 全天 'YYYY-MM-DD'，定时 'YYYY-MM-DD HH:MM'；end 为独占端点 */
+  start: string; end: string;
+  location: string; description: string;
+}
+export function fetchCaldavAccounts(): Promise<{ accounts: CaldavAccount[] }> {
+  return request('/api/caldav/accounts');
+}
+export function putCaldavAccounts(accounts: CaldavAccount[]): Promise<{ ok: boolean }> {
+  return request('/api/caldav/accounts', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accounts }),
+  });
+}
+export function discoverCaldav(id: string, creds: { url?: string; username?: string; password?: string }): Promise<{ calendars: CaldavCalendarRef[] }> {
+  return request(`/api/caldav/accounts/${encodeURIComponent(id)}/discover`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(creds),
+  });
+}
+export function syncCaldav(id: string): Promise<{ ok: boolean; count: number }> {
+  return request(`/api/caldav/accounts/${encodeURIComponent(id)}/sync`, { method: 'POST' });
+}
+export function fetchCaldavEvents(): Promise<{ byAccount: Record<string, { syncedAt: number; events: CaldavEvent[] }> }> {
+  return request('/api/caldav/events');
+}
+
 // ---- 选题库 ----
 export interface Idea {
   id: string; title: string; note: string; source: string; status: string; created: number;
@@ -178,6 +297,10 @@ export interface Idea {
   deconstruct?: string;
   /** 立项后的项目目录（项目根相对）；「做内容」凭它注入产物落点。 */
   projectDir?: string;
+  /** 原文链接（右键抓取正文时由宿主写入）。 */
+  url?: string;
+  /** 正文在内容库的相对路径（不含 outputs/，宿主写入）；「正文」预览凭它读文件。 */
+  bodyPath?: string;
 }
 export type IdeaInput = { title: string; note?: string; source?: string; status?: string };
 export function fetchIdeas(): Promise<Idea[]> { return request('/api/ideas'); }
@@ -235,21 +358,64 @@ export function deleteOutput(path: string): Promise<{ ok: boolean; deleted: stri
   return request(`/api/output/${path.split('/').map(encodeURIComponent).join('/')}`, { method: 'DELETE' });
 }
 
-// ---- 账号登录 ----
+// ---- 账号（多账户注册表；spec easel-multi-account）----
+/** 注册表条目：同平台可有多条；没有账号的平台不出现在列表里。 */
 export interface AccountItem {
+  id: string;           // 稳定短 id；默认账号 id = 平台 key
+  platform: string;     // 后端 LOGIN_RUNNERS 平台 key
+  name: string;         // 用户可改的展示名
+  persona: string;      // 绑定画像目录名；'' = 未绑定（通用模式）
+  backend: string;      // xhs | web | douyin | biliup | wechat-oa
+  profileDir: string;   // ~/.easel-browser-profiles 下的目录名（不透明引用）
+  loggedIn: boolean;
+  direct: boolean;      // 该账号的直启登录窗口是否开着
+}
+
+export function fetchAccounts(): Promise<AccountItem[]> {
+  return request<AccountItem[]>('/api/accounts');
+}
+
+/** 新建账号条目的应答（后端不回 backend/direct，缺的从平台元数据补）。 */
+export interface CreatedAccount {
+  id: string;
   platform: string;
   name: string;
-  backend: string;      // xhs | web | biliup | unsupported
-  supported: boolean;
+  persona: string;
+  profileDir: string;
   loggedIn: boolean;
-  note: string;
+}
+
+/** 新建账号条目（公众号单账号限制会 400；名字不能为空）。 */
+export function createAccount(platform: string, name: string): Promise<CreatedAccount> {
+  return request<CreatedAccount>('/api/accounts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ platform, name }),
+  });
+}
+
+/** 改名 / 绑定画像；persona 传 null 或 '' 解绑，不存在的画像后端 404。 */
+export function updateAccount(
+  id: string,
+  patch: { name?: string; persona?: string | null },
+): Promise<{ ok: boolean; id: string; name: string; persona: string }> {
+  return request(`/api/accounts/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(patch),
+  });
+}
+
+/** 删除账号 = 登出 + 删注册表条目（后端一并清 profile 目录与登录标记）。 */
+export function deleteAccount(id: string): Promise<{ ok: boolean; deleted: string[] }> {
+  return request(`/api/accounts/${encodeURIComponent(id)}`, { method: 'DELETE' });
 }
 
 export interface LoginStart {
-  mode: 'qr' | 'manual' | 'cdp' | 'terminal' | 'credentials';   // credentials = 凭证式（公众号 AppID/AppSecret）
-  state?: string;       // starting | qr_ready | success | expired | error | unknown
+  mode: 'qr' | 'direct' | 'credentials';   // credentials = 凭证式（公众号 AppID/AppSecret）
+  state?: string;       // qr: starting|qr_ready|success|expired|error|unknown；direct: window-open
   message?: string;
-  qr?: string;          // outputs 下相对路径，用 mediaUrl() 取图
+  qr?: string;          // outputs 下相对路径，用 mediaUrl() 取图（仅 qr）
   configured?: boolean; // 凭证式：是否已配置
 }
 
@@ -289,15 +455,12 @@ export function mpLoginStatus(platform: string): Promise<LoginStatus> {
 }
 
 export interface LoginStatus {
-  mode: 'qr';
+  mode: 'qr' | 'direct';
   state: string;
   message: string;
   qr: string;
   qrTs?: number;
-}
-
-export function fetchAccounts(): Promise<AccountItem[]> {
-  return request<AccountItem[]>('/api/accounts');
+  direct?: boolean;     // 直启登录窗口是否开着（direct 模式下为 true）
 }
 
 export interface AccountWhoami {
@@ -306,14 +469,19 @@ export interface AccountWhoami {
   avatar: string;   // 头像 URL（http）或空
 }
 
-/** 真校验某平台登录态 + 拉昵称/头像（后端起 headless 浏览器，数秒）。 */
-export function accountWhoami(platform: string): Promise<AccountWhoami> {
-  return request<AccountWhoami>(`/api/accounts/${encodeURIComponent(platform)}/whoami`);
+/** 真校验某账号登录态 + 拉昵称/头像（后端起 headless 浏览器，数秒）。account 缺省 = 平台默认账号。 */
+export function accountWhoami(platform: string, account?: string): Promise<AccountWhoami> {
+  const q = account ? `?account=${encodeURIComponent(account)}` : '';
+  return request<AccountWhoami>(`/api/accounts/${encodeURIComponent(platform)}/whoami${q}`);
 }
 
-/** 退出登录：删该平台持久化登录态。 */
-export function logoutAccount(platform: string): Promise<{ ok: boolean; deleted: string[] }> {
-  return request(`/api/logout/${encodeURIComponent(platform)}`, { method: 'POST' });
+/** 退出登录：删该账号持久化登录态。account 缺省 = 平台默认账号。 */
+export function logoutAccount(platform: string, account?: string): Promise<{ ok: boolean; deleted: string[] }> {
+  return request(`/api/logout/${encodeURIComponent(platform)}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(account ? { account } : {}),
+  });
 }
 
 export interface PublishResult {
@@ -324,11 +492,11 @@ export interface PublishResult {
   pending?: boolean;
 }
 
-/** 一键发布到某平台（真发布，--exec）。media 为 outputs 相对路径数组。
+/** 一键发布到某平台某账号（真发布，--exec）。media 为 outputs 相对路径数组；account 缺省 = 默认账号。
  * 抖音返回 {async:true}，需轮询 publishStatus；其他平台同步返回结果。 */
 export function publishNow(
   platform: string,
-  payload: { title: string; body: string; media: string[]; tags?: string },
+  payload: { title: string; body: string; media: string[]; tags?: string; account?: string },
 ): Promise<PublishResult> {
   return request<PublishResult>(`/api/publish/${encodeURIComponent(platform)}`, {
     method: 'POST',
@@ -343,28 +511,30 @@ export interface PublishStatus {
   message: string;
 }
 
-/** 轮询异步发布状态（抖音）。 */
-export function publishStatus(platform: string): Promise<PublishStatus> {
-  return request<PublishStatus>(`/api/publish/${encodeURIComponent(platform)}/status`);
+/** 轮询异步发布状态（抖音）。account 缺省 = 平台默认账号。 */
+export function publishStatus(platform: string, account?: string): Promise<PublishStatus> {
+  const q = account ? `?account=${encodeURIComponent(account)}` : '';
+  return request<PublishStatus>(`/api/publish/${encodeURIComponent(platform)}/status${q}`);
 }
 
-/** 发布触发短信墙时回填验证码。 */
-export function submitPublishSms(platform: string, code: string): Promise<{ ok: boolean }> {
+/** 发布触发短信墙时回填验证码。account 缺省 = 平台默认账号。 */
+export function submitPublishSms(platform: string, code: string, account?: string): Promise<{ ok: boolean }> {
   return request(`/api/publish/${encodeURIComponent(platform)}/sms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code }),
+    body: JSON.stringify(account ? { code, account } : { code }),
   });
 }
 
-/** 登录方式：qr=无头扫码 | manual=有头窗口手动登录 | cdp=接管已开的 Chrome。 */
-export type LoginMode = 'qr' | 'manual' | 'cdp';
+/** 登录方式：qr=无头扫码 | direct=直启真实浏览器窗口人工登录（风控重的平台推荐）。 */
+export type LoginMode = 'qr' | 'direct';
 
-export function startLogin(platform: string, mode: LoginMode = 'qr'): Promise<LoginStart> {
+/** 启动登录。已建账号传 account 重登；新号传 name（登录即建号），都缺省 = 默认账号。 */
+export function startLogin(platform: string, mode: LoginMode = 'qr', target: { account?: string; name?: string } = {}): Promise<LoginStart> {
   return request<LoginStart>(`/api/login/${encodeURIComponent(platform)}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ mode }),
+    body: JSON.stringify({ mode, account: target.account, name: target.name }),
   });
 }
 
@@ -382,6 +552,8 @@ export interface RadarConfig {
   cdpEndpoint: string;
   proxyEnv: string;
   sources: RadarSource[];
+  /** 关注词（分隔输入规范化后的列表，≤20 个）。 */
+  keywords: string[];
 }
 
 export function fetchRadarConfig(): Promise<RadarConfig> {
@@ -396,8 +568,9 @@ export function saveRadarConfig(cfg: RadarConfig): Promise<{ ok: boolean }> {
   });
 }
 
-export function loginStatus(platform: string): Promise<LoginStatus> {
-  return request<LoginStatus>(`/api/login/${encodeURIComponent(platform)}/status`);
+export function loginStatus(platform: string, account?: string): Promise<LoginStatus> {
+  const q = account ? `?account=${encodeURIComponent(account)}` : '';
+  return request<LoginStatus>(`/api/login/${encodeURIComponent(platform)}/status${q}`);
 }
 
 // ---- 归因层：账号创作数据 ----
@@ -418,8 +591,7 @@ export interface AccountAnalytics {
   posts: number | null;
   metrics: { label: string; value: string; vs: string }[];
   notes: { title: string; url: string; cover?: string; stat?: string }[];
-  growth: Record<'last' | 'day' | 'week' | 'month' | 'year',
-    { followers: number | null; likes: number | null; posts: number | null; since_days: number | null } | null>;
+  growth: AnalyticsGrowth;
   fetched_at: number;
 }
 
@@ -428,17 +600,79 @@ export function fetchAnalyticsPlatforms(): Promise<AnalyticsPlatform[]> {
   return request<AnalyticsPlatform[]>('/api/analytics/platforms');
 }
 
-/** 抓某平台已登录账号的创作数据（后端起 headless 浏览器，数秒）。 */
-export function fetchAccountAnalytics(platform: string): Promise<AccountAnalytics> {
-  return request<AccountAnalytics>(`/api/analytics/${encodeURIComponent(platform)}`);
+/** 抓某平台账号的创作数据（后端起 headless 浏览器，数秒）。account 缺省 = 默认账号。 */
+export function fetchAccountAnalytics(platform: string, account?: string): Promise<AccountAnalytics> {
+  const q = account ? `?account=${encodeURIComponent(account)}` : '';
+  return request<AccountAnalytics>(`/api/analytics/${encodeURIComponent(platform)}${q}`);
 }
 
-/** 回填短信验证码（登录风控短信墙）：提交后 runner 读走填码继续登录。 */
-export function submitLoginSms(platform: string, code: string): Promise<{ ok: boolean }> {
+/** 归档快照点（全览走势图与增长对比的原始数据）。following 只在新增快照里有。 */
+export interface AnalyticsPoint {
+  ts: number;
+  followers: number | null;
+  likes: number | null;
+  following?: number | null;
+  posts: number | null;
+}
+
+export type AnalyticsGrowth = Record<'last' | 'day' | 'week' | 'month' | 'year',
+  { followers: number | null; likes: number | null; posts: number | null; since_days: number | null } | null>;
+
+export interface AnalyticsOverviewRow {
+  id: string;
+  platform: string;
+  name: string;
+  persona: string;
+  backend: string;
+  loggedIn: boolean;
+  /** false = 该平台不写归档（B站/公众号），latest/growth/points 恒空。 */
+  archived: boolean;
+  latest: AnalyticsPoint | null;
+  growth: AnalyticsGrowth | null;
+  points: AnalyticsPoint[];
+  /** 距最后采集的天数；无归档时 null。 */
+  ageDays: number | null;
+}
+
+/** 全览：每个归因平台账号的最新归档快照与增长（读归档，不启浏览器）。 */
+export function fetchAnalyticsOverview(): Promise<AnalyticsOverviewRow[]> {
+  return request<AnalyticsOverviewRow[]>('/api/analytics/overview');
+}
+
+/** 回填短信验证码（登录风控短信墙）：提交后 runner 读走填码继续登录。account 缺省 = 平台默认账号。 */
+export function submitLoginSms(platform: string, code: string, account?: string): Promise<{ ok: boolean }> {
   return request(`/api/login/${encodeURIComponent(platform)}/sms`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code }),
+    body: JSON.stringify(account ? { code, account } : { code }),
+  });
+}
+
+// ---- 定时任务（Host schedule 引擎；spec easel-scheduled-tasks）----
+// 读/改/删/记录走 dsh 的 remote.schedule（页面经 PageProps.remote 直连），
+// 只有 create 是 host 进程 API，需要这条 easel 路由中转。
+/** 表单时机形状：恰一种，kind 之外的字段按 kind 取用。 */
+export interface ScheduledTiming {
+  kind: 'at' | 'daily' | 'weekly' | 'every';
+  date?: string;              // 仅一次：YYYY-MM-DD
+  time?: string;              // HH:mm（补秒由宿主完成）
+  weekdays?: number[];        // 每周：ISO 星期 1-7
+  value?: number;             // 每 N 个单位
+  unit?: 'hour' | 'minute';
+}
+export interface ScheduledTaskInput {
+  sessionId: string;
+  title: string;
+  prompt: string;
+  timeZone: string;
+  timing: ScheduledTiming;
+}
+/** 创建定时任务（引擎校验失败时错误信息已中文化）。 */
+export function createScheduledTask(input: ScheduledTaskInput): Promise<unknown> {
+  return request('/api/automation/tasks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
   });
 }
 

@@ -5,6 +5,7 @@ apps/desktop/.env.macos
 apps/desktop/*.p12
 node_modules/
 lib/
+!easel/dsh-plugin-easel/src/lib/
 *.tsbuildinfo
 pnpm-debug.log
 .pnpm-store/
@@ -50,3 +51,5 @@ worktrees/
 # Standalone repo staging (dsh-desktop)
 .standalone/
 native/system/test/bin/
+site/dist/
+site/data/downloads.json

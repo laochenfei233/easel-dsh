@@ -560,8 +560,8 @@ export interface Config {
 - `source`: [`packages/client/ui-settings-account/src/index.ts:9`](../packages/client/ui-settings-account/src/index.ts)
 
 ```ts config-catalog
-/** Public contact options and live device-local onboarding progress. */
-export interface Config extends ContactConfig {
+/** Public bonus-notice options and live device-local onboarding progress. */
+export interface Config extends NoticeConfig {
   /** Onboarding progress format version. */
   version: Volatile<1>
   /** Last accepted onboarding page. */
@@ -578,12 +578,8 @@ export interface Config extends ContactConfig {
   developerTools: Volatile<boolean>
 }
 
-/** Questionnaire destination and bonus notice timings shared by Host and Client. */
-export interface ContactConfig {
-  /** HTTPS questionnaire URL; override for a test form. */
-  contactFormUrl: string
-  /** Questionnaire source option; empty until Harness is supported by the form. */
-  contactSource: string
+/** Bonus notice acknowledgement timings shared by Host and Client. */
+export interface NoticeConfig {
   /** First delay before retrying a failed bonus acknowledgement. */
   bonusAckRetryDelayMs: number
   /** Ceiling for the acknowledgement retry backoff. */
@@ -4583,6 +4579,45 @@ export interface Config {
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-workspace-changes -->
 
+<!-- BEGIN GENERATED config-catalog:@easel-dsh/easel-air-transfer -->
+<a id="easel-dsheasel-air-transfer"></a>
+
+## `@easel-dsh/easel-air-transfer`
+
+- `source`: [`packages/transfer/lan-handoff/src/index.ts:169`](../packages/transfer/lan-handoff/src/index.ts)
+
+```ts config-catalog
+/** Configuration for the LAN project-handoff peer service. */
+export interface Config {
+  /**
+   * Display name LAN peers see for this device; an empty string is the
+   * schema default and resolves to unset. Unset uses the operating-system
+   * host name.
+   */
+  name?: string
+  /**
+   * TCP port the handoff listener binds. Omission binds 0 — the OS assigns
+   * a free port, and mDNS advertises the assigned value.
+   */
+  port?: number
+  /**
+   * Absolute directory that receives handed-off projects, each as its own
+   * subdirectory named from the sender's title. An empty string is the schema
+   * default and resolves to `<handoff root>/inbox`; the Easel shell points
+   * this at the project root's `projects` directory.
+   */
+  handoffDirectory?: string
+  /**
+   * Absolute data root that receives `data` bundle entries (`.env`,
+   * `profiles/`, `skills/`, `outputs/`). An empty string is the schema default
+   * and resolves to unset; a bundle carrying data entries is refused while
+   * unset.
+   */
+  dataDirectory?: string
+}
+```
+<!-- END GENERATED config-catalog:@easel-dsh/easel-air-transfer -->
+
 ## Loadable plugins with no config
 
 These load from a `cordis.yml` entry with no `config:` block; they declare no configuration API.
@@ -4747,6 +4782,7 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 | `@deepseek-ai/dsh-cmdline` | — | [`packages/boot/cmdline/src/index.ts`](../packages/boot/cmdline/src/index.ts) |
 | `@deepseek-ai/dsh-cua` | — | [`packages/experimental/cua/src/index.ts`](../packages/experimental/cua/src/index.ts) |
 | `@deepseek-ai/dsh-deque` | — | [`packages/util/deque/src/index.ts`](../packages/util/deque/src/index.ts) |
+| `@deepseek-ai/dsh-easel-backup` | — | [`packages/backup/easel-backup/src/index.ts`](../packages/backup/easel-backup/src/index.ts) |
 | `@deepseek-ai/dsh-experimental-agent-team-profile` | — | [`packages/experimental/agent-team-profile/src/index.ts`](../packages/experimental/agent-team-profile/src/index.ts) |
 | `@deepseek-ai/dsh-experimental-badge-skill-bundle` | — | [`packages/experimental/badge-skill-bundle/src/index.ts`](../packages/experimental/badge-skill-bundle/src/index.ts) |
 | `@deepseek-ai/dsh-experimental-browser-use-runtime` | — | [`packages/experimental/browser-use-runtime/src/index.ts`](../packages/experimental/browser-use-runtime/src/index.ts) |
@@ -4784,6 +4820,7 @@ Imported as libraries by other packages; a `cordis.yml` cannot load them.
 | `@deepseek-ai/dsh-session-format-v1-to-v2` | — | [`packages/session/session-format-v1-to-v2/src/index.ts`](../packages/session/session-format-v1-to-v2/src/index.ts) |
 | `@deepseek-ai/dsh-session-format-v2-to-v3` | — | [`packages/session/session-format-v2-to-v3/src/index.ts`](../packages/session/session-format-v2-to-v3/src/index.ts) |
 | `@deepseek-ai/dsh-session-format-v3-to-v4` | — | [`packages/session/session-format-v3-to-v4/src/index.ts`](../packages/session/session-format-v3-to-v4/src/index.ts) |
+| `@deepseek-ai/dsh-session-log-import` | — | [`packages/session-query/session-log-import/src/index.ts`](../packages/session-query/session-log-import/src/index.ts) |
 | `@deepseek-ai/dsh-session-snapshot` | — | [`packages/test-support/session-snapshot/src/index.ts`](../packages/test-support/session-snapshot/src/index.ts) |
 | `@deepseek-ai/dsh-session-telemetry` | — | [`packages/session/session-telemetry/src/index.ts`](../packages/session/session-telemetry/src/index.ts) |
 | `@deepseek-ai/dsh-session-title-llm` | — | [`packages/session/session-title-llm/src/index.ts`](../packages/session/session-title-llm/src/index.ts) |

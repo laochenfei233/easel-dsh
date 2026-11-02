@@ -4,6 +4,7 @@
     - button "General"
     - button "Models"
     - button "Built-in plugins"
+    - button "Automation tasks"
     - button "Agent presets"
   - button "Open configuration file"
   - button "Close"

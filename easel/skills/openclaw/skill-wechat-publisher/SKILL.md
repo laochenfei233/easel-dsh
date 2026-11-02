@@ -137,3 +137,7 @@ python3 skills/openclaw/skill-wechat-publisher/scripts/publish.py --account main
 - Markdown、HTML 与贴图三条入口都会在上传前扫描密钥、内部地址和路径，命中时必须改稿，不得绕过。
 - 两账号 voice/theme 差异是反 AI 检测策略的一部分，不要趋同。
 - 错误码（40164 IP 白名单 / 40001 token / 48001 未授权等）见 [references/errors.md](references/errors.md)。
+
+## 多账号（可选）
+
+账号注册表（`outputs/_accounts.json`）里公众号 v1 为单账号：至多一个条目，只承载名字/画像绑定；AppID 凭证与 mp 后台会话仍是全局一份，脚本参数无账号差异。宿主 API 的 `account` 参数对公众号可省略。

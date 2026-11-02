@@ -82,3 +82,7 @@ python skills/openclaw/skill-cross-platform-publish/scripts/publish_dispatch.py 
 
 一稿多发的关键不是"复制粘贴"而是"按平台重适配"。本 SKILL 用约束注册表把各平台的字数/比例/
 标签/类型规则固化，路由到对应 publisher，适配交给 LLM，发布交给平台 SKILL。
+
+## 多账号（可选）
+
+数据根 `outputs/_accounts.json` 是账号注册表，支持同平台多账号。分发多账号时逐号调用各平台脚本：浏览器平台带 `--profile-dir`（或直启窗口开着时 `--cdp-endpoint` 附身），B站带 `--cookie-file`，或统一走宿主 API `POST /easel/api/publish/<平台>` 带 `account: <账号id>`。账号清单（id/平台/profileDir/绑定画像）直接读注册表。

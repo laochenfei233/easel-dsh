@@ -35,6 +35,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import login_state  # noqa: E402
+import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
 import content_guard  # noqa: E402  出站内容安全闸门
 import platform_readback  # noqa: E402  发布读回对账（快手已接入，注册表见 _READBACK_VERIFIERS）
 import human_pace  # noqa: E402  人类节奏（提交前双停顿；EASEL_PACE_SKIP=1 跳过）
@@ -311,6 +312,12 @@ def _profile_dir(platform: str, base: str | None) -> Path:
     return root / PLATFORMS[platform]["profile"]
 
 
+def _session_profile(a) -> Path:
+    """本命令实际使用的 profile 目录：--profile-dir 显式覆盖，否则现状按平台路由（多账号用）。"""
+    return browser_session.pick_profile(getattr(a, "profile_dir", None),
+                                        _profile_dir(a.platform, a.profile_base))
+
+
 def cmd_platforms(_a) -> int:
     print(f"支持 {len(PLATFORMS)} 个网页发布平台：\n")
     for k, c in PLATFORMS.items():
@@ -567,26 +574,35 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
         from playwright.sync_api import sync_playwright, TimeoutError as PWTimeout
     except Exception as e:
         _die(f"需要 playwright：{e}（pip install playwright && playwright install chromium）", 3)
-    profile = _profile_dir(a.platform, a.profile_base)
-    profile.mkdir(parents=True, exist_ok=True)
+    profile = _session_profile(a)
     cfg = PLATFORMS[a.platform]
     ctx = {"media": a.media or "", "title": a.title or "", "desc": a.desc or "",
            "tags": a.tags or "", "cover": a.cover or ""}
     with sync_playwright() as p:
-        browser = p.chromium.launch_persistent_context(
-            str(profile), headless=not headed, args=LAUNCH_ARGS + ["--no-proxy-server"],
-            viewport={"width": 1440, "height": 900})
-        page = browser.pages[0] if browser.pages else browser.new_page()
+        cdp = browser_session.resolve_endpoint(a)
+        if cdp:
+            # CDP 附身运行中实例（账号直启的窗口）：登录态在实例里，不碰持久 profile。
+            br, owned = browser_session.open_browser(p, cdp_endpoint=cdp, launch=None)
+        else:
+            profile.mkdir(parents=True, exist_ok=True)
+            br, owned = p.chromium.launch_persistent_context(
+                str(profile), headless=not headed, args=LAUNCH_ARGS + ["--no-proxy-server"],
+                viewport={"width": 1440, "height": 900}), True
+        page = browser_session.open_page(br, owned)
         if not do_publish:
             page.goto(cfg["login_url"])
-            print(f"已打开 {cfg['name']} 登录页，请在浏览器完成登录（扫码等），登录态保存在 {profile}。",
-                  file=sys.stderr)
+            if cdp:
+                print(f"已在运行中的浏览器实例打开 {cfg['name']} 登录页——请在那个窗口完成登录（登录态留在该实例）。",
+                      file=sys.stderr)
+            else:
+                print(f"已打开 {cfg['name']} 登录页，请在浏览器完成登录（扫码等），登录态保存在 {profile}。",
+                      file=sys.stderr)
             print("登录完成后按 Enter 关闭 ...", file=sys.stderr)
             try:
                 input()
             except EOFError:
                 pass
-            browser.close()
+            browser_session.close_session(br, owned)
             return 0
         # publish：按媒体类型选步骤——图片且平台有图文流程走 steps_image，否则默认 steps
         steps = _resolve_steps(a.platform, ctx, _steps_key_for(cfg, a.media))
@@ -841,7 +857,8 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
             _die(f"步骤超时（选择器可能已失效，需更新）：{e}")
         finally:
             if not a.keep_open:
-                browser.close()
+                # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                browser_session.close_session(br, owned)
     return 0
 
 
@@ -1125,32 +1142,33 @@ def cmd_login_qr(a) -> int:
     cfg = PLATFORMS.get(a.platform)
     if not cfg:
         _die(f"未知平台：{a.platform}（支持：{', '.join(PLATFORMS)}）")
-    profile = _profile_dir(a.platform, a.profile_base)
-    profile.mkdir(parents=True, exist_ok=True)
+    profile = _session_profile(a)
     root = Path(__file__).resolve().parents[3] / "outputs" / "_login"
     qr_out = Path(a.qr_out).expanduser() if a.qr_out else root / f"{a.platform}.png"
     sf = a.status_file or str(root / f"{a.platform}.json")
     timeout_s = a.timeout or 180
 
     login_state.write_status(sf, "starting")
-    cdp = getattr(a, "cdp", None)
+    cdp = browser_session.resolve_endpoint(a)
     headed = getattr(a, "headed", False)
     with sync_playwright() as p:
         if cdp:
-            # CDP 接管用户自己开的 Chrome：真指纹/真登录态/真 IP，不碰持久 profile。
-            browser = p.chromium.connect_over_cdp(cdp)
+            # CDP 附身运行中实例（账号直启的窗口）：真指纹/真登录态，不碰持久 profile。
+            browser, owned = browser_session.open_browser(p, cdp_endpoint=cdp, launch=None)
             login_state.write_status(sf, "window_login",
                                      "已接管你的 Chrome——请在那个浏览器窗口里完成登录。")
         elif headed:
-            browser = p.chromium.launch_persistent_context(
-                str(profile), headless=False, locale="zh-CN", args=LAUNCH_ARGS)
+            profile.mkdir(parents=True, exist_ok=True)
+            browser, owned = p.chromium.launch_persistent_context(
+                str(profile), headless=False, locale="zh-CN", args=LAUNCH_ARGS), True
             login_state.write_status(sf, "window_login",
                                      "请在弹出的浏览器窗口里完成登录（扫码或账号），不要关掉那个窗口。")
         else:
-            browser = p.chromium.launch_persistent_context(
+            profile.mkdir(parents=True, exist_ok=True)
+            browser, owned = p.chromium.launch_persistent_context(
                 str(profile), headless=True, locale="zh-CN",
-                args=LAUNCH_ARGS + ["--no-proxy-server"])
-        page = browser.pages[0] if browser.pages else browser.new_page()
+                args=LAUNCH_ARGS + ["--no-proxy-server"]), True
+        page = browser_session.open_page(browser, owned)
         if cdp or headed:
             # 窗口模式没有「抠二维码给远端看」这一步：直接进入登录轮询，
             # 前端收到 window_login 状态后展示引导文案而不是二维码图片。
@@ -1173,7 +1191,9 @@ def cmd_login_qr(a) -> int:
             login_state.write_status(sf, "expired", f"{timeout_s}s 内未检测到登录成功")
             return 1
         try:
-            _block_heavy(browser, a.platform)
+            if not cdp:
+                # 路由拦截只该加在自己起的 context 上——CDP 附身的默认 context 是用户共享的。
+                _block_heavy(browser, a.platform)
             page.goto(cfg["login_url"], wait_until="domcontentloaded")
             # 给客户端 redirect + 登录态渲染时间：已登录常从入口页跳到 /profile 等，
             # 固定 1.2s 经常不够（快手实测 → 误判未登录去截整页）。等 login_check 出现最多 6s。
@@ -1241,7 +1261,8 @@ def cmd_login_qr(a) -> int:
             print(f"❌ {cfg['name']} 登录异常：{e}", file=sys.stderr)
             return 1
         finally:
-            browser.close()
+            # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+            browser_session.close_session(browser, owned)
 
 
 def cmd_publish(a) -> int:
@@ -1299,14 +1320,21 @@ def cmd_whoami(a) -> int:
     result = {"loggedIn": False, "name": "", "avatar": ""}
     try:
         with sync_playwright() as p:
-            profile = _profile_dir(a.platform, a.profile_base)
-            profile.mkdir(parents=True, exist_ok=True)
-            browser = p.chromium.launch_persistent_context(
-                str(profile), headless=True, locale="zh-CN",
-                args=LAUNCH_ARGS + ["--no-proxy-server"])
-            page = browser.pages[0] if browser.pages else browser.new_page()
+            cdp = browser_session.resolve_endpoint(a)
+            if cdp:
+                # CDP 附身运行中实例：实读该实例的登录态，不碰持久 profile。
+                browser, owned = browser_session.open_browser(p, cdp_endpoint=cdp, launch=None)
+            else:
+                profile = _session_profile(a)
+                profile.mkdir(parents=True, exist_ok=True)
+                browser, owned = p.chromium.launch_persistent_context(
+                    str(profile), headless=True, locale="zh-CN",
+                    args=LAUNCH_ARGS + ["--no-proxy-server"]), True
+            page = browser_session.open_page(browser, owned)
             try:
-                _block_heavy(browser, a.platform)
+                if not cdp:
+                    # 路由拦截只该加在自己起的 context 上——CDP 附身的默认 context 是用户共享的。
+                    _block_heavy(browser, a.platform)
                 page.goto(cfg["publish_url"], wait_until="domcontentloaded", timeout=30000)
                 _settle_login(page, cfg)  # 等客户端跳转落定，避免 SPA 未跳转期误判已登录
                 logged = _is_logged_in(page, cfg)
@@ -1340,7 +1368,8 @@ def cmd_whoami(a) -> int:
                                 result["avatar"] = src
                                 break
             finally:
-                browser.close()
+                # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                browser_session.close_session(browser, owned)
     except Exception as e:  # noqa: BLE001 — whoami 永远输出 JSON
         result["error"] = str(e)
     print(json.dumps(result, ensure_ascii=False))
@@ -1373,6 +1402,19 @@ def cmd_selftest(_a) -> int:
     # profile 目录路由
     pd = _profile_dir("zhihu", None)
     assert pd.name == "ZhihuProfile", "profile 目录名不对"
+    # 账号参数化（browser_session）：--profile-dir / --cdp-endpoint 解析契约
+    browser_session.selftest_args()
+
+    class _Args:
+        platform = "zhihu"
+        profile_base = None
+
+        def __init__(self, **kw):
+            self.profile_dir = kw.get("profile_dir")
+            self.cdp_endpoint = kw.get("cdp_endpoint")
+
+    assert _session_profile(_Args()) == _profile_dir("zhihu", None), "未传 --profile-dir 默认=现状路由"
+    assert _session_profile(_Args(profile_dir="~/pd")) == Path.home() / "pd", "显式覆盖生效"
     # 登录轮询提速 + 深探（快手扫码后停在 passport 不自跳的修复）
     assert _LOGIN_POLL_MS <= 1000, "轮询间隔应 ≤1s（成功检测延迟）"
     assert _LOGIN_PROBE_EVERY >= 1 and callable(_probe_logged_in)
@@ -1464,7 +1506,7 @@ def cmd_selftest(_a) -> int:
     assert callable(_capture_qr), "缺 _capture_qr（iframe 感知的二维码截取）"
     # SPA 客户端跳转落定后再判登录态（修视频号未跳转期 URL 启发式误报已登录的假阳性）
     assert callable(_settle_login), "缺 _settle_login（判登录态前等客户端跳转落定）"
-    print(f"✅ selftest 通过（{len(PLATFORMS)} 平台配置完整 + 步骤/占位符解析 + 路由 + 登录轮询/深探 "
+    print(f"✅ selftest 通过（{len(PLATFORMS)} 平台配置完整 + 步骤/占位符解析 + 路由 + 账号参数 profile-dir/cdp-endpoint + 登录轮询/深探 "
           "+ 二维码打分/iframe 截取 + 多候选/快手健壮化 + 读回对账（快手））")
     return 0
 
@@ -1483,6 +1525,7 @@ def main() -> int:
         p.add_argument("--tags", help="话题标签（如 '#AI #教程'）")
         p.add_argument("--cover", help="封面")
         p.add_argument("--profile-base", help="登录态根目录（默认 ~/.easel-browser-profiles）")
+        browser_session.add_args(p, default_hint="~/.easel-browser-profiles/<平台>Profile")
 
     sub.add_parser("platforms", help="列出平台").set_defaults(func=cmd_platforms)
     sub.add_parser("check", help="检查 playwright/内核").set_defaults(func=cmd_check)
@@ -1498,8 +1541,6 @@ def main() -> int:
     p = sub.add_parser("login-qr", help="headless 抠二维码登录（供 Web 前端）")
     p.add_argument("--headed", action="store_true",
                    help="有头模式：弹可见浏览器窗口由用户亲手登录（本机 IP + 真窗口指纹）")
-    p.add_argument("--cdp", metavar="ENDPOINT",
-                   help="CDP 接管：连接用户已开的 Chrome（如 http://127.0.0.1:9222），不再自己启动浏览器")
     add_common(p)
     p.add_argument("--qr-out", help="二维码图片输出路径")
     p.add_argument("--status-file", help="登录状态 JSON 输出路径（供 Web 后端轮询）")

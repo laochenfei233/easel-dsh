@@ -28,10 +28,15 @@ const DATA_MIGRATING: &str = ".easel-migrating";
 const DATA_ROOT_CONFIG: &str = "data-root.json";
 const DATA_ROOT_PENDING: &str = "data-root.pending.json";
 const DATA_ROOT_RESULT: &str = "data-root.result.json";
+/// A relocation request is honoured only this long after it was written. The
+/// settings route writes it and immediately exits the server, so anything older
+/// is a leftover that must not move data on a later launch.
+const DATA_ROOT_PENDING_TTL_SECS: u64 = 600;
 
-/// `%LOCALAPPDATA%\Easel-dsh`, or `None` in a dev launch (the exe is not under
-/// `app\`). Every path helper falls back to the pre-layout defaults when this
-/// returns `None`, so `tauri dev` keeps using the developer's scratch data.
+/// `%LOCALAPPDATA%\Easel-dsh`, or `None` in a dev launch (the exe has no
+/// bundled runtime beside it). Every path helper falls back to the pre-layout
+/// defaults when this returns `None`, so `tauri dev` keeps using the
+/// developer's scratch data.
 #[cfg_attr(not(windows), allow(dead_code))]
 pub(crate) fn install_root() -> Option<PathBuf> {
     install_root_from_exe(&std::env::current_exe().ok()?)
@@ -40,11 +45,16 @@ pub(crate) fn install_root() -> Option<PathBuf> {
 #[cfg_attr(not(windows), allow(dead_code))]
 fn install_root_from_exe(exe: &Path) -> Option<PathBuf> {
     let dir = exe.parent()?;
+    // Pre-alpha.32 split layout kept the program tree in `<root>\app`.
     if dir.file_name().and_then(|name| name.to_str()) == Some("app") {
-        dir.parent().map(Path::to_path_buf)
-    } else {
-        None
+        return dir.parent().map(Path::to_path_buf)
     }
+    // Flat layout: the exe sits directly in the install root beside the
+    // bundled runtime payload; `runtime\manifest.json` is the install marker.
+    if dir.join("runtime").join("manifest.json").is_file() {
+        return Some(dir.to_path_buf())
+    }
+    None
 }
 
 #[cfg(windows)]
@@ -72,12 +82,9 @@ fn is_installed() -> bool {
         .unwrap_or(false)
 }
 
-/// The application directory a data root must never live inside.
-#[cfg_attr(windows, allow(dead_code))]
-#[cfg(windows)]
-fn install_dir() -> Option<PathBuf> {
-    install_root().map(|root| root.join("app"))
-}
+// On Windows the flat install layout makes the install root itself the
+// application directory a data root must never live inside; non-Windows
+// platforms derive it from the bundle location below.
 
 #[cfg(target_os = "macos")]
 fn install_dir() -> Option<PathBuf> {
@@ -403,7 +410,9 @@ pub(crate) fn migrate() {
                     return;
                 }
             }
-            cleanup_legacy_app(&root);
+            // The pre-alpha.32 program tree (`<root>\app`) is removed by the
+            // installer's POSTINSTALL hook, which owns the install directory;
+            // startup never deletes program files.
         }
     }
 
@@ -653,6 +662,59 @@ fn ensure_links_at(
     Ok(())
 }
 
+/// Collapse `.` and `..` segments without touching the filesystem. The
+/// settings route accepts any absolute spelling, so `C:\Windows\Temp\..\Temp`
+/// must not slip past the shared-directory check.
+fn normalize_lexically(path: &Path) -> PathBuf {
+    let mut out = PathBuf::new();
+    for component in path.components() {
+        match component {
+            std::path::Component::ParentDir => {
+                out.pop();
+            }
+            std::path::Component::CurDir => {}
+            other => out.push(other.as_os_str()),
+        }
+    }
+    out
+}
+
+/// Refuse data roots on network shares and in shared all-users-writable
+/// directories. A relocation moves credentials and session state to the target,
+/// so a root any other principal can write is not a destination this app may
+/// choose. Per-user temp stays allowed: the check names shared roots, not path
+/// families.
+fn shared_destination(target: &Path) -> Option<&'static str> {
+    let text = target.to_string_lossy();
+    // Verbatim (`\\?\C:\...`) and UNC (`\\server\share`) spellings both start
+    // with two separators; the directory picker produces neither.
+    if text.starts_with(r"\\") || text.starts_with("//") {
+        return Some("a network or verbatim path cannot be the data root");
+    }
+    let normalized = normalize_lexically(target)
+        .to_string_lossy()
+        .trim_end_matches(['\\', '/'])
+        .to_lowercase();
+    #[cfg(windows)]
+    {
+        if normalized == "c:" || normalized == "c:\\windows" || normalized == "c:\\windows\\temp"
+            || normalized.starts_with("c:\\windows\\temp\\")
+        {
+            return Some("a shared system directory cannot be the data root");
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        if ["/tmp", "/private/tmp", "/var/tmp", "/private/var/tmp", "/dev/shm"]
+            .iter()
+            .any(|root| normalized == *root || normalized.starts_with(&format!("{root}/")))
+        {
+            return Some("a shared temporary directory cannot be the data root");
+        }
+    }
+    None
+}
+
 fn validate_target_at(
     current: &Path,
     target: &Path,
@@ -660,6 +722,9 @@ fn validate_target_at(
 ) -> Result<(), String> {
     if !target.is_absolute() {
         return Err("data root must be an absolute path".into());
+    }
+    if let Some(reason) = shared_destination(target) {
+        return Err(reason.into());
     }
     // Selecting an old-root link is a move back: the link resolves to the
     // current root, and apply_pending removes it before relocating.
@@ -727,6 +792,19 @@ fn read_pending_at(path: &Path) -> Result<Option<PathBuf>, String> {
     };
     let value: serde_json::Value =
         serde_json::from_str(&raw).map_err(|err| format!("parse {}: {err}", path.display()))?;
+    // Fail closed on a missing timestamp: only the settings route writes this
+    // file, and it always stamps the request it is about to apply. Accept a
+    // millisecond stamp too — an older build wrote `Date.now()` — because the
+    // comparison below is in seconds.
+    let requested_at = value.get("requestedAt").and_then(|value| value.as_u64())
+        .map(|at| if at > 1_000_000_000_000 { at / 1000 } else { at });
+    let fresh = requested_at
+        .map(|at| unix_now().saturating_sub(at) <= DATA_ROOT_PENDING_TTL_SECS)
+        .unwrap_or(false);
+    if !fresh {
+        let _ = fs::remove_file(path);
+        return Ok(None);
+    }
     let target = value
         .get("target")
         .and_then(|value| value.as_str())
@@ -905,7 +983,6 @@ fn migrate_at(root: &Path, legacy_workspace: &Path, legacy_home: &Path) -> Resul
     )
     .map_err(|e| format!("write layout marker: {e}"))?;
 
-    cleanup_legacy_app(root);
     log(&data, "layout migration complete");
     Ok(())
 }
@@ -980,22 +1057,6 @@ fn free_space_bytes(path: &Path) -> Option<u64> {
     let mut stat: libc::statvfs = unsafe { std::mem::zeroed() };
     let rc = unsafe { libc::statvfs(path.as_ptr(), &mut stat) };
     (rc == 0).then(|| stat.f_bavail as u64 * stat.f_frsize as u64)
-}
-
-/// The pre-layout install put the exe, runtime and uninstaller directly in
-/// root. `app` and the v2 `data` intermediate are the only entries allowed to
-/// stay. Removing the old uninstaller matters: its POSTUNINSTALL hook
-/// recursively deletes the legacy `%LOCALAPPDATA%\Easel`, which is now a
-/// junction into the data root.
-fn cleanup_legacy_app(root: &Path) {
-    for entry in ["runtime", "dsh-desktop.exe", "uninstall.exe"] {
-        let path = root.join(entry);
-        if path.is_dir() {
-            let _ = fs::remove_dir_all(&path);
-        } else if path.exists() {
-            let _ = fs::remove_file(&path);
-        }
-    }
 }
 
 fn log(data: &Path, message: &str) {
@@ -1104,11 +1165,13 @@ mod tests {
     }
 
     #[test]
-    fn install_root_requires_an_app_subdirectory() {
+    fn install_root_accepts_the_legacy_app_layout_and_the_flat_marker() {
+        // Pre-alpha.32 split layout: the exe sits one level under the root.
         assert_eq!(
             install_root_from_exe(Path::new("C:/x/Easel-dsh/app/dsh-desktop.exe")),
             Some(PathBuf::from("C:/x/Easel-dsh"))
         );
+        // Flat layout without the bundled runtime marker: not an install.
         assert_eq!(
             install_root_from_exe(Path::new("C:/x/Easel-dsh/dsh-desktop.exe")),
             None
@@ -1117,6 +1180,15 @@ mod tests {
             install_root_from_exe(Path::new("C:/x/target/debug/dsh-desktop.exe")),
             None
         );
+        // Flat layout with the bundled runtime marker: the exe's own
+        // directory is the install root.
+        let root = temp_dir("install-root-marker");
+        let exe = root.join("dsh-desktop.exe");
+        let manifest = root.join("runtime").join("manifest.json");
+        fs::create_dir_all(manifest.parent().unwrap()).unwrap();
+        fs::write(&manifest, "{}").unwrap();
+        assert_eq!(install_root_from_exe(&exe), Some(root.clone()));
+        remove_test_dir(&root);
     }
 
     #[test]
@@ -1168,10 +1240,51 @@ mod tests {
         let target = root.join("target");
         write_json_atomic(
             &file,
-            &serde_json::json!({ "version": 1, "target": target, "requestedAt": 0 }),
+            &serde_json::json!({ "version": 1, "target": target, "requestedAt": unix_now() }),
         )
         .unwrap();
         assert_eq!(read_pending_at(&file).unwrap(), Some(target));
+
+        remove_test_dir(&root);
+    }
+
+    #[test]
+    fn stale_or_untimestamped_pending_requests_are_discarded() {
+        let root = temp_dir("pending-stale");
+        let file = root.join(DATA_ROOT_PENDING);
+        let target = root.join("target");
+        write_json_atomic(
+            &file,
+            &serde_json::json!({ "version": 1, "target": target, "requestedAt": 0 }),
+        )
+        .unwrap();
+        assert_eq!(read_pending_at(&file).unwrap(), None);
+        assert!(!file.exists(), "a stale request must not be retried later");
+
+        write_json_atomic(&file, &serde_json::json!({ "version": 1, "target": target })).unwrap();
+        assert_eq!(read_pending_at(&file).unwrap(), None);
+
+        remove_test_dir(&root);
+    }
+
+    #[test]
+    fn a_millisecond_stamp_from_an_older_producer_is_normalized() {
+        let root = temp_dir("pending-ms");
+        let file = root.join(DATA_ROOT_PENDING);
+        let target = root.join("target");
+        write_json_atomic(
+            &file,
+            &serde_json::json!({ "version": 1, "target": target, "requestedAt": unix_now() * 1000 + 500 }),
+        )
+        .unwrap();
+        assert_eq!(read_pending_at(&file).unwrap(), Some(target.clone()));
+
+        write_json_atomic(
+            &file,
+            &serde_json::json!({ "version": 1, "target": target, "requestedAt": (unix_now() - 3600) * 1000 }),
+        )
+        .unwrap();
+        assert_eq!(read_pending_at(&file).unwrap(), None);
 
         remove_test_dir(&root);
     }
@@ -1195,6 +1308,34 @@ mod tests {
         let existing = root.join("existing");
         write(&existing.join("workspace").join("idea.json"), "idea");
         assert!(validate_target_at(&current, &existing, None).is_err());
+
+        remove_test_dir(&root);
+    }
+
+    #[test]
+    fn validate_target_refuses_shared_destinations() {
+        let root = temp_dir("validate-shared");
+        let current = root.join("current");
+        fs::create_dir_all(&current).unwrap();
+
+        assert!(validate_target_at(&current, Path::new(r"\\server\share\Easel"), None).is_err());
+
+        #[cfg(windows)]
+        {
+            assert!(validate_target_at(&current, Path::new(r"C:\Windows\Temp\Easel"), None).is_err());
+            assert!(validate_target_at(&current, Path::new(r"C:\Windows"), None).is_err());
+            assert!(validate_target_at(&current, Path::new(r"C:\Windows\Temp\..\Temp\Easel"), None).is_err());
+        }
+        #[cfg(not(windows))]
+        {
+            assert!(validate_target_at(&current, Path::new("/tmp/easel-data"), None).is_err());
+            assert!(validate_target_at(&current, Path::new("/private/tmp/easel-data"), None).is_err());
+        }
+
+        // A per-user writable destination is still a legitimate target.
+        let per_user = root.join("Documents").join("Easel-dsh");
+        fs::create_dir_all(&per_user).unwrap();
+        assert!(validate_target_at(&current, &per_user, None).is_ok());
 
         remove_test_dir(&root);
     }
@@ -1437,13 +1578,15 @@ mod tests {
         let closure = root.join("old-runtime").join("dsh").join("node_modules");
         fs::create_dir_all(&closure).unwrap();
         create_link(&legacy_home.join("node_modules"), &closure).unwrap();
-        // The pre-layout program files that cleanup must remove.
+        // Program files are not the data migration's business anymore: the
+        // installer owns the install tree, so `app\` and root-level program
+        // entries must survive `migrate_at` untouched.
         write(
             &root.join("runtime").join("dsh").join("lib").join("bin.js"),
-            "old",
+            "program",
         );
-        write(&root.join("dsh-desktop.exe"), "old exe");
-        write(&root.join("uninstall.exe"), "old uninstaller");
+        write(&root.join("dsh-desktop.exe"), "program exe");
+        write(&root.join("uninstall.exe"), "program uninstaller");
         fs::create_dir_all(root.join("app")).unwrap();
 
         migrate_at(&root, &legacy_workspace, &legacy_home).unwrap();
@@ -1481,9 +1624,14 @@ mod tests {
         assert!(is_reparse_point(&legacy_workspace));
         assert!(is_reparse_point(&legacy_home));
         assert!(!data.join("home").join("node_modules").exists());
-        assert!(!root.join("runtime").exists());
-        assert!(!root.join("dsh-desktop.exe").exists());
-        assert!(!root.join("uninstall.exe").exists());
+        assert_eq!(
+            fs::read_to_string(root.join("runtime").join("dsh").join("lib").join("bin.js"))
+                .unwrap(),
+            "program"
+        );
+        assert!(root.join("dsh-desktop.exe").exists());
+        assert!(root.join("uninstall.exe").exists());
+        assert!(root.join("app").exists());
         let marker = fs::read_to_string(data.join(LAYOUT_MARKER)).unwrap();
         assert!(marker.contains("legacyProjectRoot"));
         assert_eq!(

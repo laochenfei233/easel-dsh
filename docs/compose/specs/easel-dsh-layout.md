@@ -1,8 +1,8 @@
 ---
 feature: easel-dsh-layout
 status: in-progress
-updated: 2026-10-21
-branch: feat/easel-mac-package
+updated: 2026-10-24
+branch: master（2026-10-24 扁平化增补）
 commits: TBD
 ---
 
@@ -28,7 +28,7 @@ commits: TBD
 目标布局（所有平台）：
 
 ```
-Windows   %LOCALAPPDATA%\Easel-dsh\app\      # 只有程序
+Windows   %LOCALAPPDATA%\Easel-dsh\          # 只有程序（2026-10-24 起扁平，不再嵌套 app\）
 macOS     /Applications/Easel-dsh.app        # 只有程序
 Linux     <install dir>/                     # 只有程序
 
@@ -39,6 +39,30 @@ Linux     ~/Documents/Easel-dsh/             # XDG DOCUMENTS
   home\                                      # dsh home：profiles、sessions、凭据
   .easel-data.json                           # 本目录是 Easel 数据根的标记
 ```
+
+**2026-10-24 扁平化（用户拍板）**：程序从 `%LOCALAPPDATA%\Easel-dsh\app`
+上移一层直接放 `%LOCALAPPDATA%\Easel-dsh`，其余数据类各归其位——用户数据在
+「文档\Easel-dsh」，bootstrap 指针在 `%LOCALAPPDATA%\ai.easel.desktop\`，
+启动日志在数据根内。安装目录里从此只有安装器放进去的文件。三个原锚点的
+处置：
+
+1. **安装态检测**（layout.rs）：`app\` 父目录名判定保留为旧布局兼容；
+   新布局用 `exe 同级的 runtime\manifest.json` 作安装哨兵（位置无关，
+   自定义安装目录也命中；`target\release` 开发运行无此文件，仍是 dev 态）。
+   `cleanup_legacy_app`（v2 时代删根下程序残留）整体移除——扁平布局下它
+   会删掉活安装；程序树清理职责完全归安装器。
+2. **卸载爆炸半径**：Tauri 模板卸载段本就只删自己装的资源 + 非递归
+   `RMDir $INSTDIR`，拍平后用户塞进目录的杂物天然幸存；POSTUNINSTALL
+   钩子顺带清理升级漏网的 `$INSTDIR\app` 残留。
+3. **旧根清理**（hooks）：原「$INSTDIR ≠ 旧根时清旧根文件」语义反转为
+   「安装后删除 `$INSTDIR\app` 嵌套树」（PREINSTALL 已先停掉两棵树里的
+   进程）；EASEL_STOP_RUNTIME 的 roots 覆盖扁平根与 `app\` 子树。
+
+顺带修复：dsh_runner 的 rival sweep 签名本按扁平路径
+（`easel-dsh/runtime`）编写，alpha.22 起 `app\runtime` 布局一直匹配不上；
+扁平化后自然命中，另补 `easel-dsh/app/runtime` 旧实例模式（含回归测试）。
+升级路径上旧注册表 `InstallLocation=...\app` 不会劫持 `$INSTDIR`
+（`.onInit` 只在 `$INSTDIR == PLACEHOLDER` 时才 Restore）。
 
 三个约束：
 
@@ -61,20 +85,20 @@ Linux     ~/Documents/Easel-dsh/             # XDG DOCUMENTS
 ### 安装器
 
 - 安装器必须**以管理员权限启动**（UAC 提权）；非管理员会在 stub 阶段 exit 2。
-  安装路径仍是当前用户的 `%LOCALAPPDATA%\Easel-dsh\app`。
+  安装路径是当前用户的 `%LOCALAPPDATA%\Easel-dsh`（2026-10-24 起扁平，
+  不再嵌套 `app\`）。
 - Tauri 没有 `installDir` 配置，默认 `$INSTDIR = $LOCALAPPDATA\${PRODUCTNAME}`。
   用 `bundle.windows.nsis.template` 指向自定义模板（fork Tauri 2.11.4 的
   `installer.nsi`），只改默认安装路径：
-  `InstallDir "$LOCALAPPDATA\Easel-dsh\app"`。
+  `InstallDir "$LOCALAPPDATA\Easel-dsh"`。
   `PLACEHOLDER_INSTALL_DIR` 保持原值，`.onInit` 的
   `$INSTDIR == PLACEHOLDER` 分支不会触发，因此不会被
-  `RestorePreviousInstallLocation` 拉回旧根目录。
-- `$INSTDIR` 只含 app；用户数据在系统「文档」目录下的 `Easel-dsh`（默认），
+  `RestorePreviousInstallLocation` 拉回旧根目录（含旧注册表里的
+  `...\app`）。
+- `$INSTDIR` 只含程序；用户数据在系统「文档」目录下的 `Easel-dsh`（默认），
   不在安装器的文件清单里。升级、卸载默认都不碰它。
-- 旧布局迁移时，旧安装根本身就是 `%LOCALAPPDATA%\Easel-dsh`，新安装根是它的
-  子目录 `app`。**旧 `uninstall.exe` 必须清理**：旧卸载器的 POSTUNINSTALL
-  钩子会 `RMDir /r "$LOCALAPPDATA\Easel"`；迁移后该路径是 junction，递归删除
-  可能顺着 junction 删掉数据目录下的 workspace。
+- pre-alpha.32 安装的程序树在 `<root>\app`：PREINSTALL 停掉两棵树里的进程，
+  POSTINSTALL 整体删除 `$INSTDIR\app`（旧 exe/卸载器不再可启动）。
 - 自定义模板要跟随 Tauri 升级同步；模板头部记录 fork 的 Tauri 版本，升级
   Tauri 时 diff 一次。
 
@@ -270,11 +294,20 @@ dsh-plugin-easel 客户端注册。内容：当前根、默认根、是否默认
   `%LOCALAPPDATA%\Easel`、`~/.easel`、`<data_root>\home\node_modules`，再递归
   删指针里的 `dataRoot`，并清理遗留的 `<install>\data` 和
   `%USERPROFILE%\Easel-dsh`。递归删除只针对带 `.easel-data.json` /
-  `.layout-v2.json` 标记、非盘符根、非 reparse point 的目录，防止被改坏的指针
-  变成任意路径删除；绝不能对 junction 用 `RMDir /r`。macOS/Linux 没有安装器：
-  删 app 后数据保留，用户自行删除。
-- 数据询问文案改为「是否同时删除 Easel 数据目录（工作区、会话、账号画像）？」，
-  默认否；`$UpdateMode <> 1` 才询问。
+  `.layout-v2.json` 标记、或同时含 `home\` 与 `workspace\` 的目录（且非盘符
+  根、非 reparse point），防止被改坏的指针变成任意路径删除；绝不能对
+  junction 用 `RMDir /r`。macOS/Linux 没有安装器：删 app 后数据保留，用户
+  自行删除。
+- 删数据是显式选择：用卸载器确认页（第一页）的数据复选框，默认不勾；只有勾选且
+  `$UpdateMode <> 1` 才执行删除。被动/静默卸载与 `/UPDATE` 会跳过该页，因此不会
+  删数据（复选框状态为空按保留处理）。勾选时标准模板会先删
+  `%LOCALAPPDATA%\ai.easel.desktop`（含数据根指针），所以 `PREUNINSTALL` 先把
+  `data-root.json` 复制到 `$PLUGINSDIR`，`POSTUNINSTALL` 再读这份副本，保证迁移过
+  的数据根也能被找到。
+- 复选框文案「同时删除 Easel 数据目录（工作区、会话、凭据）」由
+  `installer-hooks.nsh` 的 `EASEL_DATA_CHECKBOX_LABEL` 提供，模板只在没有该定义时
+  回退到 `$(deleteAppData)`。中文放在 include 而非模板，是因为 makensis 需要 UTF-8
+  BOM 才能正确解码非 ASCII 源码，而模板由打包器渲染、include 逐文件保留自身 BOM。
 
 ### 路径长度
 

@@ -23,7 +23,7 @@ Run `pnpm run gen-cli-help` to regenerate; run `pnpm run verify-cli-help` to che
 Invocations: `dsh --help`
 
 ```text
-Usage: dsh [--profile] <name> [options] [app-args...]
+Usage: easel [--profile] <name> [options] [app-args...]
        dsh plugin --profile <name> <pnpm-args...>
 
 dsh: boot a DeepSeek Harness profile — an ordered stack of plugin-bundle patch
@@ -64,7 +64,7 @@ Examples:
 Invocations: `dsh plugin --help`
 
 ```text
-Usage: dsh plugin [options] [args...]
+Usage: easel plugin [options] [args...]
 
 manage a profile's plugins by forwarding the remaining arguments to pnpm in the
 profile directory

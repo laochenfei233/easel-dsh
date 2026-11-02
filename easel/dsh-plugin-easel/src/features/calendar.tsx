@@ -8,7 +8,7 @@ import CalendarPage from '../components/CalendarPage'
 import { pageKey } from '../lib/shell'
 
 export const view = 'calendar'
-export const order = 33
+export const order = 34
 export const labels = { zh: '内容日历', en: 'Calendar' }
 export const Icon = IconCalendar
 export const Component = CalendarPage

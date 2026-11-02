@@ -9,12 +9,13 @@ import { basename, dirname, extname, join, relative, resolve, sep } from 'node:p
 import { homedir } from 'node:os'
 import { randomBytes } from 'node:crypto'
 import { AsrError, transcribeToSubtitle, resolveMimoCredentials, writeApiDiscovery } from '../asr.js'
-import { createDeconstruct, deconstructBusy, readDeconstruct } from '../deconstruct.js'
+import { createDeconstruct, DeconstructBusyError, deconstructBusy, readDeconstruct, resumeDeconstruct } from '../deconstruct.js'
 import { parsePlatform, sourceStatus, writeCookie } from '../sourcedata.js'
+import { detectWeChat, downloaderRunning, findChannelsTool, launchChannelsTool } from '../channels.js'
 import {
   ApiError, isFile, readEnvFile, readJsonFile, writeJsonFile,
 } from '../../index.js'
-import { SHARED_SCRIPTS, runCapture, runnerEnv } from './automation.js'
+import { SHARED_SCRIPTS, accountBrowserArgs, loadRegistry, resolveAccountStrict, runCapture, runnerEnv } from './automation.js'
 
 // ---- 语音转字幕（POST /easel/api/asr：ffmpeg 分段 + mimo ASR；核心在 lib/asr.js）----
 
@@ -35,8 +36,9 @@ async function apiAsr(c) {
   const input = resolve(c.settings.projectRoot, rawPath)
   if (!(await isFile(input))) throw new ApiError(404, `文件不存在：${rawPath}`)
   // 刷新技能侧发现文件（apply 时服务可能尚未绑定端口，调用时补写最准）。
-  await writeApiDiscovery(c.settings.projectRoot, webServerPort, c.settings.basePath).catch(() => {})
-  // 凭据：dsh 模型管理凭据插件侧读不到（本插件只注入 webServer）→ 环境变量 / 项目 .env（进程环境优先）。
+  await writeApiDiscovery(c.settings.projectRoot, webServerPort, c.settings.basePath, c.settings.runnerToken).catch(() => {})
+  // 凭据：技能路由保持环境变量 / 项目 .env（进程环境优先）；拆解任务可带
+  // provider::model 走 dsh 模型管理凭据（见 deconstructTranscribe）。
   const env = await readEnvFile(join(c.settings.projectRoot, '.env'))
   for (const key of ['MIMO_API_KEY', 'MIMO_BASE_URL', 'MIMO_ASR_MODEL']) {
     if (process.env[key] !== undefined) env[key] = process.env[key]
@@ -63,9 +65,65 @@ async function apiAsr(c) {
 
 // ---- 拆解采集（spec easel-breakdown-fullpage：宿主直驱 下载→抽帧→ASR，状态落 job.json）----
 
-/** 组装一次带模型覆盖的转写闭包（凭据来源与 apiAsr 同一注册表）。 */
+// 宿主 cordis 上下文（apply 时捕获）：`provider::model` 的凭据从这里解析。
+let hostCtx = null
+
+/**
+ * 从 dsh 模型管理解析一个服务商路由下的 ASR 凭据，与「设置→模型」同一注册表：
+ * 路由表来自 `ctx.llm`，Base URL 读自 settings 命名空间的服务商 profile
+ * （缺省回退路由 `defaultBaseURL`），`apiKeyEnv` 同读自该 profile，密钥经
+ * `ctx.credentials` 解析（与 session-controller 的
+ * modelCatalog / hasProviderApiKey 同一条读取链）。
+ * @param ctx - 宿主 cordis 上下文；缺 llm/settings/credentials 的部署返回失败。
+ * @param providerId - 模型目录的 provider 组 id（llm 路由键）。
+ * @param modelId - 该路由下的模型 id，原样作为 ASR 请求的 model。
+ * @returns `{ ok: true, credentials }`（`credentials` 即 transcribeToSubtitle 的
+ *   `{ apiKey, baseUrl, model }`）或 `{ ok: false, reason }`（面向用户的失败原因）。
+ */
+export async function resolveDshAsrCredentials(ctx, providerId, modelId) {
+  const llm = ctx?.get?.('llm')
+  const settings = ctx?.get?.('settings')
+  const credentials = ctx?.get?.('credentials')
+  if (llm === undefined || settings === undefined || credentials === undefined) {
+    return { ok: false, reason: '宿主未提供模型管理服务（llm/settings/credentials）' }
+  }
+  const route = llm.listConfigurableProviders().find(row => row.provider === providerId)
+  if (route === undefined) return { ok: false, reason: `服务商「${providerId}」不在模型管理目录中` }
+  let profile = settings.describe({ redactSecrets: true }).find(row => row.ns === route.settingsNs)?.value
+  for (const key of route.settingsPath) {
+    profile = typeof profile === 'object' && profile !== null ? Reflect.get(profile, key) : undefined
+  }
+  if (typeof profile !== 'object' || profile === null) {
+    return { ok: false, reason: `服务商「${providerId}」尚未配置` }
+  }
+  const ref = profile.apiKeyEnv
+  const resolved = typeof ref === 'string' && /^[A-Za-z_][A-Za-z0-9_]*$/.test(ref)
+    ? await credentials.resolve(ref)
+    : undefined
+  if (typeof resolved?.value !== 'string' || resolved.value === '') {
+    return { ok: false, reason: `服务商「${providerId}」的 API Key 未配置` }
+  }
+  // profile 没写 baseURL 时回退路由默认端点，与适配器自身行为一致
+  // （如 xiaomi 出厂即 https://api.xiaomimimo.com/v1）。
+  const baseUrl = String(profile.baseURL ?? route.defaultBaseURL ?? '').trim().replace(/\/+$/, '')
+  if (baseUrl === '') return { ok: false, reason: `服务商「${providerId}」未配置 Base URL` }
+  return { ok: true, credentials: { apiKey: resolved.value, baseUrl, model: modelId } }
+}
+
+/**
+ * 组装一次带模型覆盖的转写闭包。`provider::model`（拆解页模型目录的选择）走
+ * dsh 模型管理凭据；裸 model id（在途旧任务）保持既有 MIMO_* env 路径。
+ */
 function deconstructTranscribe(c) {
-  return async ({ input, format, projectRoot, model }) => {
+  return async ({ input, format, projectRoot, model, outDir, outStem }) => {
+    const split = typeof model === 'string' ? model.indexOf('::') : -1
+    if (split > 0) {
+      const resolved = await resolveDshAsrCredentials(hostCtx, model.slice(0, split), model.slice(split + 2))
+      if (!resolved.ok) {
+        throw new Error(`无法用所选模型 ${model} 转写：${resolved.reason}（可在 设置→模型 处理，或改选其他模型）`)
+      }
+      return transcribeToSubtitle({ input, format, projectRoot, credentials: resolved.credentials, outDir, outStem })
+    }
     const env = await readEnvFile(join(c.settings.projectRoot, '.env'))
     for (const key of ['MIMO_API_KEY', 'MIMO_BASE_URL', 'MIMO_ASR_MODEL']) {
       if (process.env[key] !== undefined) env[key] = process.env[key]
@@ -76,7 +134,7 @@ function deconstructTranscribe(c) {
       throw new Error('未配置 mimo ASR 凭据：请设置 MIMO_API_KEY（环境变量或项目 .env）；'
         + '可选 MIMO_BASE_URL / MIMO_ASR_MODEL')
     }
-    return transcribeToSubtitle({ input, format, projectRoot, credentials })
+    return transcribeToSubtitle({ input, format, projectRoot, credentials, outDir, outStem })
   }
 }
 
@@ -87,11 +145,17 @@ async function apiDeconstructCreate(c) {
   if (deconstructBusy(c.settings.projectRoot)) {
     throw new ApiError(409, '已有拆解采集在运行，请等它完成或失败后再开始')
   }
+  // 视频号（spec easel-breakdown-channels）：识别到 sph 才触碰微信检测——
+  // 启动采集前守卫微信登录（用户拍板），并把下载器 staging 目录注入下载子进程。
+  const fetchEnv = parsePlatform(url) === 'sph'
+    ? { EASEL_CHANNELS_DIR: (await ensureChannelsReady(c)).stagingDir }
+    : undefined
   const job = createDeconstruct({
     projectRoot: c.settings.projectRoot,
     url,
     asrModel: typeof body?.asrModel === 'string' ? body.asrModel : undefined,
     transcribe: deconstructTranscribe(c),
+    fetchEnv,
   })
   return { json: job }
 }
@@ -99,6 +163,29 @@ async function apiDeconstructCreate(c) {
 async function apiDeconstructGet(c) {
   const job = await readDeconstruct(c.settings.projectRoot, c.params.id)
   if (job === undefined) throw new ApiError(404, `拆解任务不存在：${c.params.id}`)
+  return { json: job }
+}
+
+// 断点续跑（spec easel-upstream-adoptions S2.1）：以 job.json 为检查点，只补
+// 缺失段；响应形状与 POST deconstruct 一致（续跑启动时的 job 快照）。
+async function apiDeconstructRetry(c) {
+  const existing = await readDeconstruct(c.settings.projectRoot, c.params.id)
+  if (existing === undefined) throw new ApiError(404, `拆解任务不存在：${c.params.id}`)
+  // 视频号任务的重试可能重跑 fetch 段：同样按平台注入 staging 目录（守卫同 create）。
+  const fetchEnv = parsePlatform(existing.url) === 'sph'
+    ? { EASEL_CHANNELS_DIR: (await ensureChannelsReady(c)).stagingDir }
+    : undefined
+  let job
+  try {
+    job = await resumeDeconstruct(c.settings.projectRoot, c.params.id, deconstructTranscribe(c), fetchEnv)
+  } catch (error) {
+    // busy 由 resumeDeconstruct 在占锁点同步抛出：检查到占锁之间没有 await，
+    // 并发 retry 不会双双绕过 409。
+    if (error instanceof DeconstructBusyError) {
+      throw new ApiError(409, '已有拆解采集在运行，请等它完成或失败后再重试')
+    }
+    throw error
+  }
   return { json: job }
 }
 
@@ -117,12 +204,50 @@ async function apiCookiesWrite(c) {
   return { json: { ok: true, changed, status: await sourceStatus(c.settings.projectRoot) } }
 }
 
+// ---- 视频号 sidecar（spec easel-breakdown-channels）----
+// 微信登录/下载器状态只在识别到视频号的链路上探测：preflight（识别步）只读，
+// create/launch（启动采集）才允许拉起下载器；页面加载与插件启动不经过这里。
+
+/** 视频号门控快照：微信运行/登录态 + 下载器安装/运行态（只读，不拉起进程）。 */
+async function channelsSnapshot(c) {
+  const [wechat, tool] = [await detectWeChat(), findChannelsTool(c.settings)]
+  const running = tool.installed && await downloaderRunning()
+  return { wechat, tool: { ...tool, running } }
+}
+
+/** create/launch 共用的启动守卫：已安装 → 微信已登录 → 拉起（未运行时）。 */
+async function ensureChannelsReady(c) {
+  const tool = findChannelsTool(c.settings)
+  if (!tool.installed) {
+    throw new ApiError(400, '未找到视频号下载器：把 wx_video_download 安装目录填入插件配置 '
+      + 'channelsDownloader（首次使用请手动以管理员运行一次完成证书安装）')
+  }
+  const launched = await launchChannelsTool(c.settings)
+  if (!launched.ok) throw new ApiError(400, launched.message)
+  return tool
+}
+
+async function apiChannelsStatus(c) {
+  return { json: await channelsSnapshot(c) }
+}
+
+async function apiChannelsLaunch(c) {
+  const tool = await ensureChannelsReady(c)
+  return { json: { ok: true, status: await channelsSnapshot(c), stagingDir: tool.stagingDir } }
+}
+
 // 拆解 preflight：按链接判平台，需要登录态而当前没有时拒绝创建任务。
 async function apiDeconstructPreflight(c) {
   const body = await c.body()
   const url = typeof body?.url === 'string' ? body.url.trim() : ''
   if (!url) throw new ApiError(400, '缺少 url')
   const platform = parsePlatform(url)
+  // 视频号不走 cookies.json 门控：门在微信登录与下载器安装上（识别到才检测）。
+  if (platform === 'sph') {
+    const channels = await channelsSnapshot(c)
+    const blocked = !channels.tool.installed || !channels.wechat.loggedIn
+    return { json: { platform, blocked, row: null, channels } }
+  }
   const status = await sourceStatus(c.settings.projectRoot)
   const row = status.platforms.find(item => item.platform === platform)
   const blocked = row !== undefined && row.authRequired && !row.cookieSet && !row.loggedIn
@@ -141,6 +266,10 @@ async function apiCookiesImport(c) {
     join(SHARED_SCRIPTS(c.settings), 'xhs_publish.py'),
     'dump-cookies', '--no-proxy',
   ]
+  // 从指定小红书账号（缺省默认账号）的登录态导出；直启窗口开着就附身，避免 profile 锁冲突。
+  const registry = await loadRegistry(c.settings)
+  const account = resolveAccountStrict(registry, 'xiaohongshu', typeof body?.account === 'string' ? body.account : '')
+  if (account !== null) cmd.push(...await accountBrowserArgs(c.settings, account))
   const proc = await runCapture(cmd, { cwd: c.settings.projectRoot, env: await runnerEnv(c.settings), timeout: 120_000 })
   let cookie = ''
   let error = ''
@@ -166,9 +295,12 @@ export const DECONSTRUCT_ROUTES = [
   ['GET', ['source-status'], apiSourceStatus],
   ['POST', ['cookies'], apiCookiesWrite],
   ['POST', ['cookies', 'import'], apiCookiesImport],
+  ['GET', ['channels', 'status'], apiChannelsStatus],
+  ['POST', ['channels', 'launch'], apiChannelsLaunch],
   ['POST', ['deconstruct', 'preflight'], apiDeconstructPreflight],
   ['POST', ['deconstruct'], apiDeconstructCreate],
   ['GET', ['deconstruct', ':id'], apiDeconstructGet],
+  ['POST', ['deconstruct', ':id', 'retry'], apiDeconstructRetry],
 ]
 
 export const name = 'easel-deconstruct'
@@ -181,7 +313,9 @@ export const inject = ['easelApi', 'webServer']
  */
 export function apply(ctx) {
   webServerPort = ctx.webServer?.port ?? null
-  void writeApiDiscovery(ctx.easelApi.settings.projectRoot, webServerPort, ctx.easelApi.settings.basePath)
+  hostCtx = ctx
+  void writeApiDiscovery(ctx.easelApi.settings.projectRoot, webServerPort, ctx.easelApi.settings.basePath,
+    ctx.easelApi.runnerToken)
     .catch(() => {})
   ctx.effect(() => ctx.easelApi.register(DECONSTRUCT_ROUTES), 'easel-deconstruct: routes')
   ctx.logger?.info?.('easel-deconstruct: breakdown pipeline mounted')

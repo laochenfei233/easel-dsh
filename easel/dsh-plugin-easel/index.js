@@ -28,16 +28,38 @@ import { request as httpRequest } from 'node:http'
 import { request as httpsRequest } from 'node:https'
 import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { homedir } from 'node:os'
-import { randomBytes } from 'node:crypto'
+import { lookup as dnsLookup } from 'node:dns/promises'
+import { randomBytes, timingSafeEqual } from 'node:crypto'
 import net from 'node:net'
 import tls from 'node:tls'
 import { seedProjectWorkspace } from './lib/projectize.js'
+import { writeApiDiscovery } from './lib/asr.js'
+import {
+  applyWatch, buildWatchGroups, clusterTrends, decorateFetched, normalizeKeywords,
+  pruneSnapshot, readRadarHistory, staleItemsFromHistory,
+} from './lib/trends.js'
+import { RadarArticleError, createCaptureHandler } from './lib/trends-article.js'
+import {
+  DOUYIN_RULE_URLS, mergeDouyinRuleItems, parseDouyinAnnouncements,
+  parseDouyinPolicyDocs, parseDouyinPolicyExplain,
+} from './lib/trends-douyin.js'
+import {
+  DOUYIN_ACTIVITY_COOKIE_FILE, DOUYIN_ACTIVITY_URLS,
+  douyinActivityWindow, douyinAuthFailed, mergeDouyinActivityItems,
+  parseDouyinActivityInspiration, parseDouyinActivityPc,
+  readDouyinCookieCache, serializeDouyinCookieCache,
+} from './lib/trends-douyin-activity.js'
+import { discoverCalendars, syncCalendarEvents } from './caldav.js'
 
 /** Cordis plugin name; also the `name` of this plugin's loader row. */
 export const name = 'easel'
 
-/** The route table is the one service this host half requires. */
-export const inject = ['webServer']
+/**
+ * The route table plus the connection fence. `/easel/api/*` answers filesystem
+ * state, so it admits requests exactly like `/api`: a live authenticated Peer,
+ * or the runner capability minted for the ASR skill (see `runnerAuthorized`).
+ */
+export const inject = ['webServer', 'connection']
 
 const DEFAULT_BASE_PATH = '/easel'
 const SKILL_FILE = 'SKILL.md'
@@ -72,6 +94,9 @@ export function resolveSettings(config) {
     basePath: normalizeBasePath(config.basePath ?? DEFAULT_BASE_PATH),
     // runner 舰队（skills/shared/scripts，B2 起由宿主半直接 spawn）用的解释器。
     python: config.pythonExecutable ?? process.env.EASEL_PYTHON ?? 'python',
+    // 视频号下载器（wx_channels_download）安装目录或 exe 路径；缺省走 lib/channels.js
+    // 的开发态回退。仅视频号拆解链路读取，启动/页面加载不触碰。
+    channelsDownloader: config.channelsDownloader ?? process.env.EASEL_CHANNELS_DOWNLOADER,
   }
 }
 
@@ -179,30 +204,6 @@ function requireGet(req, res) {
   return false
 }
 
-/**
- * Decide whether a proxied request's browser-supplied `Origin` is one this
- * workbench itself serves. The proxy stamps the backend's own origin onto
- * forwarded writes (Easel's local_write_guard judges that header), so a
- * cross-site page must not be able to ride the proxy: only origins identical
- * to dsh's own (`http://<Host>` of the incoming request) pass. Requests
- * without an Origin — dsh's server-side callers, curl, the tests — are not
- * browser cross-site traffic and pass.
- *
- * Known residuals, deliberate: the scheme is hardcoded to `http://` (dsh's
- * webserver is plain HTTP; behind an HTTPS-terminating proxy same-origin
- * writes would be refused — extend here first), and a DNS-rebound hostname
- * passes (its Origin equals its Host after rebinding; add a host allowlist
- * if dsh is ever exposed beyond loopback — Chromium's Private Network Access
- * blocks the public-web route today).
- * @param origin - the request's `Origin` header, or undefined.
- * @param host - the request's `Host` header (dsh's own host:port).
- * @returns whether the request may be forwarded.
- */
-export function sameOriginAllowed(origin, host) {
-  if (origin === undefined) return true
-  return host !== undefined && origin === `http://${host}`
-}
-
 // ═══════════════════════════════════════════════════════════════════════
 // Local API — absorption batch B1 of the Easel backend retirement.
 //
@@ -230,7 +231,26 @@ export class ApiError extends Error {
 
 const PROFILE_FILE_ORDER = ['identity.md', 'style.md', 'audience.md', 'platforms.md', 'preferences.md', 'memory.md']
 const PROTECTED_OUTPUTS = new Set(['_login', '_analytics', '_schedule.json', '_ideas.json',
-  '_publish', '_publish.log', '_sessions', '_profile_build', '_debug', '_inbox'])
+  '_publish', '_publish.log', '_sessions', '_profile_build', '_debug', '_inbox',
+  '_caldav_config.json', '_caldav_cache.json', '_accounts', '_accounts.json'])
+// outputs/ holds two kinds of data: the content library the workbench browses,
+// and host-owned state (stored cookies, login/SMS state, runner capability,
+// store files). The read routes must not turn the second kind into downloads.
+// This is not the delete rule above: `_adapt/` and the login QR PNG are
+// legitimate reads, and the breakdown page reads `_deconstruct/<id>/*` files.
+const PROTECTED_READ_FILES = new Set([
+  '_easel_api.json', '_ideas.json', '_schedule.json', '_radar_config.json', '_publish.log',
+  '_caldav_config.json', '_caldav_cache.json', '_accounts.json',
+  '_deconstruct/cookies.json',
+])
+const PROTECTED_READ_DIRS = new Set([
+  '_login', '_publish', '_analytics', '_sessions', '_profile_build', '_debug', '_inbox',
+  // 无下划线但仍然只由宿主写入：账号数据（analytics/wechat）与内容库同目录。
+  'analytics', 'wechat',
+  // 账户注册表附属目录（per-account B站 cookie）。
+  '_accounts',
+])
+const LOGIN_QR_FILE = /^_login\/[^/]+\.png$/
 
 const TEXT_EXTS = new Set(['.txt', '.md', '.json', '.csv', '.log', '.py', '.js', '.ts', '.html', '.htm', '.css', '.xml', '.yaml', '.yml', '.srt', '.vtt'])
 export const IMAGE_EXTS = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'])
@@ -933,10 +953,52 @@ async function getOutputTree(settings) {
   return items.sort((a, b) => (b.mtime ?? 0) - (a.mtime ?? 0))
 }
 
-async function safeOutputPath(settings, rel) {
+/**
+ * Whether a resolved path is host-owned state the read routes must not serve.
+ *
+ * Two spellings reach this check: the request's lexical one and, when the file
+ * exists, its real path. Both are compared case-insensitively — Windows and
+ * APFS resolve `_DECONSTRUCT/COOKIES.JSON` to the same file — and a real path
+ * outside `outputs/` (a symlink planted in the library) counts as protected.
+ * Dot-prefixed segments are internal (atomic-write sidecars, `.easel.json`),
+ * and `<protected>.tmp` is the same store mid-write.
+ * @param root - the `outputs/` root.
+ * @param full - the resolved candidate path.
+ * @param loginQr - whether the login QR PNG is allowed at this call site.
+ * @returns true when the read must be refused.
+ */
+async function isProtectedOutput(root, full, loginQr) {
+  const realRoot = await realpath(root).catch(() => root)
+  const realFull = await realpath(full).catch(() => null)
+  const candidates = [relative(root, full).split(sep).join('/')]
+  if (realFull !== null) {
+    if (realFull !== realRoot && !realFull.startsWith(realRoot + sep)) return true
+    candidates.push(relative(realRoot, realFull).split(sep).join('/'))
+  }
+  return candidates.some((candidate) => {
+    const normalized = candidate.toLowerCase()
+    if (loginQr && LOGIN_QR_FILE.test(normalized)) return false
+    const segments = normalized.split('/')
+    return PROTECTED_READ_FILES.has(normalized)
+      || PROTECTED_READ_FILES.has(normalized.replace(/\.tmp$/, ''))
+      || PROTECTED_READ_DIRS.has(segments[0])
+      || segments.some(segment => segment.startsWith('.'))
+  })
+}
+
+/**
+ * Resolve a content-library path under `outputs/` and refuse host-owned state.
+ * Also used by the automation plugin to validate publish media.
+ * @param settings - resolved deployment settings (project root).
+ * @param rel - the caller's relative path.
+ * @param options.loginQr - allow the login QR PNG (the one image under `_login`).
+ * @returns the absolute, existing file path.
+ */
+export async function safeOutputPath(settings, rel, { loginQr = false } = {}) {
   const root = resolve(settings.projectRoot, 'outputs')
   const full = resolve(root, rel)
   if (full !== root && !full.startsWith(root + sep)) throw new ApiError(403, '非法路径')
+  if (await isProtectedOutput(root, full, loginQr)) throw new ApiError(403, '系统数据受保护，不可读取')
   if (!(await isFile(full))) throw new ApiError(404, '文件不存在')
   return full
 }
@@ -954,16 +1016,26 @@ async function apiOutputContent(c) {
 }
 
 async function apiMedia(c) {
-  const full = await safeOutputPath(c.settings, c.params.path)
+  // The QR reader is the only route entry that may pass `_login`.
+  const full = await safeOutputPath(c.settings, c.params.path, { loginQr: true })
   const ext = extname(full).toLowerCase()
   const headers = {}
   const type = MEDIA_TYPES[ext]
   if (type !== undefined) headers['content-type'] = type
+  const html = ext === '.html' || ext === '.htm'
   // HTML 预览会被就地重生成（gzh-design 重排/内联），必须禁缓存，否则 iframe 开到过期版本。
-  if (ext === '.html' || ext === '.htm') {
+  if (html) {
     headers['cache-control'] = 'no-cache, no-store, must-revalidate'
     headers.pragma = 'no-cache'
   }
+  // 生成物是 agent 写出的任意 HTML/SVG/XML：图钉在 opaque origin，脚本照跑，但拿不到
+  // workbench 的 cookie，`/easel/api/*` 也就不是它够得着的同源接口了。
+  if (html || ext === '.svg' || ext === '.xml') {
+    headers['content-security-policy'] = 'sandbox allow-scripts'
+  }
+  // 未登记扩展名的文件按字节原样发送；没有 nosniff，浏览器可能把它嗅探成 HTML
+  // 并以 workbench 身份渲染，绕过上面的 CSP。
+  headers['x-content-type-options'] = 'nosniff'
   return { file: full, headers, range: c.headers?.range }
 }
 
@@ -1007,6 +1079,7 @@ const RADAR_SOURCE_KINDS = new Set(['rss', 'json'])
 export const SCHEDULE_FILE = '_schedule.json'
 const IDEAS_FILE = '_ideas.json'
 const RADAR_CONFIG_FILE = '_radar_config.json'
+const RADAR_HISTORY_FILE = '_radar_history.json'
 const SCHEDULE_STATUSES = new Set(['idea', 'draft', 'scheduled', 'published'])
 const SCHEDULE_KINDS = new Set(['content', 'event'])
 const SCHEDULE_SOURCES = new Set(['manual', 'publish-page', 'chat', 'scheduler'])
@@ -1020,12 +1093,13 @@ export async function readStoreList(settings, file) {
 }
 
 export async function readRadarConfig(settings) {
-  const cfg = { proxyUrl: '', proxyEnabled: false, cdpEndpoint: 'http://127.0.0.1:9222', sources: [] }
+  const cfg = { proxyUrl: '', proxyEnabled: false, cdpEndpoint: 'http://127.0.0.1:9222', sources: [], keywords: [] }
   const raw = await readJsonFile(join(settings.projectRoot, 'outputs', RADAR_CONFIG_FILE), null)
   if (raw === null || typeof raw !== 'object' || Array.isArray(raw)) return cfg
   if (typeof raw.proxyUrl === 'string') cfg.proxyUrl = raw.proxyUrl.trim()
   cfg.proxyEnabled = raw.proxyEnabled === true && cfg.proxyUrl.length > 0
   if (typeof raw.cdpEndpoint === 'string' && raw.cdpEndpoint.trim()) cfg.cdpEndpoint = raw.cdpEndpoint.trim()
+  cfg.keywords = normalizeKeywords(raw.keywords)
   const sources = []
   for (const item of Array.isArray(raw.sources) ? raw.sources : []) {
     if (item === null || typeof item !== 'object') continue
@@ -1042,13 +1116,16 @@ export async function readRadarConfig(settings) {
 
 async function apiRadarConfigGet(c) {
   const cfg = await readRadarConfig(c.settings)
-  return { json: { proxyUrl: cfg.proxyUrl, proxyEnabled: cfg.proxyEnabled, cdpEndpoint: cfg.cdpEndpoint, proxyEnv: process.env.EASEL_PROXY ?? '', sources: cfg.sources } }
+  return { json: { proxyUrl: cfg.proxyUrl, proxyEnabled: cfg.proxyEnabled, cdpEndpoint: cfg.cdpEndpoint, proxyEnv: process.env.EASEL_PROXY ?? '', sources: cfg.sources, keywords: cfg.keywords } }
 }
 
 async function apiRadarConfigSet(c) {
   const body = await c.body()
   const proxyUrl = String(body?.proxyUrl ?? '').trim()
   const cdp = typeof body?.cdpEndpoint === 'string' && body.cdpEndpoint.trim() ? body.cdpEndpoint.trim() : 'http://127.0.0.1:9222'
+  const keywords = normalizeKeywords(body?.keywords)
+  if (proxyUrl !== '') radarHttpUrl(proxyUrl, '代理地址')
+  radarHttpUrl(cdp, 'CDP 地址')
   const sources = (Array.isArray(body?.sources) ? body.sources : []).map(item => ({
     name: String(item?.name ?? ''),
     url: String(item?.url ?? ''),
@@ -1056,10 +1133,15 @@ async function apiRadarConfigSet(c) {
     category: String(item?.category ?? '自定义'),
     enabled: item?.enabled !== false,
   }))
+  for (const source of sources) {
+    if (source.url.trim() === '') continue
+    radarHttpUrl(source.url.trim(), `源「${source.name.trim() || '未命名'}」`)
+  }
   await writeJsonFile(join(c.settings.projectRoot, 'outputs', RADAR_CONFIG_FILE), {
     proxyUrl,
     proxyEnabled: body?.proxyEnabled === true && proxyUrl.length > 0,
     cdpEndpoint: cdp,
+    keywords,
     sources,
   })
   return { json: { ok: true } }
@@ -1069,9 +1151,23 @@ async function apiIdeasList(c) {
   return { json: await readStoreList(c.settings, IDEAS_FILE) }
 }
 
+// _ideas.json 的读改写串行队列：选题 CRUD、立项置位与热点正文入库都会改这
+// 一个文件，并发交织会互相覆盖丢条目。队列保证同一进程内一次只有一个写者。
+let ideasQueue = Promise.resolve()
+export async function mutateIdeas(settings, mutator) {
+  const run = ideasQueue.then(async () => {
+    const result = await mutator(await readStoreList(settings, IDEAS_FILE))
+    if (Array.isArray(result.items)) {
+      await writeJsonFile(join(settings.projectRoot, 'outputs', IDEAS_FILE), result.items)
+    }
+    return result
+  })
+  ideasQueue = run.catch(() => {})
+  return run
+}
+
 async function apiIdeasCreate(c) {
   const body = await c.body()
-  const items = await readStoreList(c.settings, IDEAS_FILE)
   const item = {
     id: randomBytes(6).toString('hex'),
     title: String(body?.title ?? '').trim() || '未命名选题',
@@ -1080,32 +1176,33 @@ async function apiIdeasCreate(c) {
     status: IDEA_STATUSES.has(body?.status) ? body.status : 'pending',
     created: Math.floor(Date.now() / 1000),
   }
-  items.unshift(item)
-  await writeJsonFile(join(c.settings.projectRoot, 'outputs', IDEAS_FILE), items)
-  return { json: item }
+  const { json } = await mutateIdeas(c.settings, items => ({ items: [item, ...items], json: item }))
+  return { json }
 }
 
 async function apiIdeasUpdate(c) {
   const body = await c.body()
-  const items = await readStoreList(c.settings, IDEAS_FILE)
-  const item = items.find(entry => entry.id === c.params.iid)
-  if (item === undefined) throw new ApiError(404, '选题不存在')
-  Object.assign(item, {
-    title: String(body?.title ?? '').trim() || (typeof item.title === 'string' && item.title ? item.title : '未命名选题'),
-    note: String(body?.note ?? ''),
-    source: String(body?.source ?? ''),
-    status: IDEA_STATUSES.has(body?.status) ? body.status : (typeof item.status === 'string' && item.status ? item.status : 'pending'),
+  const { json } = await mutateIdeas(c.settings, (items) => {
+    const item = items.find(entry => entry.id === c.params.iid)
+    if (item === undefined) throw new ApiError(404, '选题不存在')
+    Object.assign(item, {
+      title: String(body?.title ?? '').trim() || (typeof item.title === 'string' && item.title ? item.title : '未命名选题'),
+      note: String(body?.note ?? ''),
+      source: String(body?.source ?? ''),
+      status: IDEA_STATUSES.has(body?.status) ? body.status : (typeof item.status === 'string' && item.status ? item.status : 'pending'),
+    })
+    return { items, json: item }
   })
-  await writeJsonFile(join(c.settings.projectRoot, 'outputs', IDEAS_FILE), items)
-  return { json: item }
+  return { json }
 }
 
 async function apiIdeasDelete(c) {
-  const items = await readStoreList(c.settings, IDEAS_FILE)
-  const rest = items.filter(entry => entry.id !== c.params.iid)
-  if (rest.length === items.length) throw new ApiError(404, '选题不存在')
-  await writeJsonFile(join(c.settings.projectRoot, 'outputs', IDEAS_FILE), rest)
-  return { json: { ok: true, deleted: c.params.iid } }
+  const { json } = await mutateIdeas(c.settings, (items) => {
+    const rest = items.filter(entry => entry.id !== c.params.iid)
+    if (rest.length === items.length) throw new ApiError(404, '选题不存在')
+    return { items: rest, json: { ok: true, deleted: c.params.iid } }
+  })
+  return { json }
 }
 
 async function apiScheduleList(c) {
@@ -1129,6 +1226,7 @@ async function apiScheduleCreate(c) {
     source: SCHEDULE_SOURCES.has(body?.source) ? body.source : 'manual',
     event_type: String(body?.event_type ?? ''),
     end_date: String(body?.end_date ?? ''),
+    repeat: body?.repeat === 'yearly' ? 'yearly' : '',
   }
   items.push(item)
   await writeJsonFile(join(c.settings.projectRoot, 'outputs', SCHEDULE_FILE), items)
@@ -1152,6 +1250,9 @@ async function apiScheduleUpdate(c) {
     url: String(body?.url ?? ''),
     event_type: String(body?.event_type ?? ''),
     end_date: String(body?.end_date ?? ''),
+    // repeat 仅 yearly 合法；旧调用方不带该字段时保留原值，显式空串清除
+    repeat: body?.repeat === 'yearly' ? 'yearly'
+      : (body?.repeat === undefined && typeof item.repeat === 'string' ? item.repeat : ''),
   })
   await writeJsonFile(join(c.settings.projectRoot, 'outputs', SCHEDULE_FILE), items)
   return { json: item }
@@ -1175,7 +1276,7 @@ const TREND_SOURCES = {
   baidu: ['https://v2.xxapi.cn/api/baiduhot', 'https://60s.viki.moe/v2/baidu/hot'],
   toutiao: ['https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc', 'https://60s.viki.moe/v2/toutiao'],
 }
-const TREND_LABELS = { weibo: '微博', douyin: '抖音', zhihu: '知乎', bilibili: 'B站', baidu: '百度', toutiao: '头条' }
+const TREND_LABELS = { weibo: '微博', douyin: '抖音', zhihu: '知乎', bilibili: 'B站', baidu: '百度', toutiao: '头条', douyin_rule: '抖音规则', douyin_activity: '抖音活动' }
 const TREND_CACHE = new Map()
 const HOT_TITLE_KEYS = ['title', 'Title', 'word', 'name', 'keyword']
 const HOT_HOT_KEYS = ['hot', 'hot_value', 'HotValue', 'hotValue', 'num', 'detail_text']
@@ -1195,6 +1296,63 @@ function pickStr(data, keys) {
 function trendWebUrl(url) {
   const match = /^https?:\/\/api\.zhihu\.com\/questions\/(\d+)$/.exec(url)
   return match !== null ? `https://www.zhihu.com/question/${match[1]}` : url
+}
+
+/**
+ * A trend item's link is rendered straight into `<a href>`, and RSS/JSON
+ * sources are third-party text. Anything but http(s) becomes no link at all,
+ * so `javascript:` and friends never reach the DOM.
+ * @param raw - the source-provided link.
+ * @returns the link when it is http(s), else the empty string.
+ */
+export function safeLinkUrl(raw) {
+  if (typeof raw !== 'string' || raw === '') return ''
+  try {
+    const url = new URL(raw)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.href : ''
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * Apply {@link safeLinkUrl} to every `url` field of a trends payload: the
+ * list, watch and cluster groups all render their items as links.
+ * @param value - the JSON payload about to be sent.
+ * @returns the same structure with unsafe links blanked.
+ */
+function safeTrendUrls(value) {
+  if (Array.isArray(value)) return value.map(safeTrendUrls)
+  if (value === null || typeof value !== 'object') return value
+  const out = {}
+  for (const [key, child] of Object.entries(value)) {
+    out[key] = key === 'url' && typeof child === 'string' ? safeLinkUrl(child) : safeTrendUrls(child)
+  }
+  return out
+}
+
+/**
+ * Validate one radar HTTP target (built-in or configured): http(s) only, no
+ * embedded credentials, so neither a file: read nor a credentialed dial can be
+ * stored through the settings route.
+ * @param raw - the configured URL text.
+ * @param label - the field name used in the rejection message.
+ * @returns the parsed URL.
+ */
+function radarHttpUrl(raw, label) {
+  let url
+  try {
+    url = new URL(String(raw))
+  } catch {
+    throw new ApiError(400, `${label} 不是合法 URL`)
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new ApiError(400, `${label} 仅支持 http/https`)
+  }
+  if (url.username !== '' || url.password !== '') {
+    throw new ApiError(400, `${label} 不允许携带用户名密码`)
+  }
+  return url
 }
 
 export function parseHotJson(payload) {
@@ -1263,7 +1421,7 @@ export function parseRssItems(text) {
  */
 function rawRequest(urlStr, { timeout = 8000, headers = {}, proxyUrl = '' } = {}) {
   return new Promise((resolveRequest, rejectRequest) => {
-    const target = new URL(urlStr)
+    const target = radarHttpUrl(urlStr, '请求地址')
     const send = (overrides = {}, extra = {}) => {
       const options = {
         protocol: target.protocol,
@@ -1288,7 +1446,7 @@ function rawRequest(urlStr, { timeout = 8000, headers = {}, proxyUrl = '' } = {}
           }
           chunks.push(chunk)
         })
-        answer.on('end', () => resolveRequest({ status: answer.statusCode ?? 0, body: Buffer.concat(chunks) }))
+        answer.on('end', () => resolveRequest({ status: answer.statusCode ?? 0, headers: answer.headers ?? {}, body: Buffer.concat(chunks) }))
         answer.on('error', rejectRequest)
       })
       request.on('timeout', () => request.destroy(new Error('timeout')))
@@ -1299,7 +1457,7 @@ function rawRequest(urlStr, { timeout = 8000, headers = {}, proxyUrl = '' } = {}
       send()
       return
     }
-    const proxy = new URL(proxyUrl)
+    const proxy = radarHttpUrl(proxyUrl, '代理地址')
     if (target.protocol === 'http:') {
       // 正向代理取 http 目标：请求行直接写绝对 URI（RFC 7230 §5.3.2）。
       send({
@@ -1365,47 +1523,282 @@ async function fetchCustomSource(src, proxyUrl) {
   return parseRssItems(await fetchText(src.url, proxyUrl, 10000, 'application/rss+xml, application/xml, text/xml, */*'))
 }
 
+/**
+ * 抖音官方规则源（douyin_rule）：三份免登录数据拼一份榜单——公约文档、治理
+ * 公告（带日期）、规则解读库。各数据面独立降级（部分失败给部分数据），全部
+ * 失败才抛错，由 loadTrendSource 走快照链。
+ * @param {string} proxyUrl - 应用内代理（空串直连）。
+ * @returns {Promise<Array<{title: string, hot: string, url: string}>>}
+ */
+async function fetchDouyinRules(proxyUrl) {
+  const grab = async (url, parse) => {
+    const { status, body } = await rawRequest(url, { timeout: 8000, proxyUrl,
+      headers: { accept: 'application/json, text/plain, */*', referer: 'https://www.douyin.com/rule' } })
+    if (!(status >= 200 && status < 300)) throw new Error(`HTTP ${status}`)
+    return parse(JSON.parse(body.toString('utf8')))
+  }
+  const parts = await Promise.allSettled([
+    grab(DOUYIN_RULE_URLS.docs, parseDouyinPolicyDocs),
+    grab(DOUYIN_RULE_URLS.notices, parseDouyinAnnouncements),
+    grab(DOUYIN_RULE_URLS.explain, parseDouyinPolicyExplain),
+  ])
+  const items = mergeDouyinRuleItems(parts.map(part => (part.status === 'fulfilled' ? part.value : [])))
+  if (items.length === 0) throw new Error('抖音规则三份数据面全部不可用')
+  return items
+}
+
+/** 自带专用取数器的内置源（key → 取数器）；未列出的内置平台走聚合 API 热榜。 */
+const TREND_FETCHERS = { douyin_rule: fetchDouyinRules, douyin_activity: fetchDouyinActivities }
+
+// ---- 抖音创作者活动（douyin_activity，需登录态；接口免签名，cookie 必需）----
+
+// 从发布自动化的 DouyinProfile（Playwright 持久 context）提取 creator.douyin.com
+// 的 cookie。profile 被占用（正在发布/登录）或未装 playwright 时会失败——由
+// DOUYIN_COOKIE_FAIL 冷却兜住，不刷屏起无头浏览器。
+const DOUYIN_COOKIE_EXTRACT_PY = [
+  'import json',
+  'from pathlib import Path',
+  'from playwright.sync_api import sync_playwright',
+  'profile = str(Path.home() / ".easel-browser-profiles" / "DouyinProfile")',
+  'with sync_playwright() as p:',
+  '    ctx = p.chromium.launch_persistent_context(profile, headless=True)',
+  '    cookies = ctx.cookies("https://creator.douyin.com")',
+  '    ctx.close()',
+  'header = "; ".join(c["name"] + "=" + c["value"] for c in cookies)',
+  'print(json.dumps({"ok": header != "", "cookie": header}))',
+].join('\n')
+
+/** python 提取失败冷却（projectRoot → 最近失败时刻，秒），10 分钟内不再重试。 */
+const DOUYIN_COOKIE_FAIL = new Map()
+const DOUYIN_COOKIE_FAIL_COOLDOWN = 10 * 60
+
+/** 跑一段 python 收 stdout（超时杀进程，失败回 null 不抛）。 */
+function runPythonCapture(python, code, timeoutMs) {
+  return new Promise(resolvePromise => {
+    let out = ''
+    const child = spawn(python, ['-c', code], { windowsHide: true, env: { ...process.env, PYTHONUTF8: '1' } })
+    const timer = setTimeout(() => child.kill(), timeoutMs)
+    child.stdout.on('data', chunk => { out += chunk })
+    child.stderr.on('data', () => {})
+    child.on('error', () => { clearTimeout(timer); resolvePromise(null) })
+    child.on('close', () => { clearTimeout(timer); resolvePromise(out) })
+  })
+}
+
+/**
+ * 提取 cookie 并落缓存；失败记入冷却表回 null。`force` 旁路冷却（cookie 失效
+ * 重取时用）。
+ * @returns {Promise<string|null>} cookie 请求头，失败为 null。
+ */
+async function extractDouyinCookies(settings, now, { force = false } = {}) {
+  if (!force && now - (DOUYIN_COOKIE_FAIL.get(settings.projectRoot) ?? 0) < DOUYIN_COOKIE_FAIL_COOLDOWN) return null
+  const out = await runPythonCapture(settings.python, DOUYIN_COOKIE_EXTRACT_PY, 45_000)
+  try {
+    const parsed = JSON.parse((out ?? '').trim())
+    const cache = readDouyinCookieCache(serializeDouyinCookieCache(String(parsed?.cookie ?? ''), Math.floor(now)))
+    if (parsed?.ok !== true || cache === null) throw new Error('bad cookie payload')
+    await writeJsonFile(join(settings.projectRoot, 'outputs', DOUYIN_ACTIVITY_COOKIE_FILE), cache)
+    DOUYIN_COOKIE_FAIL.delete(settings.projectRoot)
+    return cache.cookie
+  } catch {
+    DOUYIN_COOKIE_FAIL.set(settings.projectRoot, Math.floor(now))
+    return null
+  }
+}
+
+async function loadDouyinActivityCookie(settings, now) {
+  const cached = readDouyinCookieCache(
+    await readJsonFile(join(settings.projectRoot, 'outputs', DOUYIN_ACTIVITY_COOKIE_FILE), null))
+  if (cached !== null) return cached.cookie
+  return extractDouyinCookies(settings, now)
+}
+
+/**
+ * 抖音创作者活动源（douyin_activity）：活动广场（主）+ 创作灵感（辅），登录
+ * cookie 直调免签名接口。cookie 失效（网关码 8）时作废缓存、强制重提一次并
+ * 重试；仍失败或本就取不到登录态则抛错，由 loadTrendSource 走快照链。
+ * @param {string} proxyUrl - 应用内代理（空串直连）。
+ * @param {{projectRoot: string, python: string}} settings - Easel 设置。
+ * @returns {Promise<Array<{title: string, hot: string, url: string}>>}
+ */
+async function fetchDouyinActivities(proxyUrl, settings) {
+  const now = Date.now() / 1000
+  let cookie = await loadDouyinActivityCookie(settings, now)
+  if (cookie === null) throw new Error('抖音登录态不可用：到账号页扫码登录抖音后自动恢复')
+  const grab = async url => {
+    const { status, body } = await rawRequest(url, { timeout: 8000, proxyUrl, headers: {
+      accept: 'application/json, text/plain, */*',
+      referer: 'https://creator.douyin.com/creator-micro/home',
+      cookie,
+    } })
+    if (!(status >= 200 && status < 300)) throw new Error(`HTTP ${status}`)
+    return JSON.parse(body.toString('utf8'))
+  }
+  const win = douyinActivityWindow(now)
+  const pcUrl = `${DOUYIN_ACTIVITY_URLS.pcList}?start_time=${win.start_time}&end_time=${win.end_time}&page=1&page_size=50`
+  let pc
+  for (let attempt = 0; ; attempt += 1) {
+    pc = await grab(pcUrl)
+    if (!douyinAuthFailed(pc)) break
+    if (attempt > 0) throw new Error('抖音登录态已失效：请到账号页重新扫码')
+    await writeJsonFile(join(settings.projectRoot, 'outputs', DOUYIN_ACTIVITY_COOKIE_FILE), { cookie: '', at: 0 })
+    cookie = await extractDouyinCookies(settings, now, { force: true })
+    if (cookie === null) throw new Error('抖音登录态不可用：请到账号页重新扫码')
+  }
+  let inspiration = []
+  try {
+    inspiration = parseDouyinActivityInspiration(
+      await grab(`${DOUYIN_ACTIVITY_URLS.inspiration}?aid=1128&cursor=0&count=50`), now)
+  } catch { /* 灵感面失败不拖垮活动广场 */ }
+  const items = mergeDouyinActivityItems([parseDouyinActivityPc(pc, now), inspiration])
+  if (items.length === 0) throw new Error('抖音活动广场返回空')
+  return items
+}
+
+// 离线兜底的快照年龄上限：更旧的热榜宁可空着，不冒充实时数据。
+const TREND_STALE_MAX_AGE_SECONDS = 24 * 60 * 60
+
+/**
+ * 单个源的取数链（spec easel-hotspot-radar §D2）：新鲜缓存 → 抓取并合并轨迹 →
+ * 失败时回退内存/落盘快照（≤24h，标 stale）→ 空。
+ * @returns {Promise<{at: number|undefined, items: object[], entries?: object[], stale: boolean, ok: boolean}>}
+ */
+async function loadTrendSource({ now, force, cached, prev, fetcher }) {
+  if (cached !== undefined && !force && now - cached.at < 300) {
+    return { at: cached.at, items: cached.items, stale: false, ok: true }
+  }
+  let fresh = null
+  try {
+    const fetched = await fetcher()
+    if (fetched.length > 0) {
+      const { items, entries } = decorateFetched(prev, fetched, now)
+      fresh = { at: Math.floor(now), items, entries, stale: false, ok: true }
+    }
+  } catch { /* 抓取失败 → 走降级链 */ }
+  if (fresh !== null) return fresh
+  if (cached !== undefined && now - cached.at <= TREND_STALE_MAX_AGE_SECONDS) {
+    return { at: cached.at, items: cached.items, stale: true, ok: true }
+  }
+  const disk = staleItemsFromHistory(prev, now)
+  if (disk !== null) return { at: prev.at, items: disk, stale: true, ok: true }
+  return { at: undefined, items: [], stale: false, ok: false }
+}
+
+/** 响应条目：剥掉内部字段（key/firstSeen 只服务聚类与徽标计算）。 */
+function trendPayload(items, limit) {
+  return items.slice(0, limit).map(({ key, firstSeen, ...rest }) => rest)
+}
+
 async function apiTrends(c) {
   const platforms = c.query.get('platforms') ?? 'weibo,douyin,zhihu'
+  const view = c.query.get('view') === 'cluster' ? 'cluster' : 'list'
+  const force = c.query.get('force') === '1'
   const limitRaw = Number(c.query.get('limit'))
   const limit = Math.max(1, Math.min(Number.isFinite(limitRaw) && limitRaw > 0 ? Math.floor(limitRaw) : 12, 30))
   const cfg = await readRadarConfig(c.settings)
   const proxyUrl = cfg.proxyEnabled ? cfg.proxyUrl : ''
   const now = Date.now() / 1000
+  const history = await readRadarHistory(c.settings.projectRoot, path => readJsonFile(path, null))
   const result = []
-  for (const platform of platforms.split(',').map(p => p.trim()).filter(p => p in TREND_SOURCES)) {
-    const cached = TREND_CACHE.get(platform)
-    let items
-    if (cached !== undefined && now - cached.at < 300) {
-      items = cached.items
-    } else {
-      items = await fetchPlatformTrend(platform, proxyUrl)
-      if (items.length > 0) TREND_CACHE.set(platform, { at: now, items })
-      else if (cached !== undefined) items = cached.items
+  const decoratedGroups = []
+  let historyDirty = false
+  const sources = [
+    ...platforms.split(',').map(p => p.trim()).filter(p => p in TREND_SOURCES || p in TREND_FETCHERS)
+      .map(platform => ({
+        key: platform,
+        label: TREND_LABELS[platform] ?? platform,
+        fetcher: TREND_FETCHERS[platform] !== undefined
+          ? () => TREND_FETCHERS[platform](proxyUrl, c.settings)
+          : () => fetchPlatformTrend(platform, proxyUrl),
+      })),
+    // 自定义源与内置源同缓存同出口；失败降级 ok:false，绝不因一条源炸掉整页。
+    ...cfg.sources.filter(src => src.enabled).map(src => ({
+      key: `custom:${src.name}`, label: src.name, category: src.category,
+      fetcher: () => fetchCustomSource(src, proxyUrl),
+    })),
+  ]
+  for (const source of sources) {
+    const cached = TREND_CACHE.get(source.key)
+    const prev = history.sources[source.key] ?? null
+    const loaded = await loadTrendSource({ now, force, cached, prev, fetcher: source.fetcher })
+    if (loaded.entries !== undefined) {
+      history.sources[source.key] = pruneSnapshot({ at: loaded.at, items: loaded.entries }, now)
+      historyDirty = true
+      TREND_CACHE.set(source.key, { at: loaded.at, items: loaded.items })
     }
-    result.push({ platform, label: TREND_LABELS[platform] ?? platform, items: items.slice(0, limit), ok: items.length > 0 })
+    // 关注匹配作用于完整榜单（不是截断后的可见切片），关注组自己再截 10 条。
+    applyWatch(loaded.items, cfg.keywords)
+    decoratedGroups.push({ platform: source.key, label: source.label, items: loaded.items })
+    result.push({
+      platform: source.key,
+      label: source.label,
+      ...(source.category !== undefined ? { category: source.category } : {}),
+      ...(loaded.at !== undefined ? { at: loaded.at } : {}),
+      ...(loaded.stale ? { stale: true } : {}),
+      ok: loaded.ok,
+      items: trendPayload(loaded.items, limit),
+    })
   }
-  // 自定义源与内置源同缓存同出口；失败降级 ok:false，绝不因一条源炸掉整页。
-  for (const src of cfg.sources) {
-    if (!src.enabled) continue
-    const key = `custom:${src.name}`
-    const cached = TREND_CACHE.get(key)
-    let items
-    if (cached !== undefined && now - cached.at < 300) {
-      items = cached.items
-    } else {
-      try {
-        items = await fetchCustomSource(src, proxyUrl)
-        if (items.length > 0) TREND_CACHE.set(key, { at: now, items })
-        else if (cached !== undefined) items = cached.items
-        else items = []
-      } catch {
-        items = cached?.items ?? []
-      }
-    }
-    result.push({ platform: key, label: src.name, category: src.category, items: items.slice(0, limit), ok: items.length > 0 })
+  if (historyDirty) {
+    try {
+      await writeJsonFile(join(c.settings.projectRoot, 'outputs', RADAR_HISTORY_FILE), history)
+    } catch { /* 轨迹是缓存，写失败只丢徽标，不影响本次响应 */ }
   }
-  return { json: { trends: result, updated: Math.floor(now) } }
+  const ats = result.map(group => group.at).filter(at => typeof at === 'number')
+  return {
+    json: safeTrendUrls({
+      trends: result,
+      updated: ats.length > 0 ? Math.max(...ats) : Math.floor(now),
+      watch: buildWatchGroups(decoratedGroups),
+      ...(view === 'cluster' ? { clusters: clusterTrends(decoratedGroups) } : {}),
+    }),
+  }
+}
+
+// ---- 右键抓取正文（spec easel-hotspot-radar §D6）：正文进内容库，选题进 _ideas.json ----
+
+const ARTICLE_FETCH_TIMEOUT_MS = 15_000
+const ARTICLE_MAX_BYTES = 5 * 1024 * 1024
+
+async function fetchArticlePage(url, { proxyUrl }) {
+  const { status, headers, body } = await rawRequest(url, {
+    timeout: ARTICLE_FETCH_TIMEOUT_MS,
+    proxyUrl,
+    headers: {
+      accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+      'accept-language': 'zh-CN,zh;q=0.9',
+    },
+  })
+  if (body.length > ARTICLE_MAX_BYTES) throw new Error('页面过大')
+  return { status, headers, body }
+}
+
+const captureArticle = createCaptureHandler({
+  fetchPage: fetchArticlePage,
+  lookupHost: dnsLookup,
+  io: {
+    writeText: async (path, content) => {
+      await mkdir(dirname(path), { recursive: true })
+      const tmp = `${path}.tmp`
+      await writeFile(tmp, content, 'utf8')
+      await rename(tmp, path)
+    },
+    mutateIdeas,
+    readIdeas: async (settings) => readStoreList(settings, IDEAS_FILE),
+    proxyUrl: async (settings) => {
+      const cfg = await readRadarConfig(settings)
+      return cfg.proxyEnabled ? cfg.proxyUrl : ''
+    },
+  },
+})
+
+async function apiRadarArticle(c) {
+  try {
+    return await captureArticle(c)
+  } catch (error) {
+    if (error instanceof RadarArticleError) throw new ApiError(error.status, error.detail)
+    throw error
+  }
 }
 
 // ---- 账号/登录/发布状态（文件协议；登录与发布的「启动」在 B2 前仍走代理）----
@@ -1502,15 +1895,149 @@ async function apiProjectize(c) {
     persona: String(body?.persona ?? '').trim(),
   })
   if (typeof body?.ideaId === 'string' && body.ideaId) {
-    const items = await readStoreList(c.settings, IDEAS_FILE)
-    const item = items.find(entry => entry.id === body.ideaId)
-    if (item !== undefined) {
-      item.status = 'project'
-      item.projectDir = `projects/${result.safe}`
-      await writeJsonFile(join(c.settings.projectRoot, 'outputs', IDEAS_FILE), items)
-    }
+    await mutateIdeas(c.settings, (items) => {
+      const item = items.find(entry => entry.id === body.ideaId)
+      if (item !== undefined) {
+        item.status = 'project'
+        item.projectDir = `projects/${result.safe}`
+      }
+      return { items }
+    })
   }
   return { json: { safe: result.safe } }
+}
+
+// ---- CalDAV 只读订阅（账号配置存 _caldav_config.json，事件缓存存 _caldav_cache.json）----
+
+const CALDAV_CONFIG_FILE = '_caldav_config.json'
+const CALDAV_CACHE_FILE = '_caldav_cache.json'
+// 同步窗口：过去 60 天 ~ 未来 300 天，客户端按可见月份过滤
+const CALDAV_SYNC_BACK_DAYS = 60
+const CALDAV_SYNC_FORWARD_DAYS = 300
+const CALDAV_COLORS = ['#5b8def', '#e5484d', '#30a46c', '#b7791f', '#8e4ec6', '#0f766e']
+
+function isValidHttpUrl(value) {
+  return /^https?:\/\//i.test(value)
+}
+
+export async function readCaldavConfig(settings) {
+  const raw = await readJsonFile(join(settings.projectRoot, 'outputs', CALDAV_CONFIG_FILE), null)
+  const accounts = []
+  for (const item of Array.isArray(raw?.accounts) ? raw.accounts : []) {
+    if (item === null || typeof item !== 'object') continue
+    const url = String(item.url ?? '').trim()
+    if (!isValidHttpUrl(url)) continue
+    accounts.push({
+      id: String(item.id ?? '').trim() || randomBytes(6).toString('hex'),
+      name: String(item.name ?? '').trim().slice(0, 40) || '日历账号',
+      url,
+      username: String(item.username ?? '').trim(),
+      // ponytail: 凭据明文存工作区 outputs（本地桌面应用、本机数据目录）；API 响应一律掩码
+      password: String(item.password ?? ''),
+      enabled: item.enabled !== false,
+      calendars: Array.isArray(item.calendars) ? item.calendars.map(String).filter(isValidHttpUrl) : [],
+    })
+  }
+  return { accounts }
+}
+
+async function writeCaldavConfig(settings, accounts) {
+  await writeJsonFile(join(settings.projectRoot, 'outputs', CALDAV_CONFIG_FILE), { accounts })
+}
+
+async function readCaldavCache(settings) {
+  const raw = await readJsonFile(join(settings.projectRoot, 'outputs', CALDAV_CACHE_FILE), null)
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw)
+    || raw.byAccount === null || typeof raw.byAccount !== 'object' || Array.isArray(raw.byAccount)) return {}
+  // 耐久文件：条目形状不合规的直接丢弃，不让坏缓存打穿客户端渲染
+  const byAccount = {}
+  for (const [aid, bucket] of Object.entries(raw.byAccount)) {
+    if (bucket === null || typeof bucket !== 'object' || !Array.isArray(bucket.events)) continue
+    byAccount[aid] = {
+      syncedAt: typeof bucket.syncedAt === 'number' ? bucket.syncedAt : null,
+      events: bucket.events.filter((ev) => ev !== null && typeof ev === 'object'),
+    }
+  }
+  return byAccount
+}
+
+async function apiCaldavAccountsGet(c) {
+  const cfg = await readCaldavConfig(c.settings)
+  const cache = await readCaldavCache(c.settings)
+  const accounts = cfg.accounts.map((account, index) => ({
+    ...account,
+    password: account.password ? maskValue(account.password) : '',
+    color: CALDAV_COLORS[index % CALDAV_COLORS.length],
+    syncedAt: cache[account.id]?.syncedAt ?? null,
+  }))
+  return { json: { accounts } }
+}
+
+async function apiCaldavAccountsPut(c) {
+  const body = await c.body()
+  const existing = await readCaldavConfig(c.settings)
+  const accounts = []
+  for (const item of Array.isArray(body?.accounts) ? body.accounts : []) {
+    if (item === null || typeof item !== 'object') continue
+    const url = String(item.url ?? '').trim()
+    if (!isValidHttpUrl(url)) throw new ApiError(400, `无效的 CalDAV URL：${url || '(空)'}`)
+    const id = String(item.id ?? '').trim() || randomBytes(6).toString('hex')
+    const old = existing.accounts.find((account) => account.id === id)
+    // 空密码或掩码 = 未改动（GET 只回掩码，客户端会原样带回来），保留原值
+    const incomingPassword = String(item.password ?? '').trim()
+    const password = (incomingPassword === '' || incomingPassword.startsWith('••••')) ? (old?.password ?? '') : incomingPassword
+    accounts.push({
+      id,
+      name: String(item.name ?? '').trim().slice(0, 40) || '日历账号',
+      url,
+      username: String(item.username ?? '').trim(),
+      password,
+      enabled: item.enabled !== false,
+      calendars: Array.isArray(item.calendars) ? item.calendars.map(String).filter(isValidHttpUrl) : [],
+    })
+  }
+  await writeCaldavConfig(c.settings, accounts)
+  return { json: { ok: true } }
+}
+
+async function apiCaldavDiscover(c) {
+  const cfg = await readCaldavConfig(c.settings)
+  const saved = cfg.accounts.find((account) => account.id === c.params.aid)
+  if (saved === undefined) throw new ApiError(404, '账号不存在')
+  const body = await c.body()
+  // 表单未保存时可用请求体里的 URL/凭据直接探测
+  const account = {
+    ...saved,
+    url: isValidHttpUrl(String(body?.url ?? '').trim()) ? String(body.url).trim() : saved.url,
+    username: typeof body?.username === 'string' && body.username.trim() ? body.username.trim() : saved.username,
+    password: typeof body?.password === 'string' && body.password.trim() ? body.password : saved.password,
+  }
+  try {
+    return { json: { calendars: await discoverCalendars(account) } }
+  } catch (error) {
+    throw new ApiError(502, error?.message ?? 'CalDAV 发现失败')
+  }
+}
+
+async function apiCaldavSync(c) {
+  const cfg = await readCaldavConfig(c.settings)
+  const account = cfg.accounts.find((entry) => entry.id === c.params.aid)
+  if (account === undefined) throw new ApiError(404, '账号不存在')
+  const now = Date.now()
+  let events
+  try {
+    events = await syncCalendarEvents(account, now - CALDAV_SYNC_BACK_DAYS * 86400000, now + CALDAV_SYNC_FORWARD_DAYS * 86400000)
+  } catch (error) {
+    throw new ApiError(502, error?.message ?? 'CalDAV 同步失败')
+  }
+  const cache = await readCaldavCache(c.settings)
+  cache[account.id] = { syncedAt: Math.floor(now / 1000), events }
+  await writeJsonFile(join(c.settings.projectRoot, 'outputs', CALDAV_CACHE_FILE), { byAccount: cache })
+  return { json: { ok: true, count: events.length } }
+}
+
+async function apiCaldavEventsGet(c) {
+  return { json: { byAccount: await readCaldavCache(c.settings) } }
 }
 
 // ---- 路由表与调度：命中即本地应答，未命中返回 null → 回落代理 ----
@@ -1579,6 +2106,9 @@ function dataRootConfigFile() {
   return process.env.EASEL_DATA_ROOT_CONFIG || null
 }
 
+/** How long a queued relocation stays meaningful; the shell applies it at once. */
+const DATA_ROOT_PENDING_TTL_SECONDS = 600
+
 /** GET /easel/api/data-root — current/default root, pending request, last error. */
 async function apiDataRoot() {
   const current = process.env.EASEL_DATA_ROOT || null
@@ -1588,6 +2118,11 @@ async function apiDataRoot() {
   const pending = dir ? await readJsonFile(join(dir, DATA_ROOT_PENDING_FILE), null) : null
   const result = dir ? await readJsonFile(join(dir, DATA_ROOT_RESULT_FILE), null) : null
   const fallback = process.env.EASEL_DATA_ROOT_DEFAULT || null
+  // The shell drops a stale request on its next launch; until then this route
+  // must not report it as pending, or the settings page waits forever.
+  const requestedAt = pending !== null && typeof pending === 'object' ? pending.requestedAt : undefined
+  const queued = typeof requestedAt === 'number'
+    && Math.floor(Date.now() / 1000) - requestedAt <= DATA_ROOT_PENDING_TTL_SECONDS
   return {
     json: {
       supported: true,
@@ -1596,7 +2131,7 @@ async function apiDataRoot() {
       isDefault: samePath(current, fallback),
       configPath: config,
       cloudSynced: cloudSynced(current),
-      pending: pending !== null && typeof pending === 'object' ? pending.target ?? null : null,
+      pending: queued ? pending.target ?? null : null,
       lastError: result !== null && typeof result === 'object' && result.ok === false ? result.error ?? null : null,
     },
   }
@@ -1671,7 +2206,9 @@ async function apiDataRootSet(c) {
   }
 
   await mkdir(dir, { recursive: true })
-  await writeJsonFile(pendingFile, { version: 1, target, requestedAt: Date.now() })
+  // Seconds, matching the shell's `unix_now()`: a millisecond stamp reads as
+  // "far in the future" to the consumer's freshness check.
+  await writeJsonFile(pendingFile, { version: 1, target, requestedAt: Math.floor(Date.now() / 1000) })
   await rm(resultFile, { force: true }).catch(() => {})
   requestDataRootRestart()
   return { json: { ok: true, target }, status: 202 }
@@ -1755,6 +2292,7 @@ export const CORE_ROUTES = [
   ['GET', ['radar', 'config'], apiRadarConfigGet],
   ['POST', ['radar', 'config'], apiRadarConfigSet],
   ['GET', ['trends'], apiTrends],
+  ['POST', ['radar', 'article'], apiRadarArticle],
   ['GET', ['outputs'], c => getOutputTree(c.settings).then(json => ({ json }))],
   ['GET', ['output', ':path...'], apiOutputContent],
   ['DELETE', ['output', ':path...'], apiOutputDelete],
@@ -1768,6 +2306,11 @@ export const CORE_ROUTES = [
   ['POST', ['schedule'], apiScheduleCreate],
   ['PUT', ['schedule', ':sid'], apiScheduleUpdate],
   ['DELETE', ['schedule', ':sid'], apiScheduleDelete],
+  ['GET', ['caldav', 'accounts'], apiCaldavAccountsGet],
+  ['PUT', ['caldav', 'accounts'], apiCaldavAccountsPut],
+  ['POST', ['caldav', 'accounts', ':aid', 'discover'], apiCaldavDiscover],
+  ['POST', ['caldav', 'accounts', ':aid', 'sync'], apiCaldavSync],
+  ['GET', ['caldav', 'events'], apiCaldavEventsGet],
   ['POST', ['profile', 'build'], apiProfileBuild],
   ['POST', ['mkdir'], apiMkdir],
   ['POST', ['projectize'], apiProjectize],
@@ -1776,12 +2319,21 @@ export const CORE_ROUTES = [
 /**
  * Route registry shared with feature plugins (the `easelApi` service).
  * @param settings - resolved deployment settings, handed to every handler.
+ * @param connection - the host connection service this plane admits through.
+ * @param port - reads the webserver port once it is bound (it may be unbound at activation).
  */
-export function createRouteRegistry(settings) {
+export function createRouteRegistry(settings, connection, port) {
+  // Per process, not persisted: a restarted server invalidates every token and
+  // the activation-time `writeApiDiscovery` publishes the replacement.
+  const runnerToken = randomBytes(32).toString('hex')
   let tables = []
   let snapshot = []
   return {
-    settings,
+    settings: { ...settings, runnerToken },
+    connection,
+    port,
+    runnerToken,
+    discoveryPublished: false,
     /** @returns the merged table, in registration order. */
     snapshot: () => snapshot,
     /**
@@ -1870,15 +2422,32 @@ async function streamFile(res, { file, status = 200, headers = {}, range }) {
 }
 
 /**
+ * Answer a request the connection fence refuses; false when it may continue.
+ * A missing service fails closed: nothing here can authenticate anyone.
+ * @param api - the route registry (holds the connection service).
+ * @param req - the incoming request.
+ * @param res - the response this route owns.
+ * @returns true when a rejection was written.
+ */
+function rejected(api, req, res) {
+  if (api.connection === undefined) {
+    sendJson(res, 503, { detail: '本地 API 未接入连接鉴权' })
+    return true
+  }
+  const rejection = api.connection.requestRejection(req)
+  if (rejection === undefined) return false
+  sendJson(res, rejection, { ok: false, error: rejection === 401 ? 'unauthorized' : 'cross-origin api use is not allowed' })
+  return true
+}
+
+/**
  * Serve `/easel/api/*` from the mounted route registry: absorbed routes answer
  * off the project directory, and a request no plugin claims is a plain 404.
+ * Admission is the connection service's: this plane answers filesystem state,
+ * so it takes the same Host/Origin fence and live-Peer check as `/api`.
  */
 async function serveApi(api, req, res) {
   const settings = api.settings
-  if (!sameOriginAllowed(req.headers.origin, req.headers.host)) {
-    sendJson(res, 403, { ok: false, error: 'cross-origin api use is not allowed' })
-    return
-  }
   let segments
   let query
   try {
@@ -1890,6 +2459,23 @@ async function serveApi(api, req, res) {
     sendJson(res, 400, { detail: '非法路径编码' })
     return
   }
+  // Publish the runner capability before the first authenticated call: the
+  // workbench page loads this plane, the skills only read the file.
+  const port = api.port?.()
+  if (api.discoveryPublished !== true && Number.isInteger(port) && port > 0) {
+    // Only a completed write counts: a failed one retries on the next request.
+    api.discoveryPublished = (await writeApiDiscovery(settings.projectRoot, port, settings.basePath, api.runnerToken)
+      .catch(() => false)) === true
+  }
+  if (api.connection === undefined) {
+    sendJson(res, 503, { detail: '本地 API 未接入连接鉴权' })
+    return
+  }
+  const rejection = api.connection.requestRejection(req)
+  if (rejection !== undefined && !(rejection === 401 && runnerAuthorized(api, req, segments))) {
+    sendJson(res, rejection, { ok: false, error: rejection === 401 ? 'unauthorized' : 'cross-origin api use is not allowed' })
+    return
+  }
   let cachedBody
   const readJson = async () => {
     if (cachedBody === undefined) cachedBody = await readJsonBody(req)
@@ -1899,8 +2485,11 @@ async function serveApi(api, req, res) {
   try {
     result = await dispatchLocalApi(settings, req.method ?? 'GET', segments, query, readJson, req.headers, api.snapshot())
   } catch (error) {
+    // 非 ApiError 的意外错误不回显给客户端（message 可能带远端响应体/内部细节），
+    // 全量进服务端日志；响应固定文案。
+    if (!(error instanceof ApiError)) console.error('easel api:', error)
     const status = error instanceof ApiError ? error.status : 500
-    const detail = error instanceof ApiError ? error.detail : `本地 API 错误：${error?.message ?? error}`
+    const detail = error instanceof ApiError ? error.detail : '本地 API 错误'
     sendJson(res, status, { detail })
     return
   }
@@ -1917,6 +2506,410 @@ async function serveApi(api, req, res) {
 }
 
 /**
+ * The ASR runner skills call the API with `curl`, which carries no dsh cookie.
+ * They get one route (`POST /easel/api/asr`) and a per-process capability that
+ * `writeApiDiscovery` publishes beside the API base. A routing mistake must not
+ * widen it: the route is matched from the decoded segments, not the raw URL.
+ * @param api - the route registry holding this process's capability.
+ * @param req - the incoming request.
+ * @param segments - decoded path segments under the prefix.
+ * @returns whether this request may use the capability instead of a Peer.
+ */
+function runnerAuthorized(api, req, segments) {
+  if (req.method !== 'POST') return false
+  if (segments.length !== 1 || segments[0] !== 'asr') return false
+  const presented = req.headers['x-easel-runner']
+  if (typeof presented !== 'string') return false
+  // Compare bytes, not string lengths: a multi-byte value must become a
+  // mismatch, not a RangeError out of timingSafeEqual.
+  const offered = Buffer.from(presented)
+  const expected = Buffer.from(api.runnerToken)
+  return offered.length === expected.length && timingSafeEqual(offered, expected)
+}
+
+/**
+ * Routes for LAN project handoff.
+ *
+ * The handoff backend lives in the `@easel-dsh/easel-air-transfer` plugin row;
+ * this table only relays through the runtime service, so the Easel plugin
+ * keeps its staged payload free of harness imports.
+ * @param ctx - host context that may carry the `lanHandoff` service.
+ * @returns route rows in the {@link CORE_ROUTES} shape.
+ */
+export function createHandoffRoutes(ctx) {
+  const lan = () => ctx.get?.('lanHandoff')
+  const requireLan = () => {
+    const service = lan()
+    if (service === undefined) throw new ApiError(409, '隔空传送未启用：profile 未挂载 @easel-dsh/easel-air-transfer')
+    return service
+  }
+  return [
+    ['GET', ['handoff', 'status'], async () => {
+      const service = lan()
+      if (service === undefined) {
+        return { json: { available: false, reason: 'LAN handoff is not enabled in this profile' } }
+      }
+      const state = await service.ready
+      return { json: {
+        available: true,
+        device: {
+          id: String(state.deviceId),
+          name: state.name,
+          port: state.port,
+          handoffDirectory: state.handoffDirectory,
+        },
+        paired: service.pairedPeers().map(peer => ({
+          id: String(peer.id), name: peer.name, platform: peer.platform, pairedAt: peer.pairedAt,
+        })),
+        discovered: service.peersSnapshot().map(peer => ({
+          id: String(peer.id),
+          name: peer.name,
+          platform: peer.platform,
+          port: peer.port,
+          addresses: peer.addresses,
+          compatible: peer.compatible,
+        })),
+        pending: service.pairingOffers().map(offer => ({
+          id: offer.id,
+          sas: offer.sas,
+          direction: offer.direction,
+          peer: { id: String(offer.peer.id), name: offer.peer.name, platform: offer.peer.platform },
+        })),
+        last: service.lastHandoffOutcome() ?? null,
+      } }
+    }],
+    ['POST', ['handoff', 'pair'], async (c) => {
+      const service = requireLan()
+      const body = await c.body()
+      const before = new Set(service.pairingOffers().map(offer => offer.id))
+      if (typeof body?.peerId === 'string' && body.peerId.length > 0) {
+        await service.pairWithDiscoveredPeer(body.peerId)
+      } else {
+        const host = String(body?.host ?? '').trim()
+        const port = Number(body?.port)
+        if (host.length === 0 || !Number.isInteger(port) || port < 1 || port > 65535) {
+          throw new ApiError(400, 'host 与 port 必填（或提供 peerId）')
+        }
+        await service.pairWithPeer({ host, port })
+      }
+      const pending = service.pairingOffers().find(offer => !before.has(offer.id))
+      if (pending === undefined) throw new ApiError(502, '配对未能进入待确认状态')
+      return { json: {
+        id: pending.id,
+        sas: pending.sas,
+        direction: pending.direction,
+        peer: { id: String(pending.peer.id), name: pending.peer.name, platform: pending.peer.platform },
+      } }
+    }],
+    ['POST', ['handoff', 'pair', ':id', 'accept'], async (c) => {
+      await requireLan().acceptPairing(String(c.params.id))
+      return { json: { ok: true } }
+    }],
+    ['POST', ['handoff', 'pair', ':id', 'reject'], async (c) => {
+      await requireLan().rejectPairing(String(c.params.id))
+      return { json: { ok: true } }
+    }],
+    ['GET', ['handoff', 'workspaces'], async () => {
+      const registry = ctx.get?.('workspaceRegistry')
+      if (registry === undefined) return { json: { workspaces: [] } }
+      return { json: {
+        workspaces: registry.list().map(workspace => ({ path: workspace.path, title: workspace.title })),
+      } }
+    }],
+    ['POST', ['handoff', 'send'], async (c) => {
+      const service = requireLan()
+      const body = await c.body()
+      const peerId = String(body?.peerId ?? '')
+      const workspacePath = String(body?.workspacePath ?? '')
+      if (peerId.length === 0 || workspacePath.length === 0) {
+        throw new ApiError(400, 'peerId 与 workspacePath 必填')
+      }
+      // 载荷勾选（spec easel-handoff-payload §S2）：会话默认带；项目素材默认带；
+      // 内容库与配置项（.env/画像/技能，含密钥）按勾选装配成 data 条目。
+      const payload = body?.payload !== null && typeof body?.payload === 'object' ? body.payload : {}
+      const dataFiles = [
+        ...(payload.library === true ? await collectLibraryDataFiles(c.settings) : []),
+        ...(payload.config === true ? await collectConfigDataFiles(c.settings) : []),
+      ]
+      const result = await service.sendProjectToPeer(peerId, workspacePath, {
+        sessions: payload.sessions !== false,
+        exclude: ['.env', ...(payload.materials === false ? ['素材'] : [])],
+        ...(dataFiles.length > 0 ? { dataFiles } : {}),
+      })
+      return { json: { ok: true, sent: result.sent, skipped: result.skipped } }
+    }],
+    ['POST', ['handoff', 'push'], async (c) => {
+      const service = requireLan()
+      const body = await c.body()
+      const peerId = String(body?.peerId ?? '')
+      const rawPath = String(body?.path ?? '')
+      if (peerId.length === 0 || rawPath.length === 0) {
+        throw new ApiError(400, 'peerId 与 path 必填')
+      }
+      const target = resolve(rawPath)
+      const found = await pathStat(target)
+      if (found === null) throw new ApiError(404, '文件不存在')
+      const canonical = realpathSync.native(target)
+      // 最长前缀的已注册工作区决定标题与相对路径；不在任何工作区时以自身名入包。
+      const registry = ctx.get?.('workspaceRegistry')
+      const workspaces = registry === undefined ? [] : registry.list()
+      let chosen = null
+      for (const workspace of workspaces) {
+        const ws = resolve(String(workspace.path))
+        if (canonical !== ws && !canonical.startsWith(ws + sep)) continue
+        if (chosen === null || ws.length > chosen.ws.length) chosen = { workspace, ws }
+      }
+      const relativeBase = chosen === null
+        ? ''
+        : relative(chosen.ws, found.isDirectory() ? canonical : dirname(canonical)).split(sep).join('/')
+      const projectTitle = chosen === null
+        ? basename(canonical)
+        : (String(chosen.workspace.title).length > 0 ? String(chosen.workspace.title) : basename(chosen.ws))
+      const files = []
+      if (found.isDirectory()) {
+        await collectPushFiles(target, '', files)
+      } else {
+        files.push({ absolutePath: target, relativePath: basename(canonical) })
+      }
+      const result = await service.sendFilesToPeer(peerId, {
+        projectTitle,
+        files: files.map(file => ({
+          absolutePath: file.absolutePath,
+          relativePath: relativeBase === '' ? file.relativePath : `${relativeBase}/${file.relativePath}`,
+        })),
+      })
+      return { json: { ok: true, sent: result.sent, skipped: result.skipped } }
+    }],
+  ]
+}
+
+/**
+ * Walk one directory into quick-push file entries, refusing anything a bundle
+ * cannot carry faithfully (no silently dropped symlinks or special files).
+ * @param dir - directory to walk.
+ * @param rel - bundle-relative path of this directory ('' at the root).
+ * @param files - accumulator for `{ absolutePath, relativePath }` entries.
+ */
+async function collectPushFiles(dir, rel, files) {
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => {
+    throw new ApiError(400, `无法读取目录「${rel || basename(dir)}」`)
+  })
+  for (const item of entries) {
+    const next = rel === '' ? item.name : `${rel}/${item.name}`
+    const absolute = join(dir, item.name)
+    if (item.isDirectory()) await collectPushFiles(absolute, next, files)
+    else if (item.isFile()) files.push({ absolutePath: absolute, relativePath: next })
+    else throw new ApiError(400, `「${next}」不是常规文件，无法推送`)
+  }
+}
+
+// ---- 定时任务（Host schedule 引擎的用户侧创建中继）----
+
+/** ScheduleInputError 的稳定 code → easel 可读错误文案；引擎英文 message 作后备。 */
+const SCHEDULE_ERROR_DETAILS = {
+  invalid_prompt: '任务内容为空、过长或含首尾空白',
+  invalid_selector: '时机设置不完整或有冲突',
+  invalid_rule: '规则参数无效',
+  invalid_time_zone: '时区无效',
+  not_future: '一次性任务必须选择未来的日期时刻',
+  time_out_of_range: '时间超出可设置的范围',
+  frequency_too_high: '触发频率过高（最小间隔 1 分钟）',
+  subagent_session: '子 agent 会话不能承载定时任务',
+}
+
+/**
+ * 把一种 easel 时机形状映射为 ScheduleCreateRequest 的选择器。
+ * 校验语义与引擎一致（时刻 HH:mm:ss、间隔 ≥60 秒、星期 ISO 1-7 去重升序），
+ * 表单错误在路由层就给出可读文案，而不是把引擎英文错误透传给用户。
+ * @param timing - 客户端表单的 `{kind, date?, time?, weekdays?, value?, unit?}`。
+ * @param timeZone - 客户端取的系统本地 IANA 时区。
+ * @returns ScheduleCreateRequest 里恰一个时机选择器。
+ */
+export function timingToSelector(timing, timeZone) {
+  const kind = timing?.kind
+  const time = normalizeClockTime(timing?.time)
+  if (kind === 'at') {
+    const date = String(timing?.date ?? '').trim()
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || time === undefined) {
+      throw new ApiError(400, '一次性任务需要有效的日期（YYYY-MM-DD）和时刻')
+    }
+    return { at: { date, time, time_zone: timeZone } }
+  }
+  if (kind === 'daily') {
+    if (time === undefined) throw new ApiError(400, '每天任务需要有效时刻')
+    return { daily: { time, time_zone: timeZone } }
+  }
+  if (kind === 'weekly') {
+    if (time === undefined) throw new ApiError(400, '每周任务需要有效时刻')
+    const weekdays = Array.isArray(timing?.weekdays)
+      ? [...new Set(timing.weekdays.map(Number).filter(n => Number.isInteger(n) && n >= 1 && n <= 7))].sort((a, b) => a - b)
+      : []
+    if (weekdays.length === 0) throw new ApiError(400, '每周任务至少选择一个星期')
+    return { weekly: { time, weekdays, time_zone: timeZone } }
+  }
+  if (kind === 'every') {
+    const value = Number(timing?.value)
+    if (!Number.isSafeInteger(value) || value < 1) throw new ApiError(400, '间隔必须是正整数')
+    const seconds = value * (timing?.unit === 'hour' ? 3600 : 60)
+    if (seconds < 60) throw new ApiError(400, '间隔至少 1 分钟')
+    return { every_seconds: seconds }
+  }
+  throw new ApiError(400, '未知的时机类型')
+}
+
+/**
+ * 'HH:mm[:ss]' → 引擎要求的 'HH:mm:ss'（补零、超界返回 undefined 交给调用方报错）。
+ * @param value - 表单时刻输入。
+ * @returns 规范化时刻，或 undefined（格式/数值无效）。
+ */
+export function normalizeClockTime(value) {
+  const match = /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/.exec(String(value ?? '').trim())
+  if (match === null) return undefined
+  const [, hour, minute, second = '00'] = match
+  if (Number(hour) > 23 || Number(minute) > 59 || Number(second) > 59) return undefined
+  return `${hour.padStart(2, '0')}:${minute}:${second.padStart(2, '0')}`
+}
+
+/**
+ * 引擎错误 → easel 的 `{detail}` HTTP 错误；未知与 internal_error 一律 500，
+ * 不泄露内部异常，只带引擎消息。
+ * @param error - ScheduleService.create 抛出的错误。
+ * @returns easel 可读的 ApiError。
+ */
+export function scheduleApiError(error) {
+  if (error instanceof ApiError) return error
+  const code = typeof error?.code === 'string' ? error.code : undefined
+  const detail = code !== undefined ? SCHEDULE_ERROR_DETAILS[code] : undefined
+  if (detail !== undefined) return new ApiError(400, detail)
+  return new ApiError(500, `创建定时任务失败（${String(error?.message ?? error)}）`)
+}
+
+/**
+ * Route for creating one scheduled task on the Host schedule engine.
+ *
+ * `create()` is a host-process API (the schedule remote namespace has no create
+ * method), so the user-side creation form relays through this one route; reads,
+ * edits, and deletions go through the schedule remote namespace the browser
+ * already holds. Timing validation mirrors the engine's request schema so form
+ * mistakes surface as readable Chinese errors here.
+ * @param ctx - host context that may carry the `schedule` service.
+ * @returns route rows in the {@link CORE_ROUTES} shape.
+ */
+export function createAutomationRoutes(ctx) {
+  const requireSchedule = () => {
+    const service = ctx.get?.('schedule')
+    if (service === undefined) {
+      throw new ApiError(409, '定时任务引擎未启用：profile 未挂载 @deepseek-ai/dsh-schedule')
+    }
+    return service
+  }
+  return [
+    ['POST', ['automation', 'tasks'], async (c) => {
+      const body = await c.body()
+      const sessionId = String(body?.sessionId ?? '').trim()
+      if (sessionId === '') throw new ApiError(400, '必须选择目标会话')
+      const title = String(body?.title ?? '').trim()
+      if (title === '') throw new ApiError(400, '任务名称必填')
+      const prompt = String(body?.prompt ?? '').trim()
+      if (prompt === '') throw new ApiError(400, '任务内容必填')
+      const timeZone = String(body?.timeZone ?? '').trim()
+      if (timeZone === '') throw new ApiError(400, '缺少时区')
+      // 目标会话必须真实存在（list 是 Host 列表的只读投影，不激活会话）；
+      // 引擎只拒子 agent 目标，死 id 会被它收下并永久过期。
+      const controller = ctx.get?.('sessionController')
+      if (controller === null || controller === undefined || typeof controller.list !== 'function') {
+        throw new ApiError(409, '会话服务不可用，无法确认目标会话')
+      }
+      let known = false
+      try {
+        const state = await controller.list({}, new AbortController().signal)
+        known = Array.isArray(state?.items) && state.items.some(item => String(item?.sessionId ?? '') === sessionId)
+      } catch (error) {
+        throw new ApiError(502, `无法确认目标会话（${error instanceof Error ? error.message : String(error)}）`)
+      }
+      if (!known) throw new ApiError(400, '目标会话不存在或已不可用')
+      const request = { prompt, title, ...timingToSelector(body?.timing, timeZone) }
+      try {
+        return { json: await requireSchedule().create(sessionId, request) }
+      } catch (error) {
+        throw scheduleApiError(error)
+      }
+    }],
+  ]
+}
+
+/**
+ * 内容库（outputs/）随「素材库」勾选上包的 data 条目。可见性与内容库页同规则：
+ * 跳过 `.`/`_` 前缀条目与顶层 analytics/（登录态与分析数据不出设备）。
+ * @param settings - resolved plugin settings carrying the project root.
+ * @returns data-file sources with data-root-relative paths.
+ */
+async function collectLibraryDataFiles(settings) {
+  const files = []
+  const walk = async (dir, rel) => {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(() => [])
+    for (const item of entries) {
+      if (item.name.startsWith('.') || item.name.startsWith('_')) continue
+      const next = rel === '' ? item.name : `${rel}/${item.name}`
+      const absolute = join(dir, item.name)
+      if (item.isDirectory()) {
+        if (rel === '' && item.name.toLowerCase() === 'analytics') continue
+        await walk(absolute, next)
+      } else if (item.isFile()) {
+        files.push({ path: `outputs/${next}`, absolutePath: absolute })
+      }
+    }
+  }
+  await walk(join(settings.projectRoot, 'outputs'), '')
+  return files
+}
+
+/**
+ * 配置项（.env / 画像 / 技能）随「配置项」勾选上包的 data 条目。`.env` 只带
+ * 白名单内且已设置的 key（密钥按需上包）；画像走有效画像目录；技能走配置的
+ * skillsDir（相对数据根的路径前缀从 skillsDir 推导）。
+ * @param settings - resolved plugin settings carrying the project root and skills dir.
+ * @returns data-file sources with data-root-relative paths.
+ */
+async function collectConfigDataFiles(settings) {
+  const files = []
+  const env = await readEnvFile(join(settings.projectRoot, '.env'))
+  const lines = Object.entries(env)
+    .filter(([key, value]) => ENV_ALLOWLIST.has(key) && isSet(value))
+    .map(([key, value]) => `${key}=${value}`)
+  if (lines.length > 0) {
+    files.push({ path: '.env', bytes: new TextEncoder().encode(`${lines.join('\n')}\n`) })
+  }
+  const profiles = join(settings.projectRoot, 'profiles')
+  const personaEntries = await readdir(profiles, { withFileTypes: true }).catch(() => [])
+  for (const persona of personaEntries) {
+    if (!persona.isDirectory() || !validPersonaName(persona.name)) continue
+    const dir = join(profiles, persona.name)
+    const inner = await readdir(dir, { withFileTypes: true }).catch(() => [])
+    for (const item of inner) {
+      if (!item.isFile()) continue
+      files.push({ path: `profiles/${persona.name}/${item.name}`, absolutePath: join(dir, item.name) })
+    }
+  }
+  const skillPrefix = relative(settings.projectRoot, settings.skillsDir).split(sep).join('/')
+  if (skillPrefix.startsWith('..')) {
+    throw new ApiError(400, `技能目录 ${settings.skillsDir} 不在数据根内，无法随配置项推送`)
+  }
+  const walkSkills = async (dir, rel) => {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(() => [])
+    for (const item of entries) {
+      if (item.name.startsWith('.')) continue
+      const next = rel === '' ? item.name : `${rel}/${item.name}`
+      const absolute = join(dir, item.name)
+      if (item.isDirectory()) await walkSkills(absolute, next)
+      else if (item.isFile()) files.push({ path: `${skillPrefix}/${next}`, absolutePath: absolute })
+    }
+  }
+  await walkSkills(settings.skillsDir, '')
+  return files
+}
+
+/**
  * Register the Easel routes.
  * @param ctx - the host context providing the route table.
  * @param config - the `config` block of this plugin's loader row.
@@ -1925,13 +2918,16 @@ export function apply(ctx, config = {}) {
   const settings = resolveSettings(config)
   // Feature plugins (automation, deconstruct) mount their own routes into this
   // registry; clicking a row off in the profile turns one feature off cleanly.
-  const api = createRouteRegistry(settings)
+  const api = createRouteRegistry(settings, ctx.connection, () => ctx.webServer?.port)
   ctx.provide('easelApi', api)
   ctx.effect(() => api.register(CORE_ROUTES), 'easel: core routes')
+  ctx.effect(() => api.register(createHandoffRoutes(ctx)), 'easel: handoff routes')
+  ctx.effect(() => api.register(createAutomationRoutes(ctx)), 'easel: automation task route')
   ctx.effect(() => ctx.webServer.register({
     kind: 'exact',
     path: `${settings.basePath}/status`,
     handler: async (req, res) => {
+      if (rejected(api, req, res)) return
       if (!requireGet(req, res)) return
       const catalog = await readSkillCatalog(settings.skillsDir)
       sendJson(res, 200, {
@@ -1948,6 +2944,7 @@ export function apply(ctx, config = {}) {
     kind: 'exact',
     path: `${settings.basePath}/skills`,
     handler: async (req, res) => {
+      if (rejected(api, req, res)) return
       if (!requireGet(req, res)) return
       sendJson(res, 200, await readSkillCatalog(settings.skillsDir))
     },

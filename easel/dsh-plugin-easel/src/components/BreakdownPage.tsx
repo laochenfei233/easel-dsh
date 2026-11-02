@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { pushTask } from '../lib/task';
+import { rosterPrompt } from '../lib/roster';
 import { fetchOutputContent } from '../lib/api';
 import { renderMarkdown } from '../lib/sanitize';
 import { IconFire, IconIdea, IconSkills } from './icons';
@@ -52,6 +53,7 @@ interface Preflight {
   platform: string;
   blocked: boolean;
   row: SourceRow | null;
+  channels?: ChannelsGate;
 }
 
 const FETCH_STAGES: Array<{ key: DeconstructJob['stage']; label: string }> = [
@@ -63,10 +65,21 @@ const FETCH_STAGES: Array<{ key: DeconstructJob['stage']; label: string }> = [
 const PLATFORM_NAMES: Record<string, string> = {
   douyin: '抖音',
   xhs: '小红书',
+  kuaishou: '快手',
+  sph: '视频号',
   bili: 'B站',
   youtube: 'YouTube',
   other: '通用链接',
 };
+
+/** 视频号分享链接（spec easel-breakdown-channels：识别到才做微信门控）。 */
+const CHANNELS_URL_RE = /channels\.weixin\.qq\.com/i;
+
+/** GET /easel/api/deconstruct/preflight 里平台为 sph 时的门控快照。 */
+interface ChannelsGate {
+  wechat: { running: boolean; loggedIn: boolean; loginScreen: boolean };
+  tool: { installed: boolean; running: boolean; stagingDir?: string };
+}
 
 function stageIndex(stage: DeconstructJob['stage']): number {
   const i = FETCH_STAGES.findIndex(item => item.key === stage);
@@ -96,6 +109,8 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
   const [gateChecking, setGateChecking] = useState(false);
   const [job, setJob] = useState<DeconstructJob | null>(null);
   const [capturing, setCapturing] = useState(false);
+  const [retrying, setRetrying] = useState(false);
+  const [retryNote, setRetryNote] = useState('');
   const [analyzeState, setAnalyzeState] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [report, setReport] = useState('');
   const abortRef = useRef<(() => void) | null>(null);
@@ -171,7 +186,8 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
       const res = await fetch('/easel/api/deconstruct', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ url, asrModel: asrModel.split('::')[1] }),
+        // 完整 provider::model：宿主按服务商解析「设置→模型」里配置的凭据。
+        body: JSON.stringify({ url, asrModel: asrModel || undefined }),
       });
       const data = await res.json() as DeconstructJob & { message?: string };
       if (!res.ok) throw new Error(data.message ?? '采集任务创建失败');
@@ -181,6 +197,28 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
       setJob({ id: '', url, stage: 'failed', error: String((error as Error).message ?? error) });
     } finally {
       setCapturing(false);
+    }
+  };
+
+  /** 从失败处继续：以 job.json 为检查点只补缺失段（spec easel-upstream-adoptions S2.1）。 */
+  const retryCapture = async () => {
+    if (!job?.id || retrying || capturing) return;
+    setRetrying(true);
+    setRetryNote('');
+    try {
+      const res = await fetch(`/easel/api/deconstruct/${job.id}/retry`, { method: 'POST' });
+      const data = await res.json() as DeconstructJob & { detail?: string; message?: string };
+      if (res.status === 409) {
+        setRetryNote(data.detail ?? '已有拆解采集在运行，请等它完成或失败后再重试');
+        return;
+      }
+      if (!res.ok) throw new Error(data.detail ?? data.message ?? '续跑启动失败');
+      setJob(data);
+      void poll(data.id);
+    } catch (error) {
+      setRetryNote(String((error as Error).message ?? error));
+    } finally {
+      setRetrying(false);
     }
   };
 
@@ -198,6 +236,7 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
       job.srt ? `- 字幕文件：${job.srt}（口播全文，必读）` : '',
       job.framesError ? `- 注意：抽帧失败（${job.framesError}），本次只靠字幕拆解` : '',
     ].filter(Boolean).join('\n');
+    const roster = await rosterPrompt();
     const prompt =
       `你是爆款内容拆解专家。素材已由流水线采集完成，直接基于以下素材做拆解` +
       `${visionModel ? `（本会话已切到视觉模型 ${visionModel.split('::')[1]}，务必 Read 看帧引用画面证据）` : ''}：\n` +
@@ -208,7 +247,8 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
       `3. **结构套路**：分段/节奏/信息编排\n` +
       `4. **为什么会火**：情绪/共鸣/实用/争议点\n` +
       `5. **可复制模板**：把套路抽象成能直接套用的结构框架\n` +
-      `6. **借这个套路${persona ? `、结合我的画像「${persona}」` : ''}可做的 3 个选题**\n\n` +
+      `6. **借这个套路${persona ? `、结合我的画像「${persona}」` : ''}可做的 3 个选题**\n` +
+      `${roster}${roster ? '\n' : ''}` +
       `【完成后必须执行】\n` +
       `a) 把上面 1-6 点的完整 Markdown 报告写入 outputs/_deconstruct/${job.id}/report.md；\n` +
       `b) 读取 outputs/_ideas.json（不存在当 []），在最前插入一条：\n` +
@@ -243,9 +283,13 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
   const captureReady = job?.stage === 'ready';
   const currentStage = job ? stageIndex(job.stage) : -1;
   const models = flattenCatalog(catalog);
-  const anyModalitiesDeclared = models.some(entry => entry.model.inputModalities !== undefined);
-  const visionModels = models.filter(entry =>
-    !anyModalitiesDeclared || (entry.model.inputModalities?.includes('image') ?? false));
+  // 视觉下拉不隐藏未声明图像输入的模型：设置页手填的自定义模型默认物化成纯文本
+  // （图像勾选在模型行展开区），但声明缺失不代表网关不收图——隐藏会让自定义视觉
+  // 模型永远选不了。声明图像的排前，选错文本模型会在对话回合上游报可见错误。
+  const visionModels = [
+    ...models.filter(entry => entry.model.inputModalities?.includes('image') === true),
+    ...models.filter(entry => entry.model.inputModalities?.includes('image') !== true),
+  ];
   const gatePlatform = preflight ? PLATFORM_NAMES[preflight.platform] ?? preflight.platform : '';
 
   const modelSelect = (
@@ -285,7 +329,7 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
         <div>
           <h1 className="page-title"><IconFire size={21} /> 爆款拆解</h1>
           <p className="page-subtitle">
-            贴一条视频链接（抖音/小红书/B站/…），流水线自动下载、抽帧、转写字幕，再由 AI
+            贴一条视频链接（抖音/小红书/快手/视频号/B站/…），流水线自动下载、抽帧、转写字幕，再由 AI
             结合画面与口播拆出钩子、结构、火的原因与可复制模板，报告存档并自动入库选题库。
           </p>
         </div>
@@ -321,13 +365,44 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
             采集与拆解需要可用模型。
           </p>
         )}
-        {!anyModalitiesDeclared && models.length > 0 && (
+        {visionModel !== '' && models.length > 0 && !models.some(entry =>
+          `${entry.provider}::${entry.model.id}` === visionModel
+          && entry.model.inputModalities?.includes('image') === true) && (
           <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', margin: '8px 0 0' }}>
-            模型未标注视觉能力：请自行确认所选视觉模型支持图像输入，否则看帧拆解会退化。
+            所选视觉模型未标注图像输入：若网关实际支持看图，可在 设置→模型 展开该模型行勾选「图像」，
+            下拉里它会排到前面；未标注时看帧拆解可能退化或失败。
           </p>
         )}
 
-        {preflight?.blocked && (
+        {preflight?.blocked && (preflight?.channels ? (
+          <div className="panel" style={{ marginTop: 16, borderColor: 'var(--amber, #d97706)' }}>
+            <div className="panel-title"><IconFire size={14} /> 视频号还没准备好</div>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '8px 0 10px' }}>
+              拆解视频号视频需要「微信 PC 端已登录」和「视频号下载器」，当前状态：
+            </p>
+            <ul style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 10px', paddingLeft: 20, lineHeight: 1.9 }}>
+              <li>
+                微信：
+                {!preflight.channels.wechat.running
+                  ? '未运行——请启动微信并登录'
+                  : preflight.channels.wechat.loggedIn
+                    ? '已登录 ✓'
+                    : '在运行但未登录——请在微信里登录'}
+              </li>
+              <li>
+                下载器：
+                {!preflight.channels.tool.installed
+                  ? '未安装——把 wx_video_download 安装目录填入插件配置 channelsDownloader（首次请手动以管理员运行一次装证书）'
+                  : preflight.channels.tool.running
+                    ? '运行中 ✓'
+                    : '已安装，未运行——通过门控后会自动拉起'}
+              </li>
+            </ul>
+            <p style={{ fontSize: 12, color: 'var(--text-tertiary, #9ca3af)', margin: '10px 0 0' }}>
+              微信登录是启动前置：补上之后回到本页重新点「开始采集」即可继续。
+            </p>
+          </div>
+        ) : (
           <div className="panel" style={{ marginTop: 16, borderColor: 'var(--amber, #d97706)' }}>
             <div className="panel-title"><IconFire size={14} /> {gatePlatform}还没准备好</div>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '8px 0 10px' }}>
@@ -342,7 +417,7 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
               完成任意一种后回到本页重新点「开始采集」即可；抖音无需登录。
             </p>
           </div>
-        )}
+        ))}
 
         {job !== null && (
           <div className="panel" style={{ marginTop: 16 }}>
@@ -365,8 +440,26 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
               {captureFailed && <span style={{ fontSize: 13, color: 'var(--red)' }}>✕ 采集失败</span>}
               {(capturing || (!captureReady && !captureFailed)) && <span className="loading" style={{ padding: 0 }}><div className="spinner" /></span>}
             </div>
+            {job.stage === 'fetch' && CHANNELS_URL_RE.test(job.url) && (
+              <p style={{ fontSize: 12.5, color: 'var(--amber, #d97706)', margin: '10px 0 0' }}>
+                视频号任务：请在微信 PC 端打开这条视频，点播放器下方的「下载」按钮；
+                流水线在等下载器产物（wxdl_ 开头的新文件，最长等 8 分钟）。
+              </p>
+            )}
             {captureFailed && (
-              <p style={{ fontSize: 13, color: 'var(--red)', margin: '10px 0 0' }}>{job.error}</p>
+              <>
+                <p style={{ fontSize: 13, color: 'var(--red)', margin: '10px 0 0' }}>{job.error}</p>
+                {job.id !== '' && (
+                  <div style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button className="btn btn-sm" disabled={retrying || capturing} onClick={retryCapture}>
+                      {retrying ? '续跑中…' : '从失败处继续'}
+                    </button>
+                    {retryNote && (
+                      <span style={{ fontSize: 12.5, color: 'var(--amber, #d97706)' }}>{retryNote}</span>
+                    )}
+                  </div>
+                )}
+              </>
             )}
             {captureReady && (
               <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', margin: '10px 0 0' }}>
@@ -416,7 +509,8 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
 
         {job === null && !capturing && !preflight?.blocked && (
           <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 14 }}>
-            小红书需要登录态（设置里填 cookie 或账号页扫码）；抖音免登录直连。素材与报告归档在
+            小红书需要登录态（设置里填 cookie 或账号页扫码）；抖音/快手免登录直连；
+            视频号需微信已登录和视频号下载器（识别到视频号链接时才会检查）。素材与报告归档在
             outputs/_deconstruct/&lt;任务id&gt;/ 下。
           </p>
         )}
