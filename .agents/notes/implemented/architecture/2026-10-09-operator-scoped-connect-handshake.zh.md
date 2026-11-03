@@ -50,6 +50,6 @@ Connection 测试覆盖 API 发布、Cookie 校验、闲置保留、连接所有
 
 ## 后果
 
-未建联的 API 记录不要求及时回收；若为空闲 Peer 增加重资源，必须重新评估这一取舍。连接关闭或 Host 重启后，API Cookie 不能恢复 Peer。浏览器 Cookie 格式与认证行为保持不变，无需重新认证迁移。API 与浏览器 Cookie 使用同一 authority 专属名称，因此 API 调用方维护自己的 Cookie 存储，不在共享浏览器 Cookie jar 中交换凭证。任何 launch token 持有者都可以请求 `answer`；这是交互参与，不是用户隔离。
+未建联的 API 记录不要求及时回收；若为空闲 Peer 增加重资源，必须重新评估这一取舍。连接关闭或 Host 重启后，API Cookie 不能恢复 Peer。API 与浏览器 Cookie 使用同一名称，其作用域归[浏览器认证决策](2026-08-24-browser-token-authentication.zh.md)所有，因此 API 调用方维护自己的 Cookie 存储，不在共享浏览器 Cookie jar 中交换凭证。任何 launch token 持有者都可以请求 `answer`；这是交互参与，不是用户隔离。
 
 [双工流决策](2026-09-19-remote-duplex-stream.zh.md)继续定义 Peer 作用域和流帧格式。[浏览器认证决策](2026-08-24-browser-token-authentication.zh.md)保留浏览器 token、签名、authority 与有效期语义；本记录只增加独立 API 接纳。两份既有记录继续保留。

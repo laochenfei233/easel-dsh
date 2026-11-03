@@ -50,6 +50,6 @@ The [recorded approval scenario](../../../../apps/web/tests/approval-composer.e2
 
 ## Consequences
 
-Unconnected API records need not be promptly reclaimed; resource-heavy additions to idle Peers require revisiting that choice. API Cookies cannot restore a Peer after its socket closes or the Host restarts. Browser Cookie format and authentication behavior remain unchanged, with no reauthentication migration. API and browser Cookies use the same authority-specific name, so API callers keep their own Cookie storage rather than exchanging credentials in a shared browser jar. Any launch-token holder may request `answer`; this is interaction participation, not user isolation.
+Unconnected API records need not be promptly reclaimed; resource-heavy additions to idle Peers require revisiting that choice. API Cookies cannot restore a Peer after its socket closes or the Host restarts. API and browser Cookies use the same name, whose scope the [browser authentication decision](2026-08-24-browser-token-authentication.md) owns, so API callers keep their own Cookie storage rather than exchanging credentials in a shared browser jar. Any launch-token holder may request `answer`; this is interaction participation, not user isolation.
 
 The [duplex-stream decision](2026-09-19-remote-duplex-stream.md) retains Peer scopes and stream framing. The [browser authentication decision](2026-08-24-browser-token-authentication.md) retains browser token, signature, authority, and lifetime semantics; only independent API admission is added here. Both records remain active.
