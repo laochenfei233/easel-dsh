@@ -219,6 +219,26 @@ describe('BrowserAuth', () => {
     expect(auth.isAuthenticated(request('/', 'harness.example', { cookie: tls.cookie }))).toBe(false)
   })
 
+  it('names one cookie per Home, scheme, and host so launch ports cannot accumulate', async () => {
+    const store = new RecordCredentials()
+    const auth = await createAuth(store)
+    const nameOf = (cookie: string): string => cookie.slice(0, cookie.indexOf('='))
+    const first = exchange(auth, '127.0.0.1:51234')
+    const second = exchange(auth, '127.0.0.1:51235')
+
+    expect(nameOf(first.cookie)).toBe(nameOf(second.cookie))
+    expect(first.cookie).not.toBe(second.cookie)
+    // The signed payload keeps the launch authority binding.
+    expect(auth.isAuthenticated(request('/', '127.0.0.1:51235', { cookie: first.cookie }))).toBe(false)
+    expect(auth.isAuthenticated(request('/', '127.0.0.1:51234', { cookie: second.cookie }))).toBe(false)
+    expect(auth.isAuthenticated(request('/', '127.0.0.1:51235', { cookie: second.cookie }))).toBe(true)
+
+    expect(nameOf(exchange(auth, 'localhost:51234').cookie)).not.toBe(nameOf(first.cookie))
+    expect(nameOf(exchange(auth, '127.0.0.1:51234', true).cookie)).not.toBe(nameOf(first.cookie))
+    expect(nameOf(exchange(await createAuth(new RecordCredentials()), '127.0.0.1:51234').cookie))
+      .not.toBe(nameOf(first.cookie))
+  })
+
   it('rejects HTTP cookie replay after enabling TLS on the same authority', async () => {
     const store = new RecordCredentials()
     const authority = 'harness.example:3080'

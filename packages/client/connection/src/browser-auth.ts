@@ -1,6 +1,6 @@
 /** Browser-session authentication for the Host Connection carrier. */
 
-import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
 import type { PeerId } from '@deepseek-ai/dsh-typert-protocol'
 import { CONNECT_PATH, type ConnectionInteractions } from './connect-protocol.ts'
 import { credentialKey } from '@deepseek-ai/dsh-credentials'
@@ -75,13 +75,24 @@ function header(
   return typeof value === 'string' ? value : undefined
 }
 
-/** Protocol-scoped cookie audience; HTTP retains its existing authority-only spelling. */
-function requestAudience(headers: ConnectionTrustRequest['headers'], secure: boolean): string | undefined {
+/** Signed request audience together with the cookie scope browsers store it under. */
+interface RequestAudience {
+  /** Normalized origin for TLS listeners, `host:port` for plain HTTP. */
+  readonly authority: string
+  /** Scheme and hostname; browsers never partition cookies by port. */
+  readonly scope: string
+}
+
+/** Signed audience and cookie scope of one request; HTTP retains its existing authority-only spelling. */
+function requestAudience(headers: ConnectionTrustRequest['headers'], secure: boolean): RequestAudience | undefined {
   const host = header(headers, 'host')
   if (host === undefined) return undefined
   try {
     const url = new URL(`${secure ? 'https:' : 'http:'}//${host}`)
-    return secure ? url.origin : url.host
+    return {
+      authority: secure ? url.origin : url.host,
+      scope: `${url.protocol}//${url.hostname}`,
+    }
   } catch {
     return undefined
   }
@@ -113,8 +124,19 @@ function tokenMatches(actual: string, expected: string): boolean {
   return actualBytes.byteLength === expectedBytes.byteLength && timingSafeEqual(actualBytes, expectedBytes)
 }
 
-function cookieName(authority: string): string {
-  return COOKIE_PREFIX + encodeBase64Url(createHash('sha256').update(authority).digest())
+/**
+ * Deterministic name of one Home's browser-session cookie for a served scope.
+ * The name follows the cookie scope — scheme and hostname — because browsers
+ * send a cookie to every port of its host; a name carrying the launch port
+ * leaves one dead cookie per launch in that jar until the Cookie header passes
+ * the Host's header limit. The signing secret keeps Homes that share a host
+ * from replacing each other's cookie.
+ * @param secret - signing secret of the Home serving the request.
+ * @param scope - scheme and hostname of the request audience.
+ * @returns cookie-safe name of fixed length.
+ */
+function cookieName(secret: Buffer, scope: string): string {
+  return COOKIE_PREFIX + encodeBase64Url(createHmac('sha256', secret).update(scope).digest())
 }
 
 /** Read the exact generated cookie without implementing general Cookie decoding. */
@@ -265,14 +287,14 @@ export class BrowserAuth {
     const url = new URL(req.url ?? '/', 'http://dsh.invalid')
     const tokens = url.searchParams.getAll(TOKEN_QUERY)
     if (tokens.length > 0) {
-      const authority = requestAudience(req.headers, secure)
+      const audience = requestAudience(req.headers, secure)
       if (req.method === 'GET' && url.pathname === '/' && tokens.length === 1
-        && authority !== undefined && tokenMatches(tokens.join(''), this.launchToken)) {
+        && audience !== undefined && tokenMatches(tokens.join(''), this.launchToken)) {
         const issuedAt = Date.now()
         const expiresAt = issuedAt + this.maxAgeMilliseconds
         const value = encodeCookie({
           version: COOKIE_PAYLOAD_VERSION,
-          authority,
+          authority: audience.authority,
           issuedAt,
           expiresAt,
         }, this.secret)
@@ -281,7 +303,7 @@ export class BrowserAuth {
           'location': './',
           'referrer-policy': 'no-referrer',
           'set-cookie': sessionCookie(
-            cookieName(authority), value, expiresAt, Math.floor(this.maxAgeMilliseconds / 1000), secure,
+            cookieName(this.secret, audience.scope), value, expiresAt, Math.floor(this.maxAgeMilliseconds / 1000), secure,
           ),
         })
         res.end()
@@ -326,22 +348,22 @@ export class BrowserAuth {
       return
     }
     const tokens = url.searchParams.getAll(TOKEN_QUERY)
-    const authority = requestAudience(req.headers, secure)
+    const audience = requestAudience(req.headers, secure)
     if (req.method !== 'GET' || url.pathname !== CONNECT_PATH || tokens.length !== 1
-      || authority === undefined || !tokenMatches(tokens.join(''), this.launchToken)) {
+      || audience === undefined || !tokenMatches(tokens.join(''), this.launchToken)) {
       this.writeUnauthorized(req, res)
       return
     }
     const issuedAt = Date.now()
     const expiresAt = issuedAt + this.maxAgeMilliseconds
     const id = publish(interactions)
-    const value = encodeCookie({ version: 2, authority, id, issuedAt, expiresAt }, this.secret)
+    const value = encodeCookie({ version: 2, authority: audience.authority, id, issuedAt, expiresAt }, this.secret)
     res.writeHead(302, {
       'cache-control': 'no-store',
       'location': './api/remote.mux',
       'referrer-policy': 'no-referrer',
       'set-cookie': sessionCookie(
-        cookieName(authority), value, expiresAt, Math.floor(this.maxAgeMilliseconds / 1000), secure,
+        cookieName(this.secret, audience.scope), value, expiresAt, Math.floor(this.maxAgeMilliseconds / 1000), secure,
       ),
     })
     res.end()
@@ -369,13 +391,13 @@ export class BrowserAuth {
   }
 
   private authenticate(request: ConnectionTrustRequest, secure: boolean): CookiePayload | undefined {
-    const authority = requestAudience(request.headers, secure)
+    const audience = requestAudience(request.headers, secure)
     const rawCookie = header(request.headers, 'cookie')
-    if (authority === undefined || rawCookie === undefined) return undefined
-    const value = cookieValue(rawCookie, cookieName(authority))
+    if (audience === undefined || rawCookie === undefined) return undefined
+    const value = cookieValue(rawCookie, cookieName(this.secret, audience.scope))
     if (value === undefined) return undefined
     const payload = decodeCookie(value, this.secret)
-    if (payload === undefined || payload.authority !== authority) return undefined
+    if (payload === undefined || payload.authority !== audience.authority) return undefined
     const now = Date.now()
     if (payload.issuedAt > now || payload.expiresAt <= now || payload.expiresAt <= payload.issuedAt
       || payload.expiresAt - payload.issuedAt > this.maxAgeMilliseconds) return undefined

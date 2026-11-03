@@ -66,6 +66,7 @@ import { DesktopUpdateOverlays } from './update-overlay.ts'
 import { DesktopQuitConfirmation } from './quit-confirmation.ts'
 import { DesktopTray } from './tray.ts'
 import { DesktopBackgroundNotice } from './background-notice.ts'
+import { clearStaleAuthCookies } from './auth-cookies.ts'
 
 let focusPrimaryWindow = (): void => {}
 let stopForRecovery = async (): Promise<void> => { await stopOperationReports() }
@@ -1430,6 +1431,10 @@ async function main(): Promise<void> {
     }).catch((error: unknown) => { console.error(error) })
   }
   automaticCheck()
+  await clearStaleAuthCookies(session.defaultSession.cookies).catch((error: unknown) => {
+    // A stale jar must not block startup; the next launch retries the purge.
+    console.warn('desktop: browser-session cookie cleanup failed', error)
+  })
   await reconcileBackend().catch(() => undefined)
   // Window lifecycle callbacks run while backend startup is pending.
   if (isQuitting()) return
