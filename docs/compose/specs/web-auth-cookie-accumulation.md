@@ -16,10 +16,10 @@ The Desktop app fails to start after enough restarts with `desktop welcome: Web 
 
 Root cause chain, all confirmed in this tree:
 
-- `apps/desktop-host/src/index.ts:30` launches `dsh web` with `--port 0`, so each Desktop launch listens on a random loopback port.
-- `packages/client/connection/src/browser-auth.ts:116` names the browser-session cookie from the request authority, which for plain HTTP is `host:port`.
+- `apps/desktop-host/src/index.ts` launches `dsh web` with `--port 0`, so each Desktop launch listens on a random loopback port.
+- `packages/client/connection/src/browser-auth.ts` names the browser-session cookie from the request authority, which for plain HTTP is `host:port`.
 - Cookie jars ignore the port: a cookie set from `127.0.0.1:51234` is also sent to `127.0.0.1:51235`. Because the name changes with the port, every launch leaves a new cookie in the same jar instead of replacing the previous one.
-- Electron's `net.fetch` in the welcome flow uses `session.defaultSession`, whose cookie store is persisted under `userData/Network/Cookies`, so the jar survives restarts (`apps/desktop/src/main.ts:458`).
+- Electron's `net.fetch` in the welcome flow uses `session.defaultSession`, whose cookie store is persisted under `userData/Network/Cookies`, so the jar survives restarts (`connectDesktopWelcome` receives `net.fetch` in `apps/desktop/src/main.ts`).
 - The Host's `node:http` server keeps the default 16384-byte header limit and rejects the oversized Cookie header with 431 before routing; `welcome-backend.ts:51` turns that into `desktop welcome: Web authentication failed`.
 
 ## [S2] Design
