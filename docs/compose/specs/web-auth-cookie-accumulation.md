@@ -1,14 +1,20 @@
 ---
 feature: web-auth-cookie-accumulation
-status: in-progress
+status: delivered
 updated: 2026-11-03
 branch: fix/web-auth-cookie-accumulation
-commits: 27bfb73504..HEAD
+commits: 27bfb73504..23d63e15f3
 ---
 
 # Web Authentication Cookie Accumulation
 
 ## Report
+
+**What was built** — The browser-session cookie name now follows the cookie scope: `dsh-auth-` + base64url(HMAC-SHA256(signing secret, `<scheme>//<hostname>`)), while the host:port binding stays in the signed payload and is still checked on every request. A launch on another port therefore replaces the cookie instead of adding one, and separate Harness homes sharing a hostname keep distinct names. The Desktop app deletes every `dsh-auth-*` cookie from `session.defaultSession.cookies` before the Host starts, so jars already polluted by earlier releases heal on the first launch; the launch-token exchange then mints the current cookie. The connection README pair and the two owning Agent Notes state the new scope. The Tauri shell stays compatible through its `dsh-auth-` prefix parser, and the stable name also bounds its cookie jar even though S2.3 leaves that shell unpurged.
+
+**Verification** — `vitest run packages/client/connection/tests` 14 files / 189 tests PASS; `vitest run packages/api/gateway/tests` 13 files / 421 tests PASS; `vitest run apps/desktop/tests` 152 files / 1673 tests PASS with 2 load-induced 5s timeouts (`prepare-runtime-patches`, `windows-signature-cache-directory`) that pass when run alone, and `windows-cli-signals` failing identically on the untouched main checkout (PRE-EXISTING); `pnpm run typecheck` 5/5 gates PASS; `pnpm run build` 10/10 gates PASS; oxlint on changed files 0 warnings / 0 errors; `verify-translation-pairing` 3 named pairs consistent; `verify-md-wrap` clean for every changed document. Independent review: no critical findings; one doc-consistency defect (the operator-connect note still described an authority-specific name) fixed in `23d63e15f3`.
+
+**Journey log** — 1. The first wiring passed `session.defaultSession` instead of its `.cookies` store; the startup test's `store.get is not a function` warning caught it, and both startup mocks now expose the cookie store. 2. Two full-suite timeouts looked like regressions until the same files passed in isolation; the console-signal failure reproduced on the untouched main checkout, so only that one is pre-existing. 3. The reviewer found a second owning note still asserting the old authority-specific name; both language sides and their pairing records were updated in the same change.
 
 ## [S1] Problem
 
@@ -32,7 +38,7 @@ Port binding moves entirely to the signed payload, which keeps `authority` at it
 
 ### S2.2 Desktop purge at startup
 
-Before the Host starts, the Desktop app deletes every `dsh-auth-*` cookie from `session.defaultSession` and then lets the launch-token exchange mint the single cookie for this launch. This is the migration for jars already polluted by earlier releases (their legacy names remain in the jar after the name change) and keeps the jar bounded if the scope formula ever changes again. The purge runs before `reconcileBackend()`; the welcome window has no Host cookie of its own, and the Node `fetch` exchange keeps its cookie in memory, so nothing in this launch needs the deleted values.
+Before the Host starts, the Desktop app deletes every `dsh-auth-*` cookie from `session.defaultSession.cookies` and then lets the launch-token exchange mint the single cookie for this launch. This is the migration for jars already polluted by earlier releases (their legacy names remain in the jar after the name change) and keeps the jar bounded if the scope formula ever changes again. The purge runs before `reconcileBackend()`; the welcome window has no Host cookie of its own, and the Node `fetch` exchange keeps its cookie in memory, so nothing in this launch needs the deleted values.
 
 ### S2.3 Out of scope
 
@@ -47,16 +53,16 @@ Before the Host starts, the Desktop app deletes every `dsh-auth-*` cookie from `
 
 ## Tasks
 
-- [ ] T1: Scope the cookie name to secret, scheme, and hostname; keep the payload authority check (covers: S2.1)
-- [ ] T2: Add cookie-name regression tests for ports, hosts, schemes, and signing homes (depends: T1)
-- [ ] T3: Purge `dsh-auth-*` cookies at Desktop startup with a unit test (covers: S2.2)
-- [ ] T4: Update `packages/client/connection/README.md` and `README.zh.md` (depends: T1)
-- [ ] T5: Run focused tests, typecheck/build check, and independent review (depends: T1, T2, T3, T4)
+- [x] T1: Scope the cookie name to secret, scheme, and hostname; keep the payload authority check (covers: S2.1)
+- [x] T2: Add cookie-name regression tests for ports, hosts, schemes, and signing homes (depends: T1)
+- [x] T3: Purge `dsh-auth-*` cookies at Desktop startup with a unit test (covers: S2.2)
+- [x] T4: Update `packages/client/connection/README.md` and `README.zh.md` (depends: T1)
+- [x] T5: Run focused tests, typecheck/build check, and independent review (depends: T1, T2, T3, T4)
 
 ## [S4] Acceptance
 
-- [ ] Two launches of one Home on different ports emit the same cookie name, and a cookie minted on one port does not authenticate on the other.
-- [ ] Hosts, schemes, and signing homes still produce distinct cookie names.
-- [ ] A polluted cookie jar is emptied of `dsh-auth-*` cookies before the Host starts, and unrelated cookies survive.
-- [ ] `packages/client/connection` and Desktop unit tests pass; typecheck/build check passes on the exact tree.
-- [ ] README pair states the current name scope and payload binding.
+- [x] Two launches of one Home on different ports emit the same cookie name, and a cookie minted on one port does not authenticate on the other.
+- [x] Hosts, schemes, and signing homes still produce distinct cookie names.
+- [x] A polluted cookie jar is emptied of `dsh-auth-*` cookies before the Host starts, and unrelated cookies survive.
+- [x] `packages/client/connection` and Desktop unit tests pass; typecheck/build check passes on the exact tree.
+- [x] README pair states the current name scope and payload binding.
