@@ -119,7 +119,7 @@ apps/desktop-tauri/
 - 每 job：安装 Node + pnpm + Rust → `pnpm install --frozen-lockfile` → `pnpm run build` → `scripts/bundle-runtime.mjs` 产出平台运行时 → `tauri-action` 打包（Windows `.msi/.exe`、macOS `.dmg/.app`、Linux `.deb/.AppImage`）→ 上传 GitHub Release；
 - 产物附带 `THIRD_PARTY_NOTICES`。
 
-`.github/workflows/desktop-sync.yml`：定时/手动 `git fetch upstream` + 合并 master 到本仓库（不 push 上游），合并后推送 origin。
+上游同步不走 workflow：`desktop-sync.yml` 已于 2026-11-03 移除（连同其余上游 CI），上游合并按需手动执行。
 
 ### 2.8 目录与文件约定
 
@@ -148,7 +148,7 @@ apps/desktop-tauri/
 - [x] T4: 实现顶部导航栏 UI 与 dsh-tauri 协议桥 — acceptance: 三控件收发 postMessage 与协议一致（covers: S2.2）
 - [x] T5: 实现首次启动向导（预设四选一 + 默认/可选插件安装） — acceptance: 向导生成 profile 与插件安装命令按 2.5 表执行且可重入（covers: S2.5）
 - [x] T6: 实现 `scripts/bundle-runtime.mjs`（Node runtime + 裁剪 dsh 运行环境 + 内置 pnpm） — acceptance: 产物目录可离线运行 `dsh web --no-open` 且四 preset 在位（covers: S2.4）
-- [x] T7: 实现 `.github/workflows/desktop-release.yml`（三平台 matrix + tauri-action + release）与 `desktop-sync.yml` — acceptance: workflow 语法有效，dry-run 触发能走到打包步骤（covers: S2.7；depends: T3, T6）
+- [x] T7: 实现 `.github/workflows/desktop-release.yml`（三平台 matrix + tauri-action + release）与 `desktop-sync.yml`（后者已于 2026-11-03 移除，见 2.7） — acceptance: workflow 语法有效，dry-run 触发能走到打包步骤（covers: S2.7；depends: T3, T6）
 - [ ] T8: 验证桌面端四 preset 可用与插件安装/更新路径 — acceptance: 壳内切换 preset 生成不同 agent 组合；dsh-plugin 插件中心安装/更新插件成功（covers: S2.6；depends: T3, T5, T6）
 - [x] T9: 默认插件市场切换 `dshmarket` → `dsh-plugin`（dshplugin/dsh-plugin-hub） — acceptance: bundle 产物 `runtime/plugins/dsh-plugin` 含 dsh-plugin 闭包，首启复制 + patch insert 指向其 `lib/index.js`（covers: S2.5, S2.9）
 - [x] T10: 主窗口（含向导与 dsh iframe 内）内容链接改为系统浏览器打开 — acceptance: `on_new_window` 拦截弹窗请求，http/https/mailto/tel 交默认浏览器且应用内不产生新窗口（covers: S2.9）
