@@ -205,7 +205,11 @@ jobs:
           releaseName: 'v__VERSION__'
           releaseBody: ${{ steps.notes.outputs.body }}
           releaseDraft: true
-          prerelease: false
+          # Alpha builds publish as pre-releases. GitHub's releases/latest
+          # (the updater's fallback endpoint) skips pre-releases, so an
+          # installed client only sees a new build once it is published as a
+          # regular release.
+          prerelease: true
           # macOS installers join the Release unsigned, but stay out of
           # latest.json: the in-app updater path has no macOS verification yet.
           includeUpdaterJson: ${{ matrix.platform != 'macos-latest' }}

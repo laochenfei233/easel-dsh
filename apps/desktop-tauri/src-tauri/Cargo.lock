@@ -861,7 +861,7 @@ dependencies = [
 
 [[package]]
 name = "dsh-desktop"
-version = "0.2.1-alpha.38"
+version = "0.2.1-alpha.40"
 dependencies = [
  "dirs",
  "libc",

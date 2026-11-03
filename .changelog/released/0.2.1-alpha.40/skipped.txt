@@ -1,0 +1,872 @@
+8f164c4	docs: backfill the changelog for alpha.32 through alpha.37
+000583c	fix(forge-panel): retain incomplete worktree recovery across reloads
+00536d9	fix(plugin-manager): return to the opening tab from a bundle page
+00b5405	feat(experimental): translate the card packages into the shipped languages
+00d5414	release(dsh): 0.2.2-alpha.2
+012a25f	fix(desktop): preflight local publication config before install
+02460a0	fix(desktop): align release app ID examples with production
+025723a	fix(ci): keep the evaluation failure title the setup step would overwrite
+035fcb8	Preserve SDK approval wording fixtures after rebase
+0397bd3	fix(storage): quarantine domains after unknown-state batch failures
+03ff101	fix(experimental): allow optional reusable-page suggestions
+043539d	feat(agent): choose provider, model, and effort through agent/model
+048845f	fix(typert): harden default resource declarations and sync contracts
+04db213	fix(forge-panel): pin merge confirmation to the reviewed head
+0596c66	fix(desktop): correlate Host failures with operation run identities
+05f1066	fix(permission-presets): reject publication before initialization
+05f94de	fix(typert): preserve parameter metadata in resource resolvers
+06156ae	fix(ui-workspace): keep the picker path suffix visible on long titles
+06d1616	feat(forge): redesign the change request panel
+06d1caf	feat(agent): choose the step route through agent/route
+073033b	fix(webworker): preserve explicit empty async contexts
+0741cf2	fix(plugin): give personalized recommendations its own icon (#7071)
+0778dec	feat(ui-user-questions): show answered batches as shared message bubbles (#6362)
+080a2c6	fix(tools): tolerate empty filters and unused goal arguments
+081b562	fix(desktop): preserve owner close and title behavior
+082b2b2	perf(ui-dockkit): keep tab bodies out of per-frame float re-renders
+0913c02	fix(web): end the dollar escape run at a line ending
+091d6ed	feat(desktop): use local branding for unsigned packages
+0926f36	fix: align task cleanup copy across locales
+0939392	feat(util-time): add a millisecond Duration span
+094a870	Publish weighted approval as a completed check run
+0960b5f	fix(experimental): surface failed older-history pages
+09899f3	feat(remote-access): 插件注册跟随访问状态（whenAccess），index 按 Peer 注入访问快照
+09c7036	fix(ptc): retain control transport errors in worker exit diagnostics
+09d47d6	feat(plugins): check for updates from the refresh button and fix the merged version styles
+0ab1fcb	fix(session-log-export): clarify Session Markdown copy label
+0b5803c	fix(util-time): bound a span, and state the conversions as they are
+0b8eaba	fix(dockkit): record the strip offset when the strip unmounts
+0bc0e53	feat(experimental): route capability questions to the official-plugin skill
+0c82811	fix(desktop): prioritize startup evidence in bounded reports
+0ce3308	fix(build): raise Host compiler heap limit to 8 GiB
+0d7ae41	fix(web): constrain malformed charset recovery to strict UTF-8
+0d9577c	fix(plugin-manager): keep the selected tab when enabling a bundle
+0d9a7f9	fix(desktop): preserve copyright and verify installer metadata
+0ddd45c	fix(cua): authorize bundle identities without executable paths
+0e49f44	feat(ui-conversation,ui-chat): 基于 user-text 支持富文本引用与草稿恢复 (#3206)
+0ecc1de	fix(client-modules): reread package manifests when Loader entries restart
+0f21742	fix(macos): apply ZIP compression when skipping notarization
+0f23939	Polish recommendation cards and cover new plugin catalogs
+0ff3d1d	fix(sdk): preserve Python config positional arguments
+102b42d	feat(session): persist canonical tool result values
+103dac1	feat(web): gate web_fetch and the DeepSeek web APIs on readiness
+10ec80c	fix(tmux-context): await projection readiness before querying
+1129599	fix(i18n): cover nested metadata and repair locale CI regressions
+114da79	fix(agent-instructions): budget the user-global and project chains separately (#6400)
+11589ed	feat(web): list custom plugin markets on the main experimental list
+11e1580	fix(ui-conversation): keep the active tab bar visible over Trajectory and widen tab targets
+120c717	fix(experimental): tighten paging guards and event payload typing
+122da6f	perf(windows): isolate packaging temporary files
+1260d96	fix(chat): close a reader-opened process group from its height cap
+13ee2f4	fix(web): keep a TeX comment from closing a dollar block
+13f46b9	fix(experimental): keep the manifest files order and cover proposal replacement branches
+14585c9	fix(plugins): include platform reason on bundle cards
+14a59d8	fix(web): keep a verbatim percent out of the comment state
+14dcb78	fix(ci): split the Wine Host compile to fit its heap budget (#6578)
+14ead62	fix(web): decline a dollar block whose closing fence carries text
+1552f52	fix(i18n): address translation, installer and coverage review findings
+155ab69	fix(subagent): preserve fork model selection restriction
+15ab556	fix(ui-conversation): release each binding effect with its Session scope
+160ba96	feat(experimental): add client-ui-perf conversation view plugin
+1624fae	fix(ui-conversation): keep the released-binding and shared-stop edges
+1665223	feat(ci): publish the approval decision label from a dedicated approval App
+16f1b78	fix(client): preserve theme styles for detached documents
+17b1338	fix(plugins): 默认隐藏 CUA 并保留已启用用户的管理入口 (#7068)
+17b9e15	fix(forge): release inactive diff subscriptions and menus
+17c8fc7	fix(deliverables): 收窄 present 描述，并让行内引用包含收尾回复之后的写入
+18065b8	fix(client): follow master's plugin detail previews after rebase
+1861316	fix(sdk): defer harness development context alignment
+1879b32	fix(desktop): preserve diagnostics across shipped locales
+18a559e	fix(ci): deepen the pre-merge fetch when the time window strands the merge base
+1922f32	fix(web): gate the DeepSeek web providers on the model route alone
+1954e94	feat(cua): add optional macOS setup with existing plugin interfaces
+199ffe3	fix(ui): keep the more views tooltip fixed (#7342)
+1a2f570	fix(experimental): single-flight older pages and keep retries explicit
+1ab28c1	fix(client): keep watch-built assets, end cancelled asset streams quietly, and stat before reading bundles
+1acbf46	fix(ui-workspace): preserve explicit navigation after startup failure
+1b1ba6d	fix(experimental): wrap event scope badges on narrow tables
+1b9b924	fix(experimental): complete shipped-locale dictionaries and release expectations
+1badf91	Reuse source alias setup in metadata regression tests
+1c20d3f	fix(ui-schedule): align cleanup notices with the shared copy
+1c61949	fix(desktop): bound fullscreen preparation and cover mandatory updates
+1cc040b	fix(client): clarify mobile native-open feedback (#6660)
+1d75180	fix(experimental): complete sender JSDoc and trim README summaries
+1ddba8b	fix(sdk-minimal): align review fixtures and upgrade guide
+1ddc7e2	feat(experimental): show the step start timestamp with date and milliseconds
+1df9e40	fix(experimental): avoid repeated discovery and honor declined recommendations
+1e0553e	fix(web): register the rename disarm listener only on press
+1e25d64	fix(ci): select decision runs by the publishing app
+1ebb319	fix(forge-github): preserve HTTP remote ports
+1f45e38	feat(ptc-runtime): expose Script syntax and state retention
+1f54902	fix(forge-panel): drain worktree operations before releasing readers
+1fc808d	feat(web-search): withhold web_search from requests without search credentials
+202c196	fix(liveshare-protocol): declare the brand runtime dependency
+205a465	feat(plugins): hide unsupported bundles from default discovery
+20b1297	fix(ui-chat): resolve relative file links from the current working directory
+217a50e	fix(file-drag): disclose MIME database runtime dependency
+220301c	fix(plugin-manager): offer script approval for git-hosted packages
+22c2493	feat(trajectory): remember raw result display mode
+22ea16f	fix(ui-dockkit): clamp a resting panel's size into the viewport too
+2377b27	feat(web-search): stop shipping the DeepSeek web search settings page
+2384f52	fix(forge-panel): hide the actual docked or floating tab
+23c2ee5	feat(llm-deepseek): read model badges from client_metadata
+2413725	fix(client): nudge workspace toolbar controls left
+24cbed2	fix(plugins): polish version updates UI and unify refresh
+257c147	fix: keep creation proposals scoped to one explicit need
+258ff28	fix(session-controller): finish the Workspace attach a named fork left pending
+25ede01	fix(ptc): preserve compact declarations and native syntax diagnostics
+2676c67	fix(agent-loop): keep the prompt prefix at a series start with unchanged text
+26d038a	fix(subagent): complete discovery plugin metadata and catalog expectations
+27ff469	feat(liveshare-protocol): add the shared wire frames and identity contract
+2917b99	fix(experimental): attribute perf rows per Session and load history in place
+2951b75	fix(plugin-manager): keep the compact bar clear of macOS window controls
+29630d9	feat(headless): support supervised worktree tasks
+299741d	fix(client): address package asset review findings
+2a4e1bc	fix(web): let a whitespace-only percent comment keep its fence
+2a871c2	fix(web): ignore window-activating click in session title double-click rename
+2b485ea	fix(ci): run the version check as the first step of the pre-merge check
+2be80e3	fix(sdk): select tool executors through profile overlays
+2c2574a	feat(web): keep the composer read-only while a message is sent
+2c7847a	fix(cua): retain client closure checks across awaited consent
+2d16099	fix(cua): localize complete permission instructions
+2d3c9cb	🐛 fix(client): preserve desktop settings chrome at narrow widths
+2d46f34	feat(approval): share fixed-action approval cards
+2e215f2	fix(cua): restrict native package delivery to macOS targets
+2e39b9c	📝 docs(test-runtime): clarify bundle manifest lookup precedence
+2eb0df5	feat(web): show a message only after the Host accepts it
+2ee6dfb	feat(forge): name changed files before their directories and drop the header branch label
+2efa355	fix(locale): register Japanese message quote dictionary
+2f01ad5	fix(web)!: let web_fetch reach non-public destinations
+2f2caf8	feat(session): split history, state and web controllers
+2f30c68	fix(time-context): await projection readiness for initial requests
+2f34877	feat(ui-schedule): refresh automation empty-state illustration
+2f94582	fix(plugins): translate platform rejection in added locales
+2fa68cd	fix(client): complete narrow settings viewport and hover layout
+2fa8538	fix(forge-panel): register all shipped locale dictionaries
+3007a15	fix(locale): align Japanese copy with current plugin settings
+31044bf	revert(cua): remove unrelated Session presence recovery
+310e943	feat(experimental): ship the Statistics view through Developer tools and rename its tab
+31693e2	fix(ui-conversation): drop the unused more views label from the remaining locales
+317e56d	fix(web): accept a prompt when its Inbox row arrives before the receipt
+31bd06d	feat(image): restore pan and sharing with plugin-owned transfers
+31ebfa7	fix(settings-account): 撤权时丢弃迟到的帧并清空登录状态
+3200417	fix(fs-local): expand ~ only in requested paths
+321d636	fix(compaction): condense history before model switches
+3241fa9	fix(subagent): keep the closing message when another tool ran beside the relay
+32bbe4f	fix(windows): check token public identity before signing
+32fa63c	fix(forge): draw merged change requests in violet and drafts as drafts
+33101ad	fix(session-projection): log unobserved legacy registration rejections
+33381c8	fix(release): preserve platform constraints in packed install verification
+33a6a06	fix(web): read the fence after verb as its delimiter
+34545f3	Align recommendation dependencies and borders with client policy
+34560ac	fix(desktop): open policy download page from native update fallback
+358d1c0	feat(schedule): lighten the bulk cleanup and clarify its copy
+35953a7	fix(forge): classify the panel's Host imports under the published dependency policy
+36b0428	fix(personalized-pages): improve standalone discovery and minimal plans
+36dce6b	fix(desktop): preserve operation identity and bound diagnostic shutdown
+36ec182	feat(cua-ui): guide setup and manage application access
+36f0bae	fix(ui-primitives): document the top-strip cap for hover cards
+37d0b6d	feat(plugin-manager): pin the Plugins page title bar while scrolling
+38816d8	fix(desktop): offer native recovery for mandatory view load failures
+38c05d2	fix(experimental): confirm unconfirmed plugin cards before Not now
+38c1b9b	fix(ui-dockkit): bound the edge return and keep clicks on projected panels
+39323bb	fix(ui-chat): keep the steering entrance while the tail is pinned
+39d0232	fix(plugin-manager): document the return tab and keep one origin per view
+39d2903	fix(ui): separate navigation pins from selection and show menu icons (#6883)
+39efcc3	fix(desktop): await remaining shutdown cleanup after rejection
+3a2a59a	fix(liveshare-protocol): release a stream whose unreadable open reached the owner
+3acbd08	fix(ui-sidebar-right): slide the panel in on its first open
+3ae19c1	fix: keep clear confirmation counts grammatically neutral
+3b0ad0a	fix(client): reload overwritten local Markdown images in new renders
+3b432c3	fix(client): stack mobile font-family settings (#7356)
+3bcb22f	fix(ui-conversation): gate keyboard submission and stop
+3c15772	feat(cordis): sync project-relative Loader resolution
+3c26689	fix(plugin-manager): make sticky header scrolling smooth
+3c45123	fix(schedule): inject Web activation without blocking management
+3c5111b	fix(experimental): share the proposal block parser with the Client bundle
+3c5ab55	perf(storage): delete task rows as one durable batch
+3c7cfb8	fix(storage): propagate unknown-state through domains and clients
+3ca9c5e	fix(headless): preserve explicit policy flags in custom profiles
+3ce7312	fix(tools): align conditional activation tests and snapshots
+3cea71b	fix(ui-chat): keep the running status moves from replaying when a switch lifts
+3d29275	fix(forge-panel): cancel and join failed Git inspections
+3d746bc	fix(client): preserve tab drags during chorded middle clicks
+3ddab34	Revert "perf(web): 压缩动态插件资源以加快冷启动"
+3ddacfd	fix(ci): narrow the version scan and keep a crashing check inside its mode
+3e0a5c3	fix(web): read a percent followed straight by the fence as content
+3e84d5d	Credit review by @winewill
+3f4cb7b	feat(experimental): preview prompt images from the performance table
+3f53fe3	fix(forge-session): cancel discovery when Sessions close
+3f5dd8b	fix(desktop): limit update card outline to dark mode
+3f9f36e	feat(locale): add Japanese client and desktop translations
+40b75d7	fix(web): make fake-IP ranges an opt-in fetch config
+41ea4eb	fix(subagent): report model discovery errors per route
+420a4ae	feat(experimental): offer personalized pages independently of plugin recommendations
+420a779	fix(plugin-manager): harden Git transport probe prompts, fragments and attribution
+421f589	fix(experimental): keep page routing policy in skill
+422aa72	fix(schedule): qualify the clear-ended copy and pin its tests
+427abde	Credit review by @Tuyixiang
+427d62d	fix(ptc-runtime-node): fail fast on mismatched bootstraps and late replies
+427e3dc	feat: add standalone OAR subagent provider and tool
+4292020	feat(plugin-market-generator): skip packages and versions marked private
+43149cd	Sync approval switch notice snapshot and docs
+43aafb2	fix(cua): retain permission controls while stale errors refresh
+4439153	fix(boot): require enabled tool executors at startup
+44494c0	fix(desktop): drop other targets' native packages from bundled pnpm
+4449a2d	Credit review by @07akioni
+446e1ea	Show the working directory on Session hover cards
+4470ca8	🐛 fix(client): tie drag completion to the source row
+4478a86	fix(plugin-manager): retain refused install identity in diagnostics
+44f0996	fix(session-controller): ask the concrete access decision before cancelling
+466cf0b	fix(personalized-pages): route simultaneous viewing to sidebar
+47b6867	fix(tools): settle cancelled admitted calls through cancellation
+4800bbe	feat(liveshare-protocol): reserve actor credentials and direct connections
+4825f92	fix(desktop): include diagnostic worker in packaged archive
+4916ce9	feat(forge): show worktree and change request state in the Session list
+491a834	fix(web): keep mobile focus on the composer after sending
+4923f3c	fix(auto-review): preserve Auto during application shutdown
+495977f	fix(desktop): embed ordinary update dialogs in owner windows
+4969525	fix(worktree): remove only the missing target registration
+4b07c32	fix(forge): follow master's hover, tooltip, and plugin metadata rules
+4b1d4c8	fix(web): speed up lazy bundle loads in the Web preview
+4bef9db	fix(forge-github): validate byte budgets separately from timeouts
+4c1d2a5	fix(release): mark the easel-air-transfer package private
+4c4f88a	fix(experimental): keep plugin risks in descriptions and bound skill catalogs
+4c864e4	fix: enforce standalone recommendation turn limit
+4cb08ff	fix(web): match subagent switcher placeholder height to the sidebar button
+4d33f27	Prepare metadata in public library builds
+4e4badb	fix(tools): align optional argument presentation and guidance
+4e85a34	fix(file-drag): complete Japanese locale registration and metadata
+4f36177	feat(agent): publish step decisions as agent.step and add agent/step-boundary
+4f40d71	Pin clarified recommendation guidance in the Web replay
+4f85194	perf(web): minify dynamic client bundles
+4fb0054	fix(client): rewrite image-set urls and keep the route fixture valid on Windows
+4fc8ac8	Keep brand clicks bubbling and the copy target's width
+4ff619c	fix(desktop): remove cancel action from mandatory native fallback
+50a9e31	fix(client): preserve question focus and dismiss hover cards
+50be7d3	feat(experimental): recommend official plugins through dsh-action answer blocks
+50fb069	fix(sdk): address approval interface review findings
+5224454	fix(session-projection): restore legacy keyed read materialization
+542e053	fix(llm-deepseek-api-key): report credential failures on the model request
+54eed06	feat(gui): support image panning and original-file drag sharing
+558d224	fix: select one plugin recommendation before proposing
+559c4c6	fix(experimental): weight turn cache hit by measured prompt tokens
+55deb7a	fix(ui-workspace): keep the per-resource access gates on the whenAccess client
+5616331	fix(client): copy only declared drag-preview variables
+568f12e	wip(docs): 保存长表筛选与固定表头实现
+57716b5	fix(forge): preserve diff review state and copy header paths
+57f2832	revert(plugins): defer navigation scroll behavior
+5804a9e	fix(web): keep a second percent and a starred delimiter honest
+585d20f	fix(ui-chat): pause the running clock while reconnecting
+585fc25	fix(client-ui-conversation): drop the header fade without scroll timelines
+58785b9	fix(ui-workspace): name every branch and open it on request
+58dea02	feat(experimental): propose personalized pages with a dsh-action answer block
+590826f	revert(liveshare-protocol): reset the wire protocol to version 1 and drop development history
+5935b6b	fix(runtime): include the PTC executor in Python carriers
+59b24da	fix(ci): pin Windows packaging helpers to workflow revision
+5a1f5a6	fix(forge): follow the corner-shape rule and the README summary budget
+5a31bcc	feat(web): ship launcher-ready install icons
+5a407d4	fix(build): order bundlers before shared client output writes
+5a45e0a	fix(desktop): clarify signing prerequisites and portable fixtures
+5a8c7c8	fix(client): prepare rail search before expanding the sidebar
+5b0e089	fix(plugin-market): present custom plugin markets as custom plugin indexes
+5b96747	fix(ui-user-questions): refine option detail callouts
+5c12422	🐛 fix(client): preserve settings navigation and narrow desktop layouts
+5c54c34	revert(web-search): restore the settings page endpoint hint
+5d3dd1b	feat(sdk): bridge internal approvals to stdio clients
+5e5b8be	fix(storage): unify versioned batch writes and deletion recovery
+5e98e0e	fix(cua): retain busy-state typing for both settings rows
+5e9bb51	feat(plugins): Ralph 循环和会话搜索默认从 GUI 隐藏 (#6754)
+5eba1ec	fix: guide capability discovery with scenario descriptions
+5f1413f	fix(desktop): address update overlay review and startup coverage
+5fc95b6	feat(ci): publish the approval decision label from the repository App
+5fd4909	fix(desktop): classify the merged patch set for the runtime plan
+5ff2919	feat(ui): add navigation entry customization (#6247)
+617f2a2	revert(time): keep the client UTC offset in the client plugin
+62338ac	fix(chat): keep the status slide while fold room takes growth
+6238020	fix(locale): type additional dictionaries and complete Japanese registration
+6252a29	fix(desktop-host): exit after acknowledged teardown
+6271657	fix(experimental): refine personalized page routing and handoff
+6287b3f	feat(trajectory): stack raw and rendered tool results
+6292808	fix(session-controller): keep the list summary contract honest
+62f78d8	fix(client): preserve keyboard focus hints without hover
+630a693	fix(cua): align combined package publication inventory
+635d9c8	feat(liveshare): add the host, viewer, and client share surfaces (#6749)
+6470b39	fix(client): harden theme icon replacements and add a real-composition test
+6475f57	feat(client): publish the branch, slot, and access seams a served page reads
+64ece4c	fix(sandbox): reject redirected and unsupported write grants
+64f4efe	fix(ui-conversation): decorate only whole folder tokens in the composer
+6527474	fix(client): fade clipped model selector text instead of ellipsizing
+652ca2c	feat(experimental): classify what opened each turn in the question column
+6543e1c	feat(experimental): refine personalized page placement and first-use notice
+656c740	release(vendor): cordis 4.0.6-alpha.1, cosmokit 1.8.7-alpha.1, group 1.0.6-alpha.1, hmr 1.0.21-alpha.1, include 1.0.11-alpha.1, loader 1.0.7-alpha.1, logger-console 1.0.6-alpha.1, schemastery 3.18.6-alpha.1, timer 1.1.8-alpha.1
+65c2014	fix(liveshare-protocol): align the published files with the single entry
+65d4afa	fix(client): reveal menu shortcuts during keyboard navigation
+65dcfae	fix(experimental): align package version and remove duplicated helpers
+663aa61	feat(llm): carry /models badges into the model catalog
+669e24b	fix(desktop): leave macOS fullscreen before update confirmation
+6718116	fix(client): add opt-in inset button outlines
+6751649	feat(analytics): track navigation entries and preset selections (#6600)
+67911ed	fix(ptc): describe fresh Script failures without retained state
+67a4ab7	fix(file-upload): release the Agent resolver when its owner reloads
+67af015	fix(models): retain badges when listing refresh fails
+67d5fd7	fix(web): add the Japanese label for a sending composer
+681cf9b	fix(client): show settings nav hover in dark theme
+6828c5a	fix(easel): keep the local running-status wording through the merge
+687aa11	feat(session-query): export backend Session Markdown converter
+6906d12	fix(plugin-recommendations): keep disabled experiment under More
+69207c4	fix(desktop): harden installer rendering lifecycle and tests
+69c389a	release(dsh): 0.2.2-alpha.1
+6a2692c	fix(web): type the consumed-tail helper for the parser code unit
+6a93211	fix(experimental): hide compaction ghost turns and preview answers
+6ae9ce5	feat(cua): add the experimental Computer Use bundle
+6b25107	♻️ Defer global viewport styles from mobile input fixes
+6b68baf	fix(office): stop routine DOCX package validation
+6b71dca	fix(sandbox): support explicit additional writable roots
+6bebb9e	fix(liveshare-protocol): reject an empty tenant in the asserted actor
+6c07e02	fix(plugin-market): finish the plugin index wording and restore generated docs
+6c35093	fix(chat): finish a held row under a closed ancestor without another fold
+6c5d7c9	fix(desktop): address packaging review follow-ups
+6c7f456	fix(plugin-recommendations): preserve explicit execution limits after enabling
+6d1822c	fix(experimental): keep the sticky header flush with the scrollport
+6db5041	fix(storage): keep batch deletion tracked and consistent
+6df1a2c	fix(experimental): dock the perf controls above the composer
+6f545ff	feat(experimental): scroll the performance table like Chat
+6fbd06d	fix(client): preserve mobile model menu keyboard focus
+7052192	fix(cordis): clarify resolver limits and isolate composition tests
+70b9459	feat(llm-deepseek): read tool_update from the model listing
+70e678c	fix(snapshot): bound padded workspace directory names
+70eab57	feat(jobs): deliver job output in completion notices and drop repeated notice text
+7139e5c	fix(liveshare-protocol): keep the protocol vocabulary off the client and normalize the withdrawn tier
+7181eff	feat(headless): support unattended experimental Auto review
+72a607d	fix(ui-settings-models): open model picker on the configured models
+72a84b2	perf(web): 合并 Web Search 设置刷新中的重复凭据查询 (#7419)
+72f814c	fix(i18n): correct French collapse label
+7333a38	fix(host): 修复 macOS 原生目录选择框初始灰态 (#7307)
+734812c	fix(schedule): align the clear copy with the inactive status and harden focus
+73574af	perf(windows): prepare Electron and primary runtime concurrently
+7393162	feat(webserver): add resource routes and in-process readResource (#6901)
+73a5e63	fix(ptc-runtime-node): report clearing only for retained executions
+73df748	feat(liveshare-protocol): carry the viewer file-upload switch
+7457789	fix(forge): reject backoff caps below the active interval
+746c2a4	fix(session-projection): preserve legacy plugin runtime calls
+747cbf1	Describe the ask approval policy by its meaning
+7509c17	fix(build): serialize release builds and give Client checks 8 GiB (#7435)
+752cc5c	feat(plan): keep exit_plan_mode declared after the first plan-mode entry
+7609189	fix(subagent): intersect model discovery with authorized catalog
+760ad03	fix(web): keep solitary dollars and interrupting paragraphs intact
+761d5de	fix(docs): 修复长表滚动与筛选评审问题
+7623307	fix(dockkit): continue the tab strip from its last offset on selection changes
+76acba4	fix(headless): retain explicit effort on same-route resume
+76be903	feat(experimental): admit live views of the app's own data as a page signal
+76d015b	fix(deliverables): present 说明交付在本轮结束后展示，并保留收尾回复之后的交付
+76e3979	revert(ui-session,ui-conversation): let the stop shortcut reach the Host
+773ce6f	fix(ui-schedule): strengthen illustration palette contracts
+7745b3b	feat(ptc-runtime-node): add VM Script execution with optional retained state
+774e618	fix(liveshare-protocol): forward only the page's own origin
+7759bcc	feat(experimental): voice the creation invitation in the first person
+776f1cc	revert(experimental): keep the original descriptions of the other official plugins
+77ee0be	fix(desktop): align diagnostic limits and recovery copy
+7854778	feat(tool-jobs): end job_output waits on a user steer
+788c22d	fix(client): retain composer position after mobile submission
+7983ae9	feat: open recommended plugin details from conversation cards
+7a58410	fix(experimental): fold card text by display width instead of grapheme count
+7ab2ddd	fix(client): drop the line mark when its preview reflows
+7bc30c4	fix(attachments): 复用完整图片引用，取消 Session 历史扫描 (#7021)
+7bc928c	fix(web): strengthen install icon validation
+7bfe4ad	feat(ui-dockkit): spring floating panels back inside the viewport
+7c27a4a	fix(file-drag): 补齐准备取消与文件名保真处理
+7c586e5	fix(forge): run every polling round on the forge service itself
+7cf0362	fix(ci): re-record the note pairing and keep the issue App assertion
+7cf67a2	feat(web): keep the composer editable while a message is sent
+7d64036	feat(subagent): share fixed model-selection tools across sessions
+7d6a8f0	feat(cua): add an explicit persistent PTC setting
+7e68ab4	Credit review by @Yifffan
+7e8bf28	fix(cua): normalize relative coordinates to 0–999
+7ebceb3	feat(client): render catalog badges in the model selector
+7ee7dfd	fix(schedule): preserve both local-calendar diagnostics
+7f2f9b8	fix(ci): allow larger tracked-file listings in static gates
+7f3dd4a	fix(client): tolerate minified stylesheet placeholders and document the asset reference encoding
+7f5007b	fix(desktop): localize fullscreen timeout recovery guidance
+7f7e1ef	fix(settings-account): 撤权时失效在途账号读取并清空账号快照
+7fa3dea	fix(forge-session): preserve cancelled watches during registry updates
+8008058	fix(sdk): route approvals by live runtime ownership
+8025403	feat(forge): mark change requests ready and merge them from the panel
+80ce066	revert(ui-conversation): leave a withheld submission to the Host
+8145f4c	fix(plugin-recommendations): settle actions safely across HMR and replay
+8151a02	fix(agent): persist explicit choices matching deployment defaults
+81ee28e	fix(scripts): remove dangling pnpm links in clean
+82461b7	fix(ci): keep the weighted approval status unchanged and add the decision check run
+825945f	fix(models): validate badge text and preserve tags beside long names
+82b43da	revert(ui-primitives): drop HoverCard callout and click pinning
+82bbf85	fix(plugins): report unsupported bundle activation and address review
+82ed6ee	fix(ui-chat): narrow the injected Chat View without an unknown assertion
+830f660	fix(util-time): enforce the span bound in arithmetic, and correct the record
+83644b6	fix(ui-goal): offer resume for a blocked goal
+8394a20	fix(models): refresh listed badges in open selectors
+83ec1b3	fix(web): preserve session row details across pointer and touch input
+84210fa	feat(storage): support compatible whole-unit versions
+845c155	fix(client): document image load tag contract and drop URL.parse
+84a6d2b	fix(llm-pi-ai): preserve later system reminders in request history
+84b0286	fix: synchronize new locales with current client dictionaries
+84c3a61	fix(subagent): keep fork model selection configurable
+84edead	feat(i18n): add Spanish French German Russian and Portuguese
+85181ca	fix(web): show image upload failures in a tooltip
+8539e4d	fix(build): align Host compiler heap with upstream 8 GiB limit
+853a18c	fix(experimental): add Japanese bundle metadata and follow the More-list order
+8569a3f	fix(tools): add executor locale metadata
+85812a9	fix(ui-dockkit): settle float review findings on bodies and edge cases
+85aac4d	fix(plugin-manager): keep the narrow update note inside the page head
+8656e1c	fix(ui-chat): reuse the tab for ./-prefixed links and state click-time resolution
+8668cf3	fix(client): address sidebar alignment review feedback
+86c39ab	fix(i18n): correct Portuguese units and Russian fold label
+86fb01a	fix(client): align sidebar spacing and enlarge row action targets
+86fcf49	fix(ptc-runtime-node): validate Script evaluation and process lifecycle
+878b93f	feat(experimental): rebalance perf columns and attribute wake senders
+88b0425	fix(storage): contain failed writes
+89137a1	fix(web): preserve tool cards with blank escalation reasons
+891ea9b	feat(forge): show a collapsed large file as the strip of unchanged lines
+89619e6	fix(sdk): share desktop tools and model context
+8a25bac	feat(experimental): explain retries, attempts, context refreshes, and approvals as event rows
+8a26b3b	feat(experimental): total the whole session from host projections
+8a3b0be	fix(ui-chat): hold the running status still while the tail is pinned
+8a5ee7b	fix(liveshare-protocol): keep the forking half of the withdrawn tier
+8ad4e30	fix(cua): complete basic approval extraction
+8b085b7	fix(web-search): check DeepSeek search readiness in the search's credential order
+8b48ec1	fix(client-ui-conversation): clip header actions without a scroll timeline
+8b70fa9	feat(ci): offer macOS ZIP compression choices in packaging workflow
+8c311ed	fix(experimental): complete plugin locale metadata and source path mapping
+8c56ebb	perf(windows): overlap package and runtime preparation
+8c780f4	fix(experimental): share the dsh-action fence scanner and harden the page projection
+8d0540a	fix(schedule): hand focus to the heading when a late readback lands
+8d4c886	fix(forge-session): resync watches when providers change
+8d66b72	fix(desktop): use policy headline in native update fallback
+8dec878	fix(experimental): keep totals cumulative and switch token units to M
+8e2dd67	perf(session-controller): exclude the shared image limits from session summaries
+8e89080	feat(desktop): 上传固定安装包后刷新 EdgeOne 缓存
+8fe2db1	fix(client): address touch interaction review findings
+911d9a5	fix(desktop): preserve shell locale during loading page startup
+9153978	feat(web): add trailing icon slots to session rows
+9157925	Name the version in the copied toast
+9199e1a	feat(cua): persist profile and conversation consent in domain storage
+9209b12	fix(experimental): render page cards from the projection view and align fence hiding
+92f9e79	perf(session-projection): serve session-list rows from a summary key set
+935a891	fix(ui-user-questions): preserve inline short option descriptions
+938e824	fix(ui-conversation): narrow a fork rejection before reading its code
+93b5d59	fix(locale): translate current approval choices and preset guidance
+9409234	fix(scripts): clean links into removed packages and skip external node_modules
+948d572	fix(web): follow master's locales and composer cases
+948f411	feat(cua): present application consent with fixed approval actions
+9498be6	feat(experimental): word the creation invitation around DeepSeek Harness
+94dae61	fix(ptc-runtime-node): keep per-call binding waits pending when the host closes
+94ebbf1	fix(chat): keep every assistant reply visible when a turn folds
+94ed636	fix(tool-ask-user): tell the model a skipped question is answered
+94ffdd2	fix(client): align touch tooltips and hover affordances
+96300fb	fix: keep activation continuation within requested scope
+9676ff7	fix(file-drag): generalize transfers and address lifecycle review
+967ba4c	fix(tools): disable history expansion in the persistent bash shell
+969b4bd	feat(experimental): give the card invitation only in the accepted call's result
+96f9a2f	fix(ui-chat): clip horizontal overflow in the chat transcript
+9738e49	fix(desktop): preserve partial-write history and isolate journals
+9802933	feat(cua): manage application grants and PTC session scopes
+9905e19	feat(experimental): show step timing beside each step and pin the footer
+991b263	fix(client): keep package-asset references valid in CSS and pin preview placeholders
+9930a1d	fix(web): keep a comment out of the verb delimiter branch
+994b9e0	fix: satisfy the lint and generated-catalog gates
+9980af2	feat(experimental): add shared action cards behind a propose_action tool
+9984cc1	Pin Session hover-card directory through the browser, blank, and empty cases
+99eacb8	fix(session-controller): drop a redundant projection cast and refresh doc graphs
+9a7feb0	fix(ci): keep the decision label best effort and owned by the publisher
+9aad02e	feat(session-controller): redirect file requests to cacheable versioned URLs
+9b029cd	🐛 fix(client): keep frame content inside vertical safe areas
+9b04d77	feat(experimental): propose personalized pages through action cards
+9b310b2	Generate source metadata before package compilation
+9be99a0	feat(web): upload composer images when they are added
+9bf6ba6	feat(web): note the native search requirement under the search endpoint
+9c3a6a3	feat(tools): resolve conditional tool admission per request
+9c3e976	fix(ci): report successful runner network fixture exit
+9c5958b	fix(client): close sidebar tabs with middle click
+9c622fa	fix(windows): run packaging tasks at normal scheduling priority
+9c8522b	feat(plugin-detail): show Markdown plugin details on bundle and market entry pages
+9cd81a5	fix(experimental): pass the client package-list and scrollbar gates
+9ce74cd	feat(desktop): localize Windows installer with per-language JSON resources
+9d0c97b	feat(tools): admit conditional tools per step
+9defbaf	fix(desktop): launch Windows runner without a console
+9e081b7	feat(experimental): left-align perf headers and shorten the tool label
+9e979a7	fix(ptc): align caller cancellation with native tools
+9ede8f2	feat(ui-chat): show cut-off composer statistics in a tooltip
+9ee9442	perf(windows): support isolated packaging workspaces
+9fb3a06	Revert "fix(client): 将模型发布标记改为蓝色纯文字" (#6936)
+9fd4780	fix(experimental): reconcile action cards before Not now and offer them to live roots only
+a02bf55	fix(experimental): port the page card fixes to plugin recommendations
+a0ed398	fix(ci): revoke the approval decision through its conclusion
+a12c0df	revert(windows): drop unproven packaging I/O pool default
+a1473dd	feat(gateway): expose pending remote events
+a153557	fix(snapshot): allocate long Windows workspace paths natively
+a165912	fix(session-controller): retire a queued echo when its Inbox row is canceled
+a1707a4	fix(experimental): opaque sticky header and prefetch the first older page
+a19aabc	feat(web): let a key of search's own serve other model routes
+a2416dd	feat(schedule): remove every ended task from the automation page
+a247c4c	fix(ci): resolve package caches after runner allocation
+a2484cb	fix(cua): keep permission guidance independent of the UI
+a275fdd	fix(cua): retain application through launch readiness
+a28c3ec	fix(client): limit workspace header motion to search interactions
+a2bfffa	fix(client): drop stale shown zoom when the committed zoom changes
+a2d35f3	fix(web): bound image receipts by the message limits and cancellation
+a313fb1	fix(personalized-pages): scope discovery to reusable page planning
+a37a5ca	fix(web): accept fake-IP DNS answers in web_fetch
+a3debca	Revert "feat(gui): 支持图片拖动平移与原图拖放分享"
+a43189a	feat(experimental): pretty-print and wrap the raw JSON inspector
+a43a4bb	fix(desktop): supervise optional Windows runner network process
+a472820	fix(agent): wait for deliveries on disposal and keep image prompts in order
+a50412d	fix(desktop): apply shared theme tokens to update dialogs
+a518d10	fix(ci): keep the pre-merge check's failures honest
+a5460db	fix(forge): preserve refresh requests during active polling
+a55c9c5	fix(ui-sidebar-right): keep the panel still on open for reduced motion
+a578ca4	feat(desktop): add Intel Mac packaging workflow and align forms
+a5b5d3a	feat(experimental): expand the full model answer from step details
+a6aaac3	fix(client): render model release as blue inline text
+a740d8e	fix(client): let owner classes place zoom controls regardless of CSS order
+a82c4cc	fix(web): remove obsolete browser clock cleanup
+a885fc7	feat(experimental): show compaction summary calls in the perf table
+a8a830f	feat(ui-workspace): label same-named picker Workspaces with the shortest distinguishing path suffix
+a8bf3e7	fix(plugin-manager): harden git allowBuilds key parsing
+a8e6fe8	fix(client): restore touch workspace and search actions
+a941288	fix(forge): use the existing storage helper dependency classification
+a9bbe0c	fix(session-projection): always return a promise from handle disposal
+a9f7ea7	fix(config): cancel settings writes waiting for HMR
+aa099a9	fix(ui-user-questions): keep long questions answerable
+aa455f5	fix(ptc): preserve structured cancellation details
+aa68564	fix(compaction): address model-switch review details
+aa786c9	feat(cua-macos): expose system permissions and responsible app
+ab5dd06	feat(experimental): explain creation cost and refine page suggestions
+ab7bd24	fix(session-title): retain fallback requests during activation
+ac46500	fix(client): complete the merged locale and snapshot fixtures
+ac4f996	fix(schedule): keep confirmation focus while its detail closes
+accd5b7	feat(worktree): name generated worktrees after their Session
+ace985e	fix(liveshare-protocol): move the wire protocol to version 2
+ad0a0a9	fix(ci): revoke every passing conclusion and record it from main
+ad5dfe7	fix(desktop): 修复 EdgeOne 轮询和发布恢复并补齐回归测试
+adc2780	fix: map every zone rejection exhaustively and document the signed span
+ae07093	fix(chat): keep the transcript steady at Turn end and when steering lands
+ae0dfd1	fix(fs-local): expand a leading ~ to the home directory
+ae22f46	feat(session-log-export): add Session Markdown copy
+ae40382	fix(forge-github): distinguish HTTP errors from GraphQL results
+aeb71f1	feat(web): reflow the Settings panel at narrow widths
+af4ae07	fix(trajectory): cap live tool results per session
+b015d18	fix(agent-loop): identify rejected request route changes
+b053d8a	fix(i18n): refine common actions and thinking status copy
+b096659	fix(session): make ordinary forks independent of source lineage
+b10bd84	feat(plugins): check and install newer registry versions of third-party bundles
+b191c5c	revert(session-controller): restore the package to master
+b1b5367	fix(ui-primitives): separate the detail document with horizontal rules and keep its preview format checked
+b1c8c9b	perf(fs): prune glob traversal using ripgrep directory filters
+b1f1038	fix(ui-deliverables): return the package to master
+b207844	Clarify recommendation intent boundaries and add real-model cases
+b22cf68	fix(web): explain refused image uploads and tighten image staging
+b22f589	revert(tools): keep existing tool descriptions
+b2b3bf4	fix(typert): reject ambiguous and multiple default resource identities
+b2dd5b8	fix(approval): clarify limited-scope Enter action
+b3b8202	fix(session-projection): handle canceled legacy registrations
+b42cae0	fix(schedule): mark the unreachable zone-rejection branch
+b4fcdd6	fix(ui-chat): keep queued steering echoes ahead of the opening submission
+b51e33d	feat(experimental): replace unstarted cards, limit queued turns, show content, tighten routing
+b524c7c	fix(cua): use the profile editor for persistent runtime changes
+b5b1b5f	fix(snapshot): resolve native Windows paths before sizing cwd
+b5f3d3a	Credit review by @turtle1999
+b62dfa2	feat(experimental): invite to plugin cards only from the accepted call's result
+b6e387e	fix(windows): normalize packaging step scheduling priority
+b72e83e	revert(workspace): keep the platform instant rendering in the record writer
+b740b95	fix(worktree): validate recorded restoration targets before mutation
+b7849a5	fix(ptc): render structured cancellation reasons readably
+b788fd3	fix(cua): isolate application leases from permission storage reads
+b7c9d1d	fix(approval): keep generic question fallback answerable
+b7ebde1	fix(cua): recognize retained VM Script contexts
+b7f46b5	perf(build): overlap client compilation with host bundling
+b84fea6	fix(client): guard retained files trees by binding
+b86f0cf	fix(i18n): align navigation and collapse terminology
+b8c7fa9	fix(plugins): keep the Refresh label on the refresh button
+b9861ae	feat(api): re-check prompt access and name fork children
+b9bf3bc	fix(trajectory): align live result states and JSON previews
+b9d049d	fix(plugins): use sentence case for built-in plugin English copy
+b9e4a29	fix(web): preserve detail in install icon exports
+b9fb31c	fix(sdk): own reminders and bridge native user questions
+ba50aec	fix(session): preserve automatic reasoning effort on selection
+baa5cb2	fix(client): retain hover previews when returning to anchors
+bb2a019	fix(trajectory): preserve request prompt update ordering
+bbcee26	fix(plugin-manager): gate detail documents and validate their publication path
+bc3ef12	fix(desktop): preserve background update overlay focus
+bc54072	fix(prompt): end the turn while waiting on subagents
+bc5c2d4	fix(web): cap the composer model seat at its preferred width
+bc5f14f	fix(ui-schedule): give the page's text fields a 16px touch step
+bcc5e79	fix(auto-review): keep reviewer input append-only for prefix caching
+bdb2110	fix(experimental): clarify personalized page planning and handoff
+bdd75ca	feat(windows): Remove LUA_TOKEN from Windows ACL sandbox. This enables Administrator/WDAGUtilityAccount
+bde15f2	fix(ui-chat): keep echoes after a running Turn's empty control at the input gap
+bdfc0c1	fix(ui-primitives): end bare URLs before CJK punctuation
+be10266	fix(ui-primitives): keep the detail document scrollbar off its text
+be1d8c3	fix(webworker-runtime): register unsupported REPL builtin
+bf07dbc	fix(api-gateway): drop maxPayload from the WebSocket compression change
+bf75167	fix(client-ui-conversation): fade overflowing header actions before the utilities
+bf8d849	fix(ui-user-questions): 多选题预选所有推荐选项
+bfc25c6	fix(cua): expire handles after failed launch verification
+bffc4f1	fix(cua): bound click holds and test balanced cancellation
+c0661b8	fix(tools): retain the service subject while accepted calls settle
+c10533a	feat(settings): support reordering provider models
+c1b1d9b	fix(forge): keep retained diffs from scroll anchoring on session switches
+c1be157	fix(desktop): retain confirmed locale for startup recovery
+c1d9f14	feat(client): resolve package assets through require.asset so the WebWorker preview can map them
+c25806f	fix(ui-chat): settle folds with final sibling spacing
+c262a09	fix(ui-primitives): keep backslashes in Windows-path Markdown links- #7098
+c29a313	fix(client): avoid automatic picker focus on mobile
+c29cda3	Clarify approval policy switch notice wording
+c38265a	fix(ui): show view tab tooltip only for overflowing labels
+c3998dd	feat(ci): run one script for the merged tree in the pre-merge check
+c3c2f73	fix(fs): allow blank reasons without sandbox escalation
+c3eead7	feat(client): let themes replace product icons through an SVG sprite
+c403ca4	fix(ui-conversation): end closed quoted folder tokens at the quote
+c458eab	fix(chat): keep the reply gap on a folded final answer
+c45d558	feat(cua): support optional mouse hold duration
+c48f852	feat(llm): follow the official /models listing on the DeepSeek API-key route (#6944)
+c4f4970	fix(desktop): embed mandatory updates without native child windows
+c503b51	fix(client): preserve composer position above mobile keyboards
+c538d65	feat(ui-chat): anchor the running status to the running turn tail
+c695c91	fix(desktop): outline update cards with shared border token
+c6d01dc	feat(desktop): enrich startup crash diagnostics and reveal reports
+c7278aa	fix(message-quotes): complete Japanese locale registration
+c7b6fba	feat(plugins): enforce bundle Host platform support
+c817f21	fix(web): mark the forge bundle experimental on the Plugins page
+c8d537d	fix(client): complete the Japanese dictionaries after merging master
+c905726	fix(ptc): allow local process declarations in function bodies
+c97c9d4	fix(experimental): prioritize recommendation eligibility and refresh skill replay
+c99d658	fix(ui-conversation): avoid automatic composer focus on mobile
+c9c836a	fix(web): track the failed fence second marker and align the note
+ca081d5	fix(session): restore presence when sessions return
+ca40dc5	fix(ui-primitives): end bare URLs before astral symbols and add Web snapshot
+ca73506	fix(plugin-manager): scroll the Plugins list in its own container under the page bar
+ca8cc62	fix(web): align subagent switcher rows without a sidebar button
+cae21f2	feat(client): match session ids in sidebar search
+cb046fd	fix(skills): isolate unreadable roots and publish available skills
+cb1e21f	fix(experimental): keep the page skill entry within the catalog limit
+cb1ecfa	fix(personalized-pages): refine planning and expire unused cards
+cb2f2bc	feat(cua): replace the plugin icon with the supplied pointer artwork
+cb425d1	fix(experimental): settle plugin cards from what enabling reports
+cb6dcae	fix(cua): use effective PTC state retention
+cba0128	fix(forge): drain provider calls before unregistering
+cc4446e	fix(mcp): keep resource-listing diagnostics off ACP stdout
+cc79cf5	fix(llm-retry): retain recovery requests during activation
+cc892fe	Credit review by @oraluben
+cce8300	fix(build): allow 6 GiB for host aggregate type checks
+ccf5092	fix(forge-panel): release cached state with its Session scope
+ccf7bec	fix(experimental): ship Japanese metadata and the client style-gate conventions
+ce5c139	fix(auto-review): send one message per review item so message-end caches hit
+ce84953	feat(client): serve plugin package assets by URL instead of data URLs
+cec41e7	fix(headless): validate invocation policy across custom profiles
+cf07238	fix(headless): resume ordinary forks using subagent origin
+cf0a621	fix(desktop): contain runner launcher failure paths
+cf620a9	fix(message-quotes): register the Japanese dictionary
+cfb65d3	fix: validate the Node 24.9 runtime floor
+cfc2fd9	fix(ui-workspace): route row gates through the Session service
+d02ea37	release(dsh): 0.2.1-rc.3
+d04a963	fix(plugin-manager): keep the collapsed bar when collapsing lets the list fit
+d0664c9	perf(windows): match runtime I/O pool to bounded readers
+d07ad00	fix(cua): keep the basic bundle independent of PTC configuration
+d0aa83d	Refresh recommendation tool guidance in the bilingual catalog
+d0de935	fix(cua): satisfy type-aware lint checks
+d0fc1f6	feat(forge): show the changes of a Session and of its change requests
+d136ac9	fix(diagnostics): retain observed plugin versions for recovery
+d148052	perf(windows): batch restored runtime signature verification
+d1ad034	fix(ui-primitives): dispose copy feedback on unmount
+d218ba8	fix(liveshare-protocol): keep the replaced fetch's receiver
+d284f67	fix(experimental): keep event and step trigger text vertically centered
+d343cd2	fix(ui-primitives): keep header menus next to their trigger on macOS desktop
+d3972b1	fix(session-controller): handle initialization join failures
+d3a6b8b	fix(api-gateway): state the compressed-write liveness contract
+d3da3b7	fix(tool-ask-user): share skip guidance with the timed description
+d3f054c	feat(cua): share macOS consent by bundle identifier
+d3f486e	fix(plan-mode): reject requests before guidance is ready
+d4a362a	fix(cua): align optional paths with compiler interfaces
+d53bbe9	fix(web): scope the verb delimiter tail to its line and unescaped backslash
+d5d43d9	fix(remote-access): 按评审修正访问门控边界，插件导航改为可选依赖
+d6d51be	feat(experimental): 把个性化页面和插件推荐合并为实验性插件「个性化推荐」 (#7034)
+d7191fa	fix(client): keep plugin strings out of the asset resolver rewrite
+d7574c8	fix(experimental): add Japanese copy to personalized page cards
+d779dda	fix(web): move CUA to experimental plugins page
+d822341	feat(ui-schedule): align bulk cleanup with the search-row More menu
+d98ff5d	fix(ci): gate the setup failure step on the recorded conclusion
+d9b2e06	fix(web): scope the comment exception to a later line
+d9c0125	revert(client): return the fork seam to master
+da7996d	fix(schedule): report bulk removal outcomes from the page
+da80c3d	fix(web): publish awaitingFirstTurn only after the Host accepted the prompt
+dae4bfa	feat(settings): use a three-line model reorder handle
+dbb2492	feat(attachment): relax the default image admission limits
+dbc7ae1	fix(client): patch Go inline-struct rule at grammar load
+dbf7d54	feat(client): fade a navigated source line's highlight in the document preview
+dc1bd1c	fix(client): unify shared button inset outlines
+dc50837	feat(cua): configure click hold limits and allow immediate release
+dc63639	feat(experimental): tighten the perf table columns and wording
+dcaaa11	fix(ui-dockkit): pick a panel up where it is drawn on a corner press too
+dcbfd80	feat(experimental): bind code host change requests to Sessions
+dd746aa	fix(desktop): preserve recovery failure while report is unavailable
+dd7e861	fix(forge): ship plugin locale metadata for the forge packages
+deebbf3	fix(ui-conversation): decorate pasted file paths as whole tokens
+df12de4	perf(desktop): default final macOS ZIP compression to level 3
+df469ea	fix(ci): keep the pre-merge check green in report mode (#7311)
+df4f3fd	fix(forge-session): bind numeric PR references with explicit repositories
+dfbe5d8	feat(desktop): retain bounded plugin operation diagnostics
+e0b95e3	fix(cua): preserve thousandth scaling for relative coordinates
+e0dffac	fix(headless): refine Auto policy reporting and fixtures
+e103591	fix(subagent): address model selection review feedback
+e10b502	fix(desktop): preserve native fullscreen exceptions through executor
+e16c52f	fix(session-log-export): keep Markdown route path internal
+e1e3f3a	fix(trajectory): retain raw tool results only for live Sessions
+e2b2760	feat(web-search): send the DeepSeek API key only for DeepSeek routes and their chat origin
+e2e18c3	fix(cua): describe missing process observations precisely
+e30684c	fix(client): keep the served-page records on the master access API
+e341628	fix(ci): gate weighted approval through its commit status and label the conclusion
+e342b7c	fix(forge-panel): label worktrees with their current HEAD
+e3a485b	fix(llm-deepseek): sync the built-in context window with the official listing
+e4aebad	feat(experimental): keep one card per turn across both card actions
+e5132e2	fix(test-runtime): resolve a bundle own browser entry
+e5b6879	fix(session-controller): wait for initializing local agents
+e5ba436	Re-record the ui-sidebar README translation pair
+e5ff00c	fix(experimental): frame team and subagent wake badges with readable senders
+e63f590	fix(trajectory): sync catalogs after hiding the result service type
+e671c9e	fix(session-log-export): address Markdown copy review
+e69e8c3	fix(sdk): advertise question capability during lazy initialization
+e715991	feat(web): give the model Search API summaries
+e722ee6	fix(desktop): cancel diagnostic workers during shutdown
+e727a3b	fix(tools): keep executor changes out of registry notifications
+e743601	fix(inspector): retain bootstrap request until cancellation settles
+e7a9e26	perf(windows): bound parallel PE header discovery
+e7f030e	fix(desktop): preserve runner recovery after output drain timeout
+e803c26	fix(liveshare-protocol): reject an unparseable share expiry
+e804a60	fix(locale): restore required Japanese quote removal label
+e819a71	feat(web): hide persistent terminal bundle controls (#6753)
+e826d5b	perf(desktop): batch Windows workspace tarball packing
+e82dddc	fix(ptc-runtime-node): correct Script await handling and guidance
+e876f69	fix(cua): launch the selected copy when bundle identifiers match
+e8bdbbe	fix(fs): preserve glob prefix path semantics
+e8e43fc	fix(llm-pi-ai): replay Gemini tool-call thought signatures over Chat Completions
+e8fc11f	fix(ui-primitives): keep single tildes literal in Markdown
+e90f65c	feat(llm-deepseek-api-key): follow the official /models listing
+e934beb	Copy the local-build version from the sidebar brand
+e9784c0	fix(tools): settle executor calls after unload and validate configuration
+e979223	fix(cua): scope detail separators to computer use
+e99272d	feat(forge): bind change requests from gh pr view/edit/checkout and the checkout's branch
+e99a597	fix(forge): drain list state streams and refresh reopened requests
+e9e7722	fix(desktop): preserve safe operation diagnostics across failures
+ea016fa	fix(manifest): describe optional dependency declarations
+ea91bd7	feat(experimental): restore a removed page from its card
+eaea1ec	perf(cua): omit unused icons from application selection
+eb5150a	fix(approval): identify invalid action and request constraints
+eb8ef61	fix(client): isolate sidebar drag previews
+eb8efe8	feat(plugins): support platform-aware bundle activation
+ebe5e58	feat(cua): show a localized feature preview in plugin details
+ec17e01	perf(windows): seal runtime inventories with bounded reads
+ec38779	fix(settings): address model reorder review findings
+ecc9062	feat(cua): use one action per system permission row
+ed64501	fix(jobs): read job output at settlement only for notices that inline it
+ed78306	fix(i18n): complete Japanese plugin metadata and guard locale coverage
+ed9a92d	fix(ui-chat): slide the running status below a Step's first output
+eda31bf	perf(windows): store installer uploads without recompression
+eea6d3b	feat(forge): hold a sent message until the Session's worktree is ready
+eeaac47	fix(web): keep a lone dollar on a later line inside the block
+eef30f8	fix(liveshare-protocol): forward only real route segments
+ef0e2b3	fix(skills): clarify incomplete catalogs and pin root failure behavior
+ef0f768	feat(experimental): translate the Statistics view into five shipped locales
+ef28480	fix(fs): narrow glob traversal for literal directory prefixes
+f0987e7	fix(gates): recognize scoped executor composition
+f0d3690	fix(experimental): keep older-history loading retryable after a no-progress page
+f0ed41c	fix: address image drag lifecycle and coverage review
+f0fcd68	feat(ui-session): answer Session access for JS callers
+f150f21	fix(ui-settings-models): keep model picker selection current and non-empty
+f185b5f	Revert "fix(session-controller): 在 Web 操作中等待本地 Agent 初始化"
+f234b09	feat(experimental): add non-step event rows and context delta switches
+f23d780	fix(client): dismiss mobile keyboard after submitting prompts
+f29deda	perf(chat): avoid ancestor invalidation in history spacing
+f2ae73a	feat(experimental): spell out the creation invitation in the page skill
+f2e0d7d	feat(llm): raise custom model defaults to 1M context and 128K output
+f2f563c	fix(cordis): route wrapper updates through the canonical Fiber
+f351c96	fix(desktop): set Windows publisher and uninstall display name
+f38b890	fix(auto-review): keep inherited creation prompts as facts
+f3bb362	fix(client): complete hover-card coverage and steering golden
+f449996	feat(experimental): render the expanded model answer as Markdown
+f511e17	perf(windows): expose per-run installer compression
+f56820c	fix(web): preserve consumed input order in trajectory steps
+f59f0df	fix(plugin-manager): install self-hosted Git plugins over SSH when only SSH can read them
+f61130d	fix(experimental): show the image count for image-only prompts
+f62182e	fix(sdk-minimal): checkpoint sessions before dispatch
+f63da6a	feat(cua): allow persistent consent by executable path
+f673eec	fix(web): decode a malformed multi-label charset declaration
+f68f375	feat(experimental): add totals row and context-basis controls
+f723892	fix(web): render multi-line display-dollar math
+f78984a	fix(subagent): share delegation tools within each preset revision
+f7b2be0	fix(cua): recheck bundle metadata before launching approved apps
+f85a715	fix(boot): include installed optional packages in profile resolution
+f879017	fix(tooling): 保留产品标识并修复 vendor 重命名检查 (#6716)
+f881f61	feat(api-gateway): compress Remote stream WebSocket with permessage-deflate
+f8a094e	fix(ui-user-questions): label every copy toggle Expand or Collapse
+f997618	fix(experimental): keep recommended plugin titles in place while they load
+f9cb7ea	fix(desktop): align runtime patch policy with pi-ai 1.2.0
+f9ec718	feat(preset): enable plugin_manager in standard mode
+f9ef038	fix(fs): bound glob pruning with directory-name filters
+f9ff5d0	fix(sidebar): 隐藏不改变标签顺序的拖拽定位条
+fa2dbbd	fix(forge-panel): format change counts in the selected locale
+fa8e928	fix(tools): require PTC runtime before activating executor
+facceb8	feat(experimental): recommend official plugins after completed answers
+facfab5	fix(schedule): return focus when a cleanup removes its own trigger
+fb1bfd0	fix(desktop): smooth Windows installer rendering and caption controls
+fb20e72	perf(windows): isolate package cache measurements and configure compression
+fb290b3	fix(ui-user-questions): clip dropped lines from hit testing
+fb378da	fix(web): offer DeepSeek web tools whenever a credential exists
+fbc2550	fix(ui-user-questions): preview long questions in three lines
+fbc4bb0	🧪 test(client): compare settings scroll bounds at CSS pixel precision
+fbc9090	fix(ui-conversation): gate the fixed stop shortcut through the shared stop
+fbcfd80	fix(forge-github): enforce configured hosts before queries
+fbe725a	fix(plugin-recommendations): explain automatic hot activation
+fbff97c	feat(plugin-manager): compact sticky header and responsive actions
+fc43a2d	feat(forge): add the pull request panel and worktree Sessions
+fe93616	Show the copied version as a success toast
+fea3bcd	feat(typert): support default resource resolvers
+feaed50	fix(client): retain mobile viewport and input behavior on the split base
+fee58ad	feat(experimental): translate the plugin recommendation packages into the shipped languages
+feff25e	fix(subagent): initialize model selection before agent publication
+00e06cf	release(dsh): align master packages with 0.2.1-rc.3
+0178c00	fix(plugins): announce toggle progress through a persistent live region
+03152d6	perf(desktop): persist download and pnpm packaging caches
+0705cd6	Credit review by @imccyu
+0930290	fix(cua): reserve permission hint space during fresh queries
+140496c	Credit review by @imccyu
+25ebc24	Credit review by @imccyu
+302fc01	fix(conversation): add missing Japanese quote removal label
+3159402	fix(forge): follow master's shipped languages and release version
+341beb3	release(dsh): 0.2.1-rc.4
+3509e72	fix(cua): own query pauses with plugin management operations
+3bc49f2	fix(cua): retain permission guidance and known failures while loading
+3cfc042	fix(cua): own query pauses with plugin management operations
+41736cd	fix(acp): keep account catalog diagnostics off stdout
+49a7a75	fix(session): align store-owned writes with lifecycle notifications
+504a01a	release(dsh): 0.2.1-rc.4
+51b324a	perf(desktop): persist download and pnpm packaging caches
+54af890	fix(acp): keep account catalog diagnostics off stdout
+5ba94b2	release(dsh): align master packages with 0.2.1-rc.3
+6d4faf5	release(dsh): align master packages with 0.2.1-rc.4
+7fbdf49	fix(forge): follow master's shipped languages and release version
+8126594	fix(plugins): retain independent row controls during query suspension
+817d4ec	fix(plugins): announce toggle progress through a persistent live region
+98badd5	fix(cua): match empty application loading and settled heights
+a77e004	fix(cua): reserve permission hint space during fresh queries
+beae0ef	fix(plugins): retain displayed details during activation refresh
+cc0e980	fix(session): align store-owned writes with lifecycle notifications
+ce31187	release(dsh): align master packages with 0.2.1-rc.4
+cf18b49	fix(cua): pause permission queries while toggling the bundle
+d124987	fix(conversation): add missing Japanese quote removal label
+d3db323	fix(cua): retain permission guidance and known failures while loading
+d534e65	release(dsh): align master packages with 0.2.1-rc.4
+e03ba51	fix(cua): pause permission queries while toggling the bundle
+e057fe3	fix(cua): match empty application loading and settled heights
+edd79cc	release(dsh): align master packages with 0.2.1-rc.3
+f8912d2	fix(plugins): retain independent row controls during query suspension
+f9bacf7	fix(plugins): retain displayed details during activation refresh
+fc02fe9	Credit review by @imccyu
