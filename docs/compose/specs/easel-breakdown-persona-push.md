@@ -22,7 +22,8 @@ worktree: .worktrees/easel-breakdown-persona-push
 ### S2.1 拆解页画像选择与全链路归属
 
 - BreakdownPage 控件行新增「画像」下拉：选项 = `GET /easel/api/status` 的 `personas` + 空选项「跟随画像页当前画像」（默认）。解析值 = `personaPick || props.persona`，未动下拉时行为与现状一致。
-- `POST /easel/api/deconstruct` body 增加 `persona`；宿主校验 `profiles/<persona>/` 目录存在（不存在 400「画像「X」不存在」），校验通过后写入 job.json `persona` 字段（未指定不写）。
+- 归属语义：job.json `persona` 是采集时快照；分析与选题归属以分析时下拉解析值为准（下拉在采集完成后保持可改）。
+- `POST /easel/api/deconstruct` body 增加 `persona`；宿主校验 `profiles/<persona>/` 目录存在（不存在 404「画像「X」不存在」（与包内画像路由约定一致）），校验通过后写入 job.json `persona` 字段（未指定不写）。
 - 拆解 prompt：第 6 点「结合我的画像「X」」改用解析值；指令 b 的选题 JSON 在选定画像时增加 `"persona"` 字段（`JSON.stringify` 字面量，注明必须原样保留）。
 - `Idea` schema 增加 `persona?: string`（拆解指定的画像；立项时默认带入快照）；宿主 `POST /easel/api/ideas` 接受 `persona` 并做同样的目录校验。
 - 选题卡在来源 badge 旁显示画像 badge；立项弹窗 `personaPick` 预选 `idea.persona`（该画像已不存在时回退现状：仅一个画像时自动选，否则空）。
@@ -68,9 +69,9 @@ worktree: .worktrees/easel-breakdown-persona-push
 ## [S4] Acceptance
 
 - [ ] 拆解页可选画像（默认「跟随画像页当前画像」）；选定后创建的 job.json 带 persona，未选不写该字段
-- [ ] 拆解 prompt 第 6 点与选题 JSON 的 persona 用选定画像；`POST /easel/api/deconstruct` 传不存在的画像 → 400
+- [ ] 拆解 prompt 第 6 点与选题 JSON 的 persona 用选定画像；`POST /easel/api/deconstruct` 传不存在的画像 → 404
 - [ ] 拆解产出的选题卡显示画像 badge；立项弹窗默认选中该画像；该画像已删除时回退现状逻辑
 - [ ] 对话区右键（选区或整条消息）「存入选题库」：`_ideas.json` 新条目 `source='对话'`、`note=全文`、标题=首行；停留在选题库页时新卡自动出现
 - [ ] 对话区右键「存入素材库」：`outputs/对话素材/<slug>-<hash8>.md` 生成且内容库页可见；同文本重复推送不产生第二个文件
-- [ ] `POST /easel/api/ideas` 传不存在画像 → 400；传有效画像 → 条目含 persona
+- [ ] `POST /easel/api/ideas` 传不存在画像 → 404；传有效画像 → 条目含 persona
 - [ ] 新单测绿；插件既有测试不回归

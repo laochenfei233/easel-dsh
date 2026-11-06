@@ -44,7 +44,9 @@ export function firstLineTitle(text) {
  * @returns {string}
  */
 export function materialFileName(title, text) {
-  const slug = sanitizeProjectTitle(title, '对话素材').slice(0, 24) || '对话素材'
+  // 码点截断（不是 UTF-16 码元）：代理对跨第 24 位时按码元切会把孤立代理项写进
+  // 文件名，Windows 上 writeFile 直接 EINVAL。
+  const slug = [...sanitizeProjectTitle(title, '对话素材')].slice(0, 24).join('') || '对话素材'
   const hash = createHash('sha256').update(String(text ?? ''), 'utf8').digest('hex').slice(0, 8)
   return `${slug}-${hash}.md`
 }

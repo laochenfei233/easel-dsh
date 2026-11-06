@@ -110,3 +110,11 @@ test('createMaterialHandler: 空内容 400、超长 400、写盘失败 500', asy
     rmSync(root, { recursive: true, force: true })
   }
 })
+
+test('materialFileName: 代理对跨第 24 位截断不产生孤立代理项', () => {
+  const name = materialFileName('😀'.repeat(30), 'x')
+  const slug = name.slice(0, name.indexOf('-'))
+  // 孤立代理项（高位没跟低位、或低位没接高位）才是坏的；完整代理对（emoji 本身）合法。
+  const ORPHAN = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/
+  assert.ok(!ORPHAN.test(slug), 'slug 按 UTF-16 码元截断会留下孤立代理项，Windows 写盘 EINVAL')
+})
