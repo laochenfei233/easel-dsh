@@ -147,7 +147,7 @@ importers:
         version: 10.4.2
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       '@types/js-yaml':
         specifier: ^4.0.9
         version: 4.0.9
@@ -164,11 +164,11 @@ importers:
         specifier: ^5.5.2
         version: 5.5.2
       '@types/react':
-        specifier: ~18.3.1
-        version: 18.3.31
+        specifier: ~19.3.0
+        version: 19.3.0
       '@types/react-dom':
         specifier: ~18.3.0
-        version: 18.3.7(@types/react@18.3.31)
+        version: 18.3.7(@types/react@19.3.0)
       '@types/semver':
         specifier: ^7.8.0
         version: 7.8.0
@@ -820,11 +820,11 @@ importers:
         specifier: 11.28.5
         version: 11.28.5
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
       sharp:
         specifier: 0.35.5
         version: 0.35.5(@types/node@22.20.1)
@@ -1080,11 +1080,11 @@ importers:
         specifier: ^1.49.0
         version: 1.61.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
       sharp:
         specifier: 0.35.5
         version: 0.35.5(@types/node@22.20.1)
@@ -3528,8 +3528,8 @@ importers:
         specifier: workspace:*
         version: link:../../settings/settings
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/modules:
     devDependencies:
@@ -3666,7 +3666,7 @@ importers:
         version: 10.2.0
       zustand:
         specifier: ~4.5.7
-        version: 4.5.7(@types/react@18.3.31)(immer@10.2.0)(react@18.3.1)
+        version: 4.5.7(@types/react@19.3.0)(immer@10.2.0)(react@19.3.0)
 
   packages/client/ui-agent-preset:
     devDependencies:
@@ -3728,8 +3728,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/values
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-approval:
     devDependencies:
@@ -3773,8 +3773,8 @@ importers:
         specifier: workspace:*
         version: link:../../typert/protocol
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-attachment:
     devDependencies:
@@ -3818,11 +3818,11 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-brand-official:
     devDependencies:
@@ -3840,13 +3840,13 @@ importers:
         version: link:../ui-sidebar
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-chat:
     dependencies:
@@ -3973,13 +3973,13 @@ importers:
         version: link:../../util/workspace-path
       '@tanstack/react-virtual':
         specifier: 3.14.10
-        version: 3.14.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 3.14.10(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-commands:
     devDependencies:
@@ -4035,8 +4035,8 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-conversation:
     dependencies:
@@ -4171,11 +4171,11 @@ importers:
         specifier: ^0.49.0
         version: 0.49.0(patch_hash=54c4413db208cf234cb68c6a837f2523d3b319aa17911f1da385af08362e1356)(typescript@6.0.3)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -4274,8 +4274,8 @@ importers:
         specifier: workspace:*
         version: link:../../deliverables/workspace-changes
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-directory-picker-browse:
     devDependencies:
@@ -4305,16 +4305,16 @@ importers:
         version: link:../ui-workspace
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-directory-picker-native:
     devDependencies:
@@ -4335,13 +4335,13 @@ importers:
         version: link:../ui-workspace
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-dockkit:
     devDependencies:
@@ -4356,16 +4356,16 @@ importers:
         version: link:../ui-primitives
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-entry-customization:
     devDependencies:
@@ -4410,16 +4410,16 @@ importers:
         version: link:../ui-workspace
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-file-drag:
     devDependencies:
@@ -4454,8 +4454,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/file-drag
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-goal:
     devDependencies:
@@ -4506,13 +4506,13 @@ importers:
         version: link:../../typert/protocol
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-input-trigger:
     devDependencies:
@@ -4559,8 +4559,8 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-jobs:
     devDependencies:
@@ -4598,11 +4598,11 @@ importers:
         specifier: workspace:*
         version: link:../../core/session
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-layout:
     devDependencies:
@@ -4634,8 +4634,8 @@ importers:
         specifier: workspace:*
         version: link:../ui-theme
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-message-feedback:
     devDependencies:
@@ -4695,13 +4695,13 @@ importers:
         version: link:../../typert/protocol
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-model-selection:
     devDependencies:
@@ -4763,11 +4763,11 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-open-in-app:
     devDependencies:
@@ -4832,8 +4832,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/session
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-permission-presets:
     devDependencies:
@@ -4892,8 +4892,8 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-plan:
     devDependencies:
@@ -4961,8 +4961,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/crypto
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-plugin-manager:
     dependencies:
@@ -5032,16 +5032,16 @@ importers:
         version: link:../../util/crypto
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-plugin-market:
     devDependencies:
@@ -5089,13 +5089,13 @@ importers:
         version: link:../../typert/protocol
       '@testing-library/react':
         specifier: ^16.1.0
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-primitives:
     devDependencies:
@@ -5172,11 +5172,11 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
       shiki:
         specifier: ^4.4.3
         version: 4.4.3
@@ -5235,8 +5235,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/workspace-path
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-renderer:
     devDependencies:
@@ -5253,14 +5253,14 @@ importers:
         specifier: ^1.5.0
         version: 1.7.0
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
       use-sync-external-store:
         specifier: 1.6.0
-        version: 1.6.0(react@18.3.1)
+        version: 1.6.0(react@19.3.0)
 
   packages/client/ui-schedule:
     devDependencies:
@@ -5329,16 +5329,16 @@ importers:
         version: link:../../util/values
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-secret-mask:
     devDependencies:
@@ -5361,8 +5361,8 @@ importers:
         specifier: workspace:*
         version: link:../ui-slots
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-session:
     devDependencies:
@@ -5400,8 +5400,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/values
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-settings:
     dependencies:
@@ -5431,8 +5431,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/values
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-settings-account:
     dependencies:
@@ -5496,7 +5496,7 @@ importers:
         version: link:../../settings/settings
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       '@types/big.js':
         specifier: ^6.2.2
         version: 6.2.2
@@ -5504,11 +5504,11 @@ importers:
         specifier: ^7.0.1
         version: 7.0.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-settings-agent-loop:
     devDependencies:
@@ -5543,8 +5543,8 @@ importers:
         specifier: workspace:*
         version: link:../ui-slots
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-settings-general:
     dependencies:
@@ -5613,11 +5613,11 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-settings-models:
     dependencies:
@@ -5665,8 +5665,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/values
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-settings-plugin-inventory:
     devDependencies:
@@ -5711,13 +5711,13 @@ importers:
         version: link:../../util/package-manifest
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-settings-plugins:
     devDependencies:
@@ -5743,8 +5743,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/values
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-settings-session-log:
     devDependencies:
@@ -5779,11 +5779,11 @@ importers:
         specifier: workspace:*
         version: link:../ui-slots
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-settings-shell:
     devDependencies:
@@ -5818,8 +5818,8 @@ importers:
         specifier: workspace:*
         version: link:../ui-slots
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-settings-subagent:
     devDependencies:
@@ -5854,8 +5854,8 @@ importers:
         specifier: workspace:*
         version: link:../ui-slots
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-settings-web-search:
     devDependencies:
@@ -5890,8 +5890,8 @@ importers:
         specifier: workspace:*
         version: link:../ui-slots
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-shortcuts:
     devDependencies:
@@ -5932,8 +5932,8 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-sidebar:
     devDependencies:
@@ -5980,8 +5980,8 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-sidebar-browser:
     devDependencies:
@@ -6023,13 +6023,13 @@ importers:
         version: link:../ui-slots
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-sidebar-documentpreview:
     dependencies:
@@ -6105,10 +6105,10 @@ importers:
         version: 1.0.4(patch_hash=8791a230763dbf853fd65d627c68c31de37209992851377855e16cf08ea70532)
       '@fortune-sheet/react':
         specifier: 1.0.4
-        version: 1.0.4(patch_hash=2932e52e79afcd4ced08cfa123b5eded786c85043da32f622f3e80af6fc96c37)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 1.0.4(patch_hash=2932e52e79afcd4ced08cfa123b5eded786c85043da32f622f3e80af6fc96c37)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       '@types/papaparse':
         specifier: ^5.3.16
         version: 5.5.2
@@ -6134,11 +6134,11 @@ importers:
         specifier: 6.3.289
         version: 6.3.289
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
       xlsx:
         specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
         version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
@@ -6198,16 +6198,16 @@ importers:
         version: link:../../util/workspace-path
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-sidebar-right:
     devDependencies:
@@ -6264,7 +6264,7 @@ importers:
         version: link:../../util/crypto
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       '@types/picomatch':
         specifier: ^4.0.3
         version: 4.0.3
@@ -6275,11 +6275,11 @@ importers:
         specifier: ^4.0.7
         version: 4.0.7
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -6339,7 +6339,7 @@ importers:
         version: link:../../core/session
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       '@xterm/addon-fit':
         specifier: ^0.11.0
         version: 0.11.0
@@ -6350,11 +6350,11 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-skill:
     devDependencies:
@@ -6411,13 +6411,13 @@ importers:
         version: link:../../util/workspace-path
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-slots:
     devDependencies:
@@ -6428,8 +6428,8 @@ importers:
         specifier: workspace:*
         version: link:../store
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-subagent:
     devDependencies:
@@ -6488,11 +6488,11 @@ importers:
         specifier: workspace:*
         version: link:../../llm/token-meter
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-theme:
     dependencies:
@@ -6543,8 +6543,8 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-tool:
     devDependencies:
@@ -6643,16 +6643,16 @@ importers:
         version: link:../../util/workspace-path
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-trajectory:
     dependencies:
@@ -6728,16 +6728,16 @@ importers:
         version: link:../../util/values
       '@tanstack/react-virtual':
         specifier: 3.14.10
-        version: 3.14.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 3.14.10(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       diff:
         specifier: ^9.0.0
         version: 9.0.0
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/client/ui-user-questions:
     devDependencies:
@@ -6814,8 +6814,8 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-workflow-run:
     devDependencies:
@@ -6865,8 +6865,8 @@ importers:
         specifier: workspace:*
         version: link:../../workflow/workflow
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/ui-workspace:
     devDependencies:
@@ -6955,8 +6955,8 @@ importers:
         specifier: ^2.0.0
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/client/web:
     devDependencies:
@@ -6989,13 +6989,13 @@ importers:
         version: link:../../host/webserver
       '@tanstack/react-virtual':
         specifier: 3.14.10
-        version: 3.14.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 3.14.10(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -8750,8 +8750,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/values
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/experimental/client-ui-agent-team:
     devDependencies:
@@ -8799,13 +8799,13 @@ importers:
         version: link:../../core/session
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/experimental/client-ui-claude-code-mods:
     devDependencies:
@@ -8850,13 +8850,13 @@ importers:
         version: link:../../typert/protocol
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/experimental/client-ui-cot-translation:
     dependencies:
@@ -8932,13 +8932,13 @@ importers:
         version: link:../../typert/registry
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/experimental/client-ui-creation-recommendations:
     devDependencies:
@@ -8979,8 +8979,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/session
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -9116,16 +9116,16 @@ importers:
         version: link:../../session/working-directory
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/experimental/client-ui-plugin-recommendations:
     devDependencies:
@@ -9175,8 +9175,8 @@ importers:
         specifier: workspace:*
         version: link:../../typert/protocol
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       zod:
         specifier: 4.4.3
         version: 4.4.3
@@ -9245,13 +9245,13 @@ importers:
         version: link:../../interaction/user-approval
       '@testing-library/react':
         specifier: ^16.1.0
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/experimental/client-ui-voice-input:
     devDependencies:
@@ -9308,13 +9308,13 @@ importers:
         version: link:../../typert/protocol
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/experimental/computer-use-cua-driver-mcp:
     dependencies:
@@ -9679,13 +9679,13 @@ importers:
         version: link:../../session/working-directory
       '@testing-library/react':
         specifier: ^16.1.0
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
       sharp:
         specifier: ^0.35.3
         version: 0.35.4(@types/node@22.20.1)
@@ -10175,7 +10175,7 @@ importers:
         version: link:../../host/webserver
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       '@types/serve-static':
         specifier: ^2.2.0
         version: 2.2.0
@@ -10189,8 +10189,8 @@ importers:
         specifier: ^1.49.0
         version: 1.61.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       tsx:
         specifier: ^4.23.15
         version: 4.23.15
@@ -10449,11 +10449,11 @@ importers:
         specifier: ^8.18.1
         version: 8.18.1
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/experimental/liveshare-protocol:
     dependencies:
@@ -10684,16 +10684,16 @@ importers:
         version: link:../../core/session
       '@tanstack/react-virtual':
         specifier: ^3.14.10
-        version: 3.14.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 3.14.10(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/experimental/session-search:
     dependencies:
@@ -11642,8 +11642,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/values
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/extensions/cordis-host-runner:
     dependencies:
@@ -11772,8 +11772,8 @@ importers:
         specifier: workspace:*
         version: link:../../util/values
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/feedback/command-feedback:
     dependencies:
@@ -14155,8 +14155,8 @@ importers:
         specifier: workspace:*
         version: link:../../session/session-title
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/session-query/session-log-import:
     dependencies:
@@ -14281,8 +14281,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/session
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
 
   packages/session/session-checkpoint-policy:
     devDependencies:
@@ -16746,7 +16746,7 @@ importers:
         version: 10.4.2
       '@testing-library/react':
         specifier: ^16.3.3
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)
       js-yaml:
         specifier: ^4.3.2
         version: 4.3.2
@@ -16848,11 +16848,11 @@ importers:
         specifier: ^4.0.9
         version: 4.0.9
       react:
-        specifier: ^18.2.0
-        version: 18.3.1
+        specifier: ^19.3.0
+        version: 19.3.0
       react-dom:
         specifier: ^18.2.0
-        version: 18.3.1(react@18.3.1)
+        version: 18.3.1(react@19.3.0)
 
   packages/test-support/llm-mock-server:
     devDependencies:
@@ -18378,10 +18378,10 @@ importers:
         version: 5.4.21(@types/node@22.20.1)(lightningcss@1.33.0)
       vitepress:
         specifier: ^1.6.4
-        version: 1.6.4(@algolia/client-search@5.55.2)(@types/node@22.20.1)(@types/react@18.3.31)(lightningcss@1.33.0)(postcss@8.5.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)(typescript@6.0.3)
+        version: 1.6.4(@algolia/client-search@5.55.2)(@types/node@22.20.1)(@types/react@18.3.31)(lightningcss@1.33.0)(postcss@8.5.28)(react-dom@18.3.1(react@19.3.0))(react@18.3.1)(search-insights@2.17.3)(typescript@6.0.3)
       vitepress-plugin-mermaid:
         specifier: ^2.0.17
-        version: 2.0.17(mermaid@11.17.2)(vitepress@1.6.4(@algolia/client-search@5.55.2)(@types/node@22.20.1)(@types/react@18.3.31)(lightningcss@1.33.0)(postcss@8.5.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)(typescript@6.0.3))
+        version: 2.0.17(mermaid@11.17.2)(vitepress@1.6.4(@algolia/client-search@5.55.2)(@types/node@22.20.1)(@types/react@18.3.31)(lightningcss@1.33.0)(postcss@8.5.28)(react-dom@18.3.1(react@19.3.0))(react@18.3.1)(search-insights@2.17.3)(typescript@6.0.3))
       vue:
         specifier: 3.5.42
         version: 3.5.42(typescript@6.0.3)
@@ -21609,6 +21609,9 @@ packages:
 
   '@types/react@18.3.31':
     resolution: {integrity: sha512-vfEqpXTvwT91yhmwdfouStN2hSKwTvyRs8qpLfADyrq/kxDw0hZM7Wk9Ug1FELj8hIby+S/+kQCSRFF32nv2Qw==}
+
+  '@types/react@19.3.0':
+    resolution: {integrity: sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==}
 
   '@types/readable-stream@4.0.24':
     resolution: {integrity: sha512-NRvUNC/JFGPJvqdAfEve8oginbM6V08u5NzLWpG8MwA2kTPOLnqk+wpwuPT+mp3aUsxyuT6m2gnrPuHYCruzEg==}
@@ -25032,6 +25035,10 @@ packages:
     resolution: {integrity: sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==}
     engines: {node: '>=0.10.0'}
 
+  react@19.3.0:
+    resolution: {integrity: sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog==}
+    engines: {node: '>=0.10.0'}
+
   read-binary-file-arch@1.0.6:
     resolution: {integrity: sha512-BNg9EN3DD3GsDXX7Aa8O4p92sryjkmzYYgmgTAc6CA4uGLEDzFfxOxugu21akOxpcXHiEgsYkC6nPsQvLLLmEg==}
     hasBin: true
@@ -26951,9 +26958,9 @@ snapshots:
 
   '@docsearch/css@3.8.2': {}
 
-  '@docsearch/js@3.8.2(@algolia/client-search@5.55.2)(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)':
+  '@docsearch/js@3.8.2(@algolia/client-search@5.55.2)(@types/react@18.3.31)(react-dom@18.3.1(react@19.3.0))(react@18.3.1)(search-insights@2.17.3)':
     dependencies:
-      '@docsearch/react': 3.8.2(@algolia/client-search@5.55.2)(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)
+      '@docsearch/react': 3.8.2(@algolia/client-search@5.55.2)(@types/react@18.3.31)(react-dom@18.3.1(react@19.3.0))(react@18.3.1)(search-insights@2.17.3)
       preact: 10.29.7
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -26963,7 +26970,7 @@ snapshots:
       - react-dom
       - search-insights
 
-  '@docsearch/react@3.8.2(@algolia/client-search@5.55.2)(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)':
+  '@docsearch/react@3.8.2(@algolia/client-search@5.55.2)(@types/react@18.3.31)(react-dom@18.3.1(react@19.3.0))(react@18.3.1)(search-insights@2.17.3)':
     dependencies:
       '@algolia/autocomplete-core': 1.17.7(@algolia/client-search@5.55.2)(algoliasearch@5.55.2)(search-insights@2.17.3)
       '@algolia/autocomplete-preset-algolia': 1.17.7(@algolia/client-search@5.55.2)(algoliasearch@5.55.2)
@@ -26972,7 +26979,7 @@ snapshots:
     optionalDependencies:
       '@types/react': 18.3.31
       react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react-dom: 18.3.1(react@19.3.0)
       search-insights: 2.17.3
     transitivePeerDependencies:
       - '@algolia/client-search'
@@ -27601,14 +27608,14 @@ snapshots:
       '@formulajs/formulajs': 2.9.3
       tiny-emitter: 2.1.0
 
-  '@fortune-sheet/react@1.0.4(patch_hash=2932e52e79afcd4ced08cfa123b5eded786c85043da32f622f3e80af6fc96c37)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@fortune-sheet/react@1.0.4(patch_hash=2932e52e79afcd4ced08cfa123b5eded786c85043da32f622f3e80af6fc96c37)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@fortune-sheet/core': 1.0.4(patch_hash=8791a230763dbf853fd65d627c68c31de37209992851377855e16cf08ea70532)
       '@types/regenerator-runtime': 0.13.8
       immer: 9.0.21
       lodash: 4.18.1
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.3.0
+      react-dom: 18.3.1(react@19.3.0)
       regenerator-runtime: 0.14.1
 
   '@google/genai@2.21.0(@modelcontextprotocol/sdk@1.31.0(supports-color@9.4.0)(zod@4.4.3))(supports-color@9.4.0)':
@@ -28866,11 +28873,11 @@ snapshots:
     dependencies:
       defer-to-connect: 2.0.1
 
-  '@tanstack/react-virtual@3.14.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tanstack/react-virtual@3.14.10(react-dom@18.3.1(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@tanstack/virtual-core': 3.17.8
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.3.0
+      react-dom: 18.3.1(react@19.3.0)
 
   '@tanstack/virtual-core@3.17.8': {}
 
@@ -28885,15 +28892,15 @@ snapshots:
       picocolors: 1.1.1
       pretty-format: 27.5.1
 
-  '@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@18.3.7(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@18.3.1(react@19.3.0))(react@19.3.0)':
     dependencies:
       '@babel/runtime': 7.29.7
       '@testing-library/dom': 10.4.2
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
+      react: 19.3.0
+      react-dom: 18.3.1(react@19.3.0)
     optionalDependencies:
-      '@types/react': 18.3.31
-      '@types/react-dom': 18.3.7(@types/react@18.3.31)
+      '@types/react': 19.3.0
+      '@types/react-dom': 18.3.7(@types/react@19.3.0)
 
   '@trycua/cua-driver-darwin-arm64@0.33.0':
     optional: true
@@ -29212,19 +29219,25 @@ snapshots:
 
   '@types/picomatch@4.0.3': {}
 
-  '@types/prop-types@15.7.15': {}
+  '@types/prop-types@15.7.15':
+    optional: true
 
   '@types/qs@6.15.1': {}
 
   '@types/range-parser@1.2.7': {}
 
-  '@types/react-dom@18.3.7(@types/react@18.3.31)':
+  '@types/react-dom@18.3.7(@types/react@19.3.0)':
     dependencies:
-      '@types/react': 18.3.31
+      '@types/react': 19.3.0
 
   '@types/react@18.3.31':
     dependencies:
       '@types/prop-types': 15.7.15
+      csstype: 3.2.3
+    optional: true
+
+  '@types/react@19.3.0':
+    dependencies:
       csstype: 3.2.3
 
   '@types/readable-stream@4.0.24':
@@ -33095,10 +33108,10 @@ snapshots:
       minimist: 1.2.8
       strip-json-comments: 2.0.1
 
-  react-dom@18.3.1(react@18.3.1):
+  react-dom@18.3.1(react@19.3.0):
     dependencies:
       loose-envify: 1.4.0
-      react: 18.3.1
+      react: 19.3.0
       scheduler: 0.23.2
 
   react-is@17.0.2: {}
@@ -33108,6 +33121,9 @@ snapshots:
   react@18.3.1:
     dependencies:
       loose-envify: 1.4.0
+    optional: true
+
+  react@19.3.0: {}
 
   read-binary-file-arch@1.0.6(supports-color@9.4.0):
     dependencies:
@@ -34086,9 +34102,9 @@ snapshots:
       querystringify: 2.2.0
       requires-port: 1.0.0
 
-  use-sync-external-store@1.6.0(react@18.3.1):
+  use-sync-external-store@1.6.0(react@19.3.0):
     dependencies:
-      react: 18.3.1
+      react: 19.3.0
 
   utf8-byte-length@1.0.5: {}
 
@@ -34169,17 +34185,17 @@ snapshots:
       tsx: 4.23.15
       yaml: 2.9.1
 
-  vitepress-plugin-mermaid@2.0.17(mermaid@11.17.2)(vitepress@1.6.4(@algolia/client-search@5.55.2)(@types/node@22.20.1)(@types/react@18.3.31)(lightningcss@1.33.0)(postcss@8.5.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)(typescript@6.0.3)):
+  vitepress-plugin-mermaid@2.0.17(mermaid@11.17.2)(vitepress@1.6.4(@algolia/client-search@5.55.2)(@types/node@22.20.1)(@types/react@18.3.31)(lightningcss@1.33.0)(postcss@8.5.28)(react-dom@18.3.1(react@19.3.0))(react@18.3.1)(search-insights@2.17.3)(typescript@6.0.3)):
     dependencies:
       mermaid: 11.17.2
-      vitepress: 1.6.4(@algolia/client-search@5.55.2)(@types/node@22.20.1)(@types/react@18.3.31)(lightningcss@1.33.0)(postcss@8.5.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)(typescript@6.0.3)
+      vitepress: 1.6.4(@algolia/client-search@5.55.2)(@types/node@22.20.1)(@types/react@18.3.31)(lightningcss@1.33.0)(postcss@8.5.28)(react-dom@18.3.1(react@19.3.0))(react@18.3.1)(search-insights@2.17.3)(typescript@6.0.3)
     optionalDependencies:
       '@mermaid-js/mermaid-mindmap': 9.3.0
 
-  vitepress@1.6.4(@algolia/client-search@5.55.2)(@types/node@22.20.1)(@types/react@18.3.31)(lightningcss@1.33.0)(postcss@8.5.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)(typescript@6.0.3):
+  vitepress@1.6.4(@algolia/client-search@5.55.2)(@types/node@22.20.1)(@types/react@18.3.31)(lightningcss@1.33.0)(postcss@8.5.28)(react-dom@18.3.1(react@19.3.0))(react@18.3.1)(search-insights@2.17.3)(typescript@6.0.3):
     dependencies:
       '@docsearch/css': 3.8.2
-      '@docsearch/js': 3.8.2(@algolia/client-search@5.55.2)(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(search-insights@2.17.3)
+      '@docsearch/js': 3.8.2(@algolia/client-search@5.55.2)(@types/react@18.3.31)(react-dom@18.3.1(react@19.3.0))(react@18.3.1)(search-insights@2.17.3)
       '@iconify-json/simple-icons': 1.2.90
       '@shikijs/core': 2.5.0
       '@shikijs/transformers': 2.5.0
@@ -34475,12 +34491,12 @@ snapshots:
 
   zod@4.4.3: {}
 
-  zustand@4.5.7(@types/react@18.3.31)(immer@10.2.0)(react@18.3.1):
+  zustand@4.5.7(@types/react@19.3.0)(immer@10.2.0)(react@19.3.0):
     dependencies:
-      use-sync-external-store: 1.6.0(react@18.3.1)
+      use-sync-external-store: 1.6.0(react@19.3.0)
     optionalDependencies:
-      '@types/react': 18.3.31
+      '@types/react': 19.3.0
       immer: 10.2.0
-      react: 18.3.1
+      react: 19.3.0
 
   zwitch@2.0.4: {}
