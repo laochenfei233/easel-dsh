@@ -11,7 +11,7 @@
  * The auxiliary conversation is dsh's own new-Session path with the selected
  * text as its draft, so the Conversation UI, input, and history stay dsh's.
  */
-import { captureTrendArticle, createIdea, fetchHandoffPaired, pushFileToPeer } from '../lib/api'
+import { captureTrendArticle, createIdea, fetchHandoffPaired, pushConversationMaterial, pushFileToPeer } from '../lib/api'
 import {
   absolutePathFor, draftBlock, fileNameOf, isAbsolutePath, quoteBlock, relativePath, resolveSurface,
 } from '../lib/context-menu-model.js'
@@ -195,12 +195,16 @@ function itemsFor(ctx, surface, extras) {
   if (surface.kind === 'project') return projectItems(ctx, surface, extras)
   if (surface.kind === 'workspace') return workspaceItems(ctx, surface, extras)
   if (surface.kind === 'editable') return editableItems(surface.element)
+  // conversation 面（兜底分支）：选区或整条消息文本。
   return [
     menuRow('复制', () => copyOrThrow(surface.text)),
     menuRow('复制 Markdown 引用', () => copyOrThrow(quoteBlock(surface.text))),
     SEPARATOR,
     menuRow('添加到当前任务', () => addToTask(ctx, surface.text), { disabled: currentInput(ctx) === undefined }),
     menuRow('在辅助对话中提问', () => askInAuxiliaryConversation(ctx, surface.text), { disabled: currentSessionId(ctx) === undefined }),
+    SEPARATOR,
+    menuRow('存入选题库', () => saveConversationIdea(surface.text), { disabled: surface.text.trim() === '' }),
+    menuRow('存入素材库', () => saveConversationMaterial(surface.text), { disabled: surface.text.trim() === '' }),
   ]
 }
 
@@ -289,6 +293,7 @@ async function captureTrend(trend) {
       contextToast(result.reused === true ? '正文已更新' : '已存入内容库与选题库', 'ok')
     }
     notifyTrendSaved(trend.title)
+    window.dispatchEvent(new CustomEvent('easel:ideas-changed'))
   } catch (error) {
     contextToast(`抓取失败：${messageOf(error)}`, 'error')
   }
@@ -300,6 +305,7 @@ function saveTrendTitle(title, source) {
     .then(() => {
       contextToast('已收藏到选题库', 'ok')
       notifyTrendSaved(title)
+      window.dispatchEvent(new CustomEvent('easel:ideas-changed'))
     })
     .catch((error) => { contextToast(`收藏失败：${messageOf(error)}`, 'error') })
 }
@@ -307,6 +313,31 @@ function saveTrendTitle(title, source) {
 /** The trend page marks its bookmark state from this event. */
 function notifyTrendSaved(title) {
   window.dispatchEvent(new CustomEvent('easel:trend-saved', { detail: { title } }))
+}
+
+// ---- 对话推送（spec easel-breakdown-persona-push §S2.2/§S2.3）----
+
+/**
+ * 选区/整条消息存入选题库：标题留空由宿主从 note 首行推导，全文进备注。
+ * 选题库页凭 easel:ideas-changed 刷新。
+ */
+function saveConversationIdea(text) {
+  createIdea({ title: '', note: text, source: '对话' })
+    .then(() => {
+      contextToast('已存入选题库', 'ok')
+      window.dispatchEvent(new CustomEvent('easel:ideas-changed'))
+    })
+    .catch((error) => { contextToast(`存入选题库失败：${messageOf(error)}`, 'error') })
+}
+
+/** 选区/整条消息存入素材库（outputs/对话素材/）；同文本幂等复用既有文件。 */
+function saveConversationMaterial(text) {
+  pushConversationMaterial(text)
+    .then((result) => {
+      contextToast(result.reused === true ? '素材已存在，未重复保存' : '已存入素材库', 'ok')
+      window.dispatchEvent(new CustomEvent('easel:outputs-changed'))
+    })
+    .catch((error) => { contextToast(`存入素材库失败：${messageOf(error)}`, 'error') })
 }
 
 /** Open an external link the same way the trend page's title anchor does. */

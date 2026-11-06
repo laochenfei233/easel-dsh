@@ -96,6 +96,11 @@ export default function OutputsPage({ jumpPath, onJumpHandled }: OutputsPageProp
     fetchOutputs().then(setRoots).catch(() => setTreeError('加载产物列表失败'));
   }, []);
   useEffect(() => { load(); }, [load]);
+  // 对话推送素材库等外部落盘不经本页：动作侧派发 easel:outputs-changed。
+  useEffect(() => {
+    window.addEventListener('easel:outputs-changed', load);
+    return () => window.removeEventListener('easel:outputs-changed', load);
+  }, [load]);
 
   const currentNodes = useMemo(() => resolvePath(roots, stack), [roots, stack]);
   const dirs = useMemo(

@@ -5,19 +5,19 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
   composeMaterialMarkdown, createMaterialHandler, ConversationMaterialError,
-  materialFileName, materialTitle,
+  materialFileName, firstLineTitle,
 } from '../lib/conversation-material.js'
 
-test('materialTitle: 首个非空行、剥 Markdown 记号、截 40', () => {
-  assert.equal(materialTitle('第一行标题\n第二行'), '第一行标题')
-  assert.equal(materialTitle('\n\n  ## 二级标题内容'), '二级标题内容')
-  assert.equal(materialTitle('> 引用行'), '引用行')
-  assert.equal(materialTitle('- 列表项'), '列表项')
-  assert.equal(materialTitle('3. 编号项'), '编号项')
-  assert.equal(materialTitle('一'.repeat(60)), '一'.repeat(40))
-  assert.equal(materialTitle(''), '')
-  assert.equal(materialTitle('---'), '')
-  assert.equal(materialTitle(null), '')
+test('firstLineTitle: 首个非空行、剥 Markdown 记号、截 40', () => {
+  assert.equal(firstLineTitle('第一行标题\n第二行'), '第一行标题')
+  assert.equal(firstLineTitle('\n\n  ## 二级标题内容'), '二级标题内容')
+  assert.equal(firstLineTitle('> 引用行'), '引用行')
+  assert.equal(firstLineTitle('- 列表项'), '列表项')
+  assert.equal(firstLineTitle('3. 编号项'), '编号项')
+  assert.equal(firstLineTitle('一'.repeat(60)), '一'.repeat(40))
+  assert.equal(firstLineTitle(''), '')
+  assert.equal(firstLineTitle('---'), '')
+  assert.equal(firstLineTitle(null), '')
 })
 
 test('materialFileName: slug+hash8、同文本同名、非法字符清洗、空标题回退', () => {

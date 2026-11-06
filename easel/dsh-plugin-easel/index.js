@@ -40,7 +40,7 @@ import {
   pruneSnapshot, readRadarHistory, staleItemsFromHistory,
 } from './lib/trends.js'
 import { RadarArticleError, createCaptureHandler } from './lib/trends-article.js'
-import { ConversationMaterialError, createMaterialHandler } from './lib/conversation-material.js'
+import { ConversationMaterialError, createMaterialHandler, firstLineTitle } from './lib/conversation-material.js'
 import {
   DOUYIN_RULE_URLS, mergeDouyinRuleItems, parseDouyinAnnouncements,
   parseDouyinPolicyDocs, parseDouyinPolicyExplain,
@@ -1187,7 +1187,8 @@ async function apiIdeasCreate(c) {
   }
   const item = {
     id: randomBytes(6).toString('hex'),
-    title: String(body?.title ?? '').trim() || '未命名选题',
+    // 空标题从 note 首行推导（对话推送不带标题，spec easel-breakdown-persona-push §S2.2）。
+    title: String(body?.title ?? '').trim() || firstLineTitle(body?.note) || '未命名选题',
     note: String(body?.note ?? ''),
     source: String(body?.source ?? ''),
     status: IDEA_STATUSES.has(body?.status) ? body.status : 'pending',

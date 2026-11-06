@@ -20,12 +20,13 @@ export class ConversationMaterialError extends Error {
 const MATERIAL_TEXT_CAP = 100_000
 
 /**
- * 素材标题：正文首个非空行，剥掉 Markdown 行首记号（标题/引用/列表），
- * 截 40 字符。全部剥空时返回空串，由调用方回退。
+ * 推送标题：正文首个非空行，剥掉 Markdown 行首记号（标题/引用/列表），
+ * 截 40 字符。素材文件名与「存入选题库」的空标题推导共用。全部剥空时
+ * 返回空串，由调用方回退。
  * @param {string} text - 对话正文（选区或整条消息）。
  * @returns {string}
  */
-export function materialTitle(text) {
+export function firstLineTitle(text) {
   const line = String(text ?? '')
     .split('\n')
     .map(item => item.trim())
@@ -38,7 +39,7 @@ export function materialTitle(text) {
  * 内容库文件名：`<slug>-<textHash8>.md`。slug 复用项目目录清洗（≤24 字符，
  * 空标题回退「对话素材」）；hash 让同一文本稳定同名——重复推送幂等覆盖，
  * 不同文本不撞名。
- * @param {string} title - 素材标题（materialTitle 的结果，可为空）。
+ * @param {string} title - 素材标题（firstLineTitle 的结果，可为空）。
  * @param {string} text - 完整正文（决定 hash）。
  * @returns {string}
  */
@@ -82,7 +83,7 @@ export function createMaterialHandler({ io }) {
     if (text.length > MATERIAL_TEXT_CAP) {
       throw new ConversationMaterialError(400, `内容过长（上限 ${MATERIAL_TEXT_CAP} 字符），请推送选区或精简后再试`)
     }
-    const title = materialTitle(text)
+    const title = firstLineTitle(text)
     const fileName = materialFileName(title, text)
     const abs = join(c.settings.projectRoot, 'outputs', '对话素材', fileName)
     // 同文本同文件名：已存在就不重写（保住原文件的存入时间，也不搅动 mtime）。

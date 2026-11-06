@@ -135,8 +135,11 @@ test('ideas create records persona and rejects unknown persona (spec easel-break
   await assert.rejects(call('POST', 'ideas', { title: 'x', persona: '../escape' }), error => error.status === 404)
   const plain = await call('POST', 'ideas', { title: '无画像' })
   assert.ok(!('persona' in plain.json), '未指定画像的选题卡不得带 persona 字段')
+  const derived = await call('POST', 'ideas', { title: '', note: '# 钩子写法\n正文', source: '对话' })
+  assert.equal(derived.json.title, '钩子写法', '空标题从 note 首行推导（对话推送不带标题）')
   await call('DELETE', `ideas/${withPersona.json.id}`)
   await call('DELETE', `ideas/${plain.json.id}`)
+  await call('DELETE', `ideas/${derived.json.id}`)
 })
 
 test('library material: conversation text lands in outputs/对话素材, repeats reuse', async () => {
