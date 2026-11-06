@@ -559,3 +559,22 @@ test('sph create refuses when the downloader is missing, before spawning anythin
     error => error.status === 400 && /视频号下载器/.test(error.message),
   )
 })
+
+test('deconstruct create validates persona before spawning anything (spec easel-breakdown-persona-push)', async () => {
+  const pRoot = mkdtempSync(join(tmpdir(), 'easel-persona-'))
+  const personaSettings = { ...settings, projectRoot: pRoot }
+  try {
+    mkdirSync(join(pRoot, 'profiles', '造作画像'), { recursive: true })
+    await assert.rejects(
+      dispatchLocalApi(personaSettings, 'POST', ['deconstruct'], new URLSearchParams(),
+        async () => ({ url: 'https://www.douyin.com/video/1', persona: '不存在的画像' }), {}, ALL_ROUTES),
+      error => error.status === 404 && /画像「不存在的画像」/.test(error.message),
+      'unknown persona must refuse before the pipeline spawns',
+    )
+    const created = await dispatchLocalApi(personaSettings, 'POST', ['deconstruct'], new URLSearchParams(),
+      async () => ({ url: 'https://www.douyin.com/video/1', persona: '造作画像' }), {}, ALL_ROUTES)
+    assert.equal(created.json.persona, '造作画像')
+  } finally {
+    rmSync(pRoot, { recursive: true, force: true })
+  }
+})

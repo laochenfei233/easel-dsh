@@ -229,8 +229,10 @@ async function runPipeline(projectRoot, job, transcribe, fetchEnv) {
  * 创建并启动一次拆解采集。返回创建时的 job 快照（stage=fetch）。
  * @param deps.transcribe - lib/asr.js 的 transcribeToSubtitle（由 index.js 注入，避免循环依赖）。
  * @param deps.fetchEnv - 仅注入下载子进程的环境变量（如视频号 staging 目录）。
+ * @param deps.persona - 本次拆解归属的画像目录名；缺省不写该字段（spec
+ *   easel-breakdown-persona-push §S2.1，存在性校验在路由层）。
  */
-export function createDeconstruct({ projectRoot, url, asrModel, transcribe, fetchEnv }) {
+export function createDeconstruct({ projectRoot, url, asrModel, persona, transcribe, fetchEnv }) {
   const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
   const dir = deconstructDir(projectRoot, id)
   if (dir === null) throw new Error(`invalid deconstruct id: ${id}`)
@@ -238,6 +240,7 @@ export function createDeconstruct({ projectRoot, url, asrModel, transcribe, fetc
     id,
     url,
     asrModel: typeof asrModel === 'string' && asrModel.trim() ? asrModel.trim() : undefined,
+    persona: typeof persona === 'string' && persona.trim() ? persona.trim() : undefined,
     stage: 'fetch',
     started: Date.now(),
   }

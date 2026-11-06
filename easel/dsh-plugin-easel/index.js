@@ -706,12 +706,12 @@ async function apiEnvSave(c) {
 
 // ---- 画像（profiles/<name>/*.md）----
 
-const validPersonaName = name => typeof name === 'string' && name.length > 0
+export const validPersonaName = name => typeof name === 'string' && name.length > 0
   && !name.startsWith('.') && !name.startsWith('_')
   && !/[/\\:]/.test(name)
   && ![...name].some(ch => ch.charCodeAt(0) < 32)
 
-function personaDir(settings, name) {
+export function personaDir(settings, name) {
   return { root: resolve(settings.projectRoot, 'profiles'), dir: resolve(settings.projectRoot, 'profiles', name) }
 }
 
