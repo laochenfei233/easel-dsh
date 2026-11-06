@@ -128,6 +128,34 @@ test('ideas CRUD with status fallback and 404s', async () => {
   assert.equal((await call('GET', 'ideas')).json.length, 0)
 })
 
+test('ideas create records persona and rejects unknown persona (spec easel-breakdown-persona-push)', async () => {
+  const withPersona = await call('POST', 'ideas', { title: '拆解选题', source: '爆款拆解', persona: '造作星期八' })
+  assert.equal(withPersona.json.persona, '造作星期八')
+  await assert.rejects(call('POST', 'ideas', { title: 'x', persona: '不存在的画像' }), error => error.status === 404)
+  await assert.rejects(call('POST', 'ideas', { title: 'x', persona: '../escape' }), error => error.status === 404)
+  const plain = await call('POST', 'ideas', { title: '无画像' })
+  assert.ok(!('persona' in plain.json), '未指定画像的选题卡不得带 persona 字段')
+  await call('DELETE', `ideas/${withPersona.json.id}`)
+  await call('DELETE', `ideas/${plain.json.id}`)
+})
+
+test('library material: conversation text lands in outputs/对话素材, repeats reuse', async () => {
+  const text = '钩子写法草稿\n细节内容'
+  const first = await call('POST', 'library/material', { text })
+  assert.equal(first.json.ok, true)
+  assert.match(first.json.path, /^对话素材\//)
+  const saved = readFileSync(join(root, 'outputs', ...first.json.path.split('/')), 'utf8')
+  assert.match(saved, /^# 钩子写法草稿$/m)
+  assert.match(saved, /^> 来源：对话$/m)
+  assert.ok(saved.includes('细节内容'))
+  const again = await call('POST', 'library/material', { text })
+  assert.equal(again.json.path, first.json.path)
+  assert.equal(again.json.reused, true, '同文本第二次推送必须复用既有文件')
+  await assert.rejects(call('POST', 'library/material', { text: '  ' }), error => error.status === 400)
+  const tree = await call('GET', 'outputs')
+  assert.ok(tree.json.some(node => node.name === '对话素材'), '对话素材目录必须出现在内容库树里')
+})
+
 test('schedule CRUD: kind/status validation, source frozen at create', async () => {
   const created = await call('POST', 'schedule', {
     title: '发小红书', date: '2026-10-20', platform: 'xiaohongshu', kind: 'bogus', source: 'chat',

@@ -40,6 +40,7 @@ import {
   pruneSnapshot, readRadarHistory, staleItemsFromHistory,
 } from './lib/trends.js'
 import { RadarArticleError, createCaptureHandler } from './lib/trends-article.js'
+import { ConversationMaterialError, createMaterialHandler } from './lib/conversation-material.js'
 import {
   DOUYIN_RULE_URLS, mergeDouyinRuleItems, parseDouyinAnnouncements,
   parseDouyinPolicyDocs, parseDouyinPolicyExplain,
@@ -1175,6 +1176,15 @@ export async function mutateIdeas(settings, mutator) {
 
 async function apiIdeasCreate(c) {
   const body = await c.body()
+  // persona（spec easel-breakdown-persona-push §S2.1）：选题卡记录归属画像，
+  // 立项弹窗默认带入快照；名字必须指向真实画像目录，误配在这里响。
+  const personaInput = typeof body?.persona === 'string' ? body.persona.trim() : ''
+  if (personaInput !== '') {
+    const { dir } = personaDir(c.settings, personaInput)
+    if (!validPersonaName(personaInput) || !(await isDirectory(dir))) {
+      throw new ApiError(404, `画像「${personaInput}」不存在`)
+    }
+  }
   const item = {
     id: randomBytes(6).toString('hex'),
     title: String(body?.title ?? '').trim() || '未命名选题',
@@ -1182,6 +1192,7 @@ async function apiIdeasCreate(c) {
     source: String(body?.source ?? ''),
     status: IDEA_STATUSES.has(body?.status) ? body.status : 'pending',
     created: Math.floor(Date.now() / 1000),
+    ...(personaInput !== '' ? { persona: personaInput } : {}),
   }
   const { json } = await mutateIdeas(c.settings, items => ({ items: [item, ...items], json: item }))
   return { json }
@@ -1780,16 +1791,19 @@ async function fetchArticlePage(url, { proxyUrl }) {
   return { status, headers, body }
 }
 
+/** 内容库 markdown 落盘：mkdir + `<path>.tmp` + rename 原子写（热点正文与对话素材共用）。 */
+async function writeLibraryText(path, content) {
+  await mkdir(dirname(path), { recursive: true })
+  const tmp = `${path}.tmp`
+  await writeFile(tmp, content, 'utf8')
+  await rename(tmp, path)
+}
+
 const captureArticle = createCaptureHandler({
   fetchPage: fetchArticlePage,
   lookupHost: dnsLookup,
   io: {
-    writeText: async (path, content) => {
-      await mkdir(dirname(path), { recursive: true })
-      const tmp = `${path}.tmp`
-      await writeFile(tmp, content, 'utf8')
-      await rename(tmp, path)
-    },
+    writeText: writeLibraryText,
     mutateIdeas,
     readIdeas: async (settings) => readStoreList(settings, IDEAS_FILE),
     proxyUrl: async (settings) => {
@@ -1804,6 +1818,31 @@ async function apiRadarArticle(c) {
     return await captureArticle(c)
   } catch (error) {
     if (error instanceof RadarArticleError) throw new ApiError(error.status, error.detail)
+    throw error
+  }
+}
+
+// ---- 对话推送素材库（spec easel-breakdown-persona-push §S2.3）----
+
+const saveMaterial = createMaterialHandler({
+  io: {
+    writeText: writeLibraryText,
+    exists: async (path) => {
+      try {
+        await stat(path)
+        return true
+      } catch {
+        return false
+      }
+    },
+  },
+})
+
+async function apiLibraryMaterial(c) {
+  try {
+    return await saveMaterial(c)
+  } catch (error) {
+    if (error instanceof ConversationMaterialError) throw new ApiError(error.status, error.detail)
     throw error
   }
 }
@@ -2247,6 +2286,7 @@ export const CORE_ROUTES = [
   ['POST', ['radar', 'config'], apiRadarConfigSet],
   ['GET', ['trends'], apiTrends],
   ['POST', ['radar', 'article'], apiRadarArticle],
+  ['POST', ['library', 'material'], apiLibraryMaterial],
   ['GET', ['outputs'], c => getOutputTree(c.settings).then(json => ({ json }))],
   ['GET', ['output', ':path...'], apiOutputContent],
   ['DELETE', ['output', ':path...'], apiOutputDelete],
