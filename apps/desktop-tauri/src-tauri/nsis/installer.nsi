@@ -27,6 +27,9 @@ ManifestDPIAwareness PerMonitorV2
 !include "FileAssociation.nsh"
 !include "Win\COM.nsh"
 !include "Win\Propkey.nsh"
+; Tauri 2.12's utils.nsh CheckIfAppIsRunning uses the RestartManager macros,
+; which NSIS 3.13 ships in this include (not present in the 2.11.4 template).
+!include "Win\RestartManager.nsh"
 !include "StrFunc.nsh"
 ${StrCase}
 ${StrLoc}
