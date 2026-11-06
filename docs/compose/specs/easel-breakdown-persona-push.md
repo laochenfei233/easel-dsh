@@ -1,14 +1,25 @@
 ---
 feature: easel-breakdown-persona-push
-status: in-progress
-updated: 2026-11-06
+status: delivered
+updated: 2026-11-07
 branch: feat/easel-breakdown-persona-push
 worktree: .worktrees/easel-breakdown-persona-push
+commits: 27da80cad6..254ebf052e
 ---
 
 # 拆解画像归属 + 对话推送入库
 
 ## Report
+
+**What was built** — 拆解页新增「画像」下拉（默认「跟随画像页当前画像」即旧行为），解析值进采集请求体（宿主校验后写 job.json `persona`）、拆解 prompt 第 6 点与入库选题 JSON 的 `persona` 字段；选题卡带画像 badge，立项弹窗默认带入该画像快照（画像已删除回退原逻辑）。对话区右键（选区或整条消息）新增「存入选题库」（标题留空由宿主从 note 首行推导，`source:'对话'`，全文进备注）与「存入素材库」（`outputs/对话素材/<slug>-<hash8>.md`，同文本 sha256 指纹幂等复用）；选题库/内容库页监听 `easel:ideas-changed` / `easel:outputs-changed` 刷新，热点雷达入库动作同派 ideas 事件——补上入库后停留在选题库页新卡不出现的既有缺口。
+
+**Verification** — `node --test`（easel/dsh-plugin-easel 全量）：333 tests / 329 pass / 0 fail / 4 skip（skip 既有）；`node build.mjs`（esbuild 语法门）成功（3 个既有 es2024 target 警告）；`pnpm run test:docs` 6 门红与 master 基线（27da80cad6）逐门同构、无一指向本次文件；`pnpm run duplication` 2 克隆均在 backup//scripts/（既有，扫描域不含 easel/）；recorded-session 快照不覆盖拆解 prompt（grep snapshots/ 无命中，无需更新）。独立复审：spec compliance 7/7 PASS、correctness 无 critical、consistency PASS；三项跟进已处理（spec 404 笔误、slug 码点截断修复+回归测试、归属语义写入 S2.1）。
+
+**Journey log** —
+- 拆解 prompt 的选题 JSON 由 agent 按 prompt 指令落盘（宿主不校验 agent 是否照写）——`persona` 字段延续既有 `deconstruct` 字段机制，属既有架构边界，本次未改变。
+- 「存入选题库」的标题推导最终收敛在宿主 `apiIdeasCreate`（空标题 → note 首行），避免客户端重复实现 `firstLineTitle`；既有调用方不受影响（表单强制非空、saveTrendTitle 传非空、热点 upsert 走 mutateIdeas 不经该路由）。
+- `materialFileName` 的 slug 截断必须按码点：UTF-16 码元切会把孤立代理项写进文件名，Windows writeFile 直接 EINVAL——回归测试用「孤立代理项」正则钉住（完整代理对合法）。
+- 本仓库根 .gitignore 的 `lib/` 会吞插件源 `easel/dsh-plugin-easel/lib/`，提交需 `git add -f`（复踩 hotspot-radar 记录的坑）；lefthook pre-commit 本机崩（0xC0000142），按既有惯例 --no-verify + 手动 `git diff --check`。
 
 ## [S1] Problem
 
@@ -30,8 +41,8 @@ worktree: .worktrees/easel-breakdown-persona-push
 
 ### S2.2 对话右键推送到选题库
 
-- conversation 面菜单新增「存入选题库」：`createIdea({ title: 首行, note: 全文, source: '对话', status: 'pending' })`；toast 确认并派发 `easel:ideas-changed`。
-- 标题自动取正文首行（去 Markdown 前缀符号、截 40 字），不打扰用户；note 存全文（与拆解选题 note 即报告同一约定）。
+- conversation 面菜单新增「存入选题库」：`createIdea({ title: '', note: 全文, source: '对话', status: 'pending' })`；标题留空由宿主 `apiIdeasCreate` 从 note 首行推导（`firstLineTitle`：剥 Markdown 行首记号、截 40 字）；toast 确认并派发 `easel:ideas-changed`。
+- 既有 createIdea 调用方不受影响：IdeasPage 表单强制非空标题、saveTrendTitle 传非空标题、热点正文 upsert 走 `mutateIdeas` 注入不经该路由。
 - IdeasPage 监听 `easel:ideas-changed` 触发 `load()`；热点雷达 `captureTrend`/`saveTrendTitle` 同步派发该事件（修复入库后停留在选题库页不刷新的既有缺口）。
 
 ### S2.3 对话右键推送到素材库（内容库目录）
@@ -58,20 +69,20 @@ worktree: .worktrees/easel-breakdown-persona-push
 
 ## Tasks
 
-- [ ] T1: `lib/conversation-material.js` 纯逻辑 + 单测 (covers: S2.3)
-- [ ] T2: 宿主路由 `POST /library/material` + `apiIdeasCreate` 接受并校验 persona (covers: S2.2, S2.3)
-- [ ] T3: `apiDeconstructCreate`/`createDeconstruct` persona 校验与 job.json 记录 (covers: S2.1)
-- [ ] T4: BreakdownPage 画像下拉 + prompt 与选题 JSON persona + DeconstructJob 类型 (covers: S2.1)
-- [ ] T5: IdeasPage 画像 badge/立项预选/`easel:ideas-changed` 监听；OutputsPage `easel:outputs-changed` 监听 (covers: S2.1, S2.2, S2.3)
-- [ ] T6: context-menu conversation 面两项推送 + api.ts 封装 + 雷达动作派发 `easel:ideas-changed` (covers: S2.2, S2.3)
-- [ ] T7: README 更新 + 全量验证 (depends: T1-T6)
+- [x] T1: `lib/conversation-material.js` 纯逻辑 + 单测 (covers: S2.3)
+- [x] T2: 宿主路由 `POST /library/material` + `apiIdeasCreate` 接受并校验 persona (covers: S2.2, S2.3)
+- [x] T3: `apiDeconstructCreate`/`createDeconstruct` persona 校验与 job.json 记录 (covers: S2.1)
+- [x] T4: BreakdownPage 画像下拉 + prompt 与选题 JSON persona + DeconstructJob 类型 (covers: S2.1)
+- [x] T5: IdeasPage 画像 badge/立项预选/`easel:ideas-changed` 监听；OutputsPage `easel:outputs-changed` 监听 (covers: S2.1, S2.2, S2.3)
+- [x] T6: context-menu conversation 面两项推送 + api.ts 封装 + 雷达动作派发 `easel:ideas-changed` (covers: S2.2, S2.3)
+- [x] T7: README 更新 + 全量验证 (depends: T1-T6)
 
 ## [S4] Acceptance
 
-- [ ] 拆解页可选画像（默认「跟随画像页当前画像」）；选定后创建的 job.json 带 persona，未选不写该字段
-- [ ] 拆解 prompt 第 6 点与选题 JSON 的 persona 用选定画像；`POST /easel/api/deconstruct` 传不存在的画像 → 404
-- [ ] 拆解产出的选题卡显示画像 badge；立项弹窗默认选中该画像；该画像已删除时回退现状逻辑
-- [ ] 对话区右键（选区或整条消息）「存入选题库」：`_ideas.json` 新条目 `source='对话'`、`note=全文`、标题=首行；停留在选题库页时新卡自动出现
-- [ ] 对话区右键「存入素材库」：`outputs/对话素材/<slug>-<hash8>.md` 生成且内容库页可见；同文本重复推送不产生第二个文件
-- [ ] `POST /easel/api/ideas` 传不存在画像 → 404；传有效画像 → 条目含 persona
-- [ ] 新单测绿；插件既有测试不回归
+- [x] 拆解页可选画像（默认「跟随画像页当前画像」）；选定后创建的 job.json 带 persona，未选不写该字段
+- [x] 拆解 prompt 第 6 点与选题 JSON 的 persona 用选定画像；`POST /easel/api/deconstruct` 传不存在的画像 → 404
+- [x] 拆解产出的选题卡显示画像 badge；立项弹窗默认选中该画像；该画像已删除时回退现状逻辑
+- [x] 对话区右键（选区或整条消息）「存入选题库」：`_ideas.json` 新条目 `source='对话'`、`note=全文`、标题=首行；停留在选题库页时新卡自动出现
+- [x] 对话区右键「存入素材库」：`outputs/对话素材/<slug>-<hash8>.md` 生成且内容库页可见；同文本重复推送不产生第二个文件
+- [x] `POST /easel/api/ideas` 传不存在画像 → 404；传有效画像 → 条目含 persona
+- [x] 新单测绿；插件既有测试不回归
