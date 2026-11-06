@@ -1,6 +1,6 @@
 ---
 feature: easel-breakdown-persona-push
-status: designed
+status: in-progress
 updated: 2026-11-06
 branch: feat/easel-breakdown-persona-push
 worktree: .worktrees/easel-breakdown-persona-push

@@ -172,6 +172,18 @@ publish/analytics 均带 `account` 参数（缺省 = 默认账号）。agent 侧
 运维取舍：浏览器 profile 是大体积二进制且 Chromium 用户目录在网络盘不可靠，因此登录态留在本地家目录、
 **不进** WebDAV/SMB/S3 备份与隔空传送载荷；注册表本身无凭据，随数据根正常备份。
 
+### 拆解画像归属与对话推送入库
+
+爆款拆解支持按次指定归属画像（spec `docs/compose/specs/easel-breakdown-persona-push.md`）：拆解页新增「画像」下拉（默认「跟随画像页当前画像」，即旧行为），选定画像随 `POST /easel/api/deconstruct` 校验（不存在 404，发生在流水线 spawn 之前）后写入 job.json，并进入拆解 prompt 的选题要求与入库选题 JSON 的 `persona` 字段；选题卡显示画像 badge，立项弹窗默认带入该画像快照（画像已删除时回退原逻辑）。`POST /easel/api/ideas` 同样接受校验过的 `persona`。
+
+对话区右键（选区或整条消息）可直接入库：「存入选题库」建 `source:'对话'` 的选题卡，标题留空时宿主从 note 首行推导（剥 Markdown 记号、截 40 字），全文进备注；「存入素材库」把文本写成 `outputs/对话素材/<slug>-<hash8>.md`（与热点正文同一模板：引用块头部、tmp+rename 原子写；同文本指纹同名，幂等复用不产生第二个文件）。
+
+| 路由 | 作用 |
+|---|---|
+| `POST /easel/api/library/material` | 对话文本 → `outputs/对话素材/<slug>-<hash8>.md`；空内容/超 10 万字符 400，写盘失败 500，`reused:true` 表示复用既有文件 |
+
+入库动作派发 `easel:ideas-changed` / `easel:outputs-changed`，选题库与内容库页监听刷新；热点雷达的抓正文与收藏标题同样派发 ideas 事件（修复入库后停留在选题库页新卡不出现的既有缺口）。
+
 ## 未验证 / 已知缺口
 
 1. **客户端面板没在浏览器里看到。** dsh 引导成功、宿主路由返回真实数据，但侧边栏入口是否
