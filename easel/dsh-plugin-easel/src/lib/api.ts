@@ -295,6 +295,8 @@ export interface Idea {
   id: string; title: string; note: string; source: string; status: string; created: number;
   /** 拆解批次号（爆款拆解入库时写入）；立项时凭它装配素材。 */
   deconstruct?: string;
+  /** 拆解归属的画像目录名（spec easel-breakdown-persona-push §S2.1）；立项时默认带入快照。 */
+  persona?: string;
   /** 立项后的项目目录（项目根相对）；「做内容」凭它注入产物落点。 */
   projectDir?: string;
   /** 原文链接（右键抓取正文时由宿主写入）。 */
@@ -312,6 +314,11 @@ export function updateIdea(id: string, item: IdeaInput): Promise<Idea> {
 }
 export function deleteIdea(id: string): Promise<{ ok: boolean }> {
   return request(`/api/ideas/${encodeURIComponent(id)}`, { method: 'DELETE' });
+}
+
+/** 对话记录推送素材库（spec easel-breakdown-persona-push §S2.3）：同文本幂等复用。 */
+export function pushConversationMaterial(text: string): Promise<{ ok: boolean; path: string; chars: number; reused: boolean }> {
+  return request('/api/library/material', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text }) });
 }
 
 export function fetchSkills(): Promise<SkillItem[]> {
@@ -677,8 +684,13 @@ export function createScheduledTask(input: ScheduledTaskInput): Promise<unknown>
 }
 
 /** 项目根与画像列表（/easel/api/status；立项建工作区与画像选择要用）。 */
-export async function fetchStatus(): Promise<{ projectRoot?: string; personas?: { name: string; description?: string }[] } | null> {
-  return request<{ projectRoot?: string; personas?: { name: string; description?: string }[] }>('/api/status').catch(() => null);
+export async function fetchStatus(): Promise<{ projectRoot?: string; personas?: { name: string; description?: string }[]; defaultPersona?: string } | null> {
+  return request<{ projectRoot?: string; personas?: { name: string; description?: string }[]; defaultPersona?: string }>('/api/status').catch(() => null);
+}
+
+/** 设默认画像（spec easel-breakdown-persona-push §S2.1 增补）：空名清除设置，回退最初创建。 */
+export function setProfileDefault(name: string): Promise<{ ok: boolean; defaultPersona: string }> {
+  return request('/api/profile/default', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
 }
 
 /**

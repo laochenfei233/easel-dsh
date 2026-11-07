@@ -51,6 +51,10 @@ function mergeWechatBlock(existing: string, block: string): string {
 
 interface ProfilePageProps {
   persona: string;
+  /** 当前画像是否是解析后的默认画像（spec easel-breakdown-persona-push §S2.1 增补）。 */
+  isDefault?: boolean;
+  /** 设为默认画像（宿主落 _profile_config.json）；不传则不显示按钮。 */
+  onSetDefault?: (name: string) => void;
   onNewProfile: () => void;
   onDeleted: (name: string) => void;
 }
@@ -64,7 +68,7 @@ const DIM_META: Record<string, { label: string; icon: string }> = {
   'memory.md': { label: '经验沉淀', icon: '🧠' },
 };
 
-export default function ProfilePage({ persona, onNewProfile, onDeleted }: ProfilePageProps) {
+export default function ProfilePage({ persona, isDefault, onSetDefault, onNewProfile, onDeleted }: ProfilePageProps) {
   const [files, setFiles] = useState<PersonaFile[]>([]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [editing, setEditing] = useState(false);
@@ -167,6 +171,13 @@ export default function ProfilePage({ persona, onNewProfile, onDeleted }: Profil
           <p className="page-subtitle">六个维度构成一个完整人设，可随时编辑保存。</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
+          {onSetDefault && (
+            <button className="btn" disabled={isDefault}
+              title={isDefault ? '当前已是默认画像' : '拆解页等入口不选画像时使用的默认画像'}
+              onClick={() => onSetDefault(persona)}>
+              {isDefault ? '★ 默认画像' : '☆ 设为默认画像'}
+            </button>
+          )}
           <button className={`btn ${editing ? 'btn-primary' : ''}`} onClick={() => setEditing((v) => !v)}>
             {editing ? '完成编辑' : '✏️ 编辑资料'}
           </button>

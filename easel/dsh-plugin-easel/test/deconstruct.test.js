@@ -485,3 +485,33 @@ test('POST deconstruct/:id/retry resumes from checkpoints and answers the job sn
     rmSync(root, { recursive: true, force: true })
   }
 })
+
+// ---- 画像归属（spec easel-breakdown-persona-push §S2.1）----
+
+test('createDeconstruct records persona in job.json; omitted persona stays absent', async () => {
+  const withRoot = mkdtempSync(join(tmpdir(), '.tmp-deconstruct-p1-'))
+  try {
+    const job = createDeconstruct({ projectRoot: withRoot, url: 'https://example.invalid/v1', persona: '造作画像' })
+    assert.equal(job.persona, '造作画像')
+    const file = join(withRoot, 'outputs', '_deconstruct', job.id, 'job.json')
+    const deadline = Date.now() + 5_000
+    let state
+    while (Date.now() < deadline) {
+      try {
+        state = JSON.parse(readFileSync(file, 'utf8'))
+        if (state?.stage === 'failed' || state?.stage === 'ready') break
+      } catch { /* 尚未写出：轮询重试 */ }
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    assert.equal(state?.persona, '造作画像', 'job.json must carry the persona for audit and idea attribution')
+  } finally {
+    rmSync(withRoot, { recursive: true, force: true })
+  }
+  const plainRoot = mkdtempSync(join(tmpdir(), '.tmp-deconstruct-p2-'))
+  try {
+    const job = createDeconstruct({ projectRoot: plainRoot, url: 'https://example.invalid/v2' })
+    assert.equal(job.persona, undefined, '未指定画像的 job 不携带画像（JSON 落盘时丢弃 undefined 键）')
+  } finally {
+    rmSync(plainRoot, { recursive: true, force: true })
+  }
+})

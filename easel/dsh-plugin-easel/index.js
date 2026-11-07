@@ -40,6 +40,7 @@ import {
   pruneSnapshot, readRadarHistory, staleItemsFromHistory,
 } from './lib/trends.js'
 import { RadarArticleError, createCaptureHandler } from './lib/trends-article.js'
+import { ConversationMaterialError, createMaterialHandler, firstLineTitle } from './lib/conversation-material.js'
 import {
   DOUYIN_RULE_URLS, mergeDouyinRuleItems, parseDouyinAnnouncements,
   parseDouyinPolicyDocs, parseDouyinPolicyExplain,
@@ -247,7 +248,7 @@ const PROTECTED_OUTPUTS = new Set(['_login', '_analytics', '_schedule.json', '_i
 // legitimate reads, and the breakdown page reads `_deconstruct/<id>/*` files.
 const PROTECTED_READ_FILES = new Set([
   '_easel_api.json', '_ideas.json', '_schedule.json', '_radar_config.json', '_publish.log',
-  '_caldav_config.json', '_caldav_cache.json', '_accounts.json',
+  '_caldav_config.json', '_caldav_cache.json', '_accounts.json', '_profile_config.json',
   '_deconstruct/cookies.json',
 ])
 const PROTECTED_READ_DIRS = new Set([
@@ -705,12 +706,12 @@ async function apiEnvSave(c) {
 
 // ---- 画像（profiles/<name>/*.md）----
 
-const validPersonaName = name => typeof name === 'string' && name.length > 0
+export const validPersonaName = name => typeof name === 'string' && name.length > 0
   && !name.startsWith('.') && !name.startsWith('_')
   && !/[/\\:]/.test(name)
   && ![...name].some(ch => ch.charCodeAt(0) < 32)
 
-function personaDir(settings, name) {
+export function personaDir(settings, name) {
   return { root: resolve(settings.projectRoot, 'profiles'), dir: resolve(settings.projectRoot, 'profiles', name) }
 }
 
@@ -734,6 +735,51 @@ async function listPersonas(settings) {
     result.push({ name: entry.name, description })
   }
   return result
+}
+
+// ---- 默认画像（spec easel-breakdown-persona-push §S2.1 增补）----
+
+const PROFILE_CONFIG_FILE = '_profile_config.json'
+
+async function readProfileConfig(settings) {
+  const raw = await readJsonFile(join(settings.projectRoot, 'outputs', PROFILE_CONFIG_FILE), null)
+  return raw !== null && typeof raw === 'object' ? raw : {}
+}
+
+/**
+ * 默认画像解析：显式设置仍存在 → 用它；否则按画像目录创建时间（birthtime）
+ * 取最早的一个——「最初创建」的画像；一个画像都没有时为空串。
+ * @param {object} settings - 宿主 settings（projectRoot）。
+ * @param {{name: string}[]} personas - listPersonas 的结果（名字序）。
+ * @returns {Promise<string>}
+ */
+export async function resolveDefaultPersona(settings, personas) {
+  const config = await readProfileConfig(settings)
+  const stored = typeof config.defaultPersona === 'string' ? config.defaultPersona : ''
+  if (stored !== '' && personas.some(p => p.name === stored)) return stored
+  let earliestName = ''
+  let earliestBirth = Infinity
+  for (const { name } of personas) {
+    try {
+      const birth = (await stat(join(settings.projectRoot, 'profiles', name))).birthtimeMs
+      if (birth < earliestBirth) {
+        earliestBirth = birth
+        earliestName = name
+      }
+    } catch { /* 目录刚被删：跳过 */ }
+  }
+  return earliestName
+}
+
+async function apiProfileDefaultSet(c) {
+  const body = await c.body()
+  const name = typeof body?.name === 'string' ? body.name.trim() : ''
+  if (name !== '') {
+    const { dir } = personaDir(c.settings, name)
+    if (!validPersonaName(name) || !(await isDirectory(dir))) throw new ApiError(404, `画像「${name}」不存在`)
+  }
+  await writeJsonFile(join(c.settings.projectRoot, 'outputs', PROFILE_CONFIG_FILE), { defaultPersona: name })
+  return { json: { ok: true, defaultPersona: name } }
 }
 
 async function apiPersonaFiles(c) {
@@ -867,7 +913,9 @@ async function apiStatus(c) {
   const [skills, personas] = await Promise.all([getSkills(c.settings), listPersonas(c.settings)])
   // dsh 自己就是对话运行时：网关恒在线；transport 标 'dsh'（前端 apiDirect 判 'api'，保持 false）。
   // projectRoot 供 client 半的 pushTask 决定会话工作目录（agent 的文件工具由此读写仓库）。
-  return { json: { gateway: true, transport: 'dsh', projectRoot: c.settings.projectRoot, skills, personas } }
+  // defaultPersona 是解析后的默认画像（显式设置→最初创建），拆解页空选项语义用。
+  const defaultPersona = await resolveDefaultPersona(c.settings, personas)
+  return { json: { gateway: true, transport: 'dsh', projectRoot: c.settings.projectRoot, skills, personas, defaultPersona } }
 }
 
 async function apiSkillDetail(c) {
@@ -1175,13 +1223,24 @@ export async function mutateIdeas(settings, mutator) {
 
 async function apiIdeasCreate(c) {
   const body = await c.body()
+  // persona（spec easel-breakdown-persona-push §S2.1）：选题卡记录归属画像，
+  // 立项弹窗默认带入快照；名字必须指向真实画像目录，误配在这里响。
+  const personaInput = typeof body?.persona === 'string' ? body.persona.trim() : ''
+  if (personaInput !== '') {
+    const { dir } = personaDir(c.settings, personaInput)
+    if (!validPersonaName(personaInput) || !(await isDirectory(dir))) {
+      throw new ApiError(404, `画像「${personaInput}」不存在`)
+    }
+  }
   const item = {
     id: randomBytes(6).toString('hex'),
-    title: String(body?.title ?? '').trim() || '未命名选题',
+    // 空标题从 note 首行推导（对话推送不带标题，spec easel-breakdown-persona-push §S2.2）。
+    title: String(body?.title ?? '').trim() || firstLineTitle(body?.note) || '未命名选题',
     note: String(body?.note ?? ''),
     source: String(body?.source ?? ''),
     status: IDEA_STATUSES.has(body?.status) ? body.status : 'pending',
     created: Math.floor(Date.now() / 1000),
+    ...(personaInput !== '' ? { persona: personaInput } : {}),
   }
   const { json } = await mutateIdeas(c.settings, items => ({ items: [item, ...items], json: item }))
   return { json }
@@ -1780,16 +1839,19 @@ async function fetchArticlePage(url, { proxyUrl }) {
   return { status, headers, body }
 }
 
+/** 内容库 markdown 落盘：mkdir + `<path>.tmp` + rename 原子写（热点正文与对话素材共用）。 */
+async function writeLibraryText(path, content) {
+  await mkdir(dirname(path), { recursive: true })
+  const tmp = `${path}.tmp`
+  await writeFile(tmp, content, 'utf8')
+  await rename(tmp, path)
+}
+
 const captureArticle = createCaptureHandler({
   fetchPage: fetchArticlePage,
   lookupHost: dnsLookup,
   io: {
-    writeText: async (path, content) => {
-      await mkdir(dirname(path), { recursive: true })
-      const tmp = `${path}.tmp`
-      await writeFile(tmp, content, 'utf8')
-      await rename(tmp, path)
-    },
+    writeText: writeLibraryText,
     mutateIdeas,
     readIdeas: async (settings) => readStoreList(settings, IDEAS_FILE),
     proxyUrl: async (settings) => {
@@ -1804,6 +1866,31 @@ async function apiRadarArticle(c) {
     return await captureArticle(c)
   } catch (error) {
     if (error instanceof RadarArticleError) throw new ApiError(error.status, error.detail)
+    throw error
+  }
+}
+
+// ---- 对话推送素材库（spec easel-breakdown-persona-push §S2.3）----
+
+const saveMaterial = createMaterialHandler({
+  io: {
+    writeText: writeLibraryText,
+    exists: async (path) => {
+      try {
+        await stat(path)
+        return true
+      } catch {
+        return false
+      }
+    },
+  },
+})
+
+async function apiLibraryMaterial(c) {
+  try {
+    return await saveMaterial(c)
+  } catch (error) {
+    if (error instanceof ConversationMaterialError) throw new ApiError(error.status, error.detail)
     throw error
   }
 }
@@ -2247,6 +2334,7 @@ export const CORE_ROUTES = [
   ['POST', ['radar', 'config'], apiRadarConfigSet],
   ['GET', ['trends'], apiTrends],
   ['POST', ['radar', 'article'], apiRadarArticle],
+  ['POST', ['library', 'material'], apiLibraryMaterial],
   ['GET', ['outputs'], c => getOutputTree(c.settings).then(json => ({ json }))],
   ['GET', ['output', ':path...'], apiOutputContent],
   ['DELETE', ['output', ':path...'], apiOutputDelete],
@@ -2266,6 +2354,7 @@ export const CORE_ROUTES = [
   ['POST', ['caldav', 'accounts', ':aid', 'sync'], apiCaldavSync],
   ['GET', ['caldav', 'events'], apiCaldavEventsGet],
   ['POST', ['profile', 'build'], apiProfileBuild],
+  ['PUT', ['profile', 'default'], apiProfileDefaultSet],
   ['POST', ['mkdir'], apiMkdir],
   ['POST', ['projectize'], apiProjectize],
 ]

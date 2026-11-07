@@ -13,7 +13,7 @@ import { createDeconstruct, DeconstructBusyError, deconstructBusy, readDeconstru
 import { parsePlatform, sourceStatus, writeCookie } from '../sourcedata.js'
 import { detectWeChat, downloaderRunning, findChannelsTool, launchChannelsTool } from '../channels.js'
 import {
-  ApiError, isFile, readEnvFile, readJsonFile, writeJsonFile,
+  ApiError, isDirectory, isFile, personaDir, readEnvFile, readJsonFile, validPersonaName, writeJsonFile,
 } from '../../index.js'
 import { SHARED_SCRIPTS, accountBrowserArgs, loadRegistry, resolveAccountStrict, runCapture, runnerEnv } from './automation.js'
 
@@ -145,6 +145,15 @@ async function apiDeconstructCreate(c) {
   if (deconstructBusy(c.settings.projectRoot)) {
     throw new ApiError(409, '已有拆解采集在运行，请等它完成或失败后再开始')
   }
+  // persona（spec easel-breakdown-persona-push §S2.1）：拆解归属画像，进 job.json
+  // 供审计与选题卡写入；名字必须指向真实画像目录，误配在这里响。
+  const persona = typeof body?.persona === 'string' ? body.persona.trim() : ''
+  if (persona !== '') {
+    const { dir } = personaDir(c.settings, persona)
+    if (!validPersonaName(persona) || !(await isDirectory(dir))) {
+      throw new ApiError(404, `画像「${persona}」不存在`)
+    }
+  }
   // 视频号（spec easel-breakdown-channels）：识别到 sph 才触碰微信检测——
   // 启动采集前守卫微信登录（用户拍板），并把下载器 staging 目录注入下载子进程。
   const fetchEnv = parsePlatform(url) === 'sph'
@@ -154,6 +163,7 @@ async function apiDeconstructCreate(c) {
     projectRoot: c.settings.projectRoot,
     url,
     asrModel: typeof body?.asrModel === 'string' ? body.asrModel : undefined,
+    persona: persona !== '' ? persona : undefined,
     transcribe: deconstructTranscribe(c),
     fetchEnv,
   })

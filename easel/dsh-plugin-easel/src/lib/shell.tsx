@@ -16,6 +16,8 @@ export interface PageProps {
   persona: string
   /** All account personas (/api/personas), for the 画像 browser. */
   personas: { name: string; description: string }[]
+  /** 宿主解析后的默认画像（显式设置→最初创建）；画像页设默认、拆解页空选项语义用。 */
+  defaultPersona: string
   /** Switch the shell persona; other ported pages follow on their next mount. */
   onPersonaChange: (name: string) => void
   gatewayStatus: string
@@ -66,11 +68,14 @@ interface StatusPayload {
   personas: { name: string; description?: string }[]
   gateway: boolean
   transport?: string
+  /** 宿主解析后的默认画像（显式设置→最初创建）；拆解页空选项语义用。 */
+  defaultPersona?: string
 }
 
 interface ShellState {
   persona: string
   personas: { name: string; description: string }[]
+  defaultPersona: string
   gatewayStatus: string
   apiDirect: boolean
 }
@@ -80,7 +85,7 @@ interface ShellState {
  * Created per plugin materialization, so an invalidation starts clean.
  */
 export function createShell() {
-  let state: ShellState = { persona: '', personas: [], gatewayStatus: 'connecting', apiDirect: false }
+  let state: ShellState = { persona: '', personas: [], defaultPersona: '', gatewayStatus: 'connecting', apiDirect: false }
   const readers = new Set<() => void>()
   const notify = () => readers.forEach((r) => r())
   const refresh = () => {
@@ -95,6 +100,7 @@ export function createShell() {
         state = {
           persona,
           personas,
+          defaultPersona: data.defaultPersona ?? '',
           gatewayStatus: data.gateway ? 'connected' : 'disconnected',
           apiDirect: data.transport === 'api',
         }
@@ -253,6 +259,7 @@ export function createShellBridge(ctx: any, t: (view: string) => string): EaselS
     return {
       persona: snap.persona,
       personas: snap.personas,
+      defaultPersona: snap.defaultPersona,
       onPersonaChange: shell.setPersona,
       gatewayStatus: snap.gatewayStatus,
       apiDirect: snap.apiDirect,

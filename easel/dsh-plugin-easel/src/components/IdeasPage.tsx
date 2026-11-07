@@ -32,6 +32,11 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
 
   const load = useCallback(() => { fetchIdeas().then(setIdeas).catch(() => {}); }, []);
   useEffect(() => { load(); }, [load]);
+  // 右键入库（热点正文抓取 / 对话推送）不经过本页：动作侧派发 easel:ideas-changed。
+  useEffect(() => {
+    window.addEventListener('easel:ideas-changed', load);
+    return () => window.removeEventListener('easel:ideas-changed', load);
+  }, [load]);
 
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2200); };
   // easel-hotspot-radar D6: 正文只存内容库一份，卡片「正文」按 bodyPath 现读现渲染。
@@ -68,7 +73,10 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
     const status = await fetchStatus();
     const list = status?.personas ?? [];
     setPersonas(list);
-    if (list.length === 1) setPersonaPick(list[0].name);
+    // 拆解选题带 persona（spec easel-breakdown-persona-push §S2.1）：默认带入快照；
+    // 画像已不存在时回退现状——唯一画像自动选，否则不选。
+    if (it.persona && list.some(p => p.name === it.persona)) setPersonaPick(it.persona);
+    else if (list.length === 1) setPersonaPick(list[0].name);
   };
   const confirmGreenlight = async () => {
     const it = greenlight;
@@ -134,6 +142,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
                   </div>
                   <div className="idea-title">{it.title}</div>
                   {it.source && <span className="badge" style={{ marginTop: 6 }}>{it.source}</span>}
+                  {it.persona && <span className="badge" style={{ marginTop: 6, marginLeft: 6 }}>画像 {it.persona}</span>}
                   {it.note && <div className="idea-note">{it.note}</div>}
                   {(it.bodyPath || it.url) && (
                     <div className="idea-links">

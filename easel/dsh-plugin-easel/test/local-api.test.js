@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmdirSync, rmSync, statSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CORE_ROUTES, createRouteRegistry, dispatchLocalApi, parseHotJson, parseRssItems, resolveSettings, safeLinkUrl } from '../index.js'
@@ -126,6 +126,37 @@ test('ideas CRUD with status fallback and 404s', async () => {
   const removed = await call('DELETE', `ideas/${created.json.id}`)
   assert.equal(removed.json.ok, true)
   assert.equal((await call('GET', 'ideas')).json.length, 0)
+})
+
+test('ideas create records persona and rejects unknown persona (spec easel-breakdown-persona-push)', async () => {
+  const withPersona = await call('POST', 'ideas', { title: '拆解选题', source: '爆款拆解', persona: '造作星期八' })
+  assert.equal(withPersona.json.persona, '造作星期八')
+  await assert.rejects(call('POST', 'ideas', { title: 'x', persona: '不存在的画像' }), error => error.status === 404)
+  await assert.rejects(call('POST', 'ideas', { title: 'x', persona: '../escape' }), error => error.status === 404)
+  const plain = await call('POST', 'ideas', { title: '无画像' })
+  assert.ok(!('persona' in plain.json), '未指定画像的选题卡不得带 persona 字段')
+  const derived = await call('POST', 'ideas', { title: '', note: '# 钩子写法\n正文', source: '对话' })
+  assert.equal(derived.json.title, '钩子写法', '空标题从 note 首行推导（对话推送不带标题）')
+  await call('DELETE', `ideas/${withPersona.json.id}`)
+  await call('DELETE', `ideas/${plain.json.id}`)
+  await call('DELETE', `ideas/${derived.json.id}`)
+})
+
+test('library material: conversation text lands in outputs/对话素材, repeats reuse', async () => {
+  const text = '钩子写法草稿\n细节内容'
+  const first = await call('POST', 'library/material', { text })
+  assert.equal(first.json.ok, true)
+  assert.match(first.json.path, /^对话素材\//)
+  const saved = readFileSync(join(root, 'outputs', ...first.json.path.split('/')), 'utf8')
+  assert.match(saved, /^# 钩子写法草稿$/m)
+  assert.match(saved, /^> 来源：对话$/m)
+  assert.ok(saved.includes('细节内容'))
+  const again = await call('POST', 'library/material', { text })
+  assert.equal(again.json.path, first.json.path)
+  assert.equal(again.json.reused, true, '同文本第二次推送必须复用既有文件')
+  await assert.rejects(call('POST', 'library/material', { text: '  ' }), error => error.status === 400)
+  const tree = await call('GET', 'outputs')
+  assert.ok(tree.json.some(node => node.name === '对话素材'), '对话素材目录必须出现在内容库树里')
 })
 
 test('schedule CRUD: kind/status validation, source frozen at create', async () => {
@@ -530,4 +561,69 @@ test('sph create refuses when the downloader is missing, before spawning anythin
       async () => ({ url: 'https://channels.weixin.qq.com/web/pages/feed?profile=1' }), {}, ALL_ROUTES),
     error => error.status === 400 && /视频号下载器/.test(error.message),
   )
+})
+
+test('deconstruct create validates persona before spawning anything (spec easel-breakdown-persona-push)', async () => {
+  const pRoot = mkdtempSync(join(tmpdir(), 'easel-persona-'))
+  const personaSettings = { ...settings, projectRoot: pRoot }
+  try {
+    mkdirSync(join(pRoot, 'profiles', '造作画像'), { recursive: true })
+    await assert.rejects(
+      dispatchLocalApi(personaSettings, 'POST', ['deconstruct'], new URLSearchParams(),
+        async () => ({ url: 'https://www.douyin.com/video/1', persona: '不存在的画像' }), {}, ALL_ROUTES),
+      error => error.status === 404 && /画像「不存在的画像」/.test(error.message),
+      'unknown persona must refuse before the pipeline spawns',
+    )
+    const created = await dispatchLocalApi(personaSettings, 'POST', ['deconstruct'], new URLSearchParams(),
+      async () => ({ url: 'https://www.douyin.com/video/1', persona: '造作画像' }), {}, ALL_ROUTES)
+    assert.equal(created.json.persona, '造作画像')
+  } finally {
+    rmSync(pRoot, { recursive: true, force: true })
+  }
+})
+
+test('profile default: explicit set wins, fallback is the first-created persona (spec §S2.1 增补)', async () => {
+  const pRoot = mkdtempSync(join(tmpdir(), 'easel-pdefault-'))
+  const ps = { ...settings, projectRoot: pRoot }
+  const callP = (method, path, body) =>
+    dispatchLocalApi(ps, method, path.split('/').filter(Boolean), new URLSearchParams(),
+      async () => body ?? {}, {}, ALL_ROUTES)
+  try {
+    // 创建顺序可控：甲先乙后；名字序却是乙在前——回退必须按 birthtime 取甲。
+    // 时钟粒度可能让两次 mkdir 撞同一 birthtime（曾实测 flake）：轮询重建乙，
+    // 直到 birthtime 严格晚于甲，夹具自身先排除平局。
+    mkdirSync(join(pRoot, 'profiles', '画像甲'), { recursive: true })
+    const earlierBirth = statSync(join(pRoot, 'profiles', '画像甲')).birthtimeMs
+    let laterBirth = 0
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const dir = join(pRoot, 'profiles', '画像乙')
+      rmSync(dir, { recursive: true, force: true })
+      mkdirSync(dir, { recursive: true })
+      laterBirth = statSync(dir).birthtimeMs
+      if (laterBirth > earlierBirth) break
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    assert.ok(laterBirth > earlierBirth, 'fixture must produce two personas with distinct birthtimes')
+
+    const before = await callP('GET', 'status')
+    assert.equal(before.json.defaultPersona, '画像甲', '未设置时回退最初创建（birthtime 最早），不是名字序第一个')
+
+    const set = await callP('PUT', 'profile/default', { name: '画像乙' })
+    assert.equal(set.json.ok, true)
+    assert.equal((await callP('GET', 'status')).json.defaultPersona, '画像乙', '显式设置立即生效')
+
+    // 清除语义必须在「显式设置仍存在」时验证：此时清除要从乙落回甲，
+    // 若放在删除乙之后，stale 设置与已清除解析结果相同，断言不具区分力。
+    await callP('PUT', 'profile/default', { name: '' })
+    assert.equal((await callP('GET', 'status')).json.defaultPersona, '画像甲', '清除显式设置后回到最初创建回退')
+
+    const reset = await callP('PUT', 'profile/default', { name: '画像乙' })
+    assert.equal(reset.json.ok, true)
+    rmSync(join(pRoot, 'profiles', '画像乙'), { recursive: true, force: true })
+    assert.equal((await callP('GET', 'status')).json.defaultPersona, '画像甲', '设置的画像被删后回退最初创建')
+
+    await assert.rejects(callP('PUT', 'profile/default', { name: '不存在' }), error => error.status === 404)
+  } finally {
+    rmSync(pRoot, { recursive: true, force: true })
+  }
 })
