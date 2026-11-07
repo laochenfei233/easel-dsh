@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmdirSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmdirSync, rmSync, statSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CORE_ROUTES, createRouteRegistry, dispatchLocalApi, parseHotJson, parseRssItems, resolveSettings, safeLinkUrl } from '../index.js'
@@ -590,9 +590,20 @@ test('profile default: explicit set wins, fallback is the first-created persona 
       async () => body ?? {}, {}, ALL_ROUTES)
   try {
     // 创建顺序可控：甲先乙后；名字序却是乙在前——回退必须按 birthtime 取甲。
+    // 时钟粒度可能让两次 mkdir 撞同一 birthtime（曾实测 flake）：轮询重建乙，
+    // 直到 birthtime 严格晚于甲，夹具自身先排除平局。
     mkdirSync(join(pRoot, 'profiles', '画像甲'), { recursive: true })
-    await new Promise(resolve => setTimeout(resolve, 60))
-    mkdirSync(join(pRoot, 'profiles', '画像乙'), { recursive: true })
+    const earlierBirth = statSync(join(pRoot, 'profiles', '画像甲')).birthtimeMs
+    let laterBirth = 0
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      const dir = join(pRoot, 'profiles', '画像乙')
+      rmSync(dir, { recursive: true, force: true })
+      mkdirSync(dir, { recursive: true })
+      laterBirth = statSync(dir).birthtimeMs
+      if (laterBirth > earlierBirth) break
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    assert.ok(laterBirth > earlierBirth, 'fixture must produce two personas with distinct birthtimes')
 
     const before = await callP('GET', 'status')
     assert.equal(before.json.defaultPersona, '画像甲', '未设置时回退最初创建（birthtime 最早），不是名字序第一个')
@@ -601,12 +612,17 @@ test('profile default: explicit set wins, fallback is the first-created persona 
     assert.equal(set.json.ok, true)
     assert.equal((await callP('GET', 'status')).json.defaultPersona, '画像乙', '显式设置立即生效')
 
+    // 清除语义必须在「显式设置仍存在」时验证：此时清除要从乙落回甲，
+    // 若放在删除乙之后，stale 设置与已清除解析结果相同，断言不具区分力。
+    await callP('PUT', 'profile/default', { name: '' })
+    assert.equal((await callP('GET', 'status')).json.defaultPersona, '画像甲', '清除显式设置后回到最初创建回退')
+
+    const reset = await callP('PUT', 'profile/default', { name: '画像乙' })
+    assert.equal(reset.json.ok, true)
     rmSync(join(pRoot, 'profiles', '画像乙'), { recursive: true, force: true })
     assert.equal((await callP('GET', 'status')).json.defaultPersona, '画像甲', '设置的画像被删后回退最初创建')
 
     await assert.rejects(callP('PUT', 'profile/default', { name: '不存在' }), error => error.status === 404)
-    await callP('PUT', 'profile/default', { name: '' })
-    assert.equal((await callP('GET', 'status')).json.defaultPersona, '画像甲', '清除设置后回到最初创建回退')
   } finally {
     rmSync(pRoot, { recursive: true, force: true })
   }

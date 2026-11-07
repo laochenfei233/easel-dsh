@@ -83,7 +83,7 @@ commits: 27da80cad6..254ebf052e
 
 ## [S4] Acceptance
 
-- [x] 拆解页可选画像（默认「跟随画像页当前画像」）；选定后创建的 job.json 带 persona，未选不写该字段
+- [x] 拆解页可选画像（空选项 = 默认画像，见 S2.1 增补）；选定后创建的 job.json 带 persona，未选不写该字段
 - [x] 拆解 prompt 第 6 点与选题 JSON 的 persona 用选定画像；`POST /easel/api/deconstruct` 传不存在的画像 → 404
 - [x] 拆解产出的选题卡显示画像 badge；立项弹窗默认选中该画像；该画像已删除时回退现状逻辑
 - [x] 对话区右键（选区或整条消息）「存入选题库」：`_ideas.json` 新条目 `source='对话'`、`note=全文`、标题=首行；停留在选题库页时新卡自动出现
