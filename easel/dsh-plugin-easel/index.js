@@ -248,7 +248,7 @@ const PROTECTED_OUTPUTS = new Set(['_login', '_analytics', '_schedule.json', '_i
 // legitimate reads, and the breakdown page reads `_deconstruct/<id>/*` files.
 const PROTECTED_READ_FILES = new Set([
   '_easel_api.json', '_ideas.json', '_schedule.json', '_radar_config.json', '_publish.log',
-  '_caldav_config.json', '_caldav_cache.json', '_accounts.json',
+  '_caldav_config.json', '_caldav_cache.json', '_accounts.json', '_profile_config.json',
   '_deconstruct/cookies.json',
 ])
 const PROTECTED_READ_DIRS = new Set([
@@ -737,6 +737,51 @@ async function listPersonas(settings) {
   return result
 }
 
+// ---- 默认画像（spec easel-breakdown-persona-push §S2.1 增补）----
+
+const PROFILE_CONFIG_FILE = '_profile_config.json'
+
+async function readProfileConfig(settings) {
+  const raw = await readJsonFile(join(settings.projectRoot, 'outputs', PROFILE_CONFIG_FILE), null)
+  return raw !== null && typeof raw === 'object' ? raw : {}
+}
+
+/**
+ * 默认画像解析：显式设置仍存在 → 用它；否则按画像目录创建时间（birthtime）
+ * 取最早的一个——「最初创建」的画像；一个画像都没有时为空串。
+ * @param {object} settings - 宿主 settings（projectRoot）。
+ * @param {{name: string}[]} personas - listPersonas 的结果（名字序）。
+ * @returns {Promise<string>}
+ */
+export async function resolveDefaultPersona(settings, personas) {
+  const config = await readProfileConfig(settings)
+  const stored = typeof config.defaultPersona === 'string' ? config.defaultPersona : ''
+  if (stored !== '' && personas.some(p => p.name === stored)) return stored
+  let earliestName = ''
+  let earliestBirth = Infinity
+  for (const { name } of personas) {
+    try {
+      const birth = (await stat(join(settings.projectRoot, 'profiles', name))).birthtimeMs
+      if (birth < earliestBirth) {
+        earliestBirth = birth
+        earliestName = name
+      }
+    } catch { /* 目录刚被删：跳过 */ }
+  }
+  return earliestName
+}
+
+async function apiProfileDefaultSet(c) {
+  const body = await c.body()
+  const name = typeof body?.name === 'string' ? body.name.trim() : ''
+  if (name !== '') {
+    const { dir } = personaDir(c.settings, name)
+    if (!validPersonaName(name) || !(await isDirectory(dir))) throw new ApiError(404, `画像「${name}」不存在`)
+  }
+  await writeJsonFile(join(c.settings.projectRoot, 'outputs', PROFILE_CONFIG_FILE), { defaultPersona: name })
+  return { json: { ok: true, defaultPersona: name } }
+}
+
 async function apiPersonaFiles(c) {
   // profile_exists（valid && isdir）为假一律 404——与 web/app.py 一致。
   const { dir } = personaDir(c.settings, c.params.name)
@@ -868,7 +913,9 @@ async function apiStatus(c) {
   const [skills, personas] = await Promise.all([getSkills(c.settings), listPersonas(c.settings)])
   // dsh 自己就是对话运行时：网关恒在线；transport 标 'dsh'（前端 apiDirect 判 'api'，保持 false）。
   // projectRoot 供 client 半的 pushTask 决定会话工作目录（agent 的文件工具由此读写仓库）。
-  return { json: { gateway: true, transport: 'dsh', projectRoot: c.settings.projectRoot, skills, personas } }
+  // defaultPersona 是解析后的默认画像（显式设置→最初创建），拆解页空选项语义用。
+  const defaultPersona = await resolveDefaultPersona(c.settings, personas)
+  return { json: { gateway: true, transport: 'dsh', projectRoot: c.settings.projectRoot, skills, personas, defaultPersona } }
 }
 
 async function apiSkillDetail(c) {
@@ -2307,6 +2354,7 @@ export const CORE_ROUTES = [
   ['POST', ['caldav', 'accounts', ':aid', 'sync'], apiCaldavSync],
   ['GET', ['caldav', 'events'], apiCaldavEventsGet],
   ['POST', ['profile', 'build'], apiProfileBuild],
+  ['PUT', ['profile', 'default'], apiProfileDefaultSet],
   ['POST', ['mkdir'], apiMkdir],
   ['POST', ['projectize'], apiProjectize],
 ]

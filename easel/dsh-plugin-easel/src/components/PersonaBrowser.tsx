@@ -8,9 +8,10 @@
 import { useEffect, useState } from 'react'
 import ProfilePage from './ProfilePage'
 import OnboardingWizard from './OnboardingWizard'
+import { setProfileDefault } from '../lib/api'
 import type { PageProps } from '../nav'
 
-export default function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }: PageProps) {
+export default function PersonaBrowser({ persona, personas, defaultPersona, onPersonaChange, onDeleted, onRefresh }: PageProps) {
   const [wizardOpen, setWizardOpen] = useState(false)
 
   // Agent sessions create/rename persona directories behind this page's back;
@@ -20,6 +21,14 @@ export default function PersonaBrowser({ persona, personas, onPersonaChange, onD
   const handleDeleted = (name: string) => {
     onDeleted()
     if (name === persona) onPersonaChange('')
+  }
+
+  // 设默认（spec easel-breakdown-persona-push §S2.1 增补）：宿主落 _profile_config.json，
+  // onRefresh 重读 /status 让徽标与各页面消费的 defaultPersona 同步。
+  const handleSetDefault = (name: string) => {
+    setProfileDefault(name)
+      .then(() => onRefresh?.())
+      .catch(() => {})
   }
 
   return (
@@ -47,7 +56,7 @@ export default function PersonaBrowser({ persona, personas, onPersonaChange, onD
               onClick={() => onPersonaChange(p.name)}
               title={p.description}
             >
-              <span className="persona-row-name">{p.name}</span>
+              <span className="persona-row-name">{p.name}{p.name === defaultPersona && <span className="badge" style={{ marginLeft: 6 }}>默认</span>}</span>
               {p.description && <span className="persona-row-desc">{p.description}</span>}
             </button>
           ))}
@@ -61,6 +70,8 @@ export default function PersonaBrowser({ persona, personas, onPersonaChange, onD
       <div className="persona-detail">
         <ProfilePage
           persona={persona}
+          isDefault={persona !== '' && persona === defaultPersona}
+          onSetDefault={handleSetDefault}
           onNewProfile={() => setWizardOpen(true)}
           onDeleted={handleDeleted}
         />

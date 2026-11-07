@@ -1045,7 +1045,7 @@ function topicPrompt(title, projectDir, inProject = false, bodyPath) {
   return `${base}${body}${project}`;
 }
 function createShell() {
-  let state = { persona: "", personas: [], gatewayStatus: "connecting", apiDirect: false };
+  let state = { persona: "", personas: [], defaultPersona: "", gatewayStatus: "connecting", apiDirect: false };
   const readers = /* @__PURE__ */ new Set();
   const notify = () => readers.forEach((r) => r());
   const refresh = () => {
@@ -1055,6 +1055,7 @@ function createShell() {
       state = {
         persona,
         personas,
+        defaultPersona: data.defaultPersona ?? "",
         gatewayStatus: data.gateway ? "connected" : "disconnected",
         apiDirect: data.transport === "api"
       };
@@ -1152,6 +1153,7 @@ function createShellBridge(ctx, t) {
     return {
       persona: snap.persona,
       personas: snap.personas,
+      defaultPersona: snap.defaultPersona,
       onPersonaChange: shell.setPersona,
       gatewayStatus: snap.gatewayStatus,
       apiDirect: snap.apiDirect,
@@ -1579,6 +1581,9 @@ function createScheduledTask(input) {
 }
 async function fetchStatus() {
   return request("/api/status").catch(() => null);
+}
+function setProfileDefault(name) {
+  return request("/api/profile/default", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) });
 }
 function projectizeTopic(body) {
   return request("/api/projectize", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -10882,7 +10887,7 @@ var DIM_META = {
   "preferences.md": { label: "\u504F\u597D\u4E0E\u7EA2\u7EBF", icon: "\u2696\uFE0F" },
   "memory.md": { label: "\u7ECF\u9A8C\u6C89\u6DC0", icon: "\u{1F9E0}" }
 };
-function ProfilePage({ persona, onNewProfile, onDeleted }) {
+function ProfilePage({ persona, isDefault, onSetDefault, onNewProfile, onDeleted }) {
   const [files, setFiles] = (0, import_react12.useState)([]);
   const [drafts, setDrafts] = (0, import_react12.useState)({});
   const [editing, setEditing] = (0, import_react12.useState)(false);
@@ -10982,6 +10987,16 @@ function ProfilePage({ persona, onNewProfile, onDeleted }) {
         /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("p", { className: "page-subtitle", children: "\u516D\u4E2A\u7EF4\u5EA6\u6784\u6210\u4E00\u4E2A\u5B8C\u6574\u4EBA\u8BBE\uFF0C\u53EF\u968F\u65F6\u7F16\u8F91\u4FDD\u5B58\u3002" })
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime21.jsxs)("div", { style: { display: "flex", gap: 8 }, children: [
+        onSetDefault && /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
+          "button",
+          {
+            className: "btn",
+            disabled: isDefault,
+            title: isDefault ? "\u5F53\u524D\u5DF2\u662F\u9ED8\u8BA4\u753B\u50CF" : "\u62C6\u89E3\u9875\u7B49\u5165\u53E3\u4E0D\u9009\u753B\u50CF\u65F6\u4F7F\u7528\u7684\u9ED8\u8BA4\u753B\u50CF",
+            onClick: () => onSetDefault(persona),
+            children: isDefault ? "\u2605 \u9ED8\u8BA4\u753B\u50CF" : "\u2606 \u8BBE\u4E3A\u9ED8\u8BA4\u753B\u50CF"
+          }
+        ),
         /* @__PURE__ */ (0, import_jsx_runtime21.jsx)("button", { className: `btn ${editing ? "btn-primary" : ""}`, onClick: () => setEditing((v2) => !v2), children: editing ? "\u5B8C\u6210\u7F16\u8F91" : "\u270F\uFE0F \u7F16\u8F91\u8D44\u6599" }),
         /* @__PURE__ */ (0, import_jsx_runtime21.jsx)(
           "button",
@@ -11289,7 +11304,7 @@ ${formToInstruction(name, form)}`;
 
 // src/components/PersonaBrowser.tsx
 var import_jsx_runtime23 = require("react/jsx-runtime");
-function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefresh }) {
+function PersonaBrowser({ persona, personas, defaultPersona, onPersonaChange, onDeleted, onRefresh }) {
   const [wizardOpen, setWizardOpen] = (0, import_react14.useState)(false);
   (0, import_react14.useEffect)(() => {
     onRefresh?.();
@@ -11297,6 +11312,10 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
   const handleDeleted = (name) => {
     onDeleted();
     if (name === persona) onPersonaChange("");
+  };
+  const handleSetDefault = (name) => {
+    setProfileDefault(name).then(() => onRefresh?.()).catch(() => {
+    });
   };
   return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "persona-browser", children: [
     /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("aside", { className: "persona-list", children: [
@@ -11326,7 +11345,10 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
             onClick: () => onPersonaChange(p.name),
             title: p.description,
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "persona-row-name", children: p.name }),
+              /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("span", { className: "persona-row-name", children: [
+                p.name,
+                p.name === defaultPersona && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "badge", style: { marginLeft: 6 }, children: "\u9ED8\u8BA4" })
+              ] }),
               p.description && /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("span", { className: "persona-row-desc", children: p.description })
             ]
           },
@@ -11339,6 +11361,8 @@ function PersonaBrowser({ persona, personas, onPersonaChange, onDeleted, onRefre
       ProfilePage,
       {
         persona,
+        isDefault: persona !== "" && persona === defaultPersona,
+        onSetDefault: handleSetDefault,
         onNewProfile: () => setWizardOpen(true),
         onDeleted: handleDeleted
       }
@@ -11428,7 +11452,7 @@ function flattenCatalog(payload) {
     (group) => group.models.map((model) => ({ provider: group.id, providerName: group.name, model }))
   );
 }
-function BreakdownPage({ persona, onNavigate, remote }) {
+function BreakdownPage({ onNavigate, remote }) {
   const [input, setInput] = (0, import_react15.useState)("");
   const [catalog, setCatalog] = (0, import_react15.useState)(null);
   const [catalogError, setCatalogError] = (0, import_react15.useState)("");
@@ -11443,6 +11467,7 @@ function BreakdownPage({ persona, onNavigate, remote }) {
   const [analyzeState, setAnalyzeState] = (0, import_react15.useState)("idle");
   const [report, setReport] = (0, import_react15.useState)("");
   const [personas, setPersonas] = (0, import_react15.useState)([]);
+  const [defaultPersona, setDefaultPersona] = (0, import_react15.useState)("");
   const [personaPick, setPersonaPick] = (0, import_react15.useState)("");
   const abortRef = (0, import_react15.useRef)(null);
   (0, import_react15.useEffect)(() => () => {
@@ -11451,14 +11476,17 @@ function BreakdownPage({ persona, onNavigate, remote }) {
   (0, import_react15.useEffect)(() => {
     let alive = true;
     fetchStatus().then((status) => {
-      if (alive) setPersonas(status?.personas ?? []);
+      if (alive) {
+        setPersonas(status?.personas ?? []);
+        setDefaultPersona(status?.defaultPersona ?? "");
+      }
     }).catch(() => {
     });
     return () => {
       alive = false;
     };
   }, []);
-  const resolvedPersona = personaPick || persona;
+  const resolvedPersona = personaPick || defaultPersona;
   (0, import_react15.useEffect)(() => {
     let alive = true;
     void (async () => {
@@ -11672,8 +11700,8 @@ ${ideaEntry}\uFF0C
               onChange: (e) => setPersonaPick(e.target.value),
               children: [
                 /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("option", { value: "", children: [
-                  "\u8DDF\u968F\u753B\u50CF\u9875",
-                  persona ? `\uFF08${persona}\uFF09` : ""
+                  "\u9ED8\u8BA4\u753B\u50CF",
+                  defaultPersona ? `\uFF08${defaultPersona}\uFF09` : ""
                 ] }),
                 personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("option", { value: p.name, children: [
                   p.name,

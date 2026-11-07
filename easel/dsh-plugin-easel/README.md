@@ -174,7 +174,9 @@ publish/analytics 均带 `account` 参数（缺省 = 默认账号）。agent 侧
 
 ### 拆解画像归属与对话推送入库
 
-爆款拆解支持按次指定归属画像（spec `docs/compose/specs/easel-breakdown-persona-push.md`）：拆解页新增「画像」下拉（默认「跟随画像页当前画像」，即旧行为），选定画像随 `POST /easel/api/deconstruct` 校验（不存在 404，发生在流水线 spawn 之前）后写入 job.json，并进入拆解 prompt 的选题要求与入库选题 JSON 的 `persona` 字段；选题卡显示画像 badge，立项弹窗默认带入该画像快照（画像已删除时回退原逻辑）。`POST /easel/api/ideas` 同样接受校验过的 `persona`。
+爆款拆解支持按次指定归属画像（spec `docs/compose/specs/easel-breakdown-persona-push.md`）：拆解页新增「画像」下拉（默认「默认画像」），选定画像随 `POST /easel/api/deconstruct` 校验（不存在 404，发生在流水线 spawn 之前）后写入 job.json，并进入拆解 prompt 的选题要求与入库选题 JSON 的 `persona` 字段；选题卡显示画像 badge，立项弹窗默认带入该画像快照（画像已删除时回退原逻辑）。`POST /easel/api/ideas` 同样接受校验过的 `persona`。
+
+默认画像（增补）：`GET /easel/api/status` 回解析后的 `defaultPersona`——画像页显式设置的优先（`PUT /easel/api/profile/default`，存 `outputs/_profile_config.json`，读路由保护名单内），未设置时按画像目录创建时间取最早的一个（「最初创建」的画像，不是名字序第一个），一个画像都没有时为空串。画像页列表给默认画像带「默认」徽标，详情头部可「设为默认画像」；设置的画像被删除后 /status 自动回退到最初创建。
 
 对话区右键（选区或整条消息）可直接入库：「存入选题库」建 `source:'对话'` 的选题卡，标题留空时宿主从 note 首行推导（剥 Markdown 记号、截 40 字），全文进备注；「存入素材库」把文本写成 `outputs/对话素材/<slug>-<hash8>.md`（与热点正文同一模板：引用块头部、tmp+rename 原子写；同文本指纹同名，幂等复用不产生第二个文件）。
 

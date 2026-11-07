@@ -581,3 +581,33 @@ test('deconstruct create validates persona before spawning anything (spec easel-
     rmSync(pRoot, { recursive: true, force: true })
   }
 })
+
+test('profile default: explicit set wins, fallback is the first-created persona (spec §S2.1 增补)', async () => {
+  const pRoot = mkdtempSync(join(tmpdir(), 'easel-pdefault-'))
+  const ps = { ...settings, projectRoot: pRoot }
+  const callP = (method, path, body) =>
+    dispatchLocalApi(ps, method, path.split('/').filter(Boolean), new URLSearchParams(),
+      async () => body ?? {}, {}, ALL_ROUTES)
+  try {
+    // 创建顺序可控：甲先乙后；名字序却是乙在前——回退必须按 birthtime 取甲。
+    mkdirSync(join(pRoot, 'profiles', '画像甲'), { recursive: true })
+    await new Promise(resolve => setTimeout(resolve, 60))
+    mkdirSync(join(pRoot, 'profiles', '画像乙'), { recursive: true })
+
+    const before = await callP('GET', 'status')
+    assert.equal(before.json.defaultPersona, '画像甲', '未设置时回退最初创建（birthtime 最早），不是名字序第一个')
+
+    const set = await callP('PUT', 'profile/default', { name: '画像乙' })
+    assert.equal(set.json.ok, true)
+    assert.equal((await callP('GET', 'status')).json.defaultPersona, '画像乙', '显式设置立即生效')
+
+    rmSync(join(pRoot, 'profiles', '画像乙'), { recursive: true, force: true })
+    assert.equal((await callP('GET', 'status')).json.defaultPersona, '画像甲', '设置的画像被删后回退最初创建')
+
+    await assert.rejects(callP('PUT', 'profile/default', { name: '不存在' }), error => error.status === 404)
+    await callP('PUT', 'profile/default', { name: '' })
+    assert.equal((await callP('GET', 'status')).json.defaultPersona, '画像甲', '清除设置后回到最初创建回退')
+  } finally {
+    rmSync(pRoot, { recursive: true, force: true })
+  }
+})

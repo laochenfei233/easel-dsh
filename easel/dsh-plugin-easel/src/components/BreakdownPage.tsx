@@ -6,7 +6,6 @@ import { renderMarkdown } from '../lib/sanitize';
 import { IconFire, IconIdea, IconSkills } from './icons';
 
 interface BreakdownPageProps {
-  persona: string;
   onNavigate?: (page: string) => void;
   /** Host remote plane: `remote.session.modelCatalog` feeds the model dropdowns. */
   remote?: { session?: { modelCatalog?: () => Promise<{ ok: boolean; value?: CatalogPayload; error?: { message?: string } }> } };
@@ -101,7 +100,7 @@ function flattenCatalog(payload: CatalogPayload | null): Array<{ provider: strin
  * 登录门控（未配置不启动，三条出路）→ 宿主直驱采集 → agent 分析 → 报告 → 入库。
  * ASR/视觉模型都从 dsh 模型管理目录（modelCatalog）下拉选择，不手填。
  */
-export default function BreakdownPage({ persona, onNavigate, remote }: BreakdownPageProps) {
+export default function BreakdownPage({ onNavigate, remote }: BreakdownPageProps) {
   const [input, setInput] = useState('');
   const [catalog, setCatalog] = useState<CatalogPayload | null>(null);
   const [catalogError, setCatalogError] = useState('');
@@ -115,8 +114,10 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
   const [retryNote, setRetryNote] = useState('');
   const [analyzeState, setAnalyzeState] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [report, setReport] = useState('');
-  // 画像归属（spec easel-breakdown-persona-push §S2.1）：空值=跟随画像页当前画像。
+  // 画像归属（spec easel-breakdown-persona-push §S2.1）：空值=默认画像（画像页
+  // 显式设置→最初创建的画像，宿主 /status 解析）。
   const [personas, setPersonas] = useState<{ name: string; description?: string }[]>([]);
+  const [defaultPersona, setDefaultPersona] = useState('');
   const [personaPick, setPersonaPick] = useState('');
   const abortRef = useRef<(() => void) | null>(null);
 
@@ -126,13 +127,16 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
   useEffect(() => {
     let alive = true;
     fetchStatus().then(status => {
-      if (alive) setPersonas(status?.personas ?? []);
+      if (alive) {
+        setPersonas(status?.personas ?? []);
+        setDefaultPersona(status?.defaultPersona ?? '');
+      }
     }).catch(() => {});
     return () => { alive = false; };
   }, []);
 
-  /** 本次拆解归属的画像：下拉未指定时跟随画像页当前画像（与旧行为一致）。 */
-  const resolvedPersona = personaPick || persona;
+  /** 本次拆解归属的画像：下拉未指定时用默认画像。 */
+  const resolvedPersona = personaPick || defaultPersona;
 
   // 模型管理目录：与「设置 → 模型」同一份数据（remote.session.modelCatalog）。
   useEffect(() => {
@@ -379,7 +383,7 @@ export default function BreakdownPage({ persona, onNavigate, remote }: Breakdown
               value={personaPick} disabled={capturing}
               onChange={(e) => setPersonaPick(e.target.value)}
             >
-              <option value="">跟随画像页{persona ? `（${persona}）` : ''}</option>
+              <option value="">默认画像{defaultPersona ? `（${defaultPersona}）` : ''}</option>
               {personas.map(p => (
                 <option key={p.name} value={p.name}>{p.name}{p.description ? ` — ${p.description}` : ''}</option>
               ))}

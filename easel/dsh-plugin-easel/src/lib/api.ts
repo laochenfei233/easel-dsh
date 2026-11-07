@@ -684,8 +684,13 @@ export function createScheduledTask(input: ScheduledTaskInput): Promise<unknown>
 }
 
 /** 项目根与画像列表（/easel/api/status；立项建工作区与画像选择要用）。 */
-export async function fetchStatus(): Promise<{ projectRoot?: string; personas?: { name: string; description?: string }[] } | null> {
-  return request<{ projectRoot?: string; personas?: { name: string; description?: string }[] }>('/api/status').catch(() => null);
+export async function fetchStatus(): Promise<{ projectRoot?: string; personas?: { name: string; description?: string }[]; defaultPersona?: string } | null> {
+  return request<{ projectRoot?: string; personas?: { name: string; description?: string }[]; defaultPersona?: string }>('/api/status').catch(() => null);
+}
+
+/** 设默认画像（spec easel-breakdown-persona-push §S2.1 增补）：空名清除设置，回退最初创建。 */
+export function setProfileDefault(name: string): Promise<{ ok: boolean; defaultPersona: string }> {
+  return request('/api/profile/default', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) });
 }
 
 /**

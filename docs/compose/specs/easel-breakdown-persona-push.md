@@ -11,9 +11,9 @@ commits: 27da80cad6..254ebf052e
 
 ## Report
 
-**What was built** — 拆解页新增「画像」下拉（默认「跟随画像页当前画像」即旧行为），解析值进采集请求体（宿主校验后写 job.json `persona`）、拆解 prompt 第 6 点与入库选题 JSON 的 `persona` 字段；选题卡带画像 badge，立项弹窗默认带入该画像快照（画像已删除回退原逻辑）。对话区右键（选区或整条消息）新增「存入选题库」（标题留空由宿主从 note 首行推导，`source:'对话'`，全文进备注）与「存入素材库」（`outputs/对话素材/<slug>-<hash8>.md`，同文本 sha256 指纹幂等复用）；选题库/内容库页监听 `easel:ideas-changed` / `easel:outputs-changed` 刷新，热点雷达入库动作同派 ideas 事件——补上入库后停留在选题库页新卡不出现的既有缺口。
+**What was built** — 拆解页新增「画像」下拉（空选项 = **默认画像**：画像页显式设置优先，未设置回退最初创建的画像；见 S2.1 增补），解析值进采集请求体（宿主校验后写 job.json `persona`）、拆解 prompt 第 6 点与入库选题 JSON 的 `persona` 字段；选题卡带画像 badge，立项弹窗默认带入该画像快照（画像已删除回退原逻辑）。对话区右键（选区或整条消息）新增「存入选题库」（标题留空由宿主从 note 首行推导，`source:'对话'`，全文进备注）与「存入素材库」（`outputs/对话素材/<slug>-<hash8>.md`，同文本 sha256 指纹幂等复用）；选题库/内容库页监听 `easel:ideas-changed` / `easel:outputs-changed` 刷新，热点雷达入库动作同派 ideas 事件——补上入库后停留在选题库页新卡不出现的既有缺口。
 
-**Verification** — `node --test`（easel/dsh-plugin-easel 全量）：333 tests / 329 pass / 0 fail / 4 skip（skip 既有）；`node build.mjs`（esbuild 语法门）成功（3 个既有 es2024 target 警告）；`pnpm run test:docs` 6 门红与 master 基线（27da80cad6）逐门同构、无一指向本次文件；`pnpm run duplication` 2 克隆均在 backup//scripts/（既有，扫描域不含 easel/）；recorded-session 快照不覆盖拆解 prompt（grep snapshots/ 无命中，无需更新）。独立复审：spec compliance 7/7 PASS、correctness 无 critical、consistency PASS；三项跟进已处理（spec 404 笔误、slug 码点截断修复+回归测试、归属语义写入 S2.1）。
+**Verification** — `node --test`（easel/dsh-plugin-easel 全量）：334 tests / 330 pass / 0 fail / 4 skip（skip 既有；含增补后新增的默认画像用例）；`node build.mjs`（esbuild 语法门）成功（3 个既有 es2024 target 警告）；`pnpm run test:docs` 6 门红与 master 基线（27da80cad6）逐门同构、无一指向本次文件；`pnpm run duplication` 2 克隆均在 backup//scripts/（既有，扫描域不含 easel/）；recorded-session 快照不覆盖拆解 prompt（grep snapshots/ 无命中，无需更新）。独立复审：spec compliance 7/7 PASS、correctness 无 critical、consistency PASS；三项跟进已处理（spec 404 笔误、slug 码点截断修复+回归测试、归属语义写入 S2.1）。2026-11-07 增补（默认画像语义）后 local-api 37 pass 含新用例、全量复跑 0 fail。
 
 **Journey log** —
 - 拆解 prompt 的选题 JSON 由 agent 按 prompt 指令落盘（宿主不校验 agent 是否照写）——`persona` 字段延续既有 `deconstruct` 字段机制，属既有架构边界，本次未改变。
@@ -32,7 +32,8 @@ commits: 27da80cad6..254ebf052e
 
 ### S2.1 拆解页画像选择与全链路归属
 
-- BreakdownPage 控件行新增「画像」下拉：选项 = `GET /easel/api/status` 的 `personas` + 空选项「跟随画像页当前画像」（默认）。解析值 = `personaPick || props.persona`，未动下拉时行为与现状一致。
+- BreakdownPage 控件行新增「画像」下拉：选项 = `GET /easel/api/status` 的 `personas` + 空选项「默认画像」（默认）。解析值 = `personaPick || defaultPersona`。
+- 默认画像（2026-11-07 增补，用户拍板：不选时不用「画像页当前选中」）：`/easel/api/status` 回解析后的 `defaultPersona`——`outputs/_profile_config.json` 的显式设置（`PUT /easel/api/profile/default`，body `{name}`，不存在 404；空名清除）优先；未设置时按画像目录创建时间（birthtime）取最早的一个（「最初创建」的画像，刻意不是名字序第一个）；设置的画像被删除后自动回退到最初创建；一个画像都没有时为空串。画像页（PersonaBrowser）列表给默认画像带「默认」徽标，ProfilePage 详情头部可「设为默认画像」（onRefresh 重读 /status 同步）。
 - 归属语义：job.json `persona` 是采集时快照；分析与选题归属以分析时下拉解析值为准（下拉在采集完成后保持可改）。
 - `POST /easel/api/deconstruct` body 增加 `persona`；宿主校验 `profiles/<persona>/` 目录存在（不存在 404「画像「X」不存在」（与包内画像路由约定一致）），校验通过后写入 job.json `persona` 字段（未指定不写）。
 - 拆解 prompt：第 6 点「结合我的画像「X」」改用解析值；指令 b 的选题 JSON 在选定画像时增加 `"persona"` 字段（`JSON.stringify` 字面量，注明必须原样保留）。
@@ -76,6 +77,9 @@ commits: 27da80cad6..254ebf052e
 - [x] T5: IdeasPage 画像 badge/立项预选/`easel:ideas-changed` 监听；OutputsPage `easel:outputs-changed` 监听 (covers: S2.1, S2.2, S2.3)
 - [x] T6: context-menu conversation 面两项推送 + api.ts 封装 + 雷达动作派发 `easel:ideas-changed` (covers: S2.2, S2.3)
 - [x] T7: README 更新 + 全量验证 (depends: T1-T6)
+- [x] T8: 宿主默认画像——`_profile_config.json`、`/status defaultPersona`、`PUT /profile/default`、保护名单 (covers: S2.1 增补)
+- [x] T9: shell store `defaultPersona` + PersonaBrowser 默认徽标 + ProfilePage「设为默认画像」 (covers: S2.1 增补)
+- [x] T10: BreakdownPage 空选项切「默认画像」语义 + 默认画像测试 (covers: S2.1 增补)
 
 ## [S4] Acceptance
 
@@ -85,4 +89,5 @@ commits: 27da80cad6..254ebf052e
 - [x] 对话区右键（选区或整条消息）「存入选题库」：`_ideas.json` 新条目 `source='对话'`、`note=全文`、标题=首行；停留在选题库页时新卡自动出现
 - [x] 对话区右键「存入素材库」：`outputs/对话素材/<slug>-<hash8>.md` 生成且内容库页可见；同文本重复推送不产生第二个文件
 - [x] `POST /easel/api/ideas` 传不存在画像 → 404；传有效画像 → 条目含 persona
+- [x] 拆解页空选项 = 默认画像：显式设置立即生效（`/status` 回解析值）、未设置回退最初创建（birthtime 最早，非名字序）、设置的画像被删后回退、清除设置回到回退值；画像页可设默认（徽标 + 设为默认按钮）；`PUT /profile/default` 传不存在画像 → 404
 - [x] 新单测绿；插件既有测试不回归
