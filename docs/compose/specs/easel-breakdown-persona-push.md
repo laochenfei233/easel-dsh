@@ -4,7 +4,7 @@ status: delivered
 updated: 2026-11-07
 branch: feat/easel-breakdown-persona-push
 worktree: .worktrees/easel-breakdown-persona-push
-commits: 27da80cad6..254ebf052e
+commits: 27da80cad6..bfa34e897d
 ---
 
 # 拆解画像归属 + 对话推送入库
