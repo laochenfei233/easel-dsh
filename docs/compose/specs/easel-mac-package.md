@@ -1,7 +1,7 @@
 ---
 feature: easel-mac-package
 status: delivered
-updated: 2026-10-21
+updated: 2026-11-08
 branch: feat/easel-mac-package（dsh，Easel/dsh worktree）@ 8a66b85fdc2；Easel main @ f703510
 commits: dsh 71ea5c0568..8a66b85fdc2（5e012932a2 vendoring、3d1de6a9d6 stageEasel、b05bf74348e workflow、08de67aa0a1 sweep、3728035be91 review 修复、8a66b85fdc2 resync）；Easel b2adf41 解构删除、f703510 插件自包含
 ---
@@ -78,6 +78,7 @@ commits: dsh 71ea5c0568..8a66b85fdc2（5e012932a2 vendoring、3d1de6a9d6 stageEa
    `initialization_script` 注入重载重试（识别 401 文案，sessionStorage 上限 3 次，兜住
    cookie 存储到网络进程的传播竞态）；开窗加全局互斥消除并发竞态。后续就绪：预装新会话 +
    既有 app 窗口同源导航。
+10. **mac 实机反馈③：401 复发 → 恢复壳内代理（2026-11-08）**：alpha 线上 mac 再次报同一文案。`git log` 定位到 `bec60b1414`（数据根迁移 + mac 会话改造）在同一次提交里删掉了 `src-tauri/src/proxy.rs`，把 app 窗口改回「预装 cookie + 干净 origin」——正是 Report 8/9 已用实机日志否掉的通道（WKWebView 把 cookie 存进 store 却不带到 app 文档自己的请求上），且 cookie 域从 `localhost` 退回裸 IP（Report 7 / T16 已记录裸 IP 域在 WKWebView 存储里会丢）。alpha.33 起的 mac 构建都带这条回退，README（中英）却一直留着代理版端口约定——删除是误伤而非设计。修复 = 按 T17 恢复代理链路：`launch_exchange`（存活探测）→ `proxy::session_updated` → `ensure_started` → app 窗口加载 `http://127.0.0.1:<proxy>/`；代理 origin 改用回环 IP（避开 `localhost` 的 ::1 解析），`Origin`/`Referer` 由请求自带的 `Host` 推导后改写，满足 `isTrustedApiRequest` 的 Origin==Host 校验；v5 的 `AUTH_RETRY_SCRIPT`、cookie 预装与落库日志（只服务回退通道）一并删除。**验**：`cargo test --lib` 54/54（含代理 4 个纯函数单测，模块改为全平台编译以便在 Windows 上也能跑到）；mac 实机待装包复验。
 9. **mac 实机反馈② 终态（第六层：WKWebView 存而不发 → 壳内代理）**：v7 日志证明会话 cookie 确实写进了 WKWebView 存储（`dsh-auth-…@localhost`），窗口也加载了 `http://localhost:3081/`，但 WebKit 始终不把它发到 app 文档自己的请求上（Safari 同一 URL 正常、curl 正常）。放弃 webview cookie 链路：新增 `src-tauri/src/proxy.rs`（本机回环代理，注入 `Cookie`/改写 `Host`/`Origin`/`Referer`，普通请求 `Connection: close` 每连接一请求、WS 升级后转原始双工管道，`rewrite_head`/`find_head_end` 带单测）；`open_app_window` 交换后把会话交给代理、窗口加载 `http://localhost:PROXY/`；代理端口固定，服务换端口只更新会话。预览时同轮修复了 `find_head_end` 单测初值笔误（21→24）。
 
 **Verification** — cargo test --lib 22/22（含新归一/双安装形态断言）；插件
@@ -176,6 +177,7 @@ dsh master 合并策略；Windows 包变更；Electron 壳（apps/desktop）一�
 - [x] T14: mac 实机反馈修复② v4：Lax 预装 cookie 兜底通道（launch_exchange 复用为 cookie 来源 + 共享 WebView store 预装）+ app 窗口 URL 诊断日志（depends: T13）
 - [x] T15: mac 实机反馈修复② v5：app 窗口改载干净 origin（绕开 303 同名覆盖）+ 预装后 300ms 传播等待 + 注入重载重试脚本（sessionStorage 限 3 次）+ cookie 落库可见性日志 + 开窗互斥（depends: T14）
 - [x] T17: mac 实机反馈修复② v7（终态）：壳内本机代理注入会话（proxy.rs：Cookie/Host/Origin/Referer 改写 + 每连接一请求 + WS 双工管道 + 4 个纯函数单测）+ app 窗口指向代理 origin（端口固定、换端口只更新会话不导航）（depends: T16）
+- [x] T18: mac 实机反馈③ v9：恢复 T17 的壳内代理（`bec60b1414` 误删），app 窗口 origin 落 `127.0.0.1:PROXY`、Origin/Referer 由请求 Host 推导改写；删除 v5 的重载重试脚本与 cookie 预装/落库日志（depends: T17，实机待验）
 - [x] T16: mac 实机反馈修复② v6：域名从裸 IP 改 localhost（WKWebView store 丢裸 IP 域；交换 Host 同步）+ bundle Info.plist 加 NSAllowsLocalNetworking ATS 例外 + 日志改用不过滤的 cookies()（wry 的 cookies_for_url 按 Url::domain() 过滤，IP 主机恒为空——此前 [] 是读取假象）+ 开窗等待 oneshot 收进互斥（depends: T15）
 
 ## [S4] Acceptance

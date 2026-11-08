@@ -4,10 +4,11 @@
 // The iframe stays blank until Rust validates the launch URL. On Windows it
 // exchanges the token and pre-installs the WebView cookie, then loads the
 // clean URL in the iframe. On WebKit shells `navigate_main` opens the dsh UI
-// in its own window against the token URL (a fresh document has no tauri
-// origin to anchor SameSite against, so the server's Strict cookie works);
-// this page stays loaded in the hidden main window as the wizard/error
-// surface, and the supervisor reopens the app window on later readiness.
+// in its own window behind the shell's loopback proxy, which injects the
+// exchanged session into every request (WKWebView stores the cookie but never
+// sends it); this page stays loaded in the hidden main window as the
+// wizard/error surface, and the supervisor reopens the app window on later
+// readiness.
 
 const frame = document.getElementById('dsh-frame');
 const banner = document.getElementById('error-banner');

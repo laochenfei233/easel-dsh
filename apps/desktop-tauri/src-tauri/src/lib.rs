@@ -9,6 +9,10 @@
 mod app_update;
 mod dsh_runner;
 mod layout;
+// Loopback proxy for the WebKit app window; unused (and allowed to be) on
+// WebView2, where the iframe + pre-installed cookie flow stays.
+#[allow(dead_code)]
+mod proxy;
 mod setup;
 mod tray;
 
