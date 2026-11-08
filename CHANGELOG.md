@@ -4,6 +4,12 @@ Easel-dsh 是基于 DeepSeek Harness 的桌面版社媒运营工作台。这里�
 
 > 同一天有多次构建时，只展示当天最终版本，改动合并列出。日期为本地时间（UTC+8）。
 
+## 2026-11-08 · 0.2.1-alpha.43
+
+mac 版启动后不再停在「需要重新打开 dsh web 链接」的认证提示上。
+
+- 修复 macOS 版启动后卡在 "dsh web authentication required; reopen the URL printed by dsh web."、进不了工作台的问题：mac 版改为由桌面壳在应用窗口和本地服务之间转发请求并注入登录会话，不再依赖系统自带网页组件保存的 cookie。
+
 ## 2026-11-07 · 0.2.1-alpha.42
 
 爆款拆解可以按画像归属了，对话里聊出来的内容也能一键存进选题库和素材库。
