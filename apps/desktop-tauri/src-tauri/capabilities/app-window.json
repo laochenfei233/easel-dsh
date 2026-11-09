@@ -3,6 +3,7 @@
   "identifier": "app-window",
   "description": "The dsh UI loaded top-level in the WebKit app window: the updater bridge's four commands plus updater event subscription. Scoped to localhost because the shell serves the UI on an OS-assigned 127.0.0.1 port.",
   "windows": ["app"],
+  "local": false,
   "remote": {
     "urls": ["http://127.0.0.1:*"]
   },

@@ -1,9 +1,9 @@
 /**
  * The desktop host bridge is an inline `<script>` inside
- * `apps/desktop-tauri/scripts/bundle-runtime.mjs`, so no compiler or test
- * exercises it before a user's webview runs it. Run the extracted script
- * against stub windows: a broken transport must fail here, not on a macOS
- * install where the About section silently degrades to "desktop only".
+ * `apps/desktop-tauri/scripts/bundle-runtime.mjs`. The packaging script
+ * compiles it, but nothing else exercises its three transports before a
+ * user's webview runs it: a broken one silently degrades the About section to
+ * "desktop only". Run the extracted script against stub windows here.
  */
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -83,6 +83,10 @@ describe('desktop host bridge', () => {
       .toBe(JSON.stringify({ ok: false, error: 'Error: denied' }))
     expect(calls[1]?.[0]).toBe('easel_set_update_source')
     expect(JSON.stringify(await bridge.rpc('unknown'))).toBe(JSON.stringify({ ok: false, error: 'unsupported action: unknown' }))
+    await bridge.rpc('update-state')
+    expect(calls[2]?.[0]).toBe('easel_update_state')
+    await bridge.rpc('update-install')
+    expect(calls[3]?.[0]).toBe('easel_install_update')
 
     const seen: unknown[] = []
     const off = bridge.onEvent('easel://update-progress', payload => seen.push(payload))
@@ -97,6 +101,10 @@ describe('desktop host bridge', () => {
   it('stays absent in a plain browser', () => {
     const win = fakeWindow()
     expect(runBridge(win)).toBeUndefined()
+  })
+
+  it('stays absent when the Tauri global has no invoke', () => {
+    expect(runBridge(fakeWindow({ __TAURI__: { core: {} } }))).toBeUndefined()
   })
 
   it('keeps the postMessage relay inside the shell iframe', async () => {
