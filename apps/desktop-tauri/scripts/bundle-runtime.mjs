@@ -473,10 +473,13 @@ function injectNotificationBridge(distDest) {
       rpc: (action, args) => {
         const command = commands[action]
         if (command === undefined) return Promise.resolve({ ok: false, error: "unsupported action: " + action })
-        return ipc(command, args ?? {}).then(
-          (data) => ({ ok: true, data }),
-          (error) => ({ ok: false, error: String(error ?? "invoke failed") }),
-        )
+        return new Promise((resolve) => {
+          const timer = setTimeout(() => resolve({ ok: false, error: "rpc timeout" }), 30000)
+          ipc(command, args ?? {}).then(
+            (data) => { clearTimeout(timer); resolve({ ok: true, data }) },
+            (error) => { clearTimeout(timer); resolve({ ok: false, error: String(error ?? "invoke failed") }) },
+          )
+        })
       },
       onEvent: (name, cb) => {
         if (!host.event || typeof host.event.listen !== "function") return () => {}
@@ -484,7 +487,7 @@ function injectNotificationBridge(distDest) {
         let disposed = false
         host.event.listen(name, (event) => cb(event.payload)).then(
           (off) => { if (disposed) off(); else unlisten = off },
-          () => {},
+          (error) => { console.warn("[easel] updater event subscription failed:", name, error) },
         )
         return () => { disposed = true; if (unlisten !== null) unlisten() }
       },

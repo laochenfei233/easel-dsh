@@ -1,10 +1,16 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "app-window",
-  "description": "The dsh UI loaded top-level in the WebKit app window: IPC for the updater bridge (event subscription; app commands are not ACL-gated). Scoped to localhost because the shell serves the UI on an OS-assigned 127.0.0.1 port.",
+  "description": "The dsh UI loaded top-level in the WebKit app window: the updater bridge's four commands plus updater event subscription. Scoped to localhost because the shell serves the UI on an OS-assigned 127.0.0.1 port.",
   "windows": ["app"],
   "remote": {
     "urls": ["http://127.0.0.1:*"]
   },
-  "permissions": ["core:event:default"]
+  "permissions": [
+    "core:event:default",
+    "allow-easel-check-update",
+    "allow-easel-update-state",
+    "allow-easel-set-update-source",
+    "allow-easel-install-update"
+  ]
 }

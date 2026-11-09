@@ -6,6 +6,20 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "notification:default"
+    "notification:default",
+    "allow-is-initialized",
+    "allow-first-run-state",
+    "allow-set-preset",
+    "allow-install-plugin",
+    "allow-apply-first-run",
+    "allow-dsh-status",
+    "allow-authenticate-webview",
+    "allow-navigate-main",
+    "allow-restart-dsh",
+    "allow-open-ui",
+    "allow-easel-check-update",
+    "allow-easel-update-state",
+    "allow-easel-set-update-source",
+    "allow-easel-install-update"
   ]
 }
