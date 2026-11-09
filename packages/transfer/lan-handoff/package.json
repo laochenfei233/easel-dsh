@@ -1,7 +1,7 @@
 {
   "name": "@easel-dsh/easel-air-transfer",
   "description": "LAN project-handoff peer service: device identity, TLS listener, and mDNS discovery",
-  "version": "0.2.1-rc.2",
+  "version": "0.2.1-alpha.44",
   "private": true,
   "publishConfig": {
     "access": "public"
