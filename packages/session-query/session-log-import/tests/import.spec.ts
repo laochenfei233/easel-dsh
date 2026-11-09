@@ -29,12 +29,12 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { zipSync } from 'fflate'
-import { expect, it } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import {
   SessionImportAttachmentMismatchError,
   SessionImportCollisionError,
 } from '../src/errors.ts'
-import { SessionLogImporter } from '../src/index.ts'
+import { apply, SessionLogImporter } from '../src/index.ts'
 
 /** Well-known valid 1x1 PNG; the real image pipeline normalizes it. */
 const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
@@ -201,6 +201,25 @@ async function teardown(harnessed: Harness): Promise<void> {
   await harnessed.senderCtx.fiber.dispose()
   for (const root of harnessed.roots) await rm(root, { recursive: true, force: true })
 }
+
+it('mounts the importer through the loader plugin entry', async () => {
+  const ctx = new Context()
+  const root = await mkdtemp(join(tmpdir(), 'dsh-session-import-plugin-'))
+  try {
+    new MemoryPersistence(ctx)
+    new LocalAttachmentStore(ctx, { dshHome: root })
+    // The loader hands the module namespace to ctx.plugin when the package has
+    // no default export; the namespace's apply entry is what makes that work.
+    expect(typeof apply).toBe('function')
+    const fiber = ctx.plugin(await import('../src/index.ts'))
+    await vi.waitFor(() => { expect(ctx.get('sessionLogImporter')).toBeInstanceOf(SessionLogImporter) })
+    await fiber.dispose()
+    expect(ctx.get('sessionLogImporter')).toBeUndefined()
+  } finally {
+    await ctx.fiber.dispose()
+    await rm(root, { recursive: true, force: true })
+  }
+})
 
 it('imports a root plus a seeded subagent, remaps cwd, and restores attachments', async () => {
   const context = await harness()
