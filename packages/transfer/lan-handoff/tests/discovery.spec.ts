@@ -34,19 +34,25 @@ class RecordingDiscoveryHost implements LanDiscoveryHost {
   lastType: string | undefined
 
   private onUp: ((entry: LanDiscoveryEntry) => void) | undefined
+  private onDown: ((entry: LanDiscoveryEntry) => void) | undefined
 
   publish(advertisement: LanAdvertisement): { readonly stop: () => void } {
     this.published.push(advertisement)
     return { stop: () => { this.stopped += 1 } }
   }
 
-  find(type: string, onUp: (entry: LanDiscoveryEntry) => void): void {
+  find(type: string, onUp: (entry: LanDiscoveryEntry) => void, onDown?: (entry: LanDiscoveryEntry) => void): void {
     this.lastType = type
     this.onUp = onUp
+    this.onDown = onDown
   }
 
   emit(entry: LanDiscoveryEntry): void {
     this.onUp?.(entry)
+  }
+
+  emitDown(entry: LanDiscoveryEntry): void {
+    this.onDown?.(entry)
   }
 
   async dispose(): Promise<void> {
@@ -151,5 +157,16 @@ describe('the recording host drives advertisement and browsing', () => {
     host.emit({ ...PEER_ENTRY, txt: { id: 7 } })
     host.emit({ ...PEER_ENTRY, txt: { ...PEER_ENTRY.txt, id: OWN_ID } })
     expect(seen).toHaveLength(1)
+  })
+
+  it('reports a withdrawn peer by identity and skips withdrawals it cannot attribute', () => {
+    const host = new RecordingDiscoveryHost()
+    const gone: DeviceId[] = []
+    browseLanHandoff(host, OWN_ID, () => undefined, { onPeerGone: (deviceId) => { gone.push(deviceId) } })
+    // A mDNS goodbye may carry the TXT record without addresses.
+    host.emitDown({ addresses: [], port: 0, txt: PEER_ENTRY.txt })
+    host.emitDown({ addresses: [], port: 0, txt: { ...PEER_ENTRY.txt, id: OWN_ID } })
+    host.emitDown({ addresses: [], port: 0, txt: { id: 7 } })
+    expect(gone).toEqual([PEER_ID])
   })
 })

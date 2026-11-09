@@ -16,18 +16,24 @@ class RecordingDiscoveryHost implements LanDiscoveryHost {
   disposed = false
 
   private onUp: ((entry: LanDiscoveryEntry) => void) | undefined
+  private onDown: ((entry: LanDiscoveryEntry) => void) | undefined
 
   publish(advertisement: LanAdvertisement): { readonly stop: () => void } {
     this.published.push(advertisement)
     return { stop: () => { this.stopped += 1 } }
   }
 
-  find(_type: string, onUp: (entry: LanDiscoveryEntry) => void): void {
+  find(_type: string, onUp: (entry: LanDiscoveryEntry) => void, onDown?: (entry: LanDiscoveryEntry) => void): void {
     this.onUp = onUp
+    this.onDown = onDown
   }
 
   emit(entry: LanDiscoveryEntry): void {
     this.onUp?.(entry)
+  }
+
+  emitDown(entry: LanDiscoveryEntry): void {
+    this.onDown?.(entry)
   }
 
   async dispose(): Promise<void> {
@@ -90,4 +96,23 @@ it('keeps the latest advertisement per peer id in the snapshot', async () => {
   discovery.emit({ addresses: ['192.168.1.9'], port: 40124, txt: { id: peerId, name: 'latest', pf: 'macos', v: '1', vmin: '1' } })
   expect(service.peersSnapshot().map(peer => peer.name)).toEqual(['latest'])
   expect(service.peersSnapshot().map(peer => peer.addresses)).toEqual([['192.168.1.9']])
+  // A restarted peer advertises a new random port; the snapshot must dial it.
+  discovery.emit({ addresses: ['192.168.1.9'], port: 40125, txt: { id: peerId, name: 'latest', pf: 'macos', v: '1', vmin: '1' } })
+  expect(service.peersSnapshot().map(peer => peer.port)).toEqual([40125])
+  // An update without addresses cannot be dialed; the previous entry survives.
+  discovery.emit({ addresses: [], port: 40126, txt: { id: peerId, name: 'latest', pf: 'macos', v: '1', vmin: '1' } })
+  expect(service.peersSnapshot().map(peer => peer.port)).toEqual([40125])
+})
+
+it('drops a peer the network withdrew from the snapshot', async () => {
+  ctx = new Context()
+  const discovery = new RecordingDiscoveryHost()
+  const service = new LanHandoffService(ctx, {}, { identityRoot: await tempRoot(), discovery })
+  await service.ready
+  const peerId = brandString<DeviceId>('d'.repeat(20))
+  const entry = { addresses: ['192.168.1.8'], port: 40123, txt: { id: peerId, name: 'gone', pf: 'macos', v: '1', vmin: '1' } }
+  discovery.emit(entry)
+  expect(service.peersSnapshot()).toHaveLength(1)
+  discovery.emitDown(entry)
+  expect(service.peersSnapshot()).toEqual([])
 })

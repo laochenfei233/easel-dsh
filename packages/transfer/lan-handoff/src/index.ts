@@ -74,6 +74,7 @@ export {
   encodeDeviceTxt,
   isLoopbackAddress,
   LAN_HANDOFF_PROTOCOL_VERSION,
+  LAN_HANDOFF_RESCAN_MS,
   LAN_HANDOFF_SERVICE_TYPE,
   lanPlatformOfHost,
   parseDeviceTxt,
@@ -364,7 +365,10 @@ export class LanHandoffService extends Service {
             discovery,
             identity.deviceId,
             (peer) => { this.discovered.set(peer.id, peer) },
-            { ...options?.allowLoopbackPeers === true ? { allowLoopback: true } : {} },
+            {
+              ...options?.allowLoopbackPeers === true ? { allowLoopback: true } : {},
+              onPeerGone: (deviceId) => { this.discovered.delete(deviceId) },
+            },
           )
           this.identity = identity
           this.root = root

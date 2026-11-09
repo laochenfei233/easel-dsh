@@ -7,12 +7,20 @@
  * @module @easel-dsh/easel-air-transfer/discovery
  */
 
-import { Bonjour, type Service } from 'bonjour-service'
+import { Bonjour, type Browser, type Service } from 'bonjour-service'
 import { brandString, type Branded } from '@deepseek-ai/dsh-brand'
 import type { DeviceId } from './identity.ts'
 
 /** DNS-SD service type advertised and browsed for LAN project handoff. */
 export const LAN_HANDOFF_SERVICE_TYPE = 'easel-handoff'
+
+/**
+ * How often a browsing device repeats its PTR query.
+ *
+ * Publishers stop re-announcing about 55 minutes after start, so a browser
+ * that missed its single startup query would otherwise never see them again.
+ */
+export const LAN_HANDOFF_RESCAN_MS = 30_000
 
 /** One advertisement's protocol-version range, inclusive on both ends. */
 export interface ProtocolVersionRange {
@@ -72,8 +80,9 @@ export interface LanDiscoveryHost {
    * Browse for one service type.
    * @param type - DNS-SD service type.
    * @param onUp - callback per advertisement seen on the network.
+   * @param onDown - optional callback per advertisement withdrawn or expired.
    */
-  find(type: string, onUp: (entry: LanDiscoveryEntry) => void): void
+  find(type: string, onUp: (entry: LanDiscoveryEntry) => void, onDown?: (entry: LanDiscoveryEntry) => void): void
   /** Withdraw every published advertisement and release the discovery backend. */
   dispose(): Promise<void>
 }
@@ -237,28 +246,46 @@ export function advertiseLanHandoff(
  * @param discovery - discovery host driving the network.
  * @param ownDeviceId - this device's id, which filters its own announcements.
  * @param onPeer - callback per listable peer advertisement.
- * @param options - `allowLoopback` keeps loopback addresses for loopback test compositions.
+ * @param options - `allowLoopback` keeps loopback addresses for loopback test
+ * compositions; `onPeerGone` reports a peer withdrawn from the network.
  */
 export function browseLanHandoff(
   discovery: LanDiscoveryHost,
   ownDeviceId: DeviceId,
   onPeer: (peer: PeerAdvertisement) => void,
-  options?: { readonly allowLoopback?: boolean },
+  options?: {
+    readonly allowLoopback?: boolean
+    readonly onPeerGone?: (deviceId: DeviceId) => void
+  },
 ): void {
+  const onPeerGone = options?.onPeerGone
   discovery.find(LAN_HANDOFF_SERVICE_TYPE, (entry) => {
     const peer = parseDiscoveredEntry(entry, ownDeviceId, options)
     if (peer !== undefined) onPeer(peer)
+  }, onPeerGone === undefined ? undefined : (entry) => {
+    // A withdrawal may omit addresses, so only the identity is readable here.
+    const device = parseDeviceTxt(entry.txt)
+    if (device !== undefined && device.id !== ownDeviceId) onPeerGone(device.id)
   })
 }
 
 /* v8 ignore start -- live mDNS multicast sockets stay out of loopback tests; the adapter
-   is exercised against real devices during acceptance. */
+   wiring is pinned by discovery-adapter.spec.ts against a mocked library. */
 /**
  * Real mDNS-backed discovery host backed by `bonjour-service`.
  * @returns the live discovery host.
  */
 export function createBonjourDiscovery(): LanDiscoveryHost {
   const bonjour = new Bonjour()
+  const timers = new Set<NodeJS.Timeout>()
+  const browsers = new Set<Browser>()
+  const entryOf = (service: Service): LanDiscoveryEntry => ({
+    addresses: service.addresses ?? [],
+    port: service.port,
+    txt: Object.fromEntries(Object.entries(service.txt ?? {}).map(([key, value]) => [
+      key, value === undefined || value === null ? '' : String(value),
+    ])),
+  })
   return {
     publish: (advertisement) => {
       // TXT values this library hands back re-enter the wire as bytes; every
@@ -271,18 +298,22 @@ export function createBonjourDiscovery(): LanDiscoveryHost {
       })
       return { stop: () => { published.stop() } }
     },
-    find: (type, onUp) => {
-      bonjour.find({ type }, (service: Service) => {
-        onUp({
-          addresses: service.addresses ?? [],
-          port: service.port,
-          txt: Object.fromEntries(Object.entries(service.txt ?? {}).map(([key, value]) => [
-            key, value === undefined || value === null ? '' : String(value),
-          ])),
-        })
-      })
+    find: (type, onUp, onDown) => {
+      const browser = bonjour.find({ type }, (service: Service) => { onUp(entryOf(service)) })
+      browsers.add(browser)
+      // Port and TXT changes arrive as updates, not as a second `up`.
+      browser.on('srv-update', (service: Service) => { onUp(entryOf(service)) })
+      browser.on('txt-update', (service: Service) => { onUp(entryOf(service)) })
+      if (onDown !== undefined) browser.on('down', (service: Service) => { onDown(entryOf(service)) })
+      const timer = setInterval(() => { browser.update() }, LAN_HANDOFF_RESCAN_MS)
+      timer.unref()
+      timers.add(timer)
     },
     dispose: () => new Promise((resolve) => {
+      for (const timer of timers) clearInterval(timer)
+      timers.clear()
+      for (const browser of browsers) browser.stop()
+      browsers.clear()
       bonjour.unpublishAll(() => { bonjour.destroy(() => resolve(undefined)) })
     }),
   }
