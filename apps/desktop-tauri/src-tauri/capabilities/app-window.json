@@ -1,0 +1,10 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "app-window",
+  "description": "The dsh UI loaded top-level in the WebKit app window: IPC for the updater bridge (event subscription; app commands are not ACL-gated). Scoped to localhost because the shell serves the UI on an OS-assigned 127.0.0.1 port.",
+  "windows": ["app"],
+  "remote": {
+    "urls": ["http://127.0.0.1:*"]
+  },
+  "permissions": ["core:event:default"]
+}

@@ -26,6 +26,7 @@ import { createHash } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
 import { basename, delimiter, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { Script } from 'node:vm';
 import { readFileSync, statSync, realpathSync } from 'node:fs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -338,6 +339,16 @@ async function deployDsh() {
     ['deploy', DSH_DIR, '--filter', DSH, '--prod', '--legacy', '--config.auto-install-peers=true'],
     { cwd: repo },
   );
+  // These two ship only through this closure: the shell mounts their profile
+  // rows but owns no fallback, so a missing package surfaces as a dead settings
+  // page (「缺少备份引擎」/「未启用隔空传送」) on every install. A merge once
+  // dropped them from apps/cli; refuse to package that runtime.
+  for (const name of ['@deepseek-ai/dsh-easel-backup', '@easel-dsh/easel-air-transfer']) {
+    if (!existsSync(join(DSH_DIR, 'node_modules', name, 'package.json'))) {
+      throw new Error(`deploy closure is missing ${name}; declare it in apps/cli dependencies`);
+    }
+  }
+  step('easel runtime packages present in the deploy closure');
 
   const distSrc = join(repo, 'apps', 'web', 'dist');
   if (!existsSync(distSrc)) {
@@ -432,8 +443,11 @@ async function deployDsh() {
 // host bridge that, inside the dsh iframe, routes both to the shell — native
 // toasts through tauri-plugin-notification, external links through the
 // opener plugin, and app-updater RPCs relayed by app.js to the Rust
-// commands (easel_update_*; see app_update.rs). Plain-browser `dsh web`
-// users stay untouched: the bridge activates only when a parent frame exists.
+// commands (easel_update_*; see app_update.rs). The WebKit shells load the UI
+// top-level instead; there the updater bridge talks to the same commands over
+// the Tauri IPC granted to the "app" window (capabilities/app-window.json).
+// Plain-browser `dsh web` users stay untouched: no parent frame and no Tauri
+// global means no bridge.
 function injectNotificationBridge(distDest) {
   const entry = join(distDest, 'index.html');
   if (!existsSync(entry)) return;
@@ -441,7 +455,42 @@ function injectNotificationBridge(distDest) {
   if (html.includes('dsh-desktop-host')) return;
   const bridge = `<script>
 (() => {
-  if (window === window.parent) return
+  // WebKit shells navigate the window itself to the dsh UI, so that document
+  // is top-level and has no shell page to postMessage. The "app" capability
+  // grants this origin the Tauri IPC, so the updater RPC and events ride it
+  // directly; the action map mirrors UPDATE_RPC in ui/dist/app.js.
+  if (window === window.parent) {
+    const host = window.__TAURI__
+    const ipc = host && host.core && host.core.invoke
+    if (typeof ipc !== "function") return
+    const commands = {
+      "update-state": "easel_update_state",
+      "update-check": "easel_check_update",
+      "update-install": "easel_install_update",
+      "update-source-set": "easel_set_update_source",
+    }
+    window.__easelHostUpdate = {
+      rpc: (action, args) => {
+        const command = commands[action]
+        if (command === undefined) return Promise.resolve({ ok: false, error: "unsupported action: " + action })
+        return ipc(command, args ?? {}).then(
+          (data) => ({ ok: true, data }),
+          (error) => ({ ok: false, error: String(error ?? "invoke failed") }),
+        )
+      },
+      onEvent: (name, cb) => {
+        if (!host.event || typeof host.event.listen !== "function") return () => {}
+        let unlisten = null
+        let disposed = false
+        host.event.listen(name, (event) => cb(event.payload)).then(
+          (off) => { if (disposed) off(); else unlisten = off },
+          () => {},
+        )
+        return () => { disposed = true; if (unlisten !== null) unlisten() }
+      },
+    }
+    return
+  }
   const post = (payload) => window.parent.postMessage({ source: "dsh-desktop-host", ...payload }, "*")
 
   // Promise RPC into the shell page (app.js relays to the Rust updater
@@ -511,6 +560,9 @@ function injectNotificationBridge(distDest) {
   }
 })()
 </script>`;
+  // The bridge only runs inside a user's webview, where a syntax error would
+  // ship as a dead updater/About section; compile it while packaging.
+  new Script(bridge.slice('<script>'.length, bridge.lastIndexOf('</script>')));
   writeFileSync(entry, html.replace('</head>', `${bridge}\n  </head>`));
   step('desktop host bridge injected into web entry');
 }
