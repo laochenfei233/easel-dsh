@@ -20,7 +20,7 @@ The import counterpart of `@deepseek-ai/dsh-session-log-export`: it reads one ex
 <a id="use_this_package"></a>
 ## Use this package
 
-Mount the package as a plugin and call `ctx.sessionLogImporter.importArchive(zipBytes, { targetCwd })` with an absolute path on this device. The call returns the stored root session and its stored descendants. `targetCwd` is required: an imported session's tools must operate on this device's copy of the project, so the header `cwd` is rewritten rather than preserved. Sessions whose logs record no work directory keep none. A colliding session id, an unsupported format version, or an attachment that re-materializes under a different id all fail loudly with typed errors; nothing is silently renamed or partially linked.
+Mount the package as a plugin — a loader row naming it starts the service through the package's `apply` entry — and call `ctx.sessionLogImporter.importArchive(zipBytes, { targetCwd })` with an absolute path on this device. The call returns the stored root session and its stored descendants. `targetCwd` is required: an imported session's tools must operate on this device's copy of the project, so the header `cwd` is rewritten rather than preserved. Sessions whose logs record no work directory keep none. A colliding session id, an unsupported format version, or an attachment that re-materializes under a different id all fail loudly with typed errors; nothing is silently renamed or partially linked.
 
 <a id="known-limitations-and-deferred-work"></a>
 ## Known Limitations and Deferred Work

@@ -211,9 +211,12 @@ export class SessionLogImporter extends Service {
   }
 }
 
+/** Services the importer reads through; the plugin stays pending until both exist. */
+export const inject = ['sessionPersistence', 'attachments']
+
 /**
- * Mount the importer as a loader row (the same functional-plugin shape the
- * export counterpart exposes) so profiles can provide `ctx.sessionLogImporter`.
+ * Loader plugin entry for this package: starts the importer so a profile row
+ * naming it provides `ctx.sessionLogImporter`.
  * @param ctx - host context carrying the persistence and attachment stores.
  */
 export function apply(ctx: Context): void {

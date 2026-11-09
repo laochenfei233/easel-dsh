@@ -33,23 +33,31 @@ commits: # filled at delivery
 
 在 `apps/desktop-tauri/src-tauri/src/setup.rs` 的 `easel-lan-handoff` 行之后插入 `easel-session-log-import` 行（`name: '@deepseek-ai/dsh-session-log-import'`）。隔空传送是 Easel 专属能力，提供者与消费者在同一处挂载；不改通用 `web-app` bundle。壳每次启动都会用 `ensure_bundle_row` 重写 patch，已装用户升级壳后自动补上该行。
 
-### S2.3 闭包与失败行为
+### S2.3 部署闭包
 
-runtime 闭包已包含该包：`bundle-runtime.mjs` 对 peer-only 包有单独拷贝兜底，`@easel-dsh/easel-air-transfer` 的 peerDependency 会把它带进部署闭包（当前装机 runtime 的 `node_modules` 里已有）。若某天包缺失，profiles 解析失败是响亮的启动错误，不会静默跳过。
+审查发现 `apps/cli` 的 manifest 在同步上游时丢掉了 `@easel-dsh/easel-air-transfer`（`df6d262ff7` 引入、后被上游同步覆盖），因此从当前 master 出的包根本不带隔空传送插件；peer-only 拷贝兜底也救不了不在闭包里的包。修复：把 `@easel-dsh/easel-air-transfer` 与 `@deepseek-ai/dsh-session-log-import` 重新/新增到 `apps/cli` 的 `dependencies`，同步 `pnpm-lock.yaml`。部署闭包是 loader 行能解析的前提，缺包时 app-boot 只对非 required 行告警，不会响亮失败——所以必须在打包前用闭包断言守住这一段（本轮用 manifest + lockfile 证据）。
+
+### S2.4 目录产物
+
+新增 `apply` 让该包从 library 变成可加载插件，`docs/config-catalog.{md,zh.md}` 与 `cordis-composition-reference/references/packages.md` 需要重新生成（`gen-config-catalog` / `gen-plugin-packages`），否则 `doc-sync` 红门。
 
 ## [S3] Scope
 
-- In scope: importer 包的 `apply` 入口与其单测、Easel 壳的 profile 行与 Rust 测试断言。
+- In scope: importer 包的 `apply`/`inject` 入口与其单测、Easel 壳的 profile 行与 Rust 测试断言、部署闭包的 manifest/lockfile、生成目录产物、README 双语说明。
 - Out of scope: 发送端关闭含义的措辞修正（把「对方拒绝配对」改成传输层断开，另立）；Mac 端取证工具。
 
 ## Tasks
 
-- [ ] T1: `session-log-import` 增加 `apply` 函数插件入口（depends: none）
-- [ ] T2: 单测：`apply(ctx)` 在 persistence/attachments 就绪后提供 `ctx.sessionLogImporter`（depends: T1）
-- [ ] T3: 壳 patch 插入 `easel-session-log-import` 行，Rust 测试断言该行（depends: none）
+- [x] T1: `session-log-import` 增加 `apply` 函数插件入口与模块级 `inject`（depends: none）
+- [x] T2: 单测：模块命名空间经 `ctx.plugin` 提供 `ctx.sessionLogImporter`，dispose 后卸载（depends: T1）
+- [x] T3: 壳 patch 插入 `easel-session-log-import` 行，Rust 测试断言该行（depends: none）
+- [x] T4: `apps/cli` 依赖补回 `@easel-dsh/easel-air-transfer` 并新增 importer，更新 lockfile（depends: none）
+- [x] T5: 重新生成 config catalog 与 plugin packages 目录产物（depends: T1）
+- [x] T6: 包 README 双语说明 loader 行入口并重录 i18n（depends: T1）
 
 ## [S4] Acceptance
 
-- [ ] `ctx.plugin(apply)` 后 `ctx.get('sessionLogImporter')` 是 `SessionLogImporter` 实例（单测）
-- [ ] 壳生成的 `cordis.patch.yml` 含 `easel-session-log-import` 行（cargo test）
-- [ ] importer 包 100% 覆盖率与全仓 typecheck 保持绿
+- [x] `ctx.plugin(<模块命名空间>)` 后 `ctx.get('sessionLogImporter')` 是 `SessionLogImporter` 实例，fiber dispose 后消失（单测）
+- [x] 壳生成的 `cordis.patch.yml` 含 `easel-session-log-import` 行（cargo test）
+- [x] `apps/cli` 的部署闭包声明两个包（manifest + lockfile diff）
+- [x] importer 包 100% 覆盖率、全仓 typecheck、两个目录产物校验保持绿

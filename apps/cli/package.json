@@ -56,6 +56,7 @@
     "@deepseek-ai/dsh-schedule": "workspace:*",
     "@deepseek-ai/dsh-sdk-app": "workspace:*",
     "@deepseek-ai/dsh-sdk-minimal": "workspace:*",
+    "@deepseek-ai/dsh-session-log-import": "workspace:*",
     "@deepseek-ai/dsh-session-projection": "workspace:*",
     "@deepseek-ai/dsh-session-reference": "workspace:*",
     "@deepseek-ai/dsh-skill": "workspace:*",
@@ -110,7 +111,8 @@
     "@deepseek-ai/dsh-cua-bundle": "workspace:*",
     "@deepseek-ai/dsh-experimental-plugin-market-bundle": "workspace:*",
     "@deepseek-ai/dsh-personalized-recommendations": "workspace:*",
-    "@deepseek-ai/dsh-experimental-forge-bundle": "workspace:*"
+    "@deepseek-ai/dsh-experimental-forge-bundle": "workspace:*",
+    "@easel-dsh/easel-air-transfer": "workspace:*"
   },
   "devDependencies": {
     "@deepseek-ai/dsh-skill-badge": "workspace:*",

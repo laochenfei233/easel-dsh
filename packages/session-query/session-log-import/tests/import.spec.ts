@@ -211,8 +211,10 @@ it('mounts the importer through the loader plugin entry', async () => {
     // The loader hands the module namespace to ctx.plugin when the package has
     // no default export; the namespace's apply entry is what makes that work.
     expect(typeof apply).toBe('function')
-    ctx.plugin(await import('../src/index.ts'))
+    const fiber = ctx.plugin(await import('../src/index.ts'))
     await vi.waitFor(() => { expect(ctx.get('sessionLogImporter')).toBeInstanceOf(SessionLogImporter) })
+    await fiber.dispose()
+    expect(ctx.get('sessionLogImporter')).toBeUndefined()
   } finally {
     await ctx.fiber.dispose()
     await rm(root, { recursive: true, force: true })
