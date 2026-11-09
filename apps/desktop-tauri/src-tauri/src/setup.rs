@@ -551,6 +551,14 @@ pub(crate) fn ensure_easel_bundle_at(
             "insert:\n  - id: easel-lan-handoff\n    name: '@easel-dsh/easel-air-transfer'\n    config:\n      handoffDirectory: {handoff_dir}\n      dataDirectory: {data_dir}\n"
         ),
     )?;
+    // The receiving half imports arriving archives through `ctx.sessionLogImporter`.
+    // Nothing else mounts that provider, and without it an incoming transfer is
+    // refused before any byte moves.
+    ensure_bundle_row(
+        &mut rows,
+        "easel-session-log-import",
+        "insert:\n  - id: easel-session-log-import\n    name: '@deepseek-ai/dsh-session-log-import'\n",
+    )?;
     // Installs that mounted these rows before a rename keep their insert-row
     // package names verbatim; rewrite the known old names, or the upgraded
     // runtime resolves packages the closure no longer carries. `dataDirectory`
@@ -919,6 +927,9 @@ mod easel_tests {
         assert!(patch.contains("@easel-dsh/easel-automation"));
         assert!(patch.contains("@easel-dsh/easel-deconstruct"));
         assert!(patch.contains("@easel-dsh/easel-air-transfer"));
+        // The handoff refuses an arriving bundle unless this provider is mounted.
+        assert!(patch.contains("id: easel-session-log-import"));
+        assert!(patch.contains("@deepseek-ai/dsh-session-log-import"));
         // The skills row must point inside the deployed root, not at it.
         assert!(patch.contains(
             easel.join("skills").join("openclaw").to_string_lossy().as_ref()
