@@ -213,7 +213,7 @@ jobs:
           # macOS installers join the Release unsigned; their updater artifacts
           # are minisign-signed and belong in latest.json so the app window's
           # About page can install updates on macOS.
-          includeUpdaterJson: true
+          uploadUpdaterJson: true
           args: --verbose ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
 
       - name: Upload build artifacts
