@@ -1,14 +1,20 @@
 ---
 feature: easel-handoff-importer
-status: in-progress
+status: delivered
 updated: 2026-11-09
 branch: fix/easel-handoff-importer（worktree）
-commits: # filled at delivery
+commits: b07a44c631..5087db6460
 ---
 
 # 隔空传送：接收端缺失 sessionLogImporter 的挂载
 
 ## Report
+
+**What was built** — `@deepseek-ai/dsh-session-log-import` 现在有 loader 入口：模块级 `inject`（`sessionPersistence`、`attachments`）加 `apply(ctx)`，profile 行按包名即可挂载并得到 `ctx.sessionLogImporter`。Easel 壳在 `easel-lan-handoff` 行旁插入 `easel-session-log-import` 行；`apps/cli` 的部署闭包恢复 `@easel-dsh/easel-air-transfer` 并新增 importer（同步 lockfile），修掉了上游同步导致的插件丢失。config catalog 与 plugin packages 目录产物重新生成，包 README 双语补上 loader 行说明。
+
+**Verification** — importer 测试 17/17，scoped coverage 100%（statements/branches/functions/lines）；`tsx scripts/build.ts --scope typecheck` 5/5 PASS；`cargo test --lib setup::easel_tests` 10/10 PASS（含新行断言）；`gen-config-catalog --check`、`gen-plugin-packages --check` 均 up to date；`verify-translation-pairing` 该对一致；oxlint 改动文件 0 错误；`check-workspace-constraints` 与 master 基线同样两条既有发现，无新增。复审两轮：首轮 NEEDS FIXES（闭包缺失 + 目录产物过期），修复后二轮 SHIP。
+
+**Journey log** — (1) 探针法分辨断连原因：未知 intent 回 `reject{incompatible}` 证明通道正常，sync hello 无帧断连证明抛错在 `serveSync` 的服务依赖，而不是配对或防火墙。(2) 复审发现上游 manifest 同步把 `@easel-dsh/easel-air-transfer` 从部署闭包里刷掉了——不修这条，新包连插件都不会有。(3) 在 worktree 里执行 `pnpm install --lockfile-only` 会重写主检出共享 node_modules 的 workspace 链接，主检出用 `pnpm install --frozen-lockfile` 复原；worktree 内只跑 `node_modules/.bin/*`。
 
 ## [S1] Problem
 
@@ -35,7 +41,7 @@ commits: # filled at delivery
 
 ### S2.3 部署闭包
 
-审查发现 `apps/cli` 的 manifest 在同步上游时丢掉了 `@easel-dsh/easel-air-transfer`（`df6d262ff7` 引入、后被上游同步覆盖），因此从当前 master 出的包根本不带隔空传送插件；peer-only 拷贝兜底也救不了不在闭包里的包。修复：把 `@easel-dsh/easel-air-transfer` 与 `@deepseek-ai/dsh-session-log-import` 重新/新增到 `apps/cli` 的 `dependencies`，同步 `pnpm-lock.yaml`。部署闭包是 loader 行能解析的前提，缺包时 app-boot 只对非 required 行告警，不会响亮失败——所以必须在打包前用闭包断言守住这一段（本轮用 manifest + lockfile 证据）。
+审查发现 `apps/cli` 的 manifest 在同步上游时丢掉了 `@easel-dsh/easel-air-transfer`（重命名提交引入、后被上游 manifest 同步覆盖），因此从当前 master 出的包根本不带隔空传送插件；peer-only 拷贝兜底也救不了不在闭包里的包。修复：把 `@easel-dsh/easel-air-transfer` 与 `@deepseek-ai/dsh-session-log-import` 重新/新增到 `apps/cli` 的 `dependencies`，同步 `pnpm-lock.yaml`。部署闭包是 loader 行能解析的前提，缺包时 app-boot 只对非 required 行告警，不会响亮失败——所以必须在打包前用闭包断言守住这一段（本轮用 manifest + lockfile 证据）。
 
 ### S2.4 目录产物
 
