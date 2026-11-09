@@ -1,9 +1,9 @@
 ---
 feature: easel-install-parity
 status: delivered
-updated: 2026-11-09
+updated: 2026-11-10
 branch: fix/easel-install-parity
-commits: fix/easel-install-parity（5 次提交，未推送）
+commits: aceec17f29..aacd620fc8（release/desktop-alpha46）
 ---
 
 # 安装包能力一致性（macOS 更新 / 备份 / 隔空传送）
@@ -14,7 +14,7 @@ commits: fix/easel-install-parity（5 次提交，未推送）
 
 **Verification** — `node --test site/server/sync-releases.test.mjs` 10/10；`vitest run scripts/desktop-host-bridge.spec.ts` 4/4；新 spec 的 `tsc --noEmit --strict` 通过；`node --check bundle-runtime.mjs`、capability JSON 解析、oxlint 通过；`corepack pnpm install --frozen-lockfile` 通过；`verify-translation-pairing apps/desktop-tauri/README.md` 通过；`cargo check` 通过（`build.rs` 的 app manifest 与 capability 权限标识符经 codegen 校验；为满足 `bundle.resources` 的路径检查临时建了 gitignored 的 `runtime/` 占位目录，验证后已删除）；`cargo test` 50/51，唯一失败 `plain_config_rows_convert_keeping_project_root` 是只在 Windows 成立的路径断言，`src/` 相对基线无改动（PRE-EXISTING）。未运行：完整 `tauri build` 打包（需要先 stage runtime）。`test:docs` 的 6 个失败为基线（全部 compose spec 的中英配对提示、`.changelog` 的提交哈希、无关包 README），本改动文件不再新增条目；`check-workspace-constraints` 的 lan-handoff `private` 失败在基线同样存在。
 
-**Journey log** — ①首版只改注入桥；审阅指出 Tauri 2.11+ 对远程来源同样强制 ACL，补 app manifest 与两份 capability。②`includeUpdaterJson` 是 tauri-action 0.x 的输入名，v1 已改为 `uploadUpdaterJson`，原排除 mac 的条件从未生效。③官方镜像自己重建 `latest.json` 且只收 Windows 资产，拆分 `updaters` 与下载页集合。④mac 安装完成后进程退出、不自动重开（与关于页「应用即将退出」一致），自动重开列为后续体验项。
+**Journey log** — ①首版只改注入桥；审阅指出 Tauri 2.11+ 对远程来源同样强制 ACL，补 app manifest 与两份 capability。②`includeUpdaterJson` 是 tauri-action 0.x 的输入名，v1 已改为 `uploadUpdaterJson`，原排除 mac 的条件从未生效。③官方镜像自己重建 `latest.json` 且只收 Windows 资产，拆分 `updaters` 与下载页集合。④mac 安装完成后进程退出、不自动重开（与关于页「应用即将退出」一致），自动重开列为后续体验项。⑤本 spec 的提交未推送时，当晚 alpha.45 从 reset 到 origin/master 的发布线切出，四个修复全部回归；alpha.46 以合并 `release/desktop-alpha46`（alpha.45 线 + master）恢复。教训：发布线切出前先确认修复已在目标基线上。
 
 ## [S1] Problem
 
@@ -85,3 +85,4 @@ WebKit 的 app 窗口没有 iframe 父页面可 postMessage，也不再走 shell
 - [x] 打包脚本在闭包缺包时失败并给出缺失包名；注入脚本在打包期编译，语法错误即失败
 - [x] `desktop-release.yml` 对所有平台输出 updater 清单；镜像同步器把 `darwin-*` 写进 `latest.json` 且不让 mac 条目进入 `downloads.json`；README 更新器章节与实现一致
 - [ ] （发布项）下一次 Release 后，macOS 安装版关于页可检查并安装更新（真机验收）
+  - 2026-11-10 alpha.46 本地真机包证据：打包产物 index.html 带顶层 Tauri 桥；代理 200 / 直连 401；`engineReady: true`；`handoff available: true`；二进制含 `easel_*` 命令与更新器公钥。注意：alpha.45（2026-11-09 晚）从 reset 到 origin/master 的分支发布，缺失本 spec 全部未推送提交，关于页回归为「仅在桌面版提供」——发布线必须包含这些提交。关于页 GUI 最终确认待用户。
