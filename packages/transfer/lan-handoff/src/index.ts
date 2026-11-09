@@ -364,7 +364,10 @@ export class LanHandoffService extends Service {
             discovery,
             identity.deviceId,
             (peer) => { this.discovered.set(peer.id, peer) },
-            { ...options?.allowLoopbackPeers === true ? { allowLoopback: true } : {} },
+            {
+              ...options?.allowLoopbackPeers === true ? { allowLoopback: true } : {},
+              onPeerGone: (deviceId) => { this.discovered.delete(deviceId) },
+            },
           )
           this.identity = identity
           this.root = root
