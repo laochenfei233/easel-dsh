@@ -4810,7 +4810,7 @@ export interface Config {
 
 ## `@easel-dsh/easel-air-transfer`
 
-- `source`: [`packages/transfer/lan-handoff/src/index.ts:169`](../packages/transfer/lan-handoff/src/index.ts)
+- `source`: [`packages/transfer/lan-handoff/src/index.ts:183`](../packages/transfer/lan-handoff/src/index.ts)
 
 ```ts config-catalog
 /** Configuration for the LAN project-handoff peer service. */
@@ -4840,6 +4840,13 @@ export interface Config {
    * unset.
    */
   dataDirectory?: string
+  /**
+   * Minutes after which a staging directory left by an interrupted receipt is
+   * removed at service start. The default 30 minutes keeps a concurrently
+   * running instance's active receipt safe; `0` removes every staging group
+   * at startup.
+   */
+  staleReceiptAgeMinutes?: number
 }
 ```
 <!-- END GENERATED config-catalog:@easel-dsh/easel-air-transfer -->

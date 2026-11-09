@@ -12,14 +12,22 @@
 
 import { createHash } from 'node:crypto'
 import { isAbsolute } from 'node:path'
-import type { ConnectionChannel } from './pairing.ts'
+import { ChannelClosedError, type ConnectionChannel } from './pairing.ts'
 import type { WireMessage } from './frame.ts'
 
-/** Version of the transfer message vocabulary. */
-export const TRANSFER_PROTOCOL_VERSION = 1
+/** Version of the transfer message vocabulary; v2 adds the completion acknowledgement. */
+export const TRANSFER_PROTOCOL_VERSION = 2
 
 /** Bytes of payload per `chunk` message. */
 export const TRANSFER_CHUNK_BYTES = 256 * 1024
+
+/**
+ * How long the sender waits for the receiver's completion acknowledgement.
+ *
+ * The receiver verifies the received tree and imports sessions before it can
+ * confirm, so this covers minutes of local work after the last byte.
+ */
+export const TRANSFER_COMPLETION_TIMEOUT_MS = 10 * 60 * 1000
 
 /** Which part of a bundle one entry belongs to. */
 export type BundleEntryKind = 'file' | 'session' | 'data'
@@ -86,6 +94,19 @@ export class TransferRejectedError extends Error {
   constructor(readonly reason: string | undefined) {
     super(reason === undefined ? 'the receiving device declined the bundle' : `the receiving device declined the bundle (${reason})`)
     this.name = 'TransferRejectedError'
+  }
+}
+
+/** Failure: the receiving device streamed the bundle but could not import it. */
+export class TransferCompletionError extends Error {
+  /**
+   * @param remoteReason - the receiving device's own failure report, when it sent one.
+   */
+  constructor(readonly remoteReason: string | undefined) {
+    super(remoteReason === undefined
+      ? 'the receiving device could not complete the handoff'
+      : `the receiving device could not complete the handoff (${remoteReason})`)
+    this.name = 'TransferCompletionError'
   }
 }
 
@@ -170,7 +191,11 @@ export function validateBundleManifest(candidate: unknown): BundleManifest {
   const sourceCwd = record['sourceCwd']
   const entriesRaw = record['entries']
   const treeRaw = record['treeSummary']
-  if (typeof bundleId !== 'string' || bundleId.length === 0 || bundleId.length > 128) throw new TransferProtocolError('manifest has no valid bundleId')
+  // The bundle id names the staging path; keep it to one path segment so a
+  // hostile manifest cannot create or delete directories outside the inbox.
+  if (typeof bundleId !== 'string' || !/^[A-Za-z0-9_-]{1,128}$/u.test(bundleId)) {
+    throw new TransferProtocolError('manifest has no valid bundleId')
+  }
   if (typeof projectTitle !== 'string' || projectTitle.length === 0 || projectTitle.length > 256) throw new TransferProtocolError('manifest has no valid projectTitle')
   if (typeof sourceCwd !== 'string' || sourceCwd.length === 0) throw new TransferProtocolError('manifest has no sourceCwd')
   if (!Array.isArray(entriesRaw)) throw new TransferProtocolError('manifest has no entries list')
@@ -245,8 +270,11 @@ export interface SentBundle {
  * @param manifest - the validated manifest (computed by the caller).
  * @param readEntry - source of one entry's bytes in order.
  * @param signal - optional cancellation.
- * @returns which entries were skipped and which were streamed.
+ * @returns which entries were skipped and which were streamed, after the
+ * receiver confirms that it verified and imported the bundle.
  * @throws {TransferRejectedError} when the receiver declines.
+ * @throws {TransferCompletionError} when the receiver streamed but could not import.
+ * @throws {ChannelClosedError} when the connection ends before the confirmation.
  * @throws {TransferIntegrityError} when a source no longer matches the manifest.
  * @throws {TransferProtocolError} when the receiver's resume list is invalid.
  */
@@ -274,6 +302,12 @@ export async function sendBundle(
     sent.push(entry)
   }
   channel.write({ type: 'done', binaryLength: 0 })
+  // Success means the receiving device imported the bundle, not just that the
+  // bytes reached the socket. A receiver-side failure arrives as `failed`.
+  const completion = await channel.next(['received', 'failed'], TRANSFER_COMPLETION_TIMEOUT_MS)
+  if (completion.type === 'failed') {
+    throw new TransferCompletionError(typeof completion['reason'] === 'string' ? completion['reason'] : undefined)
+  }
   return { skipped, sent }
 }
 
@@ -406,6 +440,7 @@ export interface ReceivedBundle {
  * @returns the manifest and the entries received in this session.
  * @throws {TransferProtocolError} for malformed offers or message sequences.
  * @throws {TransferIntegrityError} when received bytes disagree with the manifest.
+ * @throws {ChannelClosedError} when the connection ends before every entry arrived.
  */
 export async function receiveBundle(
   channel: ConnectionChannel,
@@ -431,7 +466,17 @@ export async function receiveBundle(
   const received: BundleEntryRef[] = []
   for (;;) {
     handlers.signal?.throwIfAborted()
-    const message = await channel.next(['entry', 'done'], 120_000)
+    let message: WireMessage
+    try {
+      message = await channel.next(['entry', 'done'], 120_000)
+    } catch (error) {
+      // A graceful close follows the last frame; a terminal `done` lost to a
+      // dropped link must not discard a receipt whose entries all arrived.
+      if (error instanceof ChannelClosedError && allEntriesArrived(manifest, decision.completed ?? [], received)) {
+        return { manifest, entries: received }
+      }
+      throw error
+    }
     if (message.type === 'done') return { manifest, entries: received }
     const announced = entryOf(message)
     const entry = byPath.get(theKey(announced))
@@ -441,6 +486,18 @@ export async function receiveBundle(
     await receiveEntry(channel, entry, handlers.openEntry, handlers.signal)
     received.push(entry)
   }
+}
+
+/** Whether every manifest entry is already complete on this receiver. */
+function allEntriesArrived(
+  manifest: BundleManifest,
+  completed: readonly BundleEntryRef[],
+  received: readonly BundleEntryRef[],
+): boolean {
+  const have = new Set<string>()
+  for (const entry of completed) have.add(entryKey(entry))
+  for (const entry of received) have.add(entryKey(entry))
+  return manifest.entries.every(entry => have.has(entryKey(entry)))
 }
 
 /** Lookup key for one announced entry. */

@@ -23,6 +23,7 @@ import { dialLanPeer, startLanListener } from '../src/listener.ts'
 import {
   answerPairing,
   attachChannel,
+  ChannelClosedError,
   dialForPairing,
   PairingError,
   PairingIncompatibleError,
@@ -169,7 +170,7 @@ it('refuses a peer that presents no certificate', async () => {
       type: 'hello',
       binaryLength: 0,
       intent: 'pair',
-      device: { name: 'x', platform: 'linux', protocol: { min: 1, max: 1 } },
+      device: { name: 'x', platform: 'linux', protocol: { min: 2, max: 2 } },
       nonce: 'a'.repeat(32),
     })
     const { channel, hello } = await pair.server
@@ -206,7 +207,7 @@ it('refuses a hello with an invalid nonce', async () => {
       type: 'hello',
       binaryLength: 0,
       intent: 'pair',
-      device: { name: 'x', platform: 'linux', protocol: { min: 1, max: 1 } },
+      device: { name: 'x', platform: 'linux', protocol: { min: 2, max: 2 } },
       nonce: 'not-hex',
     })
     const { socket, channel, hello } = await pair.server
@@ -323,7 +324,7 @@ it('times out a channel wait and refuses writes after failure', async () => {
     await expect(channel.next('never', 10)).rejects.toMatchObject({ reason: 'timeout' })
     socket.destroy()
     await once(socket, 'close')
-    expect(() => { channel.write({ type: 'ping', binaryLength: 0 }) }).toThrow(PairingError)
+    expect(() => { channel.write({ type: 'ping', binaryLength: 0 }) }).toThrow(ChannelClosedError)
   } finally {
     await listener.close()
   }

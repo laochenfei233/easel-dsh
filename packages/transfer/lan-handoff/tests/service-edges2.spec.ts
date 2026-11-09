@@ -240,6 +240,7 @@ it('accepts without a resume field and streams everything', async () => {
     loop.server.write({ type: 'accept', binaryLength: 0 })
     expect((await loop.server.next('entry', 5_000))['path']).toBe('a.txt')
     await loop.server.next('chunk', 5_000)
+    loop.server.write({ type: 'received', binaryLength: 0 })
     await sent
   } finally {
     await loop.close()
@@ -333,7 +334,7 @@ it('refuses a pairing confirm decline without a reason', async () => {
       channel.write({
         type: 'pairChallenge',
         binaryLength: 0,
-        device: { name: 'peer', platform: 'linux', protocol: { min: 1, max: 1 } },
+        device: { name: 'peer', platform: 'linux', protocol: { min: 2, max: 2 } },
         nonce: 'b'.repeat(32),
       })
     })
@@ -458,7 +459,7 @@ it('refuses a sync dial to a discovered peer whose advertised port is closed', a
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: 1,
-    txt: { id: String(betaState.deviceId), name: 'beta', pf: 'linux', v: '1', vmin: '1' },
+    txt: { id: String(betaState.deviceId), name: 'beta', pf: 'linux', v: '2', vmin: '2' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot()).toHaveLength(1) })
   await expect(alpha.service.openSyncChannel(String(betaState.deviceId))).rejects.toBeInstanceOf(Error)

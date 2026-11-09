@@ -7,12 +7,14 @@ import {
   advertiseLanHandoff,
   browseLanHandoff,
   encodeDeviceTxt,
+  isLinkLocalAddress,
   isLoopbackAddress,
   LAN_HANDOFF_PROTOCOL_VERSION,
   lanPlatformOfHost,
   parseDeviceTxt,
   parseDiscoveredEntry,
   protocolRangesOverlap,
+  selectDialAddress,
   type LanAdvertisement,
   type LanDiscoveryEntry,
   type LanDiscoveryHost,
@@ -100,6 +102,60 @@ it('loops back only on loopback literals', () => {
   expect(isLoopbackAddress('fe80::1')).toBe(false)
 })
 
+describe('dial address selection', () => {
+  const local = [{ address: '192.168.100.40', netmask: '255.255.255.0' }]
+
+  it('detects IPv4 and IPv6 link-local addresses', () => {
+    expect(isLinkLocalAddress('169.254.10.2')).toBe(true)
+    expect(isLinkLocalAddress('fe80::1')).toBe(true)
+    expect(isLinkLocalAddress('FE80::1')).toBe(true)
+    expect(isLinkLocalAddress('192.168.100.30')).toBe(false)
+    expect(isLinkLocalAddress('2001:db8::1')).toBe(false)
+  })
+
+  it('prefers an IPv4 address on a local subnet over virtual adapters', () => {
+    expect(selectDialAddress(
+      ['192.168.44.1', '192.168.208.1', '192.168.100.30', '172.19.224.1'],
+      local,
+    )).toBe('192.168.100.30')
+    expect(selectDialAddress(['::ffff:192.168.100.30'], local)).toBe('::ffff:192.168.100.30')
+  })
+
+  it('falls back to the first public IPv4 when no subnet matches', () => {
+    expect(selectDialAddress(['10.1.2.3', '192.168.44.1'], local)).toBe('10.1.2.3')
+  })
+
+  it('skips loopback, link-local, unspecified, and multicast addresses', () => {
+    expect(selectDialAddress([
+      '127.0.0.1',
+      '169.254.1.2',
+      'fe80::1',
+      '0.0.0.0',
+      '::',
+      'ff02::1',
+      '192.168.100.30',
+    ], local)).toBe('192.168.100.30')
+    expect(selectDialAddress(['127.0.0.1', '169.254.1.2'], local)).toBeUndefined()
+  })
+
+  it('keeps loopback addresses for explicit loopback compositions', () => {
+    expect(selectDialAddress(['127.0.0.1'], local, { allowLoopback: true })).toBe('127.0.0.1')
+  })
+
+  it('falls back to a non-link-local IPv6 address when no IPv4 exists', () => {
+    expect(selectDialAddress(['fe80::1', '2001:db8::5'], local)).toBe('2001:db8::5')
+    expect(selectDialAddress(['999.1.2.3'], local)).toBeUndefined()
+  })
+
+  it('ignores malformed IPv4 literals and unusable local masks', () => {
+    expect(selectDialAddress(['1.2.3'], local)).toBeUndefined()
+    expect(selectDialAddress(['1.2.3.x'], local)).toBeUndefined()
+    expect(selectDialAddress(['256.1.1.1'], local)).toBeUndefined()
+    expect(selectDialAddress(['192.168.100.30'], [{ address: 'bad', netmask: 'bad' }]))
+      .toBe('192.168.100.30')
+  })
+})
+
 describe('discovered-entry listing', () => {
   it('lists an incompatible peer as incompatible', () => {
     const peer = parseDiscoveredEntry(PEER_ENTRY, OWN_ID)
@@ -142,7 +198,7 @@ describe('the recording host drives advertisement and browsing', () => {
       name: OWN_ID,
       type: 'easel-handoff',
       port: 40121,
-      txt: { id: OWN_ID, name: 'bill', pf: lanPlatformOfHost(), v: '1', vmin: '1' },
+      txt: { id: OWN_ID, name: 'bill', pf: lanPlatformOfHost(), v: '2', vmin: '2' },
     }])
     published.stop()
     expect(host.stopped).toBe(1)

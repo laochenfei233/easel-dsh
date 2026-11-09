@@ -123,7 +123,7 @@ function discover(alpha: Device, beta: Device): void {
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '1', vmin: '1' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '2', vmin: '2' },
   })
 }
 
@@ -360,7 +360,10 @@ it('records a receiving-side import failure on the serving device', async () => 
   await pair(alpha, beta)
   discover(alpha, beta)
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot()).toHaveLength(1) })
-  await alpha.service.sendProjectToPeer(beta.deviceId, projectRoot)
+  const failure = await alpha.service.sendProjectToPeer(beta.deviceId, projectRoot)
+    .then(() => undefined, (error: unknown) => error)
+  expect(failure).toMatchObject({ name: 'TransferCompletionError' })
+  expect((failure as Error).message).toContain('store refused')
   await vi.waitFor(() => { expect(beta.service.lastHandoffOutcome()?.ok).toBe(false) }, { timeout: 5_000 })
   expect(beta.service.lastHandoffOutcome()?.detail).toContain('store refused')
   await rm(projectRoot, { recursive: true, force: true })

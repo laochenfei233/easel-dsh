@@ -10,7 +10,7 @@
  */
 
 import { randomBytes } from 'node:crypto'
-import { hostname } from 'node:os'
+import { hostname, networkInterfaces } from 'node:os'
 import { join, resolve } from 'node:path'
 import type { TLSSocket } from 'node:tls'
 import { Context, Service } from '@deepseek-ai/cordis'
@@ -32,7 +32,9 @@ import {
   createBonjourDiscovery,
   LAN_HANDOFF_PROTOCOL_VERSION,
   lanPlatformOfHost,
+  selectDialAddress,
   type LanDiscoveryHost,
+  type LocalIpv4Network,
   type PeerAdvertisement,
 } from './discovery.ts'
 import { defaultLanHandoffRoot, deviceIdFromCertificate, loadDeviceIdentity, type DeviceId, type DeviceIdentity } from './identity.ts'
@@ -50,10 +52,12 @@ import {
 import { loadPairedPeers, savePairedPeers, type PairedPeer } from './peers.ts'
 import {
   bundleFromFiles,
+  cleanupStaleReceipts,
   receiveHandoff,
   sendPreparedBundle,
   walkProjectTree,
   type DataFileSource,
+  type HandoffReceiveProgress,
   type PreparedBundle,
   type ReceivedHandoff,
   type SessionArchiveSource,
@@ -72,6 +76,7 @@ export {
   browseLanHandoff,
   createBonjourDiscovery,
   encodeDeviceTxt,
+  isLinkLocalAddress,
   isLoopbackAddress,
   LAN_HANDOFF_PROTOCOL_VERSION,
   LAN_HANDOFF_RESCAN_MS,
@@ -80,11 +85,13 @@ export {
   parseDeviceTxt,
   parseDiscoveredEntry,
   protocolRangesOverlap,
+  selectDialAddress,
   type DeviceTxtDocument,
   type LanAdvertisement,
   type LanDiscoveryEntry,
   type LanDiscoveryHost,
   type LanPlatform,
+  type LocalIpv4Network,
   type PeerAdvertisement,
   type ProtocolVersionRange,
 } from './discovery.ts'
@@ -92,6 +99,7 @@ export { dialLanPeer, startLanListener, type LanListener } from './listener.ts'
 export {
   answerPairing,
   attachChannel,
+  ChannelClosedError,
   dialForPairing,
   PAIRING_TIMEOUT_MS,
   PairingError,
@@ -121,10 +129,12 @@ export {
   computeTreeSummary,
   receiveBundle,
   sendBundle,
+  TransferCompletionError,
   TransferIntegrityError,
   TransferProtocolError,
   TransferRejectedError,
   TRANSFER_CHUNK_BYTES,
+  TRANSFER_COMPLETION_TIMEOUT_MS,
   TRANSFER_PROTOCOL_VERSION,
   validateBundleManifest,
   type BundleEntryKind,
@@ -143,6 +153,7 @@ export {
   HandoffPreparationError,
   HandoffReceiveError,
   bundleFromFiles,
+  cleanupStaleReceipts,
   mergeEnvText,
   prepareBundle,
   projectDirectoryName,
@@ -152,6 +163,8 @@ export {
   type BundleFileInput,
   type DataFileSource,
   type HandoffImportHost,
+  type HandoffReceivePhase,
+  type HandoffReceiveProgress,
   type PreparedBundle,
   type ProjectTreeFile,
   type ReceivedHandoff,
@@ -193,6 +206,19 @@ export interface Config {
    * unset.
    */
   dataDirectory?: string
+  /**
+   * Minutes after which a staging directory left by an interrupted receipt is
+   * removed at service start. The default 30 minutes keeps a concurrently
+   * running instance's active receipt safe; `0` removes every staging group
+   * at startup.
+   */
+  staleReceiptAgeMinutes?: number
+}
+
+/** Live state of the receipt currently streaming into this device. */
+export interface ReceivingHandoff extends HandoffReceiveProgress {
+  /** Epoch milliseconds when this receipt started. */
+  readonly startedAt: number
 }
 
 /** One resolved workspace record as the handoff reads it. */
@@ -316,6 +342,7 @@ export class LanHandoffService extends Service {
     port: z.number().min(0).max(65535).default(0),
     handoffDirectory: z.string().default(''),
     dataDirectory: z.string().default(''),
+    staleReceiptAgeMinutes: z.number().min(0).max(43200).default(30),
   })
 
   /** Runtime state, resolved once on start; device id and bound port never change afterwards. */
@@ -329,6 +356,9 @@ export class LanHandoffService extends Service {
   private readonly options: LanHandoffStartOptions
   private pairingRequestHandler: ((offer: PairingOffer) => void) | undefined
   private lastHandoff: LastHandoff | undefined
+  private localNetworks: readonly LocalIpv4Network[] = []
+  private receiving: ReceivingHandoff | undefined
+  private receivingId: string | undefined
 
   /**
    * @param ctx - host context owning the fiber that runs peer services.
@@ -352,6 +382,14 @@ export class LanHandoffService extends Service {
           const dataDirectory = config.dataDirectory !== undefined && config.dataDirectory.trim().length > 0
             ? resolve(config.dataDirectory)
             : ''
+          this.localNetworks = localIpv4Networks()
+          try {
+            const removed = await cleanupStaleReceipts(handoffDirectory, (config.staleReceiptAgeMinutes ?? 30) * 60_000)
+            if (removed.length > 0) ctx.logger.warn(`lan-handoff: removed ${String(removed.length)} staging group(s) from interrupted receipts`)
+          } catch {
+            /* v8 ignore next -- staging removal fails only on a permission error the start path cannot force */
+            ctx.logger.warn(`lan-handoff: could not clean stale receipts under "${handoffDirectory}"`)
+          }
           /* v8 ignore next -- live mDNS stays out of loopback suites */
           const discovery = options?.discovery ?? createBonjourDiscovery()
           const listener = await startLanListener(identity, config.port ?? 0, (socket) => { this.serveConnection(socket) })
@@ -434,6 +472,14 @@ export class LanHandoffService extends Service {
   }
 
   /**
+   * The receipt currently streaming into this device.
+   * @returns live progress, or `undefined` when no receipt is in flight.
+   */
+  receivingSnapshot(): ReceivingHandoff | undefined {
+    return this.receiving
+  }
+
+  /**
    * Install a handler receiving each incoming pairing request instead of the
    * pending list. Without a handler, requests stay in {@link pairingOffers}.
    * @param handler - receiver of a {@link PairingOffer}; the handler owns accept/reject.
@@ -452,6 +498,7 @@ export class LanHandoffService extends Service {
    * @param options - optional cancellation before the socket connects.
    * @returns the offer whose accept() persists the pairing on success.
    * @throws {PairingRejectedError} when the peer declines.
+   * @throws {ChannelClosedError} when the connection closes before the decision.
    * @throws {PairingError} for protocol or timeout failures.
    */
   async pairWithPeer(
@@ -520,7 +567,7 @@ export class LanHandoffService extends Service {
    * the certificate this connection presents and refuses unpaired ids.
    * @param peerId - the paired device's id.
    * @returns the connected socket and its frame channel.
-   * @throws {Error} when the peer is not discovered right now or no longer paired.
+   * @throws {Error} when the peer is not discovered right now, no longer paired, or speaks an incompatible protocol.
    */
   async openSyncChannel(peerId: string): Promise<{ readonly socket: TLSSocket; readonly channel: ConnectionChannel }> {
     const state = await this.ready
@@ -528,6 +575,10 @@ export class LanHandoffService extends Service {
     /* v8 ignore next -- ready resolved before any method can run */
     if (identity === undefined) throw new Error('lan handoff identity is not started')
     if (!this.paired.has(peerId)) throw new Error(`device ${peerId} is not paired with this device`)
+    const peer = this.discovered.get(peerId)
+    if (peer !== undefined && !peer.compatible) {
+      throw new Error(`device ${peerId} speaks an incompatible Air Transfer protocol; update both devices and retry`)
+    }
     const socket = await secureDial(this.addressOf(peerId), identity)
     const channel = attachChannel(socket)
     channel.write({ type: 'hello', binaryLength: 0, intent: 'sync', peer: String(state.deviceId) })
@@ -645,9 +696,11 @@ export class LanHandoffService extends Service {
    * @returns which entries were streamed and which the peer already held.
    */
   private async streamToPeer(peerId: string, prepared: PreparedBundle, signal?: AbortSignal): Promise<SentBundle> {
-    const { socket, channel } = await this.openSyncChannel(peerId)
+    let socket: TLSSocket | undefined
     try {
-      const sent = await sendPreparedBundle(channel, prepared, signal)
+      const opened = await this.openSyncChannel(peerId)
+      socket = opened.socket
+      const sent = await sendPreparedBundle(opened.channel, prepared, signal)
       this.lastHandoff = { at: Date.now(), ok: true, detail: `sent ${String(sent.sent.length)} entries to ${peerId}` }
       return sent
     } catch (error) {
@@ -657,7 +710,7 @@ export class LanHandoffService extends Service {
     } finally {
       // Graceful close flushes frames still in the write buffer; destroy()
       // can discard the final `done` message and leave the peer waiting.
-      socket.end()
+      socket?.end()
     }
   }
 
@@ -734,9 +787,14 @@ export class LanHandoffService extends Service {
    */
   private addressOf(peerId: string): { readonly host: string; readonly port: number } {
     const peer = this.discovered.get(peerId)
-    const host = peer?.addresses[0]
-    if (peer === undefined || host === undefined) {
+    if (peer === undefined) {
       throw new Error(`device ${peerId} is not currently visible on the network; ask it to keep the app open and retry`)
+    }
+    const host = selectDialAddress(peer.addresses, this.localNetworks, {
+      ...this.options.allowLoopbackPeers === true ? { allowLoopback: true } : {},
+    })
+    if (host === undefined) {
+      throw new Error(`device ${peerId} advertises no dialable address on this network; ask it to reconnect and retry`)
     }
     return { host, port: peer.port }
   }
@@ -762,7 +820,9 @@ export class LanHandoffService extends Service {
     void this.routeConnection(socket).catch((error: unknown) => {
       /* v8 ignore next -- reached only through a route refusal, which always carries an Error */
       this.ctx.logger.warn(`lan-handoff: connection refused: ${error instanceof Error ? error.message : String(error)}`)
-      socket.destroy()
+      // Flush the terminal `failed` frame before closing; destroy() can drop
+      // it and leave the sender reporting a bare closed connection.
+      socket.destroySoon()
     })
   }
 
@@ -836,17 +896,31 @@ export class LanHandoffService extends Service {
       },
     }
     const state = await this.ready
+    const receiptId = randomBytes(6).toString('hex')
+    const startedAt = Date.now()
+    const report = (progress: HandoffReceiveProgress): void => {
+      this.receivingId = receiptId
+      this.receiving = { ...progress, startedAt }
+    }
     try {
       const outcome: ReceivedHandoff = await receiveHandoff(channel, {
         targetParentDirectory: state.handoffDirectory,
         host,
         ...state.dataDirectory === '' ? {} : { dataDirectory: state.dataDirectory },
+        onProgress: report,
       })
       this.lastHandoff = { at: Date.now(), ok: true, detail: `received "${outcome.projectPath}"` }
     } catch (error) {
       /* v8 ignore next -- receiveHandoff rejects with Error instances only */
       this.lastHandoff = { at: Date.now(), ok: false, detail: error instanceof Error ? error.message : String(error) }
       throw error
+    } finally {
+      // Only this receipt clears the live progress; a later concurrent
+      // receipt owns the snapshot once its first update arrives.
+      if (this.receivingId === receiptId) {
+        this.receiving = undefined
+        this.receivingId = undefined
+      }
     }
   }
 
@@ -865,6 +939,23 @@ export class LanHandoffService extends Service {
     await listener.close()
     await discovery.dispose()
   }
+}
+
+/**
+ * Collect this host's non-internal IPv4 addresses and masks.
+ * @returns one entry per configured IPv4 interface address.
+ */
+function localIpv4Networks(): LocalIpv4Network[] {
+  const networks: LocalIpv4Network[] = []
+  for (const addresses of Object.values(networkInterfaces())) {
+    /* v8 ignore next -- networkInterfaces() enumerates present interfaces only; the fallback satisfies the optional index type */
+    for (const address of addresses ?? []) {
+      if (address.family === 'IPv4' && !address.internal) {
+        networks.push({ address: address.address, netmask: address.netmask })
+      }
+    }
+  }
+  return networks
 }
 
 /** The services and operations one handoff composes. */

@@ -11,7 +11,7 @@
 
 import { createHash } from 'node:crypto'
 import { createReadStream } from 'node:fs'
-import { copyFile, mkdir, open, readdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { copyFile, lstat, mkdir, open, readdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises'
 import type { Dirent } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import type { ConnectionChannel } from './pairing.ts'
@@ -348,6 +348,25 @@ export interface ReceivedHandoff {
   readonly skipped: readonly BundleEntryRef[]
 }
 
+/** Phase of one incoming receipt. */
+export type HandoffReceivePhase = 'receiving' | 'verifying' | 'importing'
+
+/** Live progress of one incoming receipt. */
+export interface HandoffReceiveProgress {
+  /** What the receiver is doing now. */
+  readonly phase: HandoffReceivePhase
+  /** The sender's project title. */
+  readonly projectTitle: string
+  /** Bundle entries whose bytes arrived and verified. */
+  readonly entriesDone: number
+  /** Bundle entries in the accepted manifest. */
+  readonly entriesTotal: number
+  /** Bytes written to staging so far. */
+  readonly bytesDone: number
+  /** Bytes the accepted manifest announces. */
+  readonly bytesTotal: number
+}
+
 /** The staging layout for one bundle inside the target parent directory. */
 interface StagingLayout {
   readonly projectRoot: string
@@ -355,10 +374,101 @@ interface StagingLayout {
   readonly dataRoot: string
 }
 
+/** Mutable progress record behind {@link HandoffReceiveProgress}. */
+interface MutableProgress {
+  phase: HandoffReceivePhase
+  projectTitle: string
+  entriesDone: number
+  entriesTotal: number
+  bytesDone: number
+  bytesTotal: number
+}
+
 /** Staging layout for one bundle id. */
 function stagingOf(parentDirectory: string, bundleId: string): StagingLayout {
   const base = join(parentDirectory, `.handoff-${bundleId}`)
   return { projectRoot: base, sessionRoot: `${base}.sessions`, dataRoot: `${base}.data` }
+}
+
+/** Names this package gives the staging paths of one receipt (same id alphabet the manifest accepts). */
+const STAGING_NAME = /^(\.handoff-[A-Za-z0-9_-]{1,128})(?:\.data|\.sessions)?$/u
+
+/**
+ * Remove staging directories left by receipts interrupted before completion
+ * (process exit, crash, or app relaunch).
+ *
+ * Only names matching this package's staging pattern are considered, and a
+ * group is removed only when its newest file is at least `maxAgeMs` old, so a
+ * concurrently running instance's active receipt is not deleted.
+ * @param parentDirectory - the configured handoff directory.
+ * @param maxAgeMs - minimum age of the newest staged file before removal.
+ * @param now - current epoch milliseconds (injectable for tests).
+ * @returns the staging base paths that were removed.
+ */
+export async function cleanupStaleReceipts(
+  parentDirectory: string,
+  maxAgeMs: number,
+  now = Date.now(),
+): Promise<readonly string[]> {
+  let entries: readonly Dirent[]
+  try {
+    entries = await readdir(parentDirectory, { withFileTypes: true })
+  } catch {
+    // A handoff directory that does not exist yet has no stale receipts.
+    return []
+  }
+  const bases = new Set<string>()
+  for (const entry of entries) {
+    const match = STAGING_NAME.exec(entry.name)
+    if (match?.[1] !== undefined) bases.add(join(parentDirectory, match[1]))
+  }
+  const removed: string[] = []
+  for (const base of bases) {
+    // A data-less receipt can leave only the `.data` sibling after the project
+    // base was renamed away; the sibling's age still decides whether it is stale.
+    const times = await Promise.all([base, `${base}.data`, `${base}.sessions`].map(path => newestMtime(path)))
+    const known = times.filter((time): time is number => time !== undefined)
+    /* v8 ignore next -- all three staging paths vanishing between listing and inspection is a race */
+    if (known.length === 0) continue
+    const newest = Math.max(...known)
+    // A zero threshold means "remove every group"; positive thresholds keep
+    // anything touched inside the window, including files newer than `now`.
+    if (maxAgeMs > 0 && now - newest < maxAgeMs) continue
+    await rm(base, { recursive: true, force: true })
+    await rm(`${base}.data`, { recursive: true, force: true })
+    await rm(`${base}.sessions`, { recursive: true, force: true })
+    removed.push(base)
+  }
+  return removed
+}
+
+/**
+ * Find the newest modification time among a path and everything under it.
+ * @param path - file or directory to inspect.
+ * @returns epoch milliseconds, or `undefined` when the path already vanished.
+ */
+async function newestMtime(path: string): Promise<number | undefined> {
+  let info
+  try {
+    info = await lstat(path)
+  } catch {
+    /* v8 ignore next -- a staging path can vanish between listing and inspection */
+    return undefined
+  }
+  let newest = info.mtimeMs
+  if (!info.isDirectory()) return newest
+  let entries: readonly Dirent[]
+  try {
+    entries = await readdir(path, { withFileTypes: true })
+  } catch {
+    /* v8 ignore next -- a staging directory can vanish between listing and inspection */
+    return newest
+  }
+  for (const entry of entries) {
+    const value = await newestMtime(join(path, entry.name))
+    if (value !== undefined && value > newest) newest = value
+  }
+  return newest
 }
 
 /** Streaming sink writing one entry to one staging path. */
@@ -456,10 +566,15 @@ async function reconcileStagedTree(staging: StagingLayout, manifest: BundleManif
  * exists is merged file-by-file into the existing directory instead of
  * refusing, skipping the whole-tree reconciliation (per-entry digest plus the
  * all-entries-arrived check still apply).
+ *
+ * Completion: after the receipt settles the receiver sends `received`, or
+ * `failed` with the failure reason. The sender waits for that message, so its
+ * success means this receipt finished importing, not that the bytes arrived.
  * @param channel - the authenticated connection channel.
  * @param options - target parent directory, data root, and product seams.
  * @returns the completed receipt.
  * @throws {HandoffReceiveError} at the documented failure points.
+ * @throws when the connection ends before every entry arrived.
  */
 export async function receiveHandoff(
   channel: ConnectionChannel,
@@ -469,6 +584,8 @@ export async function receiveHandoff(
     /** Receiving device's data root for `data` entries; required by bundles that carry them. */
     readonly dataDirectory?: string
     readonly signal?: AbortSignal
+    /** Called with each progress change while the bundle streams and settles. */
+    readonly onProgress?: (progress: HandoffReceiveProgress) => void
   },
 ): Promise<ReceivedHandoff> {
   const parent = resolve(options.targetParentDirectory)
@@ -477,6 +594,22 @@ export async function receiveHandoff(
   let title: string | undefined
   let mergeMode = false
   let skipped: readonly BundleEntryRef[] = []
+  const progress: MutableProgress = {
+    phase: 'receiving',
+    projectTitle: '',
+    entriesDone: 0,
+    entriesTotal: 0,
+    bytesDone: 0,
+    bytesTotal: 0,
+  }
+
+  const report = (): void => {
+    options.onProgress?.({ ...progress })
+  }
+  const setPhase = (phase: HandoffReceivePhase): void => {
+    progress.phase = phase
+    report()
+  }
 
   const finish = async (manifest: BundleManifest, received: readonly BundleEntryRef[]): Promise<ReceivedHandoff> => {
     /* v8 ignore next 3 -- staging and title are set by the accepted offer */
@@ -488,11 +621,12 @@ export async function receiveHandoff(
       mergeMode,
       received,
       skipped,
+      onPhase: setPhase,
     })
     return { ...receipt, skipped }
   }
 
-  return receiveBundle(channel, {
+  const receive = receiveBundle(channel, {
     ...options.signal === undefined ? {} : { signal: options.signal },
     decideOffer: async (manifest): Promise<OfferDecision> => {
       const decision = await decideOffer(manifest, parent, options.dataDirectory, (layout, path, receivedTitle, merge) => {
@@ -502,6 +636,15 @@ export async function receiveHandoff(
         mergeMode = merge
       })
       skipped = decision.completed ?? []
+      if (decision.accept) {
+        progress.phase = 'receiving'
+        progress.projectTitle = manifest.projectTitle
+        progress.entriesDone = 0
+        progress.entriesTotal = manifest.entries.length
+        progress.bytesDone = 0
+        progress.bytesTotal = manifest.treeSummary.totalBytes
+        report()
+      }
       return decision
     },
     openEntry: async (entry) => {
@@ -510,9 +653,41 @@ export async function receiveHandoff(
       const root = entry.kind === 'session' ? staging.sessionRoot : entry.kind === 'data' ? staging.dataRoot : staging.projectRoot
       const target = stagedPathOf(root, entry)
       await mkdir(dirname(target), { recursive: true })
-      return new StagingSink(target)
+      const sink = new StagingSink(target)
+      return {
+        write: (chunk) => {
+          progress.bytesDone += chunk.byteLength
+          report()
+          return sink.write(chunk)
+        },
+        commit: async () => {
+          await sink.commit()
+          progress.entriesDone += 1
+          report()
+        },
+        abort: () => sink.abort(),
+      }
     },
-  }).then(async bundle => finish(bundle.manifest, bundle.entries))
+  })
+  try {
+    const bundle = await receive
+    const receipt = await finish(bundle.manifest, bundle.entries)
+    try {
+      channel.write({ type: 'received', binaryLength: 0 })
+    } catch {
+      // The sender already closed; the receipt is still complete on this device.
+    }
+    return receipt
+  } catch (error) {
+    /* v8 ignore next -- this module throws Error instances; the fallback covers a foreign seam throw */
+    const reason = error instanceof Error ? error.message : String(error)
+    try {
+      channel.write({ type: 'failed', binaryLength: 0, reason })
+    } catch {
+      // The sender is gone; the local failure still reaches this caller.
+    }
+    throw error
+  }
 }
 
 /**
@@ -605,6 +780,8 @@ interface CompletionContext {
   readonly received: readonly BundleEntryRef[]
   /** Entries the receiver already held complete (resume). */
   readonly skipped: readonly BundleEntryRef[]
+  /** Called when the receipt moves to a later phase; absent when progress is not observed. */
+  readonly onPhase?: (phase: HandoffReceivePhase) => void
 }
 
 /**
@@ -638,12 +815,15 @@ async function completeReceipt(
     throw new HandoffReceiveError('verification', `the bundle ended before ${String(missing.length)} manifest entry(ies) arrived (${names}); nothing was published`)
   }
   if (context.mergeMode) {
+    context.onPhase?.('importing')
     return mergeReceipt(staging, finalPath, title, manifest, host, context)
   }
+  context.onPhase?.('verifying')
   if (!await reconcileStagedTree(staging, manifest)) {
     await cleanupStaging(staging)
     throw new HandoffReceiveError('verification', 'the received project tree does not match the manifest (file count, sizes, or digests); nothing was published')
   }
+  context.onPhase?.('importing')
   const archives: Uint8Array[] = []
   for (const entry of manifest.entries) {
     if (entry.kind !== 'session') continue
@@ -732,7 +912,11 @@ async function applyDataFiles(
   dataDirectory: string | undefined,
 ): Promise<void> {
   const dataEntries = manifest.entries.filter(entry => entry.kind === 'data')
-  if (dataEntries.length === 0) return
+  if (dataEntries.length === 0) {
+    // No data entries still leaves the staging root decideOffer created.
+    await rm(staging.dataRoot, { recursive: true, force: true })
+    return
+  }
   /* v8 ignore next 3 -- decideOffer refuses data bundles without a configured data root before any byte moves */
   if (dataDirectory === undefined || dataDirectory.trim().length === 0) {
     throw new HandoffReceiveError('data', 'the bundle carries device data files but this device has no data directory configured')

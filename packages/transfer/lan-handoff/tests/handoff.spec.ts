@@ -4,12 +4,13 @@
  */
 
 import { createHash } from 'node:crypto'
-import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { TLSSocket } from 'node:tls'
 import { expect, it } from 'vitest'
 import {
+  cleanupStaleReceipts,
   HandoffPreparationError,
   HandoffReceiveError,
   prepareBundle,
@@ -18,6 +19,8 @@ import {
   sendPreparedBundle,
   walkProjectTree,
   type HandoffImportHost,
+  type HandoffReceiveProgress,
+  type PreparedBundle,
 } from '../src/handoff.ts'
 import { loadDeviceIdentity } from '../src/identity.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
@@ -29,6 +32,7 @@ const encoder = new TextEncoder()
 interface Loop {
   readonly client: ConnectionChannel
   readonly server: ConnectionChannel
+  readonly endClient: () => void
   readonly close: () => Promise<void>
 }
 
@@ -45,6 +49,7 @@ async function loopback(): Promise<Loop> {
   return {
     client: attachChannel(socket),
     server,
+    endClient: () => { socket.end() },
     close: async () => {
       socket.destroy()
       await listener.close()
@@ -106,6 +111,25 @@ async function preparedFixture() {
     }],
   })
   return { project, prepared }
+}
+
+/**
+ * Stream one prepared bundle without the terminal `done`, then leave the
+ * connection open for the caller to close: the receiver must fall back to its
+ * all-entries-arrived check.
+ * @param client - sending channel.
+ * @param prepared - prepared bundle.
+ */
+async function sendPreparedEntries(client: ConnectionChannel, prepared: PreparedBundle): Promise<void> {
+  client.write({ type: 'offer', binaryLength: 0, manifest: prepared.manifest })
+  await client.next('accept', 5_000)
+  for (const entry of prepared.manifest.entries) {
+    const source = prepared.sources.get(`${entry.kind}\u0000${entry.path}`)
+    if (source === undefined) throw new Error(`missing source for ${entry.path}`)
+    const bytes = source instanceof Uint8Array ? source : await readFile(source.absolutePath)
+    client.write({ type: 'entry', binaryLength: 0, kind: entry.kind, path: entry.path, size: entry.size, sha256: entry.sha256 })
+    client.write({ type: 'chunk', binaryLength: bytes.byteLength, offset: 0, final: true }, bytes)
+  }
 }
 
 /** Walk a tree into a path → digest map. */
@@ -178,11 +202,149 @@ it('receives a bundle end to end: verified files, moved project, imported sessio
       sessionIds: ['session-1'],
     }])
     await expect(stat(join(destination, `.handoff-${prepared.manifest.bundleId}`))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(stat(join(destination, `.handoff-${prepared.manifest.bundleId}.data`))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(stat(join(destination, `.handoff-${prepared.manifest.bundleId}.sessions`))).rejects.toMatchObject({ code: 'ENOENT' })
   } finally {
     await loop.close()
     await rm(project.root, { recursive: true, force: true })
     await rm(destination, { recursive: true, force: true })
   }
+})
+
+it('reports receiving, verifying, and importing phases with byte and entry progress', async () => {
+  const { project, prepared } = await preparedFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-progress-'))
+  const loop = await loopback()
+  const updates: HandoffReceiveProgress[] = []
+  try {
+    const receipt = receiveHandoff(loop.server, {
+      targetParentDirectory: destination,
+      host: new RecordingHost(),
+      onProgress: progress => updates.push(progress),
+    })
+    await sendPreparedBundle(loop.client, prepared)
+    await receipt
+
+    const first = updates[0]
+    expect(first).toMatchObject({
+      phase: 'receiving',
+      projectTitle: prepared.manifest.projectTitle,
+      entriesDone: 0,
+      bytesDone: 0,
+    })
+    expect(first?.entriesTotal).toBe(prepared.manifest.entries.length)
+    expect(first?.bytesTotal).toBe(prepared.manifest.treeSummary.totalBytes)
+    expect(updates.map(update => update.phase)).toContain('verifying')
+    expect(updates.at(-1)?.phase).toBe('importing')
+    const receiving = updates.filter(update => update.phase === 'receiving')
+    expect(receiving.at(-1)?.entriesDone).toBe(prepared.manifest.entries.length)
+    expect(receiving.at(-1)?.bytesDone).toBe(prepared.manifest.treeSummary.totalBytes)
+    expect(updates.every(update => update.entriesTotal === prepared.manifest.entries.length)).toBe(true)
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('finalizes a receipt whose sender closes after the last entry', async () => {
+  const { project, prepared } = await preparedFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-lost-done-'))
+  const loop = await loopback()
+  try {
+    const host = new RecordingHost()
+    const receipt = receiveHandoff(loop.server, {
+      targetParentDirectory: destination,
+      host,
+    })
+    await sendPreparedEntries(loop.client, prepared)
+    loop.endClient()
+    const outcome = await receipt
+    expect(outcome.projectPath).toBe(join(destination, projectDirectoryName('项目 甲/测试')))
+    expect(await treeDigest(outcome.projectPath)).toEqual(await treeDigest(project.root))
+    expect(outcome.sessionIds).toEqual(['session-1'])
+    expect(host.imported).toHaveLength(1)
+    expect(host.attached).toHaveLength(1)
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('cleans staging when the sender closes after the last entry and verification fails', async () => {
+  const { project, prepared } = await preparedFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-lost-done-bad-'))
+  const loop = await loopback()
+  try {
+    const staging = join(destination, `.handoff-${prepared.manifest.bundleId}`)
+    await mkdir(staging, { recursive: true })
+    await writeFile(join(staging, 'intruder.txt'), 'not in the manifest', 'utf8')
+    const receipt = receiveHandoff(loop.server, {
+      targetParentDirectory: destination,
+      host: new RecordingHost(),
+    })
+    await sendPreparedEntries(loop.client, prepared)
+    loop.endClient()
+    await expect(receipt).rejects.toMatchObject({ code: 'verification' })
+    await expect(stat(staging)).rejects.toMatchObject({ code: 'ENOENT' })
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('removes stale receipt staging groups and keeps fresh and unrelated directories', async () => {
+  const parent = await mkdtemp(join(tmpdir(), 'dsh-handoff-stale-'))
+  const now = Date.now()
+  const staleBase = join(parent, `.handoff-${'a'.repeat(32)}`)
+  const freshBase = join(parent, `.handoff-${'b'.repeat(32)}`)
+  const orphanBase = join(parent, `.handoff-${'c'.repeat(32)}`)
+  const unrelated = join(parent, 'regular-project')
+  try {
+    for (const base of [staleBase, freshBase]) {
+      await mkdir(join(base, 'sub'), { recursive: true })
+      await writeFile(join(base, 'sub', 'file.txt'), 'x', 'utf8')
+      await mkdir(`${base}.data`, { recursive: true })
+      await mkdir(`${base}.sessions`, { recursive: true })
+    }
+    await mkdir(unrelated, { recursive: true })
+    // A data-less receipt can leave only the `.data` sibling behind.
+    await mkdir(`${orphanBase}.data`, { recursive: true })
+    const old = new Date(now - 3_600_000)
+    for (const path of [
+      staleBase,
+      join(staleBase, 'sub'),
+      join(staleBase, 'sub', 'file.txt'),
+      `${staleBase}.data`,
+      `${staleBase}.sessions`,
+      `${orphanBase}.data`,
+    ]) {
+      await utimes(path, old, old)
+    }
+
+    const removed = await cleanupStaleReceipts(parent, 60_000, now)
+    expect(new Set(removed)).toEqual(new Set([staleBase, orphanBase]))
+    await expect(stat(`${orphanBase}.data`)).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(stat(staleBase)).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(stat(`${staleBase}.data`)).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(stat(`${staleBase}.sessions`)).rejects.toMatchObject({ code: 'ENOENT' })
+    expect((await stat(freshBase)).isDirectory()).toBe(true)
+    expect((await stat(unrelated)).isDirectory()).toBe(true)
+
+    // A zero threshold removes every staging group, still leaving unrelated names.
+    expect(await cleanupStaleReceipts(parent, 0, now)).toEqual([freshBase])
+    await expect(stat(freshBase)).rejects.toMatchObject({ code: 'ENOENT' })
+    expect((await stat(unrelated)).isDirectory()).toBe(true)
+  } finally {
+    await rm(parent, { recursive: true, force: true })
+  }
+})
+
+it('reports no stale staging groups when the handoff directory does not exist', async () => {
+  await expect(cleanupStaleReceipts(join(tmpdir(), `dsh-handoff-missing-${String(Date.now())}`), 0))
+    .resolves.toEqual([])
 })
 
 it('resumes from a staged file that already matches', async () => {

@@ -1,8 +1,8 @@
 ---
 feature: easel-lan-handoff
 status: in-progress
-updated: 2026-10-21
-branch: feat/easel-lan-handoff（dsh worktree）
+updated: 2026-11-09
+branch: fix/easel-handoff-v2-ack
 commits: # filled at delivery
 ---
 
@@ -11,6 +11,8 @@ commits: # filled at delivery
 ## Report
 
 工作区：`.worktrees/easel-lan-handoff`（基线 2926be2078d）。T1–T7b、T8a 已交付（见任务勾选）。已过门：全仓 typecheck 5/5、lan-handoff+导入包 125 测试、easel 插件 104 测试、oxlint 0、hygiene、export JSDoc（自有违规已修，余 3 条为基线）、客户端 i18n、jscpd 0 clone、build:artifacts+build:check、两包覆盖率 100%、cargo check（壳激活行）、双语配对。基线既有失败（两侧同集合，与本改动无关）：doc-quick 的 markdown links / type equivalence / 语料级 translation pairing / markdown wrap / repository references，verify-cordis-config 的 acp profile 非 Loader 数组，export-jsdoc 3 条客户端包违规。未做：快照与 e2e（需要出货 profile 行）、真机双端验收（Windows 防火墙首包）。 已过门：全仓 `pnpm run typecheck` 5/5、lan-handoff+导入包 125 测试、easel 插件 104 测试、oxlint 0 告警、`build:artifacts`+`build:check` 绿、两包覆盖率 100%、双语配对校验。 未过门/未做：快照与 e2e（需出货 profile 行）、真机双端验收（Windows 防火墙首包）。`verify-cordis-config` 在基线检出上即失败（PRE-EXISTING：apps/cli/tests/profiles/acp/cordis.yml 非 Loader 数组），与本次改动无关。
+
+**2026-11-09 修订（传输完成确认 v2）**：真机复现“发送端成功、接收端中止”后，协议升到 v2：发送端等待接收端 `received`/`failed`，接收端在校验+导入+挂靠后回 ack；连接关闭改抛 `ChannelClosedError`，接收端在所有条目已到时容忍关闭；发现层与发送路径拒绝旧版对端并在 UI 标记。评审同时修复了 manifest `bundleId` 路径穿越、失败 ack 的 flush 竞态、ECONNRESET 绕过关闭兜底、无 data 条目残留 `.data` 暂存目录。两次独立评审：第一轮 2 critical + 4 medium 全部修复；第二轮无 critical。验证：lan-handoff 146 passed（2 个既有 DNS 超时环境失败）、Easel handoff 17/18（1 个既有 macOS realpath push 失败）、discovery/handoff/transfer 覆盖率 100%、typecheck 5/5、build:artifacts 8/8、build:check 2/2、客户端 i18n/配置目录/双语配对通过。待做：两端升级后真机重发验收（T12）与原有 T8b。
 
 ## [S1] Problem
 
@@ -31,6 +33,20 @@ Easel 用户在两台设备（Windows 与 macOS）上做同一份内容创作项
 - 消息：`hello`/`device`、`offer{manifest}`、`accept`、`fileChunk{path,offset}`、`done`、`reject{reason}`、 `ping`。兼容规则同 KwikPaste §8：未知消息类型跳过不断连，未知字段忽略。
 - 传输单元 bundle = manifest（JSON：工作区标题、来源路径、文件清单 `[path, size, sha256]`、会话导出 清单）+ 项目文件树逐文件流式（每文件按 offset 分块 + sha256，重连后接收端报告已完成文件、发送端跳过）+ 每会话一个 `session-log-export` ZIP（既有服务产出，作为不透明文件条目传输）。
 - 发送端装配前先过 SessionStore durability barrier（`flushLiveSessionLog` 同款）确保日志完整落盘。
+
+### 传输完成确认（v2 可靠性修订，2026-11-09）
+
+真机复现：Windows 发送 3.1 GB 项目，Windows 显示成功，Mac 停在 `.handoff-*` 暂存区（8222 个文件、`.sessions` 空），`lastHandoff` 为 `the other device declined the pairing`。根因有两层：
+
+1. 发送端在写完 `done` 后**立刻** `socket.end()` 并把“已发送”当成功；接收端没收到 `done` 就把 socket close 当成拒绝并中止，已到达的文件不发布、不导入、不注册。
+2. 协议没有接收端完成确认，所以“发送成功”从不代表“接收端已入库”。
+
+修订决议：
+
+- **S2.7.1 协议 v2 + 完成确认**：`LAN_HANDOFF_PROTOCOL_VERSION` 升为 `{2,2}`、`TRANSFER_PROTOCOL_VERSION` 升为 2。发送端在 `done` 后等待接收端的 `received` / `failed` 终结消息（协议常量 10 分钟）；`failed` 携带接收端原因，发送端如实报失败。旧版对端在发现层标记不兼容，发送前给出“升级两端”的明确错误。
+- **S2.7.2 接收端 ack 时机**：`receiveHandoff` 在校验、导入会话、挂靠工作区全部完成后发送 `received`；失败时尽力发送 `failed`。连接已断则忽略 ack 写失败——本地接收结果不回退。
+- **S2.7.3 连接关闭语义**：通道关闭抛新的 `ChannelClosedError`（“连接在协议完成前关闭”），不再伪装成对方拒绝配对。接收端在等待下一条消息时若连接关闭、但 manifest 所有条目都已到达并通过逐条校验，则视为流正常结束并继续完成接收（网络抖尾兜底）。
+- **S2.7.4 发送端兼容检查**：已配对的旧版对端（发现记录 `compatible: false`）在打开同步通道时明确拒绝，提示升级两端，而不是发出一个必然失败/超时的 bundle。
 
 ### 项目目录完整性检测（三方对账）
 
@@ -80,6 +96,10 @@ Easel 用户在两台设备（Windows 与 macOS）上做同一份内容创作项
 - [x] T7b: Easel 客户端页面（设置项形式）：设备/已配对/附近设备/对码确认/发送 全部在 `settings.general.item`， locale 词典随插件注册；`client.js` 已重建
 - [x] T8a: 打包激活接线（`apps/cli` 依赖 + 壳 patch 行带 `handoffDirectory`）+ `build:artifacts`/`build:check` + 两包覆盖率 100%（lines/branches/functions/statements）
 - [ ] T8b: 快照/e2e（录制会话回放需先有出货 profile 行）+ 真机双端验收（含 Windows 防火墙首包）
+- [x] T9: 协议 v2：完成 ack 的发送/等待/失败原因 + `ChannelClosedError` + 接收端关闭兜底（covers: S2.7.1, S2.7.2, S2.7.3）
+- [x] T10: 发现版本升 v2 + 发送端兼容拒绝 + 旧版对端提示（covers: S2.7.1, S2.7.4）
+- [x] T11: 单测/回环端到端：ack 成功、接收端导入失败回传、最后一条丢失仍完成、旧版对端拒绝（covers: S2.7.1–S2.7.4）
+- [ ] T12: README 双语、配置目录再生成、typecheck/build/tests 已过；真机两端升级重发验收待做
 
 ## [S4] Acceptance
 
@@ -94,3 +114,6 @@ Easel 用户在两台设备（Windows 与 macOS）上做同一份内容创作项
 - [ ] 会话 id 冲突时导入拒绝并给出可操作报错（单测）。
 - [ ] mDNS TXT 不含密钥或内容；监听端口 OS 分配（单测）。
 - [ ] 收到未知消息类型不断连（单测）。
+- [ ] 发送端只有在接收端完成校验/导入/挂靠并回 `received` 后才报成功；接收端导入失败时发送端显示接收端原因（回环单测）。
+- [ ] 最后一条 `done` 丢失但 manifest 所有条目已到时，接收端仍完成发布与导入（单测）。
+- [ ] 旧版对端（v1）被标记不兼容，发送前给出升级提示；新版两端可正常配对/传输（单测 + 真机）。

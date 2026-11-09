@@ -20,6 +20,17 @@ export interface HandoffPending {
   peer: { id: string; name: string; platform: string };
 }
 
+/** Live progress of the receipt currently streaming into this device. */
+export interface HandoffReceiving {
+  phase: 'receiving' | 'verifying' | 'importing';
+  projectTitle: string;
+  entriesDone: number;
+  entriesTotal: number;
+  bytesDone: number;
+  bytesTotal: number;
+  startedAt: number;
+}
+
 /** Full status projection rendered by the settings item. */
 export interface HandoffStatus {
   available: boolean;
@@ -28,6 +39,7 @@ export interface HandoffStatus {
   paired: HandoffPeer[];
   discovered: HandoffPeer[];
   pending: HandoffPending[];
+  receiving?: HandoffReceiving | null;
   last?: { at: number; ok: boolean; detail: string } | null;
 }
 
@@ -68,6 +80,15 @@ export function pairWithPeer(peerId: string): Promise<{ id: string; sas: string;
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ peerId }),
+  });
+}
+
+/** Dial an explicit address when discovery cannot find the peer. */
+export function pairWithAddress(host: string, port: number): Promise<{ id: string; sas: string; direction: string; peer: HandoffPending['peer'] }> {
+  return request('/api/handoff/pair', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ host, port }),
   });
 }
 

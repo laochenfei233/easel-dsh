@@ -105,7 +105,7 @@ it('validates manifests fail-closed before any payload moves', () => {
   expect(validateBundleManifest(manifest)).toEqual(manifest)
 
   const bad = (overrides: Record<string, unknown>): unknown => ({ ...manifest, ...overrides })
-  expect(() => validateBundleManifest(bad({ protocolVersion: 2 }))).toThrow(/version 2 is not supported/u)
+  expect(() => validateBundleManifest(bad({ protocolVersion: 1 }))).toThrow(/version 1 is not supported/u)
   expect(() => validateBundleManifest(bad({ entries: [{ ...PROJECT_FILE, path: '../escape.txt' }], treeSummary: computeTreeSummary([{ ...PROJECT_FILE, path: '../escape.txt' }]) })))
     .toThrow(/escapes the project directory/u)
   expect(() => validateBundleManifest(bad({ entries: [{ ...PROJECT_FILE, path: 'C:\\absolute.txt' }], treeSummary: computeTreeSummary([{ ...PROJECT_FILE, path: 'C:\\absolute.txt' }]) })))
@@ -132,7 +132,7 @@ it('streams a bundle over loopback and verifies every entry', async () => {
         return sink
       },
     })
-    const sent = await sendBundle(
+    const sending = sendBundle(
       loop.client,
       manifestOf([PROJECT_FILE, SESSION_ARCHIVE]),
       async function* (entry) {
@@ -143,6 +143,8 @@ it('streams a bundle over loopback and verifies every entry', async () => {
       },
     )
     const outcome = await received
+    loop.server.write({ type: 'received', binaryLength: 0 })
+    const sent = await sending
     expect(sent.sent.map(entry => entry.path)).toEqual(['素材/notes.txt', 'dsh-session-abc.zip'])
     expect(sent.skipped).toEqual([])
     expect(outcome.entries).toEqual([PROJECT_FILE, SESSION_ARCHIVE])
@@ -168,11 +170,13 @@ it('skips entries the receiver reports complete', async () => {
         return sink
       },
     })
-    const sent = await sendBundle(loop.client, manifestOf([PROJECT_FILE, SESSION_ARCHIVE]), async function* (entry) {
+    const sending = sendBundle(loop.client, manifestOf([PROJECT_FILE, SESSION_ARCHIVE]), async function* (entry) {
       const bytes = SOURCES.get(`${entry.kind}\u0000${entry.path}`)
       if (bytes !== undefined) yield bytes
     })
     await received
+    loop.server.write({ type: 'received', binaryLength: 0 })
+    const sent = await sending
     expect(sent.skipped).toEqual([PROJECT_FILE])
     expect(sent.sent).toEqual([SESSION_ARCHIVE])
     expect(sinks.has(PROJECT_FILE.path)).toBe(false)
@@ -230,10 +234,12 @@ it('skips unknown message types instead of failing the connection', async () => 
       openEntry: async () => new MemorySink(),
     })
     loop.client.write({ type: 'future/note', binaryLength: 0 })
-    await sendBundle(loop.client, manifestOf([PROJECT_FILE]), async function* () {
+    const sending = sendBundle(loop.client, manifestOf([PROJECT_FILE]), async function* () {
       yield encoder.encode('handoff notes')
     })
     await received
+    loop.server.write({ type: 'received', binaryLength: 0 })
+    await sending
   } finally {
     await loop.close()
   }

@@ -90,13 +90,29 @@ export class PairingIncompatibleError extends PairingError {
   }
 }
 
-/** Refusal: the other side declined, or the connection ended mid-pairing. */
+/** Refusal: the other side declined. */
 export class PairingRejectedError extends PairingError {
   /**
    * @param reason - the peer's own rejection reason, when it sent one.
    */
   constructor(readonly remoteReason: string | undefined) {
     super('rejected', remoteReason === undefined ? 'the other device declined the pairing' : `the other device declined the pairing (${remoteReason})`)
+  }
+}
+
+/**
+ * Failure: the connection closed before the protocol step completed.
+ *
+ * A close is not a user decision; callers distinguish it from an explicit
+ * rejection so a dropped link is never reported as "the other device declined".
+ */
+export class ChannelClosedError extends Error {
+  /**
+   * @param cause - the transport failure that ended the connection, when one exists.
+   */
+  constructor(cause?: unknown) {
+    super('the connection closed before the handoff protocol completed', cause === undefined ? undefined : { cause })
+    this.name = 'ChannelClosedError'
   }
 }
 
@@ -168,8 +184,8 @@ export function attachChannel(socket: TLSSocket): ConnectionChannel {
       failAll(error instanceof Error ? error : new FrameError(String(error)))
     }
   })
-  socket.on('error', (error: Error) => { failAll(error) })
-  socket.on('close', () => { failAll(new PairingRejectedError(undefined)) })
+  socket.on('error', (error: Error) => { failAll(new ChannelClosedError(error)) })
+  socket.on('close', () => { failAll(new ChannelClosedError()) })
   return {
     async next(types: string | readonly string[], timeoutMs: number): Promise<WireMessage> {
       return (await this.nextFrame(types, timeoutMs)).message
@@ -355,6 +371,7 @@ function buildOffer(sides: PairingSides): PairingOffer {
  * @param self - this device's identity and announcement.
  * @returns the offer to show the user.
  * @throws {PairingIncompatibleError} when no protocol version is shared.
+ * @throws {ChannelClosedError} when the connection closes before the decision.
  * @throws {PairingError} for protocol or timeout failures.
  */
 export async function dialForPairing(socket: TLSSocket, self: PairingIdentity): Promise<PairingOffer> {
@@ -400,6 +417,7 @@ export async function dialForPairing(socket: TLSSocket, self: PairingIdentity): 
  * @param channel - the connection channel the hello was read from.
  * @returns the offer to show the user.
  * @throws {PairingIncompatibleError} when no protocol version is shared.
+ * @throws {ChannelClosedError} when the connection closes before the decision.
  * @throws {PairingError} for protocol failures.
  */
 export async function answerPairing(

@@ -2593,6 +2593,7 @@ export function createHandoffRoutes(ctx) {
         return { json: { available: false, reason: 'LAN handoff is not enabled in this profile' } }
       }
       const state = await service.ready
+      const discovered = service.peersSnapshot()
       return { json: {
         available: true,
         device: {
@@ -2602,9 +2603,13 @@ export function createHandoffRoutes(ctx) {
           handoffDirectory: state.handoffDirectory,
         },
         paired: service.pairedPeers().map(peer => ({
-          id: String(peer.id), name: peer.name, platform: peer.platform, pairedAt: peer.pairedAt,
+          id: String(peer.id),
+          name: peer.name,
+          platform: peer.platform,
+          pairedAt: peer.pairedAt,
+          compatible: discovered.find(seen => String(seen.id) === String(peer.id))?.compatible,
         })),
-        discovered: service.peersSnapshot().map(peer => ({
+        discovered: discovered.map(peer => ({
           id: String(peer.id),
           name: peer.name,
           platform: peer.platform,
@@ -2618,6 +2623,7 @@ export function createHandoffRoutes(ctx) {
           direction: offer.direction,
           peer: { id: String(offer.peer.id), name: offer.peer.name, platform: offer.peer.platform },
         })),
+        receiving: service.receivingSnapshot() ?? null,
         last: service.lastHandoffOutcome() ?? null,
       } }
     }],

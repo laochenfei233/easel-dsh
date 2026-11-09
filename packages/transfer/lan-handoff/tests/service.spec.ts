@@ -2,7 +2,7 @@
 
 import { Context } from '@deepseek-ai/cordis'
 import { brandString } from '@deepseek-ai/dsh-brand'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { hostname } from 'node:os'
@@ -64,6 +64,7 @@ it('starts with a minted identity, the configured name, an assigned port, and an
   const state = await service.ready
   expect(state.deviceId).toMatch(/^[0-9a-f]{20}$/u)
   expect(state.name).toBe('测试机')
+  expect(service.receivingSnapshot()).toBeUndefined()
   expect(state.port).toBeGreaterThan(0)
   expect(['::', '0.0.0.0']).toContain(state.host)
   const [advertisement] = discovery.published
@@ -71,7 +72,7 @@ it('starts with a minted identity, the configured name, an assigned port, and an
     name: state.deviceId,
     type: 'easel-handoff',
     port: state.port,
-    txt: { id: state.deviceId, name: '测试机', v: '1', vmin: '1' },
+    txt: { id: state.deviceId, name: '测试机', v: '2', vmin: '2' },
   })
   await ctx.fiber.dispose()
   ctx = undefined
@@ -92,8 +93,8 @@ it('keeps the latest advertisement per peer id in the snapshot', async () => {
   const service = new LanHandoffService(ctx, {}, { identityRoot: await tempRoot(), discovery })
   await service.ready
   const peerId = brandString<DeviceId>('c'.repeat(20))
-  discovery.emit({ addresses: ['192.168.1.8'], port: 40123, txt: { id: peerId, name: 'first', pf: 'macos', v: '1', vmin: '1' } })
-  discovery.emit({ addresses: ['192.168.1.9'], port: 40124, txt: { id: peerId, name: 'latest', pf: 'macos', v: '1', vmin: '1' } })
+  discovery.emit({ addresses: ['192.168.1.8'], port: 40123, txt: { id: peerId, name: 'first', pf: 'macos', v: '2', vmin: '2' } })
+  discovery.emit({ addresses: ['192.168.1.9'], port: 40124, txt: { id: peerId, name: 'latest', pf: 'macos', v: '2', vmin: '2' } })
   expect(service.peersSnapshot().map(peer => peer.name)).toEqual(['latest'])
   expect(service.peersSnapshot().map(peer => peer.addresses)).toEqual([['192.168.1.9']])
   // A restarted peer advertises a new random port; the snapshot must dial it.
@@ -115,4 +116,36 @@ it('drops a peer the network withdrew from the snapshot', async () => {
   expect(service.peersSnapshot()).toHaveLength(1)
   discovery.emitDown(entry)
   expect(service.peersSnapshot()).toEqual([])
+})
+
+it('removes interrupted receipt staging groups at startup', async () => {
+  const handoff = await tempRoot()
+  const stale = join(handoff, `.handoff-${'a'.repeat(32)}`)
+  await mkdir(join(stale, 'sub'), { recursive: true })
+  await writeFile(join(stale, 'sub', 'file.txt'), 'x', 'utf8')
+  await mkdir(`${stale}.data`, { recursive: true })
+  await mkdir(`${stale}.sessions`, { recursive: true })
+  ctx = new Context()
+  const service = new LanHandoffService(ctx, { handoffDirectory: handoff, staleReceiptAgeMinutes: 0 }, {
+    identityRoot: await tempRoot(),
+    discovery: new RecordingDiscoveryHost(),
+  })
+  await service.ready
+  await expect(stat(stale)).rejects.toMatchObject({ code: 'ENOENT' })
+  await expect(stat(`${stale}.data`)).rejects.toMatchObject({ code: 'ENOENT' })
+  await expect(stat(`${stale}.sessions`)).rejects.toMatchObject({ code: 'ENOENT' })
+})
+
+it('refuses to dial a peer that advertises only unusable addresses', async () => {
+  ctx = new Context()
+  const discovery = new RecordingDiscoveryHost()
+  const service = new LanHandoffService(ctx, {}, { identityRoot: await tempRoot(), discovery })
+  await service.ready
+  const peerId = brandString<DeviceId>('e'.repeat(20))
+  discovery.emit({
+    addresses: ['169.254.10.2', 'fe80::1'],
+    port: 40123,
+    txt: { id: peerId, name: 'link', pf: 'linux', v: '2', vmin: '2' },
+  })
+  await expect(service.pairWithDiscoveredPeer(peerId)).rejects.toThrow(/no dialable address/u)
 })

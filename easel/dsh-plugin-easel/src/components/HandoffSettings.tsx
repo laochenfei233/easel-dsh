@@ -8,11 +8,13 @@ import {
   acceptPairing,
   getHandoffStatus,
   getHandoffWorkspaces,
+  pairWithAddress,
   pairWithPeer,
   rejectPairing,
   sendHandoff,
   type HandoffPayload,
   type HandoffPending,
+  type HandoffReceiving,
   type HandoffStatus,
   type HandoffWorkspace,
 } from '../lib/handoff-api'
@@ -49,6 +51,15 @@ export const COPY = {
     sending: 'Sending…',
     sent: 'Handoff complete.',
     failed: 'Handoff failed',
+    receiving: 'Receiving',
+    receivingVerifying: 'Verifying the received files',
+    receivingImporting: 'Importing sessions',
+    manualTitle: 'Pair by address',
+    manualHost: 'Address',
+    manualPort: 'Port',
+    manualHint: 'Use the address and port shown on the other device when discovery cannot find it.',
+    pairByAddress: 'Pair',
+    pairedIncompatible: 'This device runs an older Air Transfer protocol. Update both devices before sending.',
   },
   zh: {
     nav: '隔空传送',
@@ -80,6 +91,15 @@ export const COPY = {
     sending: '发送中…',
     sent: '交接完成。',
     failed: '交接失败',
+    receiving: '接收中',
+    receivingVerifying: '正在校验接收的文件',
+    receivingImporting: '正在导入会话',
+    manualTitle: '按地址配对',
+    manualHost: '地址',
+    manualPort: '端口',
+    manualHint: '发现不到设备时，填入对方「本机」卡片上显示的地址和端口。',
+    pairByAddress: '配对',
+    pairedIncompatible: '该设备运行旧版隔空传送协议；两端都更新后才能发送。',
   },
 } as const
 
@@ -187,7 +207,7 @@ export const HANDOFF_STYLES = `
 .ehs-check input { width: 14px; height: 14px; margin: 0; accent-color: var(--dsw-alias-state-business-primary); cursor: pointer; }
 .ehs-check input:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
 .ehs-hint { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
-.ehs-select {
+.ehs-select, .ehs-input {
   box-sizing: border-box;
   height: 32px;
   padding: 0 8px;
@@ -199,7 +219,24 @@ export const HANDOFF_STYLES = `
   font-size: 14px;
   line-height: 22px;
 }
-.ehs-select:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+.ehs-input { min-width: 140px; }
+.ehs-select:focus-visible, .ehs-input:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+.ehs-receiving { border-color: var(--dsw-alias-state-business-primary); }
+.ehs-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--dsw-alias-border-l2);
+  overflow: hidden;
+}
+.ehs-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--dsw-alias-state-business-primary);
+  transition: width 200ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ehs-progress-fill { transition: none; }
+}
 .ehs-outcome { font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); }
 .ehs-outcome[data-tone='ok'] { color: var(--dsw-alias-state-success-primary); }
 .ehs-outcome[data-tone='fail'] { color: var(--dsw-alias-state-error-primary); }
@@ -217,6 +254,32 @@ interface HandoffSettingsProps {
 type BusyAction = 'refresh' | 'send' | `pair:${string}` | `accept:${string}` | `reject:${string}`
 
 /**
+ * Locale key naming one receipt phase.
+ * @param phase - the phase reported by the host.
+ * @returns the copy key for its label.
+ */
+function receivingLabel(phase: HandoffReceiving['phase']): keyof HandoffCopy {
+  return phase === 'verifying' ? 'receivingVerifying' : phase === 'importing' ? 'receivingImporting' : 'receiving'
+}
+
+/**
+ * Format a byte count for the progress line.
+ * @param bytes - non-negative byte count.
+ * @returns a short decimal size (`12.3 MB`).
+ */
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${String(bytes)} B`
+  const units = ['KB', 'MB', 'GB', 'TB'] as const
+  let value = bytes / 1024
+  let unit = 0
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024
+    unit += 1
+  }
+  return `${value.toFixed(value >= 100 ? 0 : 1)} ${units[unit] ?? 'TB'}`
+}
+
+/**
  * Render the LAN handoff settings section.
  * @param props - the bound copy function.
  * @returns the section content.
@@ -228,6 +291,8 @@ export default function HandoffSettings({ t }: HandoffSettingsProps) {
   const [busy, setBusy] = useState<BusyAction | undefined>(undefined)
   const [workspacePath, setWorkspacePath] = useState('')
   const [peerId, setPeerId] = useState('')
+  const [manualHost, setManualHost] = useState('')
+  const [manualPort, setManualPort] = useState('')
   const [payload, setPayload] = useState<HandoffPayload>({ sessions: true, materials: true, library: false, config: false })
   const mounted = useRef(true)
 
@@ -286,10 +351,39 @@ export default function HandoffSettings({ t }: HandoffSettingsProps) {
   const unpaired = status.discovered.filter(peer => !status.paired.some(paired => paired.id === peer.id))
   const last = status.last ?? undefined
   const canSend = workspacePath !== '' && peerId !== ''
+  const receiving = status.receiving ?? undefined
+  const receivingPercent = receiving === undefined || receiving.bytesTotal <= 0
+    ? 0
+    : Math.min(100, Math.round((receiving.bytesDone / receiving.bytesTotal) * 100))
+  const manualPortNumber = Number(manualPort)
+  const canManualPair = manualHost.trim() !== ''
+    && Number.isInteger(manualPortNumber)
+    && manualPortNumber >= 1
+    && manualPortNumber <= 65535
 
   return (
     <div className="ehs-root">
       <p className="ehs-intro">{t('intro')}</p>
+
+      {status.available && receiving !== undefined && (
+        <section className="ehs-card ehs-receiving" aria-live="polite">
+          <div className="ehs-card-head">
+            <span>{t(receivingLabel(receiving.phase))}</span>
+            <span className="ehs-muted">{receiving.entriesDone}/{receiving.entriesTotal}</span>
+          </div>
+          <div className="ehs-device-name">{receiving.projectTitle}</div>
+          <div
+            className="ehs-progress"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={receivingPercent}
+          >
+            <span className="ehs-progress-fill" style={{ width: `${String(receivingPercent)}%` }} />
+          </div>
+          <div className="ehs-muted">{formatBytes(receiving.bytesDone)} / {formatBytes(receiving.bytesTotal)} · {receivingPercent}%</div>
+        </section>
+      )}
 
       {status.available && status.device !== undefined && (
         <section className="ehs-card">
@@ -366,6 +460,43 @@ export default function HandoffSettings({ t }: HandoffSettingsProps) {
 
       {status.available && (
         <section className="ehs-card">
+          <div className="ehs-card-head"><span>{t('manualTitle')}</span></div>
+          <div className="ehs-form">
+            <label className="ehs-field">
+              <span>{t('manualHost')}</span>
+              <input
+                className="ehs-input"
+                value={manualHost}
+                onChange={event => { setManualHost(event.target.value) }}
+                placeholder="192.168.1.20"
+                inputMode="text"
+                autoComplete="off"
+                spellCheck={false}
+              />
+            </label>
+            <label className="ehs-field">
+              <span>{t('manualPort')}</span>
+              <input
+                className="ehs-input"
+                value={manualPort}
+                onChange={event => { setManualPort(event.target.value) }}
+                placeholder="40123"
+                inputMode="numeric"
+              />
+            </label>
+            <button
+              type="button"
+              className="ehs-btn ehs-btn-md ehs-btn-outline"
+              disabled={busy !== undefined || !canManualPair}
+              onClick={() => { void run('pair:manual', () => pairWithAddress(manualHost.trim(), manualPortNumber)) }}
+            >{t('pairByAddress')}</button>
+          </div>
+          <span className="ehs-hint">{t('manualHint')}</span>
+        </section>
+      )}
+
+      {status.available && (
+        <section className="ehs-card">
           <div className="ehs-card-head"><span>{t('paired')}</span></div>
           {status.paired.length === 0
             ? <div className="ehs-empty">{t('noPaired')}</div>
@@ -373,11 +504,14 @@ export default function HandoffSettings({ t }: HandoffSettingsProps) {
               <div className="ehs-row" key={peer.id}>
                 <div className="ehs-row-main">
                   <span className="ehs-row-title">{peer.name}</span>
-                  <span className="ehs-muted">{peer.platform} · {peer.id.slice(0, 8)}</span>
+                  <span className="ehs-muted">{peer.platform} · {peer.id.slice(0, 8)}{peer.compatible === false ? ' · ⚠' : ''}</span>
                 </div>
                 <span className="ehs-chip">{t('pairedBadge')}</span>
               </div>
             ))}
+          {status.paired.some(peer => peer.compatible === false) && (
+            <span className="ehs-hint">{t('pairedIncompatible')}</span>
+          )}
         </section>
       )}
 
@@ -407,7 +541,7 @@ export default function HandoffSettings({ t }: HandoffSettingsProps) {
               >
                 {status.paired.length === 0 && <option value="">{t('pickPeer')}</option>}
                 {status.paired.map(peer => (
-                  <option key={peer.id} value={peer.id}>{peer.name}</option>
+                  <option key={peer.id} value={peer.id}>{peer.name}{peer.compatible === false ? ' ⚠' : ''}</option>
                 ))}
               </select>
             </label>

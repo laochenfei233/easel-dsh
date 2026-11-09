@@ -2776,7 +2776,7 @@ __export(ideas_exports, {
 // src/components/IdeasPage.tsx
 var import_react4 = require("react");
 
-// ../../../master/node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -3933,7 +3933,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../../master/node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -13956,6 +13956,13 @@ function pairWithPeer(peerId) {
     body: JSON.stringify({ peerId })
   });
 }
+function pairWithAddress(host, port) {
+  return request3("/api/handoff/pair", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ host, port })
+  });
+}
 function acceptPairing(id) {
   return request3(`/api/handoff/pair/${encodeURIComponent(id)}/accept`, { method: "POST" });
 }
@@ -14002,7 +14009,16 @@ var COPY = {
     send: "Send",
     sending: "Sending\u2026",
     sent: "Handoff complete.",
-    failed: "Handoff failed"
+    failed: "Handoff failed",
+    receiving: "Receiving",
+    receivingVerifying: "Verifying the received files",
+    receivingImporting: "Importing sessions",
+    manualTitle: "Pair by address",
+    manualHost: "Address",
+    manualPort: "Port",
+    manualHint: "Use the address and port shown on the other device when discovery cannot find it.",
+    pairByAddress: "Pair",
+    pairedIncompatible: "This device runs an older Air Transfer protocol. Update both devices before sending."
   },
   zh: {
     nav: "\u9694\u7A7A\u4F20\u9001",
@@ -14033,7 +14049,16 @@ var COPY = {
     send: "\u53D1\u9001",
     sending: "\u53D1\u9001\u4E2D\u2026",
     sent: "\u4EA4\u63A5\u5B8C\u6210\u3002",
-    failed: "\u4EA4\u63A5\u5931\u8D25"
+    failed: "\u4EA4\u63A5\u5931\u8D25",
+    receiving: "\u63A5\u6536\u4E2D",
+    receivingVerifying: "\u6B63\u5728\u6821\u9A8C\u63A5\u6536\u7684\u6587\u4EF6",
+    receivingImporting: "\u6B63\u5728\u5BFC\u5165\u4F1A\u8BDD",
+    manualTitle: "\u6309\u5730\u5740\u914D\u5BF9",
+    manualHost: "\u5730\u5740",
+    manualPort: "\u7AEF\u53E3",
+    manualHint: "\u53D1\u73B0\u4E0D\u5230\u8BBE\u5907\u65F6\uFF0C\u586B\u5165\u5BF9\u65B9\u300C\u672C\u673A\u300D\u5361\u7247\u4E0A\u663E\u793A\u7684\u5730\u5740\u548C\u7AEF\u53E3\u3002",
+    pairByAddress: "\u914D\u5BF9",
+    pairedIncompatible: "\u8BE5\u8BBE\u5907\u8FD0\u884C\u65E7\u7248\u9694\u7A7A\u4F20\u9001\u534F\u8BAE\uFF1B\u4E24\u7AEF\u90FD\u66F4\u65B0\u540E\u624D\u80FD\u53D1\u9001\u3002"
   }
 };
 var HANDOFF_STYLES = `
@@ -14137,7 +14162,7 @@ var HANDOFF_STYLES = `
 .ehs-check input { width: 14px; height: 14px; margin: 0; accent-color: var(--dsw-alias-state-business-primary); cursor: pointer; }
 .ehs-check input:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 2px; }
 .ehs-hint { color: var(--dsw-alias-label-secondary); font-size: 12px; line-height: 18px; }
-.ehs-select {
+.ehs-select, .ehs-input {
   box-sizing: border-box;
   height: 32px;
   padding: 0 8px;
@@ -14149,7 +14174,24 @@ var HANDOFF_STYLES = `
   font-size: 14px;
   line-height: 22px;
 }
-.ehs-select:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+.ehs-input { min-width: 140px; }
+.ehs-select:focus-visible, .ehs-input:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: 1px; }
+.ehs-receiving { border-color: var(--dsw-alias-state-business-primary); }
+.ehs-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--dsw-alias-border-l2);
+  overflow: hidden;
+}
+.ehs-progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--dsw-alias-state-business-primary);
+  transition: width 200ms ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ehs-progress-fill { transition: none; }
+}
 .ehs-outcome { font-size: 12px; line-height: 18px; color: var(--dsw-alias-label-secondary); }
 .ehs-outcome[data-tone='ok'] { color: var(--dsw-alias-state-success-primary); }
 .ehs-outcome[data-tone='fail'] { color: var(--dsw-alias-state-error-primary); }
@@ -14159,6 +14201,20 @@ var HANDOFF_STYLES = `
   .ehs-btn:active:not(:disabled) { transform: none; }
 }
 `;
+function receivingLabel(phase) {
+  return phase === "verifying" ? "receivingVerifying" : phase === "importing" ? "receivingImporting" : "receiving";
+}
+function formatBytes2(bytes) {
+  if (bytes < 1024) return `${String(bytes)} B`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let value = bytes / 1024;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${value.toFixed(value >= 100 ? 0 : 1)} ${units[unit] ?? "TB"}`;
+}
 function HandoffSettings({ t }) {
   const [status, setStatus] = (0, import_react18.useState)(void 0);
   const [workspaces, setWorkspaces] = (0, import_react18.useState)([]);
@@ -14166,6 +14222,8 @@ function HandoffSettings({ t }) {
   const [busy, setBusy] = (0, import_react18.useState)(void 0);
   const [workspacePath, setWorkspacePath] = (0, import_react18.useState)("");
   const [peerId, setPeerId] = (0, import_react18.useState)("");
+  const [manualHost, setManualHost] = (0, import_react18.useState)("");
+  const [manualPort, setManualPort] = (0, import_react18.useState)("");
   const [payload, setPayload] = (0, import_react18.useState)({ sessions: true, materials: true, library: false, config: false });
   const mounted = (0, import_react18.useRef)(true);
   (0, import_react18.useEffect)(() => {
@@ -14218,8 +14276,42 @@ function HandoffSettings({ t }) {
   const unpaired = status.discovered.filter((peer) => !status.paired.some((paired) => paired.id === peer.id));
   const last = status.last ?? void 0;
   const canSend = workspacePath !== "" && peerId !== "";
+  const receiving = status.receiving ?? void 0;
+  const receivingPercent = receiving === void 0 || receiving.bytesTotal <= 0 ? 0 : Math.min(100, Math.round(receiving.bytesDone / receiving.bytesTotal * 100));
+  const manualPortNumber = Number(manualPort);
+  const canManualPair = manualHost.trim() !== "" && Number.isInteger(manualPortNumber) && manualPortNumber >= 1 && manualPortNumber <= 65535;
   return /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-root", children: [
     /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("p", { className: "ehs-intro", children: t("intro") }),
+    status.available && receiving !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "ehs-card ehs-receiving", "aria-live": "polite", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-card-head", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t(receivingLabel(receiving.phase)) }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "ehs-muted", children: [
+          receiving.entriesDone,
+          "/",
+          receiving.entriesTotal
+        ] })
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-device-name", children: receiving.projectTitle }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+        "div",
+        {
+          className: "ehs-progress",
+          role: "progressbar",
+          "aria-valuemin": 0,
+          "aria-valuemax": 100,
+          "aria-valuenow": receivingPercent,
+          children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-progress-fill", style: { width: `${String(receivingPercent)}%` } })
+        }
+      ),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-muted", children: [
+        formatBytes2(receiving.bytesDone),
+        " / ",
+        formatBytes2(receiving.bytesTotal),
+        " \xB7 ",
+        receivingPercent,
+        "%"
+      ] })
+    ] }),
     status.available && status.device !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "ehs-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-card-head", children: [
         /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("device") }),
@@ -14317,6 +14409,56 @@ function HandoffSettings({ t }) {
       ] }, peer.id))
     ] }),
     status.available && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "ehs-card", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("manualTitle") }) }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-form", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("label", { className: "ehs-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("manualHost") }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+            "input",
+            {
+              className: "ehs-input",
+              value: manualHost,
+              onChange: (event) => {
+                setManualHost(event.target.value);
+              },
+              placeholder: "192.168.1.20",
+              inputMode: "text",
+              autoComplete: "off",
+              spellCheck: false
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("label", { className: "ehs-field", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("manualPort") }),
+          /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+            "input",
+            {
+              className: "ehs-input",
+              value: manualPort,
+              onChange: (event) => {
+                setManualPort(event.target.value);
+              },
+              placeholder: "40123",
+              inputMode: "numeric"
+            }
+          )
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "ehs-btn ehs-btn-md ehs-btn-outline",
+            disabled: busy !== void 0 || !canManualPair,
+            onClick: () => {
+              void run("pair:manual", () => pairWithAddress(manualHost.trim(), manualPortNumber));
+            },
+            children: t("pairByAddress")
+          }
+        )
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-hint", children: t("manualHint") })
+    ] }),
+    status.available && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "ehs-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("paired") }) }),
       status.paired.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-empty", children: t("noPaired") }) : status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-row", children: [
         /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("div", { className: "ehs-row-main", children: [
@@ -14324,11 +14466,13 @@ function HandoffSettings({ t }) {
           /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("span", { className: "ehs-muted", children: [
             peer.platform,
             " \xB7 ",
-            peer.id.slice(0, 8)
+            peer.id.slice(0, 8),
+            peer.compatible === false ? " \xB7 \u26A0" : ""
           ] })
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-chip", children: t("pairedBadge") })
-      ] }, peer.id))
+      ] }, peer.id)),
+      status.paired.some((peer) => peer.compatible === false) && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-hint", children: t("pairedIncompatible") })
     ] }),
     status.available && /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("section", { className: "ehs-card", children: [
       /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("div", { className: "ehs-card-head", children: /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { children: t("sendTitle") }) }),
@@ -14362,7 +14506,10 @@ function HandoffSettings({ t }) {
               },
               children: [
                 status.paired.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("option", { value: "", children: t("pickPeer") }),
-                status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("option", { value: peer.id, children: peer.name }, peer.id))
+                status.paired.map((peer) => /* @__PURE__ */ (0, import_jsx_runtime29.jsxs)("option", { value: peer.id, children: [
+                  peer.name,
+                  peer.compatible === false ? " \u26A0" : ""
+                ] }, peer.id))
               ]
             }
           )

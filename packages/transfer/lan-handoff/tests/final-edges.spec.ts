@@ -19,6 +19,7 @@ import {
   PairingIncompatibleError,
   receiveBundle,
   sendBundle,
+  TransferCompletionError,
   TransferProtocolError,
   TransferRejectedError,
   TRANSFER_PROTOCOL_VERSION,
@@ -78,11 +79,15 @@ const emptyWorkspaces: HandoffWorkspaces = {
 async function rawLoop(): Promise<{
   readonly client: ConnectionChannel
   readonly server: ConnectionChannel
+  readonly endClient: () => void
+  readonly resetServer: () => void
   readonly close: () => Promise<void>
 }> {
   const identity = await loadDeviceIdentity(await mkdtemp(join(tmpdir(), 'dsh-final-raw-')))
   const accepted = Promise.withResolvers<ConnectionChannel>()
+  let serverSocket: TLSSocket | undefined
   const listener = await startLanListener(identity, 0, (socket: TLSSocket) => {
+    serverSocket = socket
     accepted.resolve(attachChannel(socket))
   }, ['127.0.0.1'])
   const socket = dialLanPeer({ host: '127.0.0.1', port: listener.port }, identity)
@@ -91,6 +96,8 @@ async function rawLoop(): Promise<{
   return {
     client: attachChannel(socket),
     server,
+    endClient: () => { socket.end() },
+    resetServer: () => { serverSocket?.destroy(new Error('reset')) },
     close: async () => {
       if (closed) return
       closed = true
@@ -114,6 +121,8 @@ it('refuses every malformed manifest field', () => {
   expect(() => validateBundleManifest(null)).toThrow(/no manifest object/u)
   expect(() => validateBundleManifest(bad({ bundleId: '' }))).toThrow(/valid bundleId/u)
   expect(() => validateBundleManifest(bad({ bundleId: 'x'.repeat(129) }))).toThrow(/valid bundleId/u)
+  expect(() => validateBundleManifest(bad({ bundleId: '../escape' }))).toThrow(/valid bundleId/u)
+  expect(() => validateBundleManifest(bad({ bundleId: 'a/b' }))).toThrow(/valid bundleId/u)
   expect(() => validateBundleManifest(bad({ projectTitle: '' }))).toThrow(/valid projectTitle/u)
   expect(() => validateBundleManifest(bad({ projectTitle: 'x'.repeat(257) }))).toThrow(/valid projectTitle/u)
   expect(() => validateBundleManifest(bad({ sourceCwd: '' }))).toThrow(/no sourceCwd/u)
@@ -133,6 +142,8 @@ it('refuses every malformed manifest field', () => {
 it('maps a reason-less bundle refusal to the generic message', () => {
   expect(new TransferRejectedError(undefined).message).toContain('declined the bundle')
   expect(new TransferRejectedError('full').message).toContain('(full)')
+  expect(new TransferCompletionError(undefined).message).toContain('could not complete')
+  expect(new TransferCompletionError('store full').message).toContain('(store full)')
 })
 
 it('refuses non-list, null-entry, and incomplete resume claims', async () => {
@@ -165,10 +176,90 @@ it('ignores resume claims for content the bundle does not carry', async () => {
     expect(entry['path']).toBe('a.txt')
     const chunk = await loop.server.nextFrame('chunk', 5_000)
     expect(chunk.binary.byteLength).toBe(1)
+    loop.server.write({ type: 'received', binaryLength: 0 })
     await sent
   } finally {
     await loop.close()
   }
+})
+
+it('reports a reason-less receiver completion failure', async () => {
+  const loop = await rawLoop()
+  try {
+    const sent = sendBundle(loop.client, manifestOf(), async function* () { yield encoder.encode('a') })
+    await loop.server.next('offer', 5_000)
+    loop.server.write({ type: 'accept', binaryLength: 0 })
+    await loop.server.next('entry', 5_000)
+    await loop.server.nextFrame('chunk', 5_000)
+    loop.server.write({ type: 'failed', binaryLength: 0 })
+    await expect(sent).rejects.toMatchObject({
+      name: 'TransferCompletionError',
+      remoteReason: undefined,
+    })
+  } finally {
+    await loop.close()
+  }
+})
+
+it('completes when the connection closes after every manifest entry arrived', async () => {
+  const loop = await rawLoop()
+  try {
+    const committed = Promise.withResolvers<void>()
+    const received = receiveBundle(loop.server, {
+      decideOffer: async () => ({ accept: true }),
+      openEntry: async () => ({
+        write: () => undefined,
+        commit: async () => { committed.resolve() },
+        abort: async () => undefined,
+      }),
+    })
+    loop.client.write({ type: 'offer', binaryLength: 0, manifest: manifestOf() })
+    await loop.client.next('accept', 5_000)
+    loop.client.write({ type: 'entry', binaryLength: 0, ...FILE })
+    loop.client.write({ type: 'chunk', binaryLength: 1, offset: 0, final: true }, encoder.encode('a'))
+    await committed.promise
+    loop.endClient()
+    await expect(received).resolves.toMatchObject({ entries: [FILE] })
+  } finally {
+    await loop.close()
+  }
+})
+
+it('completes on a close when the resume claims cover the manifest', async () => {
+  const loop = await rawLoop()
+  try {
+    const received = receiveBundle(loop.server, {
+      decideOffer: async () => ({ accept: true, completed: [FILE] }),
+      openEntry: async () => ({ write: () => undefined, commit: async () => undefined, abort: async () => undefined }),
+    })
+    loop.client.write({ type: 'offer', binaryLength: 0, manifest: manifestOf() })
+    await loop.client.next('accept', 5_000)
+    loop.endClient()
+    await expect(received).resolves.toMatchObject({ entries: [] })
+  } finally {
+    await loop.close()
+  }
+})
+
+it('fails a receipt when the connection closes before every manifest entry arrived', async () => {
+  const loop = await rawLoop()
+  try {
+    const received = receiveBundle(loop.server, receiver())
+    loop.client.write({ type: 'offer', binaryLength: 0, manifest: manifestOf() })
+    await loop.client.next('accept', 5_000)
+    loop.endClient()
+    await expect(received).rejects.toMatchObject({ name: 'ChannelClosedError' })
+  } finally {
+    await loop.close()
+  }
+})
+
+it('reports a reset connection, not a pairing rejection', async () => {
+  const loop = await rawLoop()
+  const pending = loop.server.next('entry', 5_000)
+  loop.resetServer()
+  await expect(pending).rejects.toMatchObject({ name: 'ChannelClosedError' })
+  await loop.close()
 })
 
 it('refuses an entry announced outside the manifest and an incomplete announcement', async () => {
@@ -201,10 +292,11 @@ it('declines without a reason when the offer decision carries none', async () =>
     const received = receiveBundle(loop.server, {
       decideOffer: async () => ({ accept: false }),
       openEntry: async () => ({ write: () => undefined, commit: async () => undefined, abort: async () => undefined }),
-    })
+    }).catch((error: unknown) => error)
     const sent = sendBundle(loop.client, manifestOf(), async function* () { yield encoder.encode('a') })
-    await expect(sent).rejects.toBeInstanceOf(TransferRejectedError)
-    await expect(received).rejects.toBeInstanceOf(TransferRejectedError)
+      .catch((error: unknown) => error)
+    expect(await sent).toBeInstanceOf(TransferRejectedError)
+    expect(await received).toBeInstanceOf(TransferRejectedError)
   } finally {
     await loop.close()
   }

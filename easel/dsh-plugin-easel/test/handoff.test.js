@@ -26,6 +26,7 @@ function fakeService() {
     pairedPeers: () => [{ id: PEER_ID, name: 'bee', platform: 'macos', pairedAt: 1 }],
     peersSnapshot: () => [],
     pairingOffers: () => pending,
+    receivingSnapshot: () => null,
     lastHandoffOutcome: () => null,
     async pairWithPeer() {
       pending.push({ id: 'p1', sas: '123456', direction: 'dialed', peer: { id: 'c'.repeat(20), name: 'cee', platform: 'linux' } })
@@ -81,7 +82,45 @@ test('status projects the device, paired list, pending offers, and last outcome'
   assert.equal(result.json.device.handoffDirectory, 'C:\\easel-root\\projects')
   assert.deepEqual(result.json.paired.map(peer => peer.name), ['bee'])
   assert.deepEqual(result.json.pending, [])
+  assert.equal(result.json.receiving, null)
   assert.equal(result.json.last, null)
+})
+
+test('status marks a paired peer incompatible when discovery reports an old protocol', async () => {
+  const service = fakeService()
+  service.peersSnapshot = () => [{
+    id: PEER_ID,
+    name: 'bee',
+    platform: 'macos',
+    port: 40123,
+    addresses: ['192.168.1.8'],
+    compatible: false,
+  }]
+  const result = await call(service, 'GET', ['handoff', 'status'])
+  assert.equal(result.json.paired[0].compatible, false)
+})
+
+test('status projects the live receipt while a bundle streams', async () => {
+  const service = fakeService()
+  service.receivingSnapshot = () => ({
+    phase: 'receiving',
+    projectTitle: '项目甲',
+    entriesDone: 1,
+    entriesTotal: 3,
+    bytesDone: 10,
+    bytesTotal: 30,
+    startedAt: 5,
+  })
+  const result = await call(service, 'GET', ['handoff', 'status'])
+  assert.deepEqual(result.json.receiving, {
+    phase: 'receiving',
+    projectTitle: '项目甲',
+    entriesDone: 1,
+    entriesTotal: 3,
+    bytesDone: 10,
+    bytesTotal: 30,
+    startedAt: 5,
+  })
 })
 
 test('pair parks the dialed offer and returns its confirmation string', async () => {

@@ -30,8 +30,13 @@ export interface ProtocolVersionRange {
   readonly max: number
 }
 
-/** The protocol range this harness build speaks. */
-export const LAN_HANDOFF_PROTOCOL_VERSION: ProtocolVersionRange = { min: 1, max: 1 }
+/**
+ * The protocol range this harness build speaks.
+ *
+ * Version 2 adds the receiver completion acknowledgement; a v1 peer cannot
+ * confirm that it imported a bundle, so the two are deliberately incompatible.
+ */
+export const LAN_HANDOFF_PROTOCOL_VERSION: ProtocolVersionRange = { min: 2, max: 2 }
 
 /** Platform label advertised for a discovered device. */
 export type LanPlatform = 'windows' | 'macos' | 'linux'
@@ -184,6 +189,98 @@ type BrandDeviceId = Branded<'DeviceId'>
  */
 export function isLoopbackAddress(address: string): boolean {
   return address === '::1' || address.startsWith('127.') || address.startsWith('::ffff:127.')
+}
+
+/** One local non-internal IPv4 address and the mask that scopes its subnet. */
+export interface LocalIpv4Network {
+  /** Dotted IPv4 address. */
+  readonly address: string
+  /** Dotted IPv4 netmask. */
+  readonly netmask: string
+}
+
+/**
+ * Parse one dotted IPv4 literal into its unsigned 32-bit value.
+ * @param address - dotted IPv4 candidate.
+ * @returns the value, or `undefined` when the text is not four decimal octets.
+ */
+function ipv4Value(address: string): number | undefined {
+  const octets = address.split('.')
+  if (octets.length !== 4) return undefined
+  let value = 0
+  for (const octet of octets) {
+    if (!/^\d{1,3}$/u.test(octet)) return undefined
+    const part = Number(octet)
+    if (part > 255) return undefined
+    value = value * 256 + part
+  }
+  return value
+}
+
+/**
+ * Extract the IPv4 literal when the address is IPv4 or IPv4-mapped IPv6.
+ * @param address - IP literal.
+ * @returns the dotted IPv4 literal, or `undefined` for a real IPv6 address.
+ */
+function ipv4LiteralOf(address: string): string | undefined {
+  const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/iu.exec(address)
+  const literal = mapped?.[1] ?? address
+  return ipv4Value(literal) === undefined ? undefined : literal
+}
+
+/**
+ * Whether an address is link-local and therefore not dialable across a LAN.
+ * @param address - IP literal, IPv4 or IPv6.
+ * @returns whether it is IPv4 169.254.0.0/16 or IPv6 fe80::/10.
+ */
+export function isLinkLocalAddress(address: string): boolean {
+  const ipv4 = ipv4LiteralOf(address)
+  if (ipv4 !== undefined) return ipv4.startsWith('169.254.')
+  return /^fe[89ab][0-9a-f]{0,2}:/iu.test(address)
+}
+
+/**
+ * Choose the address to dial for a discovered peer.
+ *
+ * A peer commonly advertises its LAN address beside virtual adapters
+ * (Hyper-V, WSL, VMware), IPv4 link-local addresses, and IPv6 link-local
+ * addresses. Dialing the first advertisement is a coin flip, so prefer an
+ * IPv4 address inside one of this device's own subnets, then any public IPv4,
+ * then a non-link-local IPv6 address.
+ * @param addresses - every address the discovery backend reported for the peer.
+ * @param localNetworks - this device's non-internal IPv4 addresses and masks.
+ * @param options - `allowLoopback` keeps loopback addresses for loopback test compositions.
+ * @returns the preferred address, or `undefined` when none can carry a connection.
+ */
+export function selectDialAddress(
+  addresses: readonly string[],
+  localNetworks: readonly LocalIpv4Network[],
+  options?: { readonly allowLoopback?: boolean },
+): string | undefined {
+  const dialable = addresses.filter(address => (options?.allowLoopback === true || !isLoopbackAddress(address))
+    && !isLinkLocalAddress(address)
+    && address !== '0.0.0.0'
+    && address !== '::'
+    && !address.startsWith('ff'))
+  const ipv4: { readonly original: string; readonly literal: string }[] = []
+  for (const address of dialable) {
+    const literal = ipv4LiteralOf(address)
+    if (literal !== undefined) ipv4.push({ original: address, literal })
+  }
+  for (const candidate of ipv4) {
+    /* v8 ignore next -- ipv4LiteralOf only returns parsed literals */
+    const value = ipv4Value(candidate.literal)
+    /* v8 ignore next -- ipv4LiteralOf only returns parsed literals */
+    if (value === undefined) continue
+    for (const network of localNetworks) {
+      const local = ipv4Value(network.address)
+      const mask = ipv4Value(network.netmask)
+      if (local !== undefined && mask !== undefined && (value & mask) === (local & mask)) return candidate.original
+    }
+  }
+  const firstIpv4 = ipv4[0]
+  if (firstIpv4 !== undefined) return firstIpv4.original
+  return dialable.find(address => address.includes(':'))
 }
 
 /**
