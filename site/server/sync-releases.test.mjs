@@ -18,8 +18,10 @@ const ORIGIN = 'https://easel.test/'
 const SIGNATURE = 'untrusted comment: easel\nRWQtestSignature==\n'
 const X64_BYTES = Buffer.from('x64-installer-bytes')
 const ARM64_BYTES = Buffer.from('arm64-installer-bytes')
+const MAC_X64_BYTES = Buffer.from('mac-x64-app-archive')
+const MAC_ARM64_BYTES = Buffer.from('mac-arm64-app-archive')
 
-function makeRelease(version = '0.2.1-alpha.32', { arm64 = true, sig = SIGNATURE } = {}) {
+function makeRelease(version = '0.2.1-alpha.32', { arm64 = true, mac = true, sig = SIGNATURE } = {}) {
   const assets = [
     {
       name: `Easel-dsh_${version}_x64-setup.exe`,
@@ -45,6 +47,22 @@ function makeRelease(version = '0.2.1-alpha.32', { arm64 = true, sig = SIGNATURE
         size: SIGNATURE.length,
       },
     )
+  }
+  if (mac) {
+    for (const [arch, bytes] of [['x64', MAC_X64_BYTES], ['aarch64', MAC_ARM64_BYTES]]) {
+      assets.push(
+        {
+          name: `Easel-dsh_${version}_${arch}.app.tar.gz`,
+          browser_download_url: `https://example.test/${version}/${arch}.app.tar.gz`,
+          size: bytes.length,
+        },
+        {
+          name: `Easel-dsh_${version}_${arch}.app.tar.gz.sig`,
+          browser_download_url: `https://example.test/${version}/${arch}.app.tar.gz.sig`,
+          size: SIGNATURE.length,
+        },
+      )
+    }
   }
   return {
     tag_name: `v${version}`,
@@ -76,6 +94,10 @@ function bodiesFor(release) {
     [`https://example.test/${version}/x64.exe.sig`]: release.sigContent,
     [`https://example.test/${version}/arm64.exe`]: ARM64_BYTES,
     [`https://example.test/${version}/arm64.exe.sig`]: release.sigContent,
+    [`https://example.test/${version}/x64.app.tar.gz`]: MAC_X64_BYTES,
+    [`https://example.test/${version}/x64.app.tar.gz.sig`]: release.sigContent,
+    [`https://example.test/${version}/aarch64.app.tar.gz`]: MAC_ARM64_BYTES,
+    [`https://example.test/${version}/aarch64.app.tar.gz.sig`]: release.sigContent,
   }
 }
 
@@ -112,6 +134,15 @@ test('maps release assets and rejects incomplete platforms', () => {
   assert.equal(plan.pubDate, '2026-10-24T15:20:00Z')
   assert.deepEqual(Object.keys(plan.platforms), ['windows-x86_64', 'windows-aarch64'])
   assert.equal(plan.platforms['windows-x86_64'].exe.name, 'Easel-dsh_0.2.1-alpha.32_x64-setup.exe')
+  assert.deepEqual(
+    Object.keys(plan.updaters),
+    ['windows-x86_64', 'windows-aarch64', 'darwin-x86_64', 'darwin-aarch64'],
+  )
+  assert.equal(plan.updaters['darwin-x86_64'].file.name, 'Easel-dsh_0.2.1-alpha.32_x64.app.tar.gz')
+
+  const macIncomplete = makeRelease()
+  macIncomplete.assets = macIncomplete.assets.filter((asset) => !asset.name.endsWith('aarch64.app.tar.gz.sig'))
+  assert.throws(() => mapAssets(macIncomplete), /darwin-aarch64 更新包缺少签名文件/)
 
   const incomplete = makeRelease()
   incomplete.assets = incomplete.assets.filter((asset) => !asset.name.endsWith('arm64-setup.exe.sig'))
@@ -144,7 +175,7 @@ test('mirrors a release, writes both pointers, and keeps the signature', async (
     })
     assert.equal(outcome.status, 'updated')
     assert.equal(outcome.version, '0.2.1-alpha.32')
-    assert.equal(calls.length, 4)
+    assert.equal(calls.length, 8)
 
     const latest = JSON.parse(await readFile(join(root, 'updates', 'latest.json'), 'utf8'))
     assert.equal(latest.version, '0.2.1-alpha.32')
@@ -156,9 +187,13 @@ test('mirrors a release, writes both pointers, and keeps the signature', async (
       'https://easel.test/releases/0.2.1-alpha.32/Easel-dsh_0.2.1-alpha.32_x64-setup.exe',
     )
     assert.ok(latest.platforms['windows-aarch64'].url.endsWith('_arm64-setup.exe'))
+    assert.ok(latest.platforms['darwin-x86_64'].url.endsWith('_x64.app.tar.gz'))
+    assert.ok(latest.platforms['darwin-aarch64'].url.endsWith('_aarch64.app.tar.gz'))
+    assert.equal(latest.platforms['darwin-aarch64'].signature, SIGNATURE.trim())
 
     const downloads = JSON.parse(await readFile(join(root, 'updates', 'downloads.json'), 'utf8'))
     assert.equal(downloads.version, '0.2.1-alpha.32')
+    assert.equal(downloads.files['darwin-x86_64'], undefined)
     assert.equal(downloads.files['windows-x86_64'].sha256, createHash('sha256').update(X64_BYTES).digest('hex'))
     assert.equal(downloads.files['windows-x86_64'].size, X64_BYTES.length)
 

@@ -10,8 +10,8 @@ use std::sync::Mutex as LaunchUrlMutex;
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
-// WebView2 carries the iframe session in a native cookie; WebKit windows get
-// it injected by the loopback proxy instead and need no cookie types.
+// WebView2 pre-installs the session cookie for the iframe; the WebKit app
+// window authenticates through the loopback proxy instead.
 #[cfg(windows)]
 use tauri::webview::{
     cookie::{time::Duration as CookieDuration, SameSite},
@@ -1098,9 +1098,6 @@ fn plain_path(p: &Path) -> PathBuf {
 struct AuthCookie {
     name: String,
     value: String,
-    /// Lifetime of the installed cookie; only the WebView2 flow reads it, the
-    /// WebKit proxy forwards the cookie value itself.
-    #[cfg_attr(not(windows), allow(dead_code))]
     max_age: i64,
 }
 
@@ -1292,7 +1289,6 @@ pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), St
     let (cookie, _clean_url, _token_url) = launch_exchange(parsed).await?;
     crate::proxy::session_updated(port, format!("{}={}", cookie.name, cookie.value));
     let proxy_port = crate::proxy::ensure_started().await?;
-    crate::proxy::self_check().await;
     let app_origin = Url::parse(&format!("http://127.0.0.1:{proxy_port}/"))
         .map_err(|e| format!("invalid app proxy origin: {e}"))?;
     if let Some(window) = app.get_webview_window(APP_WINDOW) {
