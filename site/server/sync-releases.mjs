@@ -25,6 +25,13 @@ const PLATFORMS = [
   ['arm64', 'windows-aarch64'],
 ]
 
+// macOS ships `.app` archives for the updater instead of an installer, so they
+// join latest.json but never downloads.json (the download page is Windows-only).
+const MAC_UPDATER_PLATFORMS = [
+  ['x64', 'darwin-x86_64'],
+  ['aarch64', 'darwin-aarch64'],
+]
+
 const SAFE_ASSET_NAME = /^[0-9A-Za-z][0-9A-Za-z._-]*$/
 
 /**
@@ -122,17 +129,22 @@ function assertHttpsUrl(value) {
 }
 
 /**
- * Map one release's assets onto Windows platform entries. A release that
- * carries an installer without its signature (or the reverse) is incomplete
- * and must never reach the pointer.
+ * Map one release's assets onto Windows download entries and every updater
+ * entry. A release that carries an artifact without its signature (or the
+ * reverse) is incomplete and must never reach the pointer.
  * @param {object} release - GitHub release JSON.
- * @returns {{version: string, notes: string, pubDate: string, platforms: Record<string, {arch: string, exe: object, sig: object}>}} Asset plan.
+ * @returns {{version: string, notes: string, pubDate: string, platforms: Record<string, {arch: string, exe: object, sig: object}>, updaters: Record<string, {file: object, sig: object}>}} Asset plan; `platforms` feeds the download page, `updaters` feeds latest.json.
  * @throws {Error} When a platform is incomplete or no Windows installer exists.
  */
 export function mapAssets(release) {
   const version = releaseVersion(release)
   const assets = Array.isArray(release?.assets) ? release.assets : []
   const find = (pattern) => assets.find((asset) => typeof asset?.name === 'string' && pattern.test(asset.name))
+  const asset = (entry) => ({
+    name: assertAssetName(entry.name),
+    url: assertHttpsUrl(entry.browser_download_url),
+    size: typeof entry.size === 'number' ? entry.size : undefined,
+  })
   const platforms = {}
   for (const [arch, platform] of PLATFORMS) {
     const exe = find(new RegExp(`(?:^|_)${arch}-setup\\.exe$`))
@@ -144,23 +156,36 @@ export function mapAssets(release) {
     }
     platforms[platform] = {
       arch,
-      exe: {
-        name: assertAssetName(exe.name),
-        url: assertHttpsUrl(exe.browser_download_url),
-        size: typeof exe.size === 'number' ? exe.size : undefined,
-      },
-      sig: {
-        name: assertAssetName(sig.name),
-        url: assertHttpsUrl(sig.browser_download_url),
-      },
+      exe: asset(exe),
+      sig: { name: assertAssetName(sig.name), url: assertHttpsUrl(sig.browser_download_url) },
     }
   }
   if (Object.keys(platforms).length === 0) throw new Error(`版本 ${version} 没有任何 Windows 安装包`)
+
+  const updaters = {}
+  for (const [platform, entry] of Object.entries(platforms)) {
+    updaters[platform] = { file: entry.exe, sig: entry.sig }
+  }
+  for (const [arch, platform] of MAC_UPDATER_PLATFORMS) {
+    const file = find(new RegExp(`(?:^|_)${arch}\\.app\\.tar\\.gz$`))
+    const sig = find(new RegExp(`(?:^|_)${arch}\\.app\\.tar\\.gz\\.sig$`))
+    if (file === undefined && sig === undefined) continue
+    if (file === undefined || sig === undefined) {
+      const missing = file === undefined ? '更新归档' : '签名文件'
+      throw new Error(`版本 ${version} 的 ${platform} 更新包缺少${missing}，发布不完整`)
+    }
+    updaters[platform] = {
+      file: asset(file),
+      sig: { name: assertAssetName(sig.name), url: assertHttpsUrl(sig.browser_download_url) },
+    }
+  }
+
   return {
     version,
     notes: typeof release?.body === 'string' ? release.body.trim() : '',
     pubDate: typeof release?.published_at === 'string' ? release.published_at : new Date().toISOString(),
     platforms,
+    updaters,
   }
 }
 
@@ -287,6 +312,7 @@ export async function mirrorRelease({
   const assetDir = join(webroot, 'releases', plan.version)
   await mkdir(assetDir, { recursive: true })
   const files = {}
+  const updaters = {}
   for (const [platform, entry] of Object.entries(plan.platforms)) {
     const exeBytes = await fetchWithRetry(fetchAsset, entry.exe.url, 3, retryDelayMs)
     const sigBytes = await fetchWithRetry(fetchAsset, entry.sig.url, 3, retryDelayMs)
@@ -300,6 +326,22 @@ export async function mirrorRelease({
       sha256: createHash('sha256').update(exeBytes).digest('hex'),
       size: exeBytes.length,
     }
+    updaters[platform] = files[platform]
+  }
+  for (const [platform, entry] of Object.entries(plan.updaters)) {
+    if (updaters[platform] !== undefined) continue
+    const fileBytes = await fetchWithRetry(fetchAsset, entry.file.url, 3, retryDelayMs)
+    const sigBytes = await fetchWithRetry(fetchAsset, entry.sig.url, 3, retryDelayMs)
+    const signature = sigBytes.toString('utf8').trim()
+    if (signature.length === 0) throw new Error(`${plan.version} 的 ${platform} 更新包签名文件为空`)
+    await writeAtomic(join(assetDir, entry.file.name), fileBytes)
+    await writeAtomic(join(assetDir, entry.sig.name), sigBytes)
+    updaters[platform] = {
+      name: entry.file.name,
+      signature,
+      sha256: createHash('sha256').update(fileBytes).digest('hex'),
+      size: fileBytes.length,
+    }
   }
 
   // Artifacts are on disk; now the pointers. latest.json goes last so the
@@ -310,11 +352,11 @@ export async function mirrorRelease({
   )
   await writeJsonAtomic(
     pointerFile,
-    buildLatestJson({ version: plan.version, notes: plan.notes, pubDate: plan.pubDate, origin, platforms: files }),
+    buildLatestJson({ version: plan.version, notes: plan.notes, pubDate: plan.pubDate, origin, platforms: updaters }),
   )
   await pruneOldVersions(join(webroot, 'releases'), plan.version, keepVersions, log)
-  log(`[sync] ${plan.version} 已镜像：${Object.keys(files).join(', ')}`)
-  return { status: 'updated', version: plan.version, files: Object.keys(files) }
+  log(`[sync] ${plan.version} 已镜像：${Object.keys(updaters).join(', ')}`)
+  return { status: 'updated', version: plan.version, files: Object.keys(updaters) }
 }
 
 /**

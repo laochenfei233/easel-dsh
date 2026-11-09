@@ -4,9 +4,9 @@ name: desktop-release
 # Intel x64) and Linux, bundles the per-platform Node runtime + dsh closure
 # (scripts/bundle-runtime.mjs) and uploads the installers to a GitHub Release.
 # Each architecture row is its own job and artifact. The Release body comes
-# from the matching CHANGELOG.md section; macOS packages ride the same
-# Release unsigned (noted in the changelog) and stay out of latest.json,
-# which drives the in-app updater.
+# from the matching CHANGELOG.md section; macOS packages ride the same Release
+# unsigned, and their updater artifacts enter latest.json so the in-app
+# updater can replace the bundle on macOS too (minisign-verified).
 #
 # Trigger: manual dispatch, or pushing a tag `v*` (the tauri-action creates
 # or updates the Release for that tag).
@@ -210,9 +210,10 @@ jobs:
           # installed client only sees a new build once it is published as a
           # regular release.
           prerelease: true
-          # macOS installers join the Release unsigned, but stay out of
-          # latest.json: the in-app updater path has no macOS verification yet.
-          includeUpdaterJson: ${{ matrix.platform != 'macos-latest' }}
+          # macOS installers join the Release unsigned; their updater artifacts
+          # are minisign-signed and belong in latest.json so the app window's
+          # About page can install updates on macOS.
+          includeUpdaterJson: true
           args: --verbose ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
 
       - name: Upload build artifacts
