@@ -31,6 +31,7 @@ Handoff itself is four service calls: `pairWithPeer` or `pairWithDiscoveredPeer`
 - Received archives are decompressed in memory before their sessions are imported.
 - A session-less receipt (a quick push, or a project send with sessions unchecked) lands its files without registering a workspace; the folder shows up in the sidebar only after it gains a session.
 - mDNS discovery is unit-tested through injected hosts; real multicast runs on devices and can be blocked by routers, in which case discovery falls back to manual addresses.
+- A browsing device repeats its PTR query every 30 seconds: publishers stop announcing about 55 minutes after start, so a peer that came online before this device is still found without restarting either app.
 - The agent-facing handoff tool (letting the model initiate a transfer itself) is deferred; v1 is user-driven.
 
 <a id="dev-note"></a>

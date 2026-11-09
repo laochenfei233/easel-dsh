@@ -74,6 +74,7 @@ export {
   encodeDeviceTxt,
   isLoopbackAddress,
   LAN_HANDOFF_PROTOCOL_VERSION,
+  LAN_HANDOFF_RESCAN_MS,
   LAN_HANDOFF_SERVICE_TYPE,
   lanPlatformOfHost,
   parseDeviceTxt,

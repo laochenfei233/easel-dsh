@@ -39,7 +39,7 @@ commits: # filled at delivery
 
 ### S2.3 失败行为
 
-下行/更新回调缺失地址或 TXT 不合法时静默丢弃（与现有 `parseDiscoveredEntry` 一致）；适配器的定时器与事件监听全部在 `dispose()` 里释放，不阻止进程退出。
+更新条目缺地址时静默丢弃并保留原条目（与现有 `parseDiscoveredEntry` 一致）；下线条目可能不带地址，只按 TXT 里的设备 id 归因。适配器的定时器、事件监听与 Browser 都在 `dispose()` 里释放，不阻止进程退出。
 
 ## [S3] Scope
 
@@ -48,14 +48,14 @@ commits: # filled at delivery
 
 ## Tasks
 
-- [ ] T1: `LanDiscoveryHost.find` 增加可选 `onDown`；适配器接 `down`/`srv-update`/`txt-update` 与 30s 重查询，`dispose` 清理（depends: none）
-- [ ] T2: `browseLanHandoff` 增加 `onPeerGone`；服务删除下线设备（depends: T1）
-- [ ] T3: 单测：下线移除、更新覆盖端口、无地址更新被丢弃（depends: T2）
-- [ ] T4: README 已知限制补充“定时重查询”（depends: T1）
+- [x] T1: `LanDiscoveryHost.find` 增加可选 `onDown`；适配器接 `down`/`srv-update`/`txt-update` 与 30s 重查询，`dispose` 停止 Browser 并清定时器（depends: none）
+- [x] T2: `browseLanHandoff` 增加 `onPeerGone`；服务删除下线设备（depends: T1）
+- [x] T3: 单测：适配器重查询节奏与事件映射（mock bonjour + 假时钟）、下线移除、更新覆盖端口、无地址更新被丢弃（depends: T2）
+- [x] T4: README 已知限制补充“定时重查询”（双语 + i18n 记录）（depends: T1）
 
 ## [S4] Acceptance
 
-- [ ] 设备在超过公告期后仍能被发现：浏览器每 30s 重发 PTR（代码 + 单测断言的调用次数）
-- [ ] mDNS goodbye 后 `peersSnapshot()` 不再返回该设备（单测）
-- [ ] `srv-update` 后 `peersSnapshot()` 返回新端口（单测）
-- [ ] 现有 126 个包测试保持通过（除既有 DNS 抖动用例）
+- [x] 设备在超过公告期后仍能被发现：浏览器每 30s 重发 PTR（`discovery-adapter.spec.ts` 断言调用次数，dispose 后停止）
+- [x] mDNS goodbye 后 `peersSnapshot()` 不再返回该设备（`service.spec.ts`）
+- [x] `srv-update` 后 `peersSnapshot()` 返回新端口（`service.spec.ts` 端口覆盖 + 适配器事件映射）
+- [x] 现有 126 个包测试保持通过（除既有 DNS 延时用例）

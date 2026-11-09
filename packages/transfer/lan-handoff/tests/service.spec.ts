@@ -96,6 +96,12 @@ it('keeps the latest advertisement per peer id in the snapshot', async () => {
   discovery.emit({ addresses: ['192.168.1.9'], port: 40124, txt: { id: peerId, name: 'latest', pf: 'macos', v: '1', vmin: '1' } })
   expect(service.peersSnapshot().map(peer => peer.name)).toEqual(['latest'])
   expect(service.peersSnapshot().map(peer => peer.addresses)).toEqual([['192.168.1.9']])
+  // A restarted peer advertises a new random port; the snapshot must dial it.
+  discovery.emit({ addresses: ['192.168.1.9'], port: 40125, txt: { id: peerId, name: 'latest', pf: 'macos', v: '1', vmin: '1' } })
+  expect(service.peersSnapshot().map(peer => peer.port)).toEqual([40125])
+  // An update without addresses cannot be dialed; the previous entry survives.
+  discovery.emit({ addresses: [], port: 40126, txt: { id: peerId, name: 'latest', pf: 'macos', v: '1', vmin: '1' } })
+  expect(service.peersSnapshot().map(peer => peer.port)).toEqual([40125])
 })
 
 it('drops a peer the network withdrew from the snapshot', async () => {

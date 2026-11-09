@@ -7,7 +7,7 @@
  * @module @easel-dsh/easel-air-transfer/discovery
  */
 
-import { Bonjour, type Service } from 'bonjour-service'
+import { Bonjour, type Browser, type Service } from 'bonjour-service'
 import { brandString, type Branded } from '@deepseek-ai/dsh-brand'
 import type { DeviceId } from './identity.ts'
 
@@ -263,7 +263,7 @@ export function browseLanHandoff(
     const peer = parseDiscoveredEntry(entry, ownDeviceId, options)
     if (peer !== undefined) onPeer(peer)
   }, onPeerGone === undefined ? undefined : (entry) => {
-    // A withdrawal carries no addresses, so only the identity is readable here.
+    // A withdrawal may omit addresses, so only the identity is readable here.
     const device = parseDeviceTxt(entry.txt)
     if (device !== undefined && device.id !== ownDeviceId) onPeerGone(device.id)
   })
@@ -278,6 +278,7 @@ export function browseLanHandoff(
 export function createBonjourDiscovery(): LanDiscoveryHost {
   const bonjour = new Bonjour()
   const timers = new Set<NodeJS.Timeout>()
+  const browsers = new Set<Browser>()
   const entryOf = (service: Service): LanDiscoveryEntry => ({
     addresses: service.addresses ?? [],
     port: service.port,
@@ -299,6 +300,7 @@ export function createBonjourDiscovery(): LanDiscoveryHost {
     },
     find: (type, onUp, onDown) => {
       const browser = bonjour.find({ type }, (service: Service) => { onUp(entryOf(service)) })
+      browsers.add(browser)
       // Port and TXT changes arrive as updates, not as a second `up`.
       browser.on('srv-update', (service: Service) => { onUp(entryOf(service)) })
       browser.on('txt-update', (service: Service) => { onUp(entryOf(service)) })
@@ -310,6 +312,8 @@ export function createBonjourDiscovery(): LanDiscoveryHost {
     dispose: () => new Promise((resolve) => {
       for (const timer of timers) clearInterval(timer)
       timers.clear()
+      for (const browser of browsers) browser.stop()
+      browsers.clear()
       bonjour.unpublishAll(() => { bonjour.destroy(() => resolve(undefined)) })
     }),
   }
