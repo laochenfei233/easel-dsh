@@ -1,14 +1,20 @@
 ---
 feature: easel-air-transfer-discovery-refresh
-status: in-progress
+status: delivered
 updated: 2026-11-09
 branch: feat/easel-discovery-refresh（worktree）
-commits: # filled at delivery
+commits: b07a44c631..8c6958689f
 ---
 
 # 隔空传送：设备发现刷新
 
 ## Report
+
+**What was built** — 发现适配器保留 `bonjour.find()` 的 Browser，每 `LAN_HANDOFF_RESCAN_MS`（30s）重发一次 PTR 查询，`dispose()` 清定时器并停止 Browser；`LanDiscoveryHost.find` 增加可选 `onDown`，适配器把 `down`/`srv-update`/`txt-update` 都映射成同一个 `LanDiscoveryEntry`，服务据此删除下线设备、用最新公告覆盖端口与地址。README 两种语言各补一条已知限制说明 30s 重查询。
+
+**Verification** — `vitest run packages/transfer/lan-handoff/tests --testTimeout=20000 --coverage.enabled=true --coverage.include='packages/transfer/lan-handoff/src/*.ts'`：131/131 通过，statements/branches/functions/lines 全 100%（含 discovery.ts）。`tsx scripts/build.ts --scope typecheck`：5/5 PASS。oxlint 改动文件：9 条均为 HEAD 既有（discovery.ts 4 条、index.ts 5 条），新增代码 0。`verify-package-readme-model-experience`、`verify-translation-pairing`、`verify-md-wrap` 对改动文件无发现。默认 5s 超时下两条既有 listener 用例因本机对 `nonexistent.invalid` 的 NXDOMAIN 解析约 5.9s 超时，主检出同时段同样失败（PRE-EXISTING，与本改动无关）。
+
+**Journey log** — (1) 首版只改了适配器，复审指出适配器在 `v8 ignore` 块内、节奏与事件映射没有任何断言，S4-1/S4-3 无证据 → 用 mock `bonjour-service` + 假时钟补 `discovery-adapter.spec.ts`。(2) 在 worktree 里跑 `pnpm run doc-sync` 会把共享 `node_modules` 的 workspace 链接改指到 worktree，主检出随后解析失败 → 主检出 `pnpm install --frozen-lockfile` 复原，此后只经 `node_modules/.bin/tsx` 跑门禁。(3) mDNS 的 down 事件可能带地址也可能不带，归因只读 TXT 的 id；无地址的更新条目仍按原规则丢弃并保留旧条目。
 
 ## [S1] Problem
 
