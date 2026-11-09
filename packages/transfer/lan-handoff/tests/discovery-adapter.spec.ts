@@ -64,7 +64,7 @@ describe('the bonjour adapter', () => {
     expect(mocks.browser.update).toHaveBeenCalledTimes(2)
   })
 
-  it('reports a new service, its records, and its withdrawal to the host callbacks', () => {
+  it('reports a new service, its record updates, and its withdrawal to the host callbacks', async () => {
     const discovery = createBonjourDiscovery()
     const up: { port: number; addresses: readonly string[]; txt: Readonly<Record<string, unknown>> }[] = []
     const down: { port: number; addresses: readonly string[]; txt: Readonly<Record<string, unknown>> }[] = []
@@ -75,16 +75,21 @@ describe('the bonjour adapter', () => {
     )
 
     const service: FakeService = { port: 40123, addresses: ['192.168.1.8'], txt: { id: 'peer', v: '1' } }
-    for (const event of ['up', 'srv-update', 'txt-update'] as const) mocks.listeners.get(event)?.(service)
+    mocks.listeners.get('up')?.(service)
+    // A restarted peer advertises a new port through the SRV record.
+    mocks.listeners.get('srv-update')?.({ ...service, port: 40124 })
+    mocks.listeners.get('txt-update')?.(service)
     mocks.listeners.get('down')?.(service)
 
-    expect(up).toEqual([1, 2, 3].map(() => ({ addresses: ['192.168.1.8'], port: 40123, txt: { id: 'peer', v: '1' } })))
-    expect(down).toHaveLength(1)
+    expect(up.map(entry => entry.port)).toEqual([40123, 40124, 40123])
+    expect(down).toEqual([{ addresses: ['192.168.1.8'], port: 40123, txt: { id: 'peer', v: '1' } }])
+    await discovery.dispose()
   })
 
-  it('does not subscribe a withdrawal callback the host did not supply', () => {
+  it('does not subscribe a withdrawal callback the host did not supply', async () => {
     const discovery = createBonjourDiscovery()
     discovery.find('easel-handoff', () => undefined)
     expect(mocks.listeners.has('down')).toBe(false)
+    await discovery.dispose()
   })
 })

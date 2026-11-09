@@ -270,7 +270,7 @@ export function browseLanHandoff(
 }
 
 /* v8 ignore start -- live mDNS multicast sockets stay out of loopback tests; the adapter
-   is exercised against real devices during acceptance. */
+   wiring is pinned by discovery-adapter.spec.ts against a mocked library. */
 /**
  * Real mDNS-backed discovery host backed by `bonjour-service`.
  * @returns the live discovery host.

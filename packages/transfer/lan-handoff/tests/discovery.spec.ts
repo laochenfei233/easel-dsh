@@ -163,7 +163,7 @@ describe('the recording host drives advertisement and browsing', () => {
     const host = new RecordingDiscoveryHost()
     const gone: DeviceId[] = []
     browseLanHandoff(host, OWN_ID, () => undefined, { onPeerGone: (deviceId) => { gone.push(deviceId) } })
-    // A mDNS goodbye carries the TXT record but no addresses.
+    // A mDNS goodbye may carry the TXT record without addresses.
     host.emitDown({ addresses: [], port: 0, txt: PEER_ENTRY.txt })
     host.emitDown({ addresses: [], port: 0, txt: { ...PEER_ENTRY.txt, id: OWN_ID } })
     host.emitDown({ addresses: [], port: 0, txt: { id: 7 } })
