@@ -99,6 +99,15 @@ jobs:
       - name: Build repository artifacts (lib + web dist)
         run: pnpm run build
 
+      # The repository build compiles only the host addon package
+      # (`build:native-system --host-addon-only`), so an arm64 macOS runner's
+      # Intel bundle would ship without `node-addon-system-darwin-x64/bin/system.node`
+      # and the app would fail the first time it locks a session log. The x64
+      # flock binary has no copy in git; cross-compile that one package here.
+      - name: Cross-build the Intel macOS native addon
+        if: matrix.target == 'x86_64-apple-darwin'
+        run: pnpm exec tsx native/system/scripts/build.ts --target darwin-x64
+
       - name: Bundle Node runtime + dsh closure
         working-directory: apps/desktop-tauri
         run: node scripts/bundle-runtime.mjs --platform ${{ matrix.runtime-platform }} --arch ${{ matrix.arch }}

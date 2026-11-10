@@ -9,8 +9,17 @@ import { basename, dirname, join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
 const root = resolve(import.meta.dirname, '..')
-const { values } = parseArgs({ options: { 'host-addon-only': { type: 'boolean' } }, allowPositionals: false })
+const { values } = parseArgs({
+  options: {
+    'host-addon-only': { type: 'boolean' },
+    // Cross-build one declared platform package (for example `darwin-x64` on
+    // an arm64 macOS runner, which cannot run an x64 Node to build its own).
+    target: { type: 'string' },
+  },
+  allowPositionals: false,
+})
 const hostAddonOnly = values['host-addon-only'] === true
+const requestedTarget = values.target
 const sources: Record<string, string> = {
   'landlock-run': 'packages/entry/src/main.c',
   flock: 'packages/entry/src/flock.c',
@@ -29,6 +38,13 @@ if (process.platform !== 'linux' && process.platform !== 'darwin') {
   throw new Error('build: system binaries are built on Linux or macOS; no native target for this host')
 }
 const host = `${process.platform}-${process.arch}`
+const platform = requestedTarget ?? host
+if (hostAddonOnly && requestedTarget !== undefined) {
+  throw new Error('build: --host-addon-only and --target cannot be combined')
+}
+if (platform !== host && !(process.platform === 'darwin' && platform.startsWith('darwin-'))) {
+  throw new Error(`build: cannot cross-build ${platform} from ${host}; only macOS targets cross-compile here`)
+}
 const libc = process.platform === 'linux'
   ? ((process.report.getReport() as { header: { glibcVersionRuntime?: string } }).header.glibcVersionRuntime ? 'glibc' : 'musl')
   : undefined
@@ -40,7 +56,7 @@ for (const name of readdirSync(join(root, 'packages')).sort()) {
   const metadata = join(dir, 'prebuilds.json')
   if (!existsSync(metadata)) continue
   const spec = JSON.parse(readFileSync(metadata, 'utf8')) as { platform: string; binaries: Binary[] }
-  if (spec.platform !== host) continue
+  if (spec.platform !== platform) continue
 
   for (const binary of spec.binaries) {
     if (hostAddonOnly && (binary.kind !== 'node-api' || (binary.libc !== undefined && binary.libc !== libc))) continue
@@ -63,6 +79,10 @@ for (const name of readdirSync(join(root, 'packages')).sort()) {
       if (process.platform === 'darwin') {
         if (binary.libc !== undefined) throw new Error('build: macOS flock does not select a Linux libc')
         flags.push('-bundle', '-undefined', 'dynamic_lookup', '-mmacosx-version-min=11.0')
+        if (platform !== host) {
+          const arch = platform.endsWith('-x64') ? 'x86_64' : 'arm64'
+          flags.push('-target', `${arch}-apple-darwin`, '-arch', arch)
+        }
       } else {
         if (binary.libc !== 'glibc' && binary.libc !== 'musl') {
           throw new Error('build: Linux flock must select glibc or musl')
@@ -89,4 +109,4 @@ for (const name of readdirSync(join(root, 'packages')).sort()) {
     built++
   }
 }
-if (built === 0) throw new Error(`build: no declared binaries for ${host}`)
+if (built === 0) throw new Error(`build: no declared binaries for ${platform}`)
