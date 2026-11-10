@@ -204,7 +204,10 @@ export interface ConfigDocumentSource {
  * Session archives and inline data are opened once here so their size and
  * digest enter the manifest before streaming; they stay in memory through the
  * send. Large attachment-heavy archives raise the sender's memory cost —
- * spooling them to temporary files is the upgrade path.
+ * spooling them to temporary files is the upgrade path. Disk-backed data files
+ * never load here: they are hashed by streaming and read from their source
+ * path during the send, so a gigabyte-scale content library does not sit in
+ * the sender's memory.
  * @param options - title, explicit files, lazy session archives, and data files.
  * @returns the prepared bundle.
  * @throws {HandoffPreparationError} when a file or data source cannot be read.
@@ -248,11 +251,19 @@ export async function bundleFromFiles(options: {
     if (data.absolutePath === undefined && data.bytes === undefined) {
       throw new HandoffPreparationError(data.path, 'collecting device data', new TypeError('data file carries neither bytes nor a source path'))
     }
-    const bytes = data.bytes ?? await readFileBytes(data.absolutePath as string)
-    const sha256 = createHash('sha256').update(bytes).digest('hex')
-    const entry: BundleEntryRef = { kind: 'data', path: data.path, size: bytes.byteLength, sha256 }
+    if (data.bytes !== undefined) {
+      const sha256 = createHash('sha256').update(data.bytes).digest('hex')
+      const entry: BundleEntryRef = { kind: 'data', path: data.path, size: data.bytes.byteLength, sha256 }
+      entries.push(entry)
+      sources.set(sourceKey(entry), data.bytes)
+      continue
+    }
+    // Disk-backed: hash by streaming and stream the bytes during the send.
+    const absolutePath = data.absolutePath as string
+    const { size, sha256 } = await hashFile(absolutePath, data.path, undefined)
+    const entry: BundleEntryRef = { kind: 'data', path: data.path, size, sha256 }
     entries.push(entry)
-    sources.set(sourceKey(entry), bytes)
+    sources.set(sourceKey(entry), { absolutePath })
   }
   for (const document of options.configDocuments ?? []) {
     const sha256 = createHash('sha256').update(document.bytes).digest('hex')
@@ -266,14 +277,18 @@ export async function bundleFromFiles(options: {
         ...options.sourceRoots.data === undefined ? {} : { data: options.sourceRoots.data },
         ...options.sourceRoots.home === undefined ? {} : { home: options.sourceRoots.home },
       }
+  const treeSummary = computeTreeSummary(entries)
   const manifest: BundleManifest = {
     protocolVersion: TRANSFER_PROTOCOL_VERSION,
-    bundleId: createHash('sha256').update(`${options.projectTitle}\u0000${String(Date.now())}\u0000${String(Math.random())}`).digest('hex').slice(0, 32),
+    // Content-derived, not random: re-sending the same title and entries
+    // yields the same id, so a retry after an interrupted transfer resumes
+    // from the receiver's staged entries instead of restarting the bundle.
+    bundleId: createHash('sha256').update(`${options.projectTitle}\u0000${treeSummary.sha256}`).digest('hex').slice(0, 32),
     projectTitle: options.projectTitle,
     sourceCwd: options.sourceCwd ?? options.files[0]?.absolutePath ?? options.projectTitle,
     ...sourceRoots === undefined ? {} : { sourceRoots },
     entries,
-    treeSummary: computeTreeSummary(entries),
+    treeSummary,
     ...options.mergeIntoExisting === true ? { mergeIntoExisting: true } : {},
   }
   return { manifest, sources, files: walked }
