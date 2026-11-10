@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-experimental-tool-subagent-oar",
   "description": "Delegate standalone tasks to configured external subagent providers",
-  "version": "0.2.1-alpha.46",
+  "version": "0.2.1-alpha.47",
   "publishConfig": {
     "access": "public"
   },
