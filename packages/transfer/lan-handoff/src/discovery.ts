@@ -33,10 +33,10 @@ export interface ProtocolVersionRange {
 /**
  * The protocol range this harness build speaks.
  *
- * Version 2 adds the receiver completion acknowledgement; a v1 peer cannot
- * confirm that it imported a bundle, so the two are deliberately incompatible.
+ * Version 3 adds portable config documents and source-root path remapping;
+ * both sides carry and apply them, so a v2 peer is deliberately incompatible.
  */
-export const LAN_HANDOFF_PROTOCOL_VERSION: ProtocolVersionRange = { min: 2, max: 2 }
+export const LAN_HANDOFF_PROTOCOL_VERSION: ProtocolVersionRange = { min: 3, max: 3 }
 
 /** Platform label advertised for a discovered device. */
 export type LanPlatform = 'windows' | 'macos' | 'linux'

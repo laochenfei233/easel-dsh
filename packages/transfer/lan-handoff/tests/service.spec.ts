@@ -72,7 +72,7 @@ it('starts with a minted identity, the configured name, an assigned port, and an
     name: state.deviceId,
     type: 'easel-handoff',
     port: state.port,
-    txt: { id: state.deviceId, name: '测试机', v: '2', vmin: '2' },
+    txt: { id: state.deviceId, name: '测试机', v: '3', vmin: '3' },
   })
   await ctx.fiber.dispose()
   ctx = undefined
@@ -93,8 +93,8 @@ it('keeps the latest advertisement per peer id in the snapshot', async () => {
   const service = new LanHandoffService(ctx, {}, { identityRoot: await tempRoot(), discovery })
   await service.ready
   const peerId = brandString<DeviceId>('c'.repeat(20))
-  discovery.emit({ addresses: ['192.168.1.8'], port: 40123, txt: { id: peerId, name: 'first', pf: 'macos', v: '2', vmin: '2' } })
-  discovery.emit({ addresses: ['192.168.1.9'], port: 40124, txt: { id: peerId, name: 'latest', pf: 'macos', v: '2', vmin: '2' } })
+  discovery.emit({ addresses: ['192.168.1.8'], port: 40123, txt: { id: peerId, name: 'first', pf: 'macos', v: '3', vmin: '3' } })
+  discovery.emit({ addresses: ['192.168.1.9'], port: 40124, txt: { id: peerId, name: 'latest', pf: 'macos', v: '3', vmin: '3' } })
   expect(service.peersSnapshot().map(peer => peer.name)).toEqual(['latest'])
   expect(service.peersSnapshot().map(peer => peer.addresses)).toEqual([['192.168.1.9']])
   // A restarted peer advertises a new random port; the snapshot must dial it.
@@ -145,7 +145,7 @@ it('refuses to dial a peer that advertises only unusable addresses', async () =>
   discovery.emit({
     addresses: ['169.254.10.2', 'fe80::1'],
     port: 40123,
-    txt: { id: peerId, name: 'link', pf: 'linux', v: '2', vmin: '2' },
+    txt: { id: peerId, name: 'link', pf: 'linux', v: '3', vmin: '3' },
   })
   await expect(service.pairWithDiscoveredPeer(peerId)).rejects.toThrow(/no dialable address/u)
 })

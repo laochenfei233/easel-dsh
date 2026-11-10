@@ -118,6 +118,25 @@ it('validates manifests fail-closed before any payload moves', () => {
     .toThrow(/repeats entry/u)
   expect(() => validateBundleManifest(bad({ treeSummary: { entryCount: 9, totalBytes: 9, sha256: 'f'.repeat(64) } })))
     .toThrow(/does not match its entries/u)
+
+  const config = entryRef('config', 'model-config.json', encoder.encode('{"version":1}'))
+  expect(validateBundleManifest(manifestOf([config]))).toMatchObject({ entries: [config] })
+  expect(() => validateBundleManifest(bad({
+    entries: [{ ...config, path: 'nested/doc.json' }],
+    treeSummary: computeTreeSummary([{ ...config, path: 'nested/doc.json' }]),
+  }))).toThrow(/single path segment/u)
+  expect(() => validateBundleManifest(bad({
+    mergeIntoExisting: true,
+    entries: [config],
+    treeSummary: computeTreeSummary([config]),
+  }))).toThrow(/config documents/u)
+
+  expect(validateBundleManifest(bad({ sourceRoots: { data: '/data', home: '/home' } })))
+    .toMatchObject({ sourceRoots: { data: '/data', home: '/home' } })
+  expect(() => validateBundleManifest(bad({ sourceRoots: { data: '' } }))).toThrow(/sourceRoots\.data/u)
+  expect(() => validateBundleManifest(bad({ sourceRoots: { home: 7 } }))).toThrow(/sourceRoots\.home/u)
+  expect(() => validateBundleManifest(bad({ sourceRoots: 'nope' }))).toThrow(/must be an object/u)
+  expect(validateBundleManifest(bad({ sourceRoots: {} }))).not.toHaveProperty('sourceRoots')
 })
 
 it('streams a bundle over loopback and verifies every entry', async () => {

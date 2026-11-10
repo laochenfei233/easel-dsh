@@ -6,10 +6,11 @@
 import { createHash } from 'node:crypto'
 import { mkdir, mkdtemp, readFile, realpath, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import type { TLSSocket } from 'node:tls'
 import { expect, it } from 'vitest'
 import {
+  bundleFromFiles,
   cleanupStaleReceipts,
   HandoffPreparationError,
   HandoffReceiveError,
@@ -19,8 +20,10 @@ import {
   sendPreparedBundle,
   walkProjectTree,
   type HandoffImportHost,
+  type HandoffPathRemap,
   type HandoffReceiveProgress,
   type PreparedBundle,
+  type ReceivedConfigDocument,
 } from '../src/handoff.ts'
 import { loadDeviceIdentity } from '../src/identity.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
@@ -60,19 +63,35 @@ async function loopback(): Promise<Loop> {
 
 /** Host recording the product-seam calls. */
 class RecordingHost implements HandoffImportHost {
-  readonly imported: { archives: readonly Uint8Array[]; targetCwd: string }[] = []
+  readonly imported: { archives: readonly Uint8Array[]; targetCwd: string; remaps?: readonly HandoffPathRemap[] }[] = []
   readonly attached: { projectPath: string; title: string; sessionIds: readonly string[] }[] = []
+  readonly configs: { name: string; text: string }[] = []
 
-  constructor(private readonly failImport = false, private readonly sessionIds: readonly string[] = ['session-1']) {}
+  constructor(
+    private readonly failImport = false,
+    private readonly sessionIds: readonly string[] = ['session-1'],
+    private readonly failConfig = false,
+  ) {}
 
-  async importSessionArchives(archives: readonly Uint8Array[], targetCwd: string): Promise<readonly string[]> {
-    this.imported.push({ archives, targetCwd })
+  async importSessionArchives(
+    archives: readonly Uint8Array[],
+    targetCwd: string,
+    remaps?: readonly HandoffPathRemap[],
+  ): Promise<readonly string[]> {
+    this.imported.push({ archives, targetCwd, ...remaps === undefined ? {} : { remaps } })
     if (this.failImport) throw new Error('store refused the archive')
     return this.sessionIds
   }
 
   async attachProject(projectPath: string, title: string, sessionIds: readonly string[]): Promise<void> {
     this.attached.push({ projectPath, title, sessionIds })
+  }
+
+  async applyConfigDocuments(documents: readonly ReceivedConfigDocument[]): Promise<void> {
+    for (const document of documents) {
+      this.configs.push({ name: document.name, text: new TextDecoder().decode(document.bytes) })
+    }
+    if (this.failConfig) throw new Error('settings refused the document')
   }
 }
 
@@ -177,6 +196,25 @@ it('prepares a manifest whose summary matches its entries', async () => {
   }
 })
 
+it('records only the sending-device source roots it knows', async () => {
+  const none = await bundleFromFiles({ projectTitle: '无根', files: [], sessionArchives: [], sourceRoots: {} })
+  expect(none.manifest.sourceRoots).toEqual({})
+  const homeOnly = await bundleFromFiles({
+    projectTitle: '仅 home',
+    files: [],
+    sessionArchives: [],
+    sourceRoots: { home: '/old/home' },
+  })
+  expect(homeOnly.manifest.sourceRoots).toEqual({ home: '/old/home' })
+  const dataOnly = await bundleFromFiles({
+    projectTitle: '仅 data',
+    files: [],
+    sessionArchives: [],
+    sourceRoots: { data: '/old/data' },
+  })
+  expect(dataOnly.manifest.sourceRoots).toEqual({ data: '/old/data' })
+})
+
 it('receives a bundle end to end: verified files, moved project, imported sessions', async () => {
   const { project, prepared } = await preparedFixture()
   const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-dst-'))
@@ -237,6 +275,132 @@ it('imports and registers under the canonical parent when the receiving root is 
     await rm(project.root, { recursive: true, force: true })
     await rm(root, { recursive: true, force: true })
   }
+})
+
+it('applies received config documents and source-root remaps before importing', async () => {
+  const project = await projectFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-config-'))
+  const dataRoot = await mkdtemp(join(tmpdir(), 'dsh-handoff-data-'))
+  const homeRoot = await mkdtemp(join(tmpdir(), 'dsh-handoff-home-'))
+  const loop = await loopback()
+  const configText = '{"version":1,"settings":{"llm-pi-ai":{"providers":{}}},"credentials":{}}'
+  try {
+    const prepared = await bundleFromFiles({
+      projectTitle: '带回执配置',
+      files: [{ absolutePath: join(project.root, '项目资料.md'), relativePath: '项目资料.md' }],
+      sessionArchives: [{
+        sessionId: 'session-1',
+        archiveName: 'dsh-session-session-1.zip',
+        open: async () => SESSION_ZIP,
+      }],
+      configDocuments: [{ name: 'model-config.json', bytes: encoder.encode(configText) }],
+      sourceCwd: project.root,
+      sourceRoots: { data: 'C:\\old\\data', home: 'C:\\old\\home' },
+    })
+    const host = new RecordingHost()
+    const receipt = receiveHandoff(loop.server, {
+      targetParentDirectory: destination,
+      host,
+      dataDirectory: dataRoot,
+      homeDirectory: homeRoot,
+    })
+    await sendPreparedBundle(loop.client, prepared)
+    const outcome = await receipt
+
+    expect(host.configs).toEqual([{ name: 'model-config.json', text: configText }])
+    // Longest source first: the project root wins over the sender's wider roots.
+    expect(host.imported[0]?.remaps).toEqual([
+      { from: project.root, to: outcome.projectPath },
+      { from: 'C:\\old\\data', to: resolve(dataRoot) },
+      { from: 'C:\\old\\home', to: resolve(homeRoot) },
+    ])
+    await expect(stat(join(destination, `.handoff-${prepared.manifest.bundleId}.config`)))
+      .rejects.toMatchObject({ code: 'ENOENT' })
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+    await rm(dataRoot, { recursive: true, force: true })
+    await rm(homeRoot, { recursive: true, force: true })
+  }
+})
+
+it('publishes nothing when the build cannot apply a received config document', async () => {
+  const project = await projectFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-config-missing-'))
+  const loop = await loopback()
+  try {
+    const prepared = await bundleFromFiles({
+      projectTitle: '无配置接收端',
+      files: [{ absolutePath: join(project.root, '项目资料.md'), relativePath: '项目资料.md' }],
+      sessionArchives: [],
+      configDocuments: [{ name: 'model-config.json', bytes: encoder.encode('{"version":1,"settings":{},"credentials":{}}') }],
+      sourceCwd: project.root,
+    })
+    // A host that predates the config seam: the project must not publish.
+    const receipt = receiveHandoff(loop.server, {
+      targetParentDirectory: destination,
+      host: {
+        importSessionArchives: async () => [],
+        attachProject: async () => undefined,
+      },
+    })
+    void sendPreparedBundle(loop.client, prepared).catch(() => undefined)
+    const failure = await receipt.then(
+      () => { throw new Error('expected the config application to fail') },
+      (error: unknown) => error,
+    )
+    expect(failure).toBeInstanceOf(HandoffReceiveError)
+    expect((failure as HandoffReceiveError).code).toBe('config')
+    await expect(stat(join(destination, projectDirectoryName('无配置接收端')))).rejects.toMatchObject({ code: 'ENOENT' })
+    await expect(stat(join(destination, `.handoff-${prepared.manifest.bundleId}`))).rejects.toMatchObject({ code: 'ENOENT' })
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('reports a refused config document and publishes nothing', async () => {
+  const project = await projectFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-config-refused-'))
+  const loop = await loopback()
+  try {
+    const prepared = await bundleFromFiles({
+      projectTitle: '配置被拒',
+      files: [{ absolutePath: join(project.root, '项目资料.md'), relativePath: '项目资料.md' }],
+      sessionArchives: [],
+      configDocuments: [{ name: 'model-config.json', bytes: encoder.encode('{"version":1,"settings":{},"credentials":{}}') }],
+      sourceCwd: project.root,
+    })
+    const receipt = receiveHandoff(loop.server, {
+      targetParentDirectory: destination,
+      host: new RecordingHost(false, [], true),
+    })
+    void sendPreparedBundle(loop.client, prepared).catch(() => undefined)
+    const failure = await receipt.then(
+      () => { throw new Error('expected the config application to fail') },
+      (error: unknown) => error,
+    )
+    expect(failure).toBeInstanceOf(HandoffReceiveError)
+    expect((failure as HandoffReceiveError).code).toBe('config')
+    expect((failure as Error).message).toContain('settings refused the document')
+    await expect(stat(join(destination, projectDirectoryName('配置被拒')))).rejects.toMatchObject({ code: 'ENOENT' })
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('refuses config documents on a quick push', async () => {
+  await expect(bundleFromFiles({
+    projectTitle: '快推',
+    files: [],
+    sessionArchives: [],
+    configDocuments: [{ name: 'model-config.json', bytes: encoder.encode('{}') }],
+    mergeIntoExisting: true,
+  })).rejects.toBeInstanceOf(HandoffPreparationError)
 })
 
 it('reports receiving, verifying, and importing phases with byte and entry progress', async () => {

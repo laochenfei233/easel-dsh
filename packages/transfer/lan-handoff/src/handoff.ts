@@ -183,6 +183,19 @@ export interface DataFileSource {
 }
 
 /**
+ * One portable device-configuration document. The receiving product layer
+ * applies it through its own configuration seams instead of copying it as a
+ * file, so machine-specific paths on the sending device never overwrite the
+ * receiver's own profile.
+ */
+export interface ConfigDocumentSource {
+  /** Single-segment document name on the wire (`model-config.json`). */
+  readonly name: string
+  /** Document bytes. */
+  readonly bytes: Uint8Array
+}
+
+/**
  * Build one bundle manifest from an explicit file set, optional session
  * archives, and optional device data files. This is the packing core:
  * {@link prepareBundle} feeds it a walked project tree, and quick push feeds
@@ -201,13 +214,16 @@ export async function bundleFromFiles(options: {
   readonly files: readonly BundleFileInput[]
   readonly sessionArchives: readonly SessionArchiveSource[]
   readonly dataFiles?: readonly DataFileSource[]
+  readonly configDocuments?: readonly ConfigDocumentSource[]
   /** Sending device's project directory recorded on the manifest; defaults to the first file. */
   readonly sourceCwd?: string
+  /** Sending device's data root and harness home, so received logs can be remapped. */
+  readonly sourceRoots?: { readonly data?: string; readonly home?: string }
   /** Quick-push marker carried onto the manifest; bundles must stay session-less. */
   readonly mergeIntoExisting?: boolean
 }): Promise<PreparedBundle> {
-  if (options.mergeIntoExisting === true && options.sessionArchives.length > 0) {
-    throw new HandoffPreparationError('', 'building a merge bundle', new TypeError('merge bundles carry no session archives'))
+  if (options.mergeIntoExisting === true && (options.sessionArchives.length > 0 || (options.configDocuments?.length ?? 0) > 0)) {
+    throw new HandoffPreparationError('', 'building a merge bundle', new TypeError('merge bundles carry no session archives or config documents'))
   }
   const sources = new Map<string, Uint8Array | { readonly absolutePath: string }>()
   const entries: BundleEntryRef[] = []
@@ -238,11 +254,24 @@ export async function bundleFromFiles(options: {
     entries.push(entry)
     sources.set(sourceKey(entry), bytes)
   }
+  for (const document of options.configDocuments ?? []) {
+    const sha256 = createHash('sha256').update(document.bytes).digest('hex')
+    const entry: BundleEntryRef = { kind: 'config', path: document.name, size: document.bytes.byteLength, sha256 }
+    entries.push(entry)
+    sources.set(sourceKey(entry), document.bytes)
+  }
+  const sourceRoots = options.sourceRoots === undefined
+    ? undefined
+    : {
+        ...options.sourceRoots.data === undefined ? {} : { data: options.sourceRoots.data },
+        ...options.sourceRoots.home === undefined ? {} : { home: options.sourceRoots.home },
+      }
   const manifest: BundleManifest = {
     protocolVersion: TRANSFER_PROTOCOL_VERSION,
     bundleId: createHash('sha256').update(`${options.projectTitle}\u0000${String(Date.now())}\u0000${String(Math.random())}`).digest('hex').slice(0, 32),
     projectTitle: options.projectTitle,
     sourceCwd: options.sourceCwd ?? options.files[0]?.absolutePath ?? options.projectTitle,
+    ...sourceRoots === undefined ? {} : { sourceRoots },
     entries,
     treeSummary: computeTreeSummary(entries),
     ...options.mergeIntoExisting === true ? { mergeIntoExisting: true } : {},
@@ -304,7 +333,7 @@ export class HandoffReceiveError extends Error {
    * @param message - the actionable report.
    * @param cause - the underlying failure, when one exists.
    */
-  constructor(readonly code: 'destination-exists' | 'verification' | 'import' | 'data', message: string, cause?: unknown) {
+  constructor(readonly code: 'destination-exists' | 'verification' | 'import' | 'data' | 'config', message: string, cause?: unknown) {
     super(message, cause === undefined ? undefined : { cause })
     this.name = 'HandoffReceiveError'
   }
@@ -320,15 +349,38 @@ export function projectDirectoryName(title: string): string {
   return cleaned.length === 0 ? 'project' : cleaned
 }
 
+/** One sending-device directory rewritten onto its receiving-device counterpart. */
+export interface HandoffPathRemap {
+  /** Absolute directory as recorded on the sending device. */
+  readonly from: string
+  /** Absolute directory on the receiving device. */
+  readonly to: string
+}
+
+/** One received portable config document. */
+export interface ReceivedConfigDocument {
+  /** Document name as carried on the manifest. */
+  readonly name: string
+  /** Document bytes. */
+  readonly bytes: Uint8Array
+}
+
 /** Product seams the receiving device supplies. */
 export interface HandoffImportHost {
   /**
    * Import every archive into the local stores.
    * @param archives - session archives in manifest order.
    * @param targetCwd - the receiving project directory, already in place.
+   * @param remaps - sending-device roots and their receiving-device counterparts;
+   * absolute paths inside the logs are rewritten onto this device before the
+   * log is stored.
    * @returns imported session ids in archive order.
    */
-  importSessionArchives(archives: readonly Uint8Array[], targetCwd: string): Promise<readonly string[]>
+  importSessionArchives(
+    archives: readonly Uint8Array[],
+    targetCwd: string,
+    remaps: readonly HandoffPathRemap[],
+  ): Promise<readonly string[]>
   /**
    * Register the received project and attach every imported session.
    * @param projectPath - the final project directory.
@@ -336,6 +388,13 @@ export interface HandoffImportHost {
    * @param sessionIds - imported session ids in import order.
    */
   attachProject(projectPath: string, title: string, sessionIds: readonly string[]): Promise<void>
+  /**
+   * Apply portable config documents through this device's own configuration
+   * seams. Required when the bundle carries `config` entries; the receipt is
+   * refused otherwise.
+   * @param documents - received documents in manifest order.
+   */
+  applyConfigDocuments?(documents: readonly ReceivedConfigDocument[]): Promise<void>
 }
 
 /** Outcome of one completed receipt. */
@@ -372,6 +431,22 @@ interface StagingLayout {
   readonly projectRoot: string
   readonly sessionRoot: string
   readonly dataRoot: string
+  readonly configRoot: string
+}
+
+/**
+ * Staging root for one entry kind.
+ * @param staging - staging layout.
+ * @param kind - entry kind.
+ * @returns the absolute directory the entry streams into.
+ */
+function stagingRootOf(staging: StagingLayout, kind: BundleEntryRef['kind']): string {
+  switch (kind) {
+    case 'file': return staging.projectRoot
+    case 'session': return staging.sessionRoot
+    case 'data': return staging.dataRoot
+    case 'config': return staging.configRoot
+  }
 }
 
 /** Mutable progress record behind {@link HandoffReceiveProgress}. */
@@ -387,11 +462,16 @@ interface MutableProgress {
 /** Staging layout for one bundle id. */
 function stagingOf(parentDirectory: string, bundleId: string): StagingLayout {
   const base = join(parentDirectory, `.handoff-${bundleId}`)
-  return { projectRoot: base, sessionRoot: `${base}.sessions`, dataRoot: `${base}.data` }
+  return {
+    projectRoot: base,
+    sessionRoot: `${base}.sessions`,
+    dataRoot: `${base}.data`,
+    configRoot: `${base}.config`,
+  }
 }
 
 /** Names this package gives the staging paths of one receipt (same id alphabet the manifest accepts). */
-const STAGING_NAME = /^(\.handoff-[A-Za-z0-9_-]{1,128})(?:\.data|\.sessions)?$/u
+const STAGING_NAME = /^(\.handoff-[A-Za-z0-9_-]{1,128})(?:\.data|\.sessions|\.config)?$/u
 
 /**
  * Remove staging directories left by receipts interrupted before completion
@@ -426,17 +506,17 @@ export async function cleanupStaleReceipts(
   for (const base of bases) {
     // A data-less receipt can leave only the `.data` sibling after the project
     // base was renamed away; the sibling's age still decides whether it is stale.
-    const times = await Promise.all([base, `${base}.data`, `${base}.sessions`].map(path => newestMtime(path)))
+    const times = await Promise.all([base, `${base}.data`, `${base}.sessions`, `${base}.config`].map(path => newestMtime(path)))
     const known = times.filter((time): time is number => time !== undefined)
-    /* v8 ignore next -- all three staging paths vanishing between listing and inspection is a race */
+    /* v8 ignore next -- every staging path vanishing between listing and inspection is a race */
     if (known.length === 0) continue
     const newest = Math.max(...known)
     // A zero threshold means "remove every group"; positive thresholds keep
     // anything touched inside the window, including files newer than `now`.
     if (maxAgeMs > 0 && now - newest < maxAgeMs) continue
-    await rm(base, { recursive: true, force: true })
-    await rm(`${base}.data`, { recursive: true, force: true })
-    await rm(`${base}.sessions`, { recursive: true, force: true })
+    for (const path of [base, `${base}.data`, `${base}.sessions`, `${base}.config`]) {
+      await rm(path, { recursive: true, force: true })
+    }
     removed.push(base)
   }
   return removed
@@ -583,6 +663,8 @@ export async function receiveHandoff(
     readonly host: HandoffImportHost
     /** Receiving device's data root for `data` entries; required by bundles that carry them. */
     readonly dataDirectory?: string
+    /** Receiving device's harness home, used to rewrite home-rooted paths in imported logs. */
+    readonly homeDirectory?: string
     readonly signal?: AbortSignal
     /** Called with each progress change while the bundle streams and settles. */
     readonly onProgress?: (progress: HandoffReceiveProgress) => void
@@ -618,6 +700,7 @@ export async function receiveHandoff(
     }
     const receipt = await completeReceipt(staging, finalPath, title, manifest, options.host, {
       dataDirectory: options.dataDirectory,
+      homeDirectory: options.homeDirectory,
       mergeMode,
       received,
       skipped,
@@ -650,8 +733,7 @@ export async function receiveHandoff(
     openEntry: async (entry) => {
       /* v8 ignore next 3 -- decideOffer runs before any entry opens */
       if (staging === undefined) throw new HandoffReceiveError('verification', 'receipt state was lost before receipt')
-      const root = entry.kind === 'session' ? staging.sessionRoot : entry.kind === 'data' ? staging.dataRoot : staging.projectRoot
-      const target = stagedPathOf(root, entry)
+      const target = stagedPathOf(stagingRootOf(staging, entry.kind), entry)
       await mkdir(dirname(target), { recursive: true })
       const sink = new StagingSink(target)
       return {
@@ -729,6 +811,7 @@ async function decideOffer(
     await mkdir(staging.projectRoot, { recursive: true })
     await mkdir(staging.sessionRoot, { recursive: true })
     await mkdir(staging.dataRoot, { recursive: true })
+    await mkdir(staging.configRoot, { recursive: true })
   } catch (error) {
     /* v8 ignore start -- the refusal is asserted end to end by the unholdable-parent test; attribution drifts across this block */
     throw new HandoffReceiveError('verification', `cannot prepare the receiving directory (${error instanceof Error ? error.message : String(error)})`, error)
@@ -747,10 +830,9 @@ async function decideOffer(
 async function completedStagedEntries(staging: StagingLayout, manifest: BundleManifest): Promise<readonly BundleEntryRef[]> {
   const completed: BundleEntryRef[] = []
   for (const entry of manifest.entries) {
-    const root = entry.kind === 'session' ? staging.sessionRoot : entry.kind === 'data' ? staging.dataRoot : staging.projectRoot
     let target: string
     try {
-      target = stagedPathOf(root, entry)
+      target = stagedPathOf(stagingRootOf(staging, entry.kind), entry)
     } catch {
       /* v8 ignore next -- manifest validation refuses escapes before staging */
       continue
@@ -774,6 +856,8 @@ async function completedStagedEntries(staging: StagingLayout, manifest: BundleMa
 interface CompletionContext {
   /** Receiving data root for `data` entries; required by bundles that carry them. */
   readonly dataDirectory: string | undefined
+  /** Receiving harness home, the target for the sender's home-rooted paths. */
+  readonly homeDirectory: string | undefined
   /** Quick-push merge into an existing destination directory. */
   readonly mergeMode: boolean
   /** Entries received and verified in this session. */
@@ -823,6 +907,9 @@ async function completeReceipt(
     await cleanupStaging(staging)
     throw new HandoffReceiveError('verification', 'the received project tree does not match the manifest (file count, sizes, or digests); nothing was published')
   }
+  // Configuration lands before anything publishes: a refused document leaves
+  // no project behind, so the sender can fix it and retry the whole bundle.
+  await applyConfigDocuments(staging, manifest, host)
   context.onPhase?.('importing')
   const archives: Uint8Array[] = []
   for (const entry of manifest.entries) {
@@ -845,7 +932,7 @@ async function completeReceipt(
   }
   let sessionIds: readonly string[]
   try {
-    sessionIds = await host.importSessionArchives(archives, projectPath)
+    sessionIds = await host.importSessionArchives(archives, projectPath, await pathRemaps(manifest, projectPath, context))
     await host.attachProject(projectPath, title, sessionIds)
   } catch (error) {
     // The verified project files stay in place on purpose: re-transferring
@@ -860,6 +947,81 @@ async function completeReceipt(
     await rm(staging.sessionRoot, { recursive: true, force: true })
   }
   return { projectPath, sessionIds, skipped: [] }
+}
+
+/**
+ * Apply the bundle's portable config documents through the product's own
+ * configuration seams. Runs before the project publishes, so a refused
+ * document leaves nothing half-registered.
+ * @param staging - staging layout.
+ * @param manifest - the received manifest.
+ * @param host - product seams supplying the config application.
+ * @throws {HandoffReceiveError} with code `config` when the build cannot apply
+ * the documents or the product refuses one; staging is removed first.
+ */
+async function applyConfigDocuments(
+  staging: StagingLayout,
+  manifest: BundleManifest,
+  host: HandoffImportHost,
+): Promise<void> {
+  const configEntries = manifest.entries.filter(entry => entry.kind === 'config')
+  if (configEntries.length === 0) {
+    // No config entries still leaves the staging root decideOffer created.
+    await rm(staging.configRoot, { recursive: true, force: true })
+    return
+  }
+  try {
+    const apply = host.applyConfigDocuments
+    if (apply === undefined) {
+      throw new HandoffReceiveError('config', 'the bundle carries portable configuration, but this build cannot apply it; update the receiving app and retry')
+    }
+    const documents: ReceivedConfigDocument[] = []
+    for (const entry of configEntries) {
+      documents.push({ name: entry.path, bytes: new Uint8Array(await readFileBytes(stagedPathOf(staging.configRoot, entry))) })
+    }
+    await apply.call(host, documents)
+  } catch (error) {
+    await cleanupStaging(staging)
+    if (error instanceof HandoffReceiveError) throw error
+    /* v8 ignore next -- product config seams throw Error instances */
+    throw new HandoffReceiveError(
+      'config',
+      `the configuration arrived verified but could not be applied (${error instanceof Error ? error.message : String(error)}); nothing was published`,
+      error,
+    )
+  } finally {
+    await rm(staging.configRoot, { recursive: true, force: true })
+  }
+}
+
+/**
+ * Build the sending-device-to-receiving-device directory pairs used to rewrite
+ * absolute paths inside imported session logs. The project directory maps to
+ * its received location; the sender's wider data root and harness home map to
+ * this device's counterparts when both sides know them. Longest source first,
+ * so a project root inside the data root wins the replacement.
+ * @param manifest - the received manifest.
+ * @param projectPath - final project directory on this device.
+ * @param context - receiving data root and harness home.
+ * @returns the remaps to apply, in replacement order.
+ */
+function pathRemaps(
+  manifest: BundleManifest,
+  projectPath: string,
+  context: CompletionContext,
+): readonly HandoffPathRemap[] {
+  const pairs: HandoffPathRemap[] = [{ from: manifest.sourceCwd, to: projectPath }]
+  const data = manifest.sourceRoots?.data
+  if (data !== undefined && context.dataDirectory !== undefined && context.dataDirectory.trim().length > 0) {
+    pairs.push({ from: data, to: resolve(context.dataDirectory) })
+  }
+  const home = manifest.sourceRoots?.home
+  if (home !== undefined && context.homeDirectory !== undefined && context.homeDirectory.trim().length > 0) {
+    pairs.push({ from: home, to: resolve(context.homeDirectory) })
+  }
+  return pairs
+    .filter(pair => pair.from !== pair.to)
+    .sort((left, right) => right.from.length - left.from.length)
 }
 
 /**
@@ -1017,7 +1179,7 @@ async function readFileBytes(path: string): Promise<Buffer> {
  * @param staging - staging layout.
  */
 async function cleanupStaging(staging: StagingLayout): Promise<void> {
-  await rm(staging.projectRoot, { recursive: true, force: true })
-  await rm(staging.sessionRoot, { recursive: true, force: true })
-  await rm(staging.dataRoot, { recursive: true, force: true })
+  for (const path of [staging.projectRoot, staging.sessionRoot, staging.dataRoot, staging.configRoot]) {
+    await rm(path, { recursive: true, force: true })
+  }
 }

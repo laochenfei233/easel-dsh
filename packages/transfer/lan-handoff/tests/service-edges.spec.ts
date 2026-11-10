@@ -123,7 +123,7 @@ function discover(alpha: Device, beta: Device): void {
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '2', vmin: '2' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
   })
 }
 

@@ -102,6 +102,7 @@ async function device(options: {
   }
   readonly importer?: HandoffImporter
   readonly sessionExport?: HandoffSessionExport
+  readonly homeDirectory?: string
 }): Promise<Device> {
   const ctx = new Context()
   const root = await mkdtemp(join(tmpdir(), 'dsh-prod-'))
@@ -123,6 +124,7 @@ async function device(options: {
     identityRoot: root,
     discovery,
     allowLoopbackPeers: true,
+    ...options.homeDirectory === undefined ? {} : { homeDirectory: options.homeDirectory },
     ...seamOptions,
   })
   const state = await service.ready
@@ -155,7 +157,7 @@ it('sends a workspace to a paired discovery peer and registers it on receipt', a
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '2', vmin: '2' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 
@@ -173,13 +175,75 @@ it('sends a workspace to a paired discovery peer and registers it on receipt', a
   await rm(projectRoot, { recursive: true, force: true })
 })
 
+it('applies received model configuration and remaps session paths onto the receiver', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'dsh-prod-model-src-'))
+  const betaHome = await mkdtemp(join(tmpdir(), 'dsh-prod-home-'))
+  const alphaHome = await mkdtemp(join(tmpdir(), 'dsh-prod-sender-home-'))
+  await mkdir(join(projectRoot, '素材'), { recursive: true })
+  await writeFile(join(projectRoot, '素材', 'notes.txt'), 'notes', 'utf8')
+  const applied: { ns: string; patch: object }[] = []
+  const stored: [string, string][] = []
+  const importedRemaps: unknown[] = []
+  const importer: HandoffImporter = {
+    importArchive: async (_archive, options) => {
+      importedRemaps.push(options.pathRemaps)
+      return { root: { id: 'session-model' }, descendants: [] }
+    },
+  }
+  const sessionExport: HandoffSessionExport = {
+    flush: async () => undefined,
+    readLog: async () => '{"header":{}}',
+    zip: async () => new Uint8Array([1, 2, 3]),
+  }
+  const alpha = await device({
+    withSeams: true,
+    resolveWorkspaceTo: { path: projectRoot, title: '带模型配置', sessionIds: [SessionId('s1')] },
+    sessionExport,
+    homeDirectory: alphaHome,
+  })
+  const beta = await device({ withSeams: true, importer, homeDirectory: betaHome })
+  beta.ctx.provide('settings', {
+    update: async (ns: string, patch: object) => { applied.push({ ns, patch }) },
+  } as never)
+  beta.ctx.provide('credentials', {
+    set: async (ref: string, value: string) => { stored.push([ref, value]) },
+  } as never)
+  await pair(alpha, beta)
+  alpha.discovery.emit({
+    addresses: ['127.0.0.1'],
+    port: beta.port,
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
+  })
+  await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
+
+  const config = {
+    version: 1,
+    settings: { 'llm-pi-ai': { providers: { xiaomi: { models: [] } } } },
+    credentials: { XIAOMI_API_KEY: 'sk-test' },
+  }
+  await alpha.service.sendProjectToPeer(beta.deviceId, projectRoot, {
+    configDocuments: [{ name: 'model-config.json', bytes: new TextEncoder().encode(JSON.stringify(config)) }],
+  })
+  expect(applied).toEqual([{ ns: 'llm-pi-ai', patch: { providers: { xiaomi: { models: [] } } } }])
+  expect(stored).toEqual([['XIAOMI_API_KEY', 'sk-test']])
+  const received = join(beta.destination, '带模型配置')
+  const remaps = importedRemaps[0] as readonly { from: string; to: string }[]
+  expect(new Map(remaps.map(remap => [remap.from, remap.to]))).toEqual(new Map([
+    [projectRoot, received],
+    [alphaHome, betaHome],
+  ]))
+  await rm(projectRoot, { recursive: true, force: true })
+  await rm(betaHome, { recursive: true, force: true })
+  await rm(alphaHome, { recursive: true, force: true })
+})
+
 it('refuses a sync dial to a device that is not paired', async () => {
   const alpha = await device({ withSeams: true })
   const beta = await device({ withSeams: true })
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '2', vmin: '2' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot()).toHaveLength(1) })
   await expect(alpha.service.openSyncChannel(beta.deviceId)).rejects.toThrow(/not paired/u)
@@ -219,7 +283,7 @@ it('projects live receipt progress until the session import settles', async () =
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '2', vmin: '2' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 
@@ -267,7 +331,7 @@ it('reports the receiving device import failure to the sender', async () => {
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '2', vmin: '2' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 
