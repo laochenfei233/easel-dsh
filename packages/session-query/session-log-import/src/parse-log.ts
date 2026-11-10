@@ -21,6 +21,24 @@ import {
 import { assertContiguous, validateStoredEvents } from '@deepseek-ai/dsh-session-persistence'
 import { SessionImportFormatError } from './errors.ts'
 
+/** A Windows drive- or UNC-rooted path, which POSIX `isAbsolute` does not recognize. */
+const WINDOWS_ABSOLUTE = /^(?:[A-Za-z]:[\\/]|[\\/]{2}[^\\/]+[\\/][^\\/]+)/u
+
+/**
+ * Whether one recorded session cwd is absolute in any supported platform style.
+ *
+ * The recorded cwd only travels as reporting information: the import replaces
+ * it with the receiving device's target directory, so a Windows path stays
+ * valid when the archive arrives on macOS or Linux. Validating it with the
+ * local `isAbsolute` alone would refuse every Windows-originated session there.
+ * @param path - the cwd recorded in the exported header.
+ * @returns whether the path is absolute on at least one supported platform.
+ */
+export function isCrossPlatformAbsolute(path: string): boolean {
+  return isAbsolute(path) || WINDOWS_ABSOLUTE.test(path)
+}
+
+
 /** One archive log parsed and validated against the current session format. */
 export interface ParsedSessionLog {
   /** The immutable header as recorded by the exporting device. */
@@ -126,7 +144,7 @@ function parseHeaderLine(line: string, path: string): SessionHeader {
   if (typeof delegationDepth !== 'number' || !Number.isSafeInteger(delegationDepth) || delegationDepth < 0) {
     throw new SessionImportFormatError(path, 'header line has an invalid delegationDepth')
   }
-  if (cwd !== undefined && (typeof cwd !== 'string' || !isAbsolute(cwd))) {
+  if (cwd !== undefined && (typeof cwd !== 'string' || !isCrossPlatformAbsolute(cwd))) {
     throw new SessionImportFormatError(path, 'header line carries a non-absolute cwd')
   }
   if (parentSession !== undefined && typeof parentSession !== 'string') {

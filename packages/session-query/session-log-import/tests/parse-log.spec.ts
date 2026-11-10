@@ -45,6 +45,14 @@ it('parses a root log with its optional header fields absent', () => {
   expect(parsed.inheritedEventCount).toBeUndefined()
 })
 
+it('accepts a cwd recorded by another platform', () => {
+  // A session exported on Windows must import on macOS and Linux: the recorded
+  // cwd is reporting information that the import replaces with its own target.
+  for (const cwd of ['C:\\work\\project', '\\\\server\\share\\project', '/Users/feichen/project']) {
+    expect(parseSessionLog(text(header({ cwd })), 'root').header.cwd).toBe(cwd)
+  }
+})
+
 it('keeps optional header fields and resolves the seed cut', () => {
   const parsed = parseSessionLog(text(
     header({
