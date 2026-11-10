@@ -26,7 +26,7 @@ const PEER_ID: DeviceId = brandString<DeviceId>('b'.repeat(20))
 const PEER_ENTRY: LanDiscoveryEntry = {
   addresses: ['192.168.1.8'],
   port: 40123,
-  txt: { id: PEER_ID, name: '工作台', pf: 'macos', v: '2', vmin: '1' },
+  txt: { id: PEER_ID, name: '工作台', pf: 'macos', v: '3', vmin: '1' },
 }
 
 class RecordingDiscoveryHost implements LanDiscoveryHost {
@@ -163,7 +163,7 @@ describe('discovered-entry listing', () => {
       id: PEER_ID,
       name: '工作台',
       platform: 'macos',
-      protocol: { min: 1, max: 2 },
+      protocol: { min: 1, max: 3 },
       port: 40123,
       addresses: ['192.168.1.8'],
       compatible: true,
@@ -198,7 +198,7 @@ describe('the recording host drives advertisement and browsing', () => {
       name: OWN_ID,
       type: 'easel-handoff',
       port: 40121,
-      txt: { id: OWN_ID, name: 'bill', pf: lanPlatformOfHost(), v: '2', vmin: '2' },
+      txt: { id: OWN_ID, name: 'bill', pf: lanPlatformOfHost(), v: '3', vmin: '3' },
     }])
     published.stop()
     expect(host.stopped).toBe(1)

@@ -15,8 +15,8 @@ import { isAbsolute } from 'node:path'
 import { ChannelClosedError, type ConnectionChannel } from './pairing.ts'
 import type { WireMessage } from './frame.ts'
 
-/** Version of the transfer message vocabulary; v2 adds the completion acknowledgement. */
-export const TRANSFER_PROTOCOL_VERSION = 2
+/** Version of the transfer message vocabulary; v3 adds portable config documents and source roots. */
+export const TRANSFER_PROTOCOL_VERSION = 3
 
 /** Bytes of payload per `chunk` message. */
 export const TRANSFER_CHUNK_BYTES = 256 * 1024
@@ -30,13 +30,16 @@ export const TRANSFER_CHUNK_BYTES = 256 * 1024
 export const TRANSFER_COMPLETION_TIMEOUT_MS = 10 * 60 * 1000
 
 /** Which part of a bundle one entry belongs to. */
-export type BundleEntryKind = 'file' | 'session' | 'data'
+export type BundleEntryKind = 'file' | 'session' | 'data' | 'config'
 
 /** One file carried by a bundle: a project file (relative path) or a session archive. */
 export interface BundleEntryRef {
-  /** Entry kind: project file, session archive, or device data file. */
+  /** Entry kind: project file, session archive, device data file, or portable config document. */
   readonly kind: BundleEntryKind
-  /** Project-relative path for files; archive file name for sessions; data-root-relative path for data. */
+  /**
+   * Project-relative path for files; archive file name for sessions;
+   * data-root-relative path for data; document name for config.
+   */
   readonly path: string
   /** Exact byte length. */
   readonly size: number
@@ -54,6 +57,14 @@ export interface BundleTreeSummary {
   readonly sha256: string
 }
 
+/** The sending device's directories that imported session logs may name. */
+export interface BundleSourceRoots {
+  /** Sending device's data root (the directory `data` entries are relative to). */
+  readonly data?: string
+  /** Sending device's harness home (`$DSH_HOME`). */
+  readonly home?: string
+}
+
 /** One handoff bundle's manifest. */
 export interface BundleManifest {
   /** Transfer protocol version the sender speaks. */
@@ -64,6 +75,12 @@ export interface BundleManifest {
   readonly projectTitle: string
   /** The sending device's project directory, for reporting only. */
   readonly sourceCwd: string
+  /**
+   * Sending device's wider roots, for rewriting absolute paths inside imported
+   * session logs onto the receiving device. Absent from bundles that carry no
+   * session archives, and from senders that predate path remapping.
+   */
+  readonly sourceRoots?: BundleSourceRoots
   /** Every carried entry. */
   readonly entries: readonly BundleEntryRef[]
   /** Aggregate identity computed from {@link BundleManifest.entries}. */
@@ -168,8 +185,8 @@ function assertSafePath(kind: BundleEntryKind, path: string): void {
   if (segments.some(segment => segment === '' || segment === '.')) {
     throw new TransferProtocolError(`entry path "${path}" has an empty or dot segment`)
   }
-  if (kind === 'session' && segments.length !== 1) {
-    throw new TransferProtocolError(`session archive name "${path}" must be a single path segment`)
+  if ((kind === 'session' || kind === 'config') && segments.length !== 1) {
+    throw new TransferProtocolError(`${kind} entry name "${path}" must be a single path segment`)
   }
 }
 
@@ -198,6 +215,7 @@ export function validateBundleManifest(candidate: unknown): BundleManifest {
   }
   if (typeof projectTitle !== 'string' || projectTitle.length === 0 || projectTitle.length > 256) throw new TransferProtocolError('manifest has no valid projectTitle')
   if (typeof sourceCwd !== 'string' || sourceCwd.length === 0) throw new TransferProtocolError('manifest has no sourceCwd')
+  const sourceRoots = parseSourceRoots(record['sourceRoots'])
   if (!Array.isArray(entriesRaw)) throw new TransferProtocolError('manifest has no entries list')
   const seen = new Set<string>()
   const entries: BundleEntryRef[] = []
@@ -208,7 +226,7 @@ export function validateBundleManifest(candidate: unknown): BundleManifest {
     const path = entry['path']
     const size = entry['size']
     const sha256 = entry['sha256']
-    if (kind !== 'file' && kind !== 'session' && kind !== 'data') throw new TransferProtocolError(`manifest entry kind ${String(kind)} is unknown`)
+    if (kind !== 'file' && kind !== 'session' && kind !== 'data' && kind !== 'config') throw new TransferProtocolError(`manifest entry kind ${String(kind)} is unknown`)
     if (typeof path !== 'string') throw new TransferProtocolError('manifest entry has no path')
     if (typeof size !== 'number' || !Number.isSafeInteger(size) || size < 0) throw new TransferProtocolError(`manifest entry "${path}" has an invalid size`)
     if (typeof sha256 !== 'string' || !DIGEST_PATTERN.test(sha256)) throw new TransferProtocolError(`manifest entry "${path}" has an invalid sha256`)
@@ -234,18 +252,40 @@ export function validateBundleManifest(candidate: unknown): BundleManifest {
   if (merge !== undefined && typeof merge !== 'boolean') {
     throw new TransferProtocolError('manifest mergeIntoExisting must be a boolean when present')
   }
-  if (merge === true && entries.some(entry => entry.kind === 'session')) {
-    throw new TransferProtocolError('mergeIntoExisting bundles carry no session archives')
+  if (merge === true && entries.some(entry => entry.kind === 'session' || entry.kind === 'config')) {
+    throw new TransferProtocolError('mergeIntoExisting bundles carry no session archives or config documents')
   }
   return {
     protocolVersion: TRANSFER_PROTOCOL_VERSION,
     bundleId,
     projectTitle,
     sourceCwd,
+    ...(sourceRoots === undefined ? {} : { sourceRoots }),
     entries,
     treeSummary: computed,
     ...(merge === undefined ? {} : { mergeIntoExisting: merge }),
   }
+}
+
+/**
+ * Validate the optional sending-device root map.
+ * @param raw - the manifest's `sourceRoots` field.
+ * @returns the validated roots, or undefined when the field is absent.
+ * @throws {TransferProtocolError} when present with a non-string or empty value.
+ */
+function parseSourceRoots(raw: unknown): BundleSourceRoots | undefined {
+  if (raw === undefined) return undefined
+  if (typeof raw !== 'object' || raw === null) throw new TransferProtocolError('manifest sourceRoots must be an object when present')
+  const roots: { data?: string; home?: string } = {}
+  for (const name of ['data', 'home'] as const) {
+    const value = (raw as Record<string, unknown>)[name]
+    if (value === undefined) continue
+    if (typeof value !== 'string' || value.length === 0) {
+      throw new TransferProtocolError(`manifest sourceRoots.${name} must be a non-empty string when present`)
+    }
+    roots[name] = value
+  }
+  return roots.data === undefined && roots.home === undefined ? undefined : roots
 }
 
 /** Sender-side source for one entry's bytes. */
@@ -515,7 +555,7 @@ function entryOf(message: WireMessage): BundleEntryRef {
   const path = message['path']
   const size = message['size']
   const sha256 = message['sha256']
-  if ((kind !== 'file' && kind !== 'session' && kind !== 'data') || typeof path !== 'string' || typeof size !== 'number' || typeof sha256 !== 'string') {
+  if ((kind !== 'file' && kind !== 'session' && kind !== 'data' && kind !== 'config') || typeof path !== 'string' || typeof size !== 'number' || typeof sha256 !== 'string') {
     throw new TransferProtocolError('entry announcement is incomplete')
   }
   return { kind, path, size, sha256 }

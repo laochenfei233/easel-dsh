@@ -370,7 +370,7 @@ function discover(alpha: { discovery: RecordingDiscoveryHost }, beta: { deviceId
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '2', vmin: '2' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
   })
 }
 
@@ -420,8 +420,11 @@ it('sends a project with payload options: sessions off, materials excluded, conf
   await mkdir(betaData, { recursive: true })
   await writeFile(join(betaData, '.env'), 'IMG_API_KEY=old\nLOCAL=keep\n', 'utf8')
   const createCalls: string[] = []
+  // The sender's own data root travels as a manifest source root so received
+  // session logs can rewrite data-rooted paths onto the receiver.
   const alpha = await device({
     handoffDirectory: join(base, 'alpha-inbox'),
+    dataDirectory: join(base, 'alpha-data'),
     workspace: { path: projectRoot, title: '减脂餐' },
   })
   const beta = await device({

@@ -2674,16 +2674,20 @@ export function createHandoffRoutes(ctx) {
         throw new ApiError(400, 'peerId 与 workspacePath 必填')
       }
       // 载荷勾选（spec easel-handoff-payload §S2）：会话默认带；项目素材默认带；
-      // 内容库与配置项（.env/画像/技能，含密钥）按勾选装配成 data 条目。
+      // 内容库与配置项（.env/画像/技能/大模型配置，含密钥）按勾选装配成 data 条目。
       const payload = body?.payload !== null && typeof body?.payload === 'object' ? body.payload : {}
       const dataFiles = [
         ...(payload.library === true ? await collectLibraryDataFiles(c.settings) : []),
         ...(payload.config === true ? await collectConfigDataFiles(c.settings) : []),
       ]
+      // 大模型配置不走文件拷贝：模型列表与默认模型写进对方 profile 的配置层，
+      // 密钥写进对方的凭据库，因此以可移植文档交给接收端应用。
+      const configDocument = payload.config === true ? await collectModelConfigDocument(ctx) : undefined
       const result = await service.sendProjectToPeer(peerId, workspacePath, {
         sessions: payload.sessions !== false,
         exclude: ['.env', ...(payload.materials === false ? ['素材'] : [])],
         ...(dataFiles.length > 0 ? { dataFiles } : {}),
+        ...(configDocument === undefined ? {} : { configDocuments: [configDocument] }),
       })
       return { json: { ok: true, sent: result.sent, skipped: result.skipped } }
     }],
@@ -2956,6 +2960,84 @@ async function collectConfigDataFiles(settings) {
   }
   await walkSkills(settings.skillsDir, '')
   return files
+}
+
+/** Settings namespaces whose user section travels as the portable model configuration. */
+const PORTABLE_MODEL_SETTINGS = ['llm-pi-ai', 'llm-deepseek', 'agent-default-model']
+
+/** Credential reference the built-in DeepSeek provider resolves by default. */
+const DEFAULT_MODEL_CREDENTIAL = 'DEEPSEEK_API_KEY'
+
+/** Wire name of the portable model-config document. */
+const MODEL_CONFIG_DOCUMENT = 'model-config.json'
+
+/**
+ * The conventional credential reference for a provider route, matching the
+ * Models page's derivation for profiles that do not record `apiKeyEnv`.
+ * @param provider - provider route id.
+ * @returns the derived reference name.
+ */
+function deriveModelKeyRef(provider) {
+  return `${provider.toUpperCase().replace(/[^A-Z0-9]+/g, '_')}_API_KEY`
+}
+
+/**
+ * Assemble the portable model configuration: every model-related settings
+ * namespace's *user* section (the device's own profile patch, never inherited
+ * base values) plus the literal secrets its `apiKeyEnv` references resolve to.
+ *
+ * Secrets travel only here, inside the separately selected config payload; the
+ * receiving device stores them in its own credential document instead of a
+ * file copy, so machine-local grants never cross devices.
+ * @param ctx - host context carrying the optional settings and credentials services.
+ * @returns the document, or undefined when this device has no model configuration.
+ */
+async function collectModelConfigDocument(ctx) {
+  const settings = ctx.get?.('settings')
+  if (settings === undefined || typeof settings.describe !== 'function') return undefined
+  let descriptors
+  try {
+    descriptors = settings.describe()
+  } catch {
+    // A profile whose settings service cannot describe itself has no portable section.
+    return undefined
+  }
+  const patches = {}
+  for (const row of descriptors) {
+    if (!PORTABLE_MODEL_SETTINGS.includes(row?.ns)) continue
+    const user = row.user
+    if (user === null || typeof user !== 'object' || Array.isArray(user)) continue
+    if (Object.keys(user).length > 0) patches[row.ns] = user
+  }
+  const ordered = {}
+  for (const ns of PORTABLE_MODEL_SETTINGS) {
+    if (patches[ns] !== undefined) ordered[ns] = patches[ns]
+  }
+  const credentials = ctx.get?.('credentials')
+  const secrets = {}
+  if (credentials !== undefined && typeof credentials.resolve === 'function') {
+    const refs = new Set([DEFAULT_MODEL_CREDENTIAL])
+    const providers = ordered['llm-pi-ai']?.providers
+    if (providers !== null && typeof providers === 'object' && !Array.isArray(providers)) {
+      for (const [id, profile] of Object.entries(providers)) {
+        const named = profile !== null && typeof profile === 'object' ? profile.apiKeyEnv : undefined
+        refs.add(typeof named === 'string' && named.length > 0 ? named : deriveModelKeyRef(id))
+      }
+    }
+    const deepseekRef = ordered['llm-deepseek']?.apiKeyEnv
+    if (typeof deepseekRef === 'string' && deepseekRef.length > 0) refs.add(deepseekRef)
+    for (const ref of refs) {
+      const resolved = await credentials.resolve(ref).catch(() => undefined)
+      if (resolved !== null && typeof resolved === 'object' && typeof resolved.value === 'string' && resolved.value.length > 0) {
+        secrets[ref] = resolved.value
+      }
+    }
+  }
+  if (Object.keys(ordered).length === 0 && Object.keys(secrets).length === 0) return undefined
+  return {
+    name: MODEL_CONFIG_DOCUMENT,
+    bytes: new TextEncoder().encode(JSON.stringify({ version: 1, settings: ordered, credentials: secrets })),
+  }
 }
 
 /**

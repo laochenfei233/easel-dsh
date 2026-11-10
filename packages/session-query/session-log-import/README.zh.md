@@ -20,7 +20,7 @@ kind: "package-reference"
 <a id="use_this_package"></a>
 ## 使用本包
 
-把本包作为插件挂载——命名本包的 loader 行会经包的 `apply` 入口启动该服务——然后调用 `ctx.sessionLogImporter.importArchive(zipBytes, { targetCwd })`，`targetCwd` 取本机绝对路径。调用返回已存储的根会话及其子会话。`targetCwd` 必填：导入会话的工具必须操作本机这份项目副本，因此会话头的 `cwd` 会被改写而不是保留。日志本身没有记录工作目录的会话保持无 cwd。会话 id 冲突、格式版本不受支持、或附件重新物化出的 id 与记录不一致，都会以类型化错误显式失败；不会静默改名，也不会产生半链接状态。
+把本包作为插件挂载——命名本包的 loader 行会经包的 `apply` 入口启动该服务——然后调用 `ctx.sessionLogImporter.importArchive(zipBytes, { targetCwd, pathRemaps })`，`targetCwd` 取本机绝对路径。调用返回已存储的根会话及其子会话。`targetCwd` 必填：导入会话的工具必须操作本机这份项目副本，因此会话头的 `cwd` 会被改写而不是保留。日志本身没有记录工作目录的会话保持无 cwd。`pathRemaps` 把入库事件（工具参数、工具输出、消息）里发送端的绝对目录改写成本机对应目录，包括 Windows 路径在存储的 JSON 参数文档里的转义写法；接收端是 POSIX 类平台时还会归一化分隔符。会话 id 冲突、格式版本不受支持、或附件重新物化出的 id 与记录不一致，都会以类型化错误显式失败；不会静默改名，也不会产生半链接状态。
 
 <a id="known-limitations-and-deferred-work"></a>
 ## 已知限制与后续工作

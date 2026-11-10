@@ -21,6 +21,7 @@ import {
 } from '@deepseek-ai/dsh-session'
 import type { SessionPersistence } from '@deepseek-ai/dsh-session-persistence'
 import { readSessionArchive, type ArchiveContents } from './archive-read.ts'
+import { remapSessionEvent, type SessionPathRemap } from './path-remap.ts'
 import { parseSessionLog, type ParsedSessionLog } from './parse-log.ts'
 import {
   SessionImportAttachmentMismatchError,
@@ -43,6 +44,7 @@ export {
   type ArchiveMediaEntry,
   type ArchiveMediaType,
 } from './archive-read.ts'
+export { remapEventText, remapSessionEvent, type SessionPathRemap } from './path-remap.ts'
 export { parseSessionLog, type ParsedSessionLog } from './parse-log.ts'
 
 declare module '@deepseek-ai/cordis' {
@@ -75,6 +77,13 @@ export interface SessionImportOptions {
    * Sessions without a recorded cwd keep none.
    */
   readonly targetCwd: string
+  /**
+   * Sending-device directories and their receiving-device counterparts.
+   * Absolute paths inside the stored events are rewritten before the session is
+   * written, so a continued conversation names files on this device. The
+   * longest source directory is applied first.
+   */
+  readonly pathRemaps?: readonly SessionPathRemap[]
   /** Optional cancellation observed between phases and forwarded to store operations. */
   readonly signal?: AbortSignal
 }
@@ -194,6 +203,10 @@ export class SessionLogImporter extends Service {
     options: SessionImportOptions,
   ): Promise<ImportedSession> {
     const header = remapHeader(log.header, options.targetCwd)
+    const remaps = options.pathRemaps ?? []
+    const events = remaps.length === 0
+      ? log.events
+      : log.events.map(event => remapSessionEvent(event, remaps))
     const createOptions = {
       ...log.inheritedEventCount === undefined
         ? {}
@@ -202,7 +215,7 @@ export class SessionLogImporter extends Service {
     }
     const handle = await persistence.create(header, createOptions)
     try {
-      await handle.append(log.events, options.signal === undefined ? undefined : { signal: options.signal })
+      await handle.append(events, options.signal === undefined ? undefined : { signal: options.signal })
       await handle.flush(options.signal === undefined ? undefined : { signal: options.signal })
       return { id: handle.header.id, header: handle.header }
     } finally {

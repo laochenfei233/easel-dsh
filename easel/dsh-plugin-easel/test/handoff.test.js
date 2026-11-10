@@ -211,9 +211,77 @@ test('send forwards the payload checkboxes as sessions, exclude, and data files'
     assert.ok(paths.includes('outputs/proj/a.mp4'))
     assert.ok(!paths.includes('outputs/proj/_deconstruct/x.json'))
     assert.ok(!paths.some(path => path.startsWith('outputs/analytics')))
+    // 没有 settings 服务时模型配置无从组装：文件类配置照常上包，模型文档缺席。
+    assert.equal(service.sentOptions.configDocuments, undefined)
   } finally {
     await rm(root, { recursive: true, force: true })
   }
+})
+
+test('config payload carries model providers, the default model, and their keys', async () => {
+  const service = fakeService()
+  const resolvable = { XIAOMI_API_KEY: 'sk-x', DEEPSEEK_API_KEY: 'sk-d' }
+  const ctx = {
+    get: name => name === 'lanHandoff'
+      ? service
+      : name === 'settings'
+        ? {
+            describe: () => [
+              { ns: 'llm-pi-ai', user: { providers: { xiaomi: { apiKeyEnv: 'XIAOMI_API_KEY' }, qwen: {} } } },
+              { ns: 'agent-default-model', user: { provider: 'xiaomi', model: 'mimo-v2.6-flash' } },
+              { ns: 'llm-deepseek', user: {} },
+              { ns: 'ui-settings-general', user: { welcomeNoticeVersion: '1' } },
+            ],
+          }
+        : name === 'credentials'
+          ? { resolve: async ref => resolvable[ref] === undefined ? undefined : { value: resolvable[ref] } }
+          : undefined,
+  }
+  const result = await dispatchLocalApi(
+    settings, 'POST', ['handoff', 'send'], new URLSearchParams(), async () => ({
+      peerId: PEER_ID,
+      workspacePath: 'C:\\easel-root\\projects\\p1',
+      payload: { config: true },
+    }), {}, createHandoffRoutes(ctx),
+  )
+  assert.equal(result.json.ok, true)
+  const [document] = service.sentOptions.configDocuments
+  assert.equal(document.name, 'model-config.json')
+  const parsed = JSON.parse(Buffer.from(document.bytes).toString('utf8'))
+  assert.deepEqual(Object.keys(parsed.settings), ['llm-pi-ai', 'agent-default-model'])
+  assert.deepEqual(parsed.settings['llm-pi-ai'], {
+    providers: { xiaomi: { apiKeyEnv: 'XIAOMI_API_KEY' }, qwen: {} },
+  })
+  assert.deepEqual(parsed.settings['agent-default-model'], { provider: 'xiaomi', model: 'mimo-v2.6-flash' })
+  // qwen 的派生密钥解析不到就不上包；DeepSeek 的默认密钥始终随模型配置走。
+  assert.deepEqual(parsed.credentials, { DEEPSEEK_API_KEY: 'sk-d', XIAOMI_API_KEY: 'sk-x' })
+})
+
+test('config payload is omitted unless selected and survives a settings describe failure', async () => {
+  const service = fakeService()
+  const ctx = {
+    get: name => name === 'lanHandoff'
+      ? service
+      : name === 'settings'
+        ? { describe: () => { throw new Error('settings unavailable') } }
+        : undefined,
+  }
+  await dispatchLocalApi(
+    settings, 'POST', ['handoff', 'send'], new URLSearchParams(), async () => ({
+      peerId: PEER_ID,
+      workspacePath: 'C:\\easel-root\\projects\\p1',
+      payload: { config: false },
+    }), {}, createHandoffRoutes(ctx),
+  )
+  assert.equal(service.sentOptions.configDocuments, undefined)
+  await dispatchLocalApi(
+    settings, 'POST', ['handoff', 'send'], new URLSearchParams(), async () => ({
+      peerId: PEER_ID,
+      workspacePath: 'C:\\easel-root\\projects\\p1',
+      payload: { config: true },
+    }), {}, createHandoffRoutes(ctx),
+  )
+  assert.equal(service.sentOptions.configDocuments, undefined)
 })
 
 test('push resolves the enclosing workspace for title and relative path', async () => {

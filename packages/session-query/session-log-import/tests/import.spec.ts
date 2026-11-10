@@ -276,6 +276,47 @@ it('imports a root plus a seeded subagent, remaps cwd, and restores attachments'
   }
 })
 
+it('rewrites sending-device paths inside stored events and keeps arguments valid JSON', async () => {
+  const context = await harness()
+  try {
+    const argumentsText = JSON.stringify({
+      file_path: 'C:\\Users\\chenfei\\Documents\\Easel-dsh\\workspace\\projects\\衣服淘宝展示\\素材\\a.png',
+    })
+    const call = JSON.stringify({
+      type: 'tool/call',
+      seq: 0,
+      time: 1_000,
+      data: { turn: 1, step: 1, callId: 'call-1', name: 'read_file', arguments: argumentsText },
+    })
+    const archive = zipSync({
+      'session.v4.jsonl': encoder.encode(logText(headerLine({ cwd: 'C:\\old\\project' }), call)),
+    }, { level: 0 })
+
+    await context.importer.importArchive(archive, {
+      targetCwd: '/Users/feichen/Documents/Easel-dsh/workspace/projects/衣服淘宝展示',
+      pathRemaps: [
+        {
+          from: 'C:\\Users\\chenfei\\Documents\\Easel-dsh\\workspace',
+          to: '/Users/feichen/Documents/Easel-dsh/workspace',
+        },
+        {
+          from: 'C:\\Users\\chenfei\\Documents\\Easel-dsh\\workspace\\projects\\衣服淘宝展示',
+          to: '/Users/feichen/Documents/Easel-dsh/workspace/projects/衣服淘宝展示',
+        },
+      ],
+    })
+
+    const stored = context.memory.records.get('session-a')?.events[0]
+    const argumentsValue = (stored?.data as { arguments?: string } | undefined)?.arguments
+    expect(typeof argumentsValue).toBe('string')
+    expect(JSON.parse(argumentsValue ?? 'null')).toEqual({
+      file_path: '/Users/feichen/Documents/Easel-dsh/workspace/projects/衣服淘宝展示/素材/a.png',
+    })
+  } finally {
+    await teardown(context)
+  }
+})
+
 it('forwards an active cancellation signal through every store call', async () => {
   const context = await harness()
   try {
