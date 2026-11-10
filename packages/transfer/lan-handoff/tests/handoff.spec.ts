@@ -4,7 +4,7 @@
  */
 
 import { createHash } from 'node:crypto'
-import { mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, realpath, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { TLSSocket } from 'node:tls'
@@ -208,6 +208,34 @@ it('receives a bundle end to end: verified files, moved project, imported sessio
     await loop.close()
     await rm(project.root, { recursive: true, force: true })
     await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('imports and registers under the canonical parent when the receiving root is a symlink', async () => {
+  const { project, prepared } = await preparedFixture()
+  const root = await mkdtemp(join(tmpdir(), 'dsh-handoff-link-'))
+  const realParent = join(root, 'real')
+  const aliasParent = join(root, 'alias')
+  await mkdir(realParent, { recursive: true })
+  await symlink(realParent, aliasParent, process.platform === 'win32' ? 'junction' : 'dir')
+  const loop = await loopback()
+  try {
+    const host = new RecordingHost()
+    const receipt = receiveHandoff(loop.server, { targetParentDirectory: aliasParent, host })
+    await sendPreparedBundle(loop.client, prepared)
+    const outcome = await receipt
+
+    // Sessions and the workspace registration must agree on the real path; a
+    // receipt filed through the alias splits them and the workspace shows no
+    // conversations.
+    const expected = join(await realpath(realParent), projectDirectoryName(prepared.manifest.projectTitle))
+    expect(outcome.projectPath).toBe(expected)
+    expect(host.imported[0]?.targetCwd).toBe(expected)
+    expect(host.attached[0]?.projectPath).toBe(expected)
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(root, { recursive: true, force: true })
   }
 })
 
