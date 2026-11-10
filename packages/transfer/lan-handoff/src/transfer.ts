@@ -69,7 +69,7 @@ export interface BundleSourceRoots {
 export interface BundleManifest {
   /** Transfer protocol version the sender speaks. */
   readonly protocolVersion: number
-  /** Stable bundle identity (random per send). */
+  /** Stable bundle identity derived from the title and entry set, so a retry of an interrupted send resumes. */
   readonly bundleId: string
   /** Project title to create on the receiving device. */
   readonly projectTitle: string

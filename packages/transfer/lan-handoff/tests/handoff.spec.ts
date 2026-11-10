@@ -8,7 +8,7 @@ import { mkdir, mkdtemp, readFile, realpath, rm, stat, symlink, utimes, writeFil
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import type { TLSSocket } from 'node:tls'
-import { expect, it } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import {
   bundleFromFiles,
   cleanupStaleReceipts,
@@ -322,6 +322,119 @@ it('applies received config documents and source-root remaps before importing', 
     await rm(destination, { recursive: true, force: true })
     await rm(dataRoot, { recursive: true, force: true })
     await rm(homeRoot, { recursive: true, force: true })
+  }
+})
+
+it('keeps the bundle id content-derived so a retried send can resume', async () => {
+  const project = await projectFixture()
+  try {
+    const build = () => bundleFromFiles({
+      projectTitle: '续传项目',
+      files: [{ absolutePath: join(project.root, '项目资料.md'), relativePath: '项目资料.md' }],
+      sessionArchives: [],
+      sourceCwd: project.root,
+    })
+    expect((await build()).manifest.bundleId).toBe((await build()).manifest.bundleId)
+
+    const otherTitle = await bundleFromFiles({
+      projectTitle: '另一个标题',
+      files: [{ absolutePath: join(project.root, '项目资料.md'), relativePath: '项目资料.md' }],
+      sessionArchives: [],
+      sourceCwd: project.root,
+    })
+    expect(otherTitle.manifest.bundleId).not.toBe((await build()).manifest.bundleId)
+
+    await writeFile(join(project.root, 'extra.txt'), 'more', 'utf8')
+    const otherContent = await bundleFromFiles({
+      projectTitle: '续传项目',
+      files: [
+        { absolutePath: join(project.root, '项目资料.md'), relativePath: '项目资料.md' },
+        { absolutePath: join(project.root, 'extra.txt'), relativePath: 'extra.txt' },
+      ],
+      sessionArchives: [],
+      sourceCwd: project.root,
+    })
+    expect(otherContent.manifest.bundleId).not.toBe((await build()).manifest.bundleId)
+  } finally {
+    await rm(project.root, { recursive: true, force: true })
+  }
+})
+
+it('streams disk-backed data entries from their source path instead of memory', async () => {
+  const project = await projectFixture()
+  try {
+    const absolutePath = join(project.root, '项目资料.md')
+    const prepared = await bundleFromFiles({
+      projectTitle: '流式数据',
+      files: [],
+      sessionArchives: [],
+      dataFiles: [
+        { path: 'profiles/a/identity.md', absolutePath },
+        { path: '.env', bytes: encoder.encode('K=v\n') },
+      ],
+    })
+    const streamed = prepared.manifest.entries.find(entry => entry.path === 'profiles/a/identity.md')
+    expect(streamed).toMatchObject({ kind: 'data', size: (await stat(absolutePath)).size })
+    expect(streamed?.sha256).toBe(createHash('sha256').update(await readFile(absolutePath)).digest('hex'))
+    expect(prepared.sources.get('data\u0000profiles/a/identity.md')).toEqual({ absolutePath })
+    expect(prepared.sources.get('data\u0000.env')).toBeInstanceOf(Uint8Array)
+  } finally {
+    await rm(project.root, { recursive: true, force: true })
+  }
+})
+
+it('resumes a retried send from the entries the receiver already staged', async () => {
+  const { project, prepared } = await preparedFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-resume-'))
+  const staged = prepared.manifest.entries.find(entry => entry.path === '素材/notes.txt')
+  if (staged === undefined) throw new Error('fixture has no notes entry')
+  const first = await loopback()
+  try {
+    // Attempt 1: stream one entry, then drop the link before the rest.
+    const failing = receiveHandoff(first.server, { targetParentDirectory: destination, host: new RecordingHost() })
+    first.client.write({ type: 'offer', binaryLength: 0, manifest: prepared.manifest })
+    await first.client.next('accept', 5_000)
+    const source = prepared.sources.get(`${staged.kind}\u0000${staged.path}`)
+    if (source === undefined) throw new Error('missing source')
+    const bytes = source instanceof Uint8Array ? source : await readFile(source.absolutePath)
+    first.client.write({ type: 'entry', binaryLength: 0, kind: staged.kind, path: staged.path, size: staged.size, sha256: staged.sha256 })
+    first.client.write({ type: 'chunk', binaryLength: bytes.byteLength, offset: 0, final: true }, bytes)
+    await vi.waitFor(async () => {
+      await expect(stat(join(destination, `.handoff-${prepared.manifest.bundleId}`, staged.path))).resolves.toBeDefined()
+    })
+    first.endClient()
+    await expect(failing).rejects.toThrow()
+  } finally {
+    await first.close()
+  }
+
+  // Attempt 2: the same title and content rebuild the same bundle id, so the
+  // receiver reports the staged entry and the sender skips it.
+  const retried = await prepareBundle({
+    projectPath: project.root,
+    projectTitle: '项目 甲/测试',
+    sessionArchives: [{
+      sessionId: 'session-1',
+      archiveName: 'dsh-session-session-1.zip',
+      open: async () => SESSION_ZIP,
+    }],
+  })
+  expect(retried.manifest.bundleId).toBe(prepared.manifest.bundleId)
+  const second = await loopback()
+  try {
+    const host = new RecordingHost()
+    const receipt = receiveHandoff(second.server, { targetParentDirectory: destination, host })
+    const sent = await sendPreparedBundle(second.client, retried)
+    const outcome = await receipt
+    expect(sent.skipped).toEqual([staged])
+    expect(outcome.skipped).toEqual([staged])
+    expect(await treeDigest(outcome.projectPath)).toEqual(await treeDigest(project.root))
+    expect(outcome.sessionIds).toEqual(['session-1'])
+    expect(host.imported).toHaveLength(1)
+  } finally {
+    await second.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
   }
 })
 
