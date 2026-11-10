@@ -831,6 +831,12 @@ async function completeReceipt(
     archives.push(new Uint8Array(await readFileBytes(path)))
   }
   await rename(staging.projectRoot, finalPath)
+  // The project directory exists now, so its real path is authoritative: the
+  // workspace registry registers projects by real path, and imported sessions
+  // record the cwd they are handed. A data root reached through a symlink would
+  // otherwise file the sessions under the alias path and leave the workspace
+  // with no conversations.
+  const projectPath = await realpath(finalPath)
   try {
     await applyDataFiles(staging, manifest, context.dataDirectory)
   } catch (error) {
@@ -839,21 +845,21 @@ async function completeReceipt(
   }
   let sessionIds: readonly string[]
   try {
-    sessionIds = await host.importSessionArchives(archives, finalPath)
-    await host.attachProject(finalPath, title, sessionIds)
+    sessionIds = await host.importSessionArchives(archives, projectPath)
+    await host.attachProject(projectPath, title, sessionIds)
   } catch (error) {
     // The verified project files stay in place on purpose: re-transferring
     // them would not fix an import failure, and deleting them would lose work.
     /* v8 ignore next -- host import seams throw Error instances */
     throw new HandoffReceiveError(
       'import',
-      `project files were received verified at "${finalPath}", but importing its sessions failed (${error instanceof Error ? error.message : String(error)}); retry the import instead of re-transferring`,
+      `project files were received verified at "${projectPath}", but importing its sessions failed (${error instanceof Error ? error.message : String(error)}); retry the import instead of re-transferring`,
       error,
     )
   } finally {
     await rm(staging.sessionRoot, { recursive: true, force: true })
   }
-  return { projectPath: finalPath, sessionIds, skipped: [] }
+  return { projectPath, sessionIds, skipped: [] }
 }
 
 /**
@@ -877,6 +883,9 @@ async function mergeReceipt(
   host: HandoffImportHost,
   context: CompletionContext,
 ): Promise<ReceivedHandoff> {
+  // Quick push merges into an existing destination directory, so its real path
+  // resolves already; sessions never travel with it.
+  const projectPath = await realpath(finalPath)
   try {
     for (const entry of manifest.entries) {
       if (entry.kind !== 'file') continue
@@ -889,12 +898,14 @@ async function mergeReceipt(
       await mkdir(dirname(target), { recursive: true })
       await copyFile(stagedPathOf(staging.projectRoot, entry), target)
     }
-    await host.attachProject(finalPath, title, [])
+    // Quick push merges into an existing destination directory, whose real path
+    // is already resolvable; sessions never travel with it.
+    await host.attachProject(projectPath, title, [])
     await applyDataFiles(staging, manifest, context.dataDirectory)
   } finally {
     await cleanupStaging(staging)
   }
-  return { projectPath: finalPath, sessionIds: [], skipped: [] }
+  return { projectPath, sessionIds: [], skipped: [] }
 }
 
 /**
