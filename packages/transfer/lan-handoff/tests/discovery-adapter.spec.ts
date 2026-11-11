@@ -24,6 +24,7 @@ const mocks = vi.hoisted(() => {
       return browser
     }),
   }
+  const options: unknown[] = []
   const bonjour = {
     find: vi.fn((_options: unknown, onUp?: (service: unknown) => void) => {
       if (onUp !== undefined) listeners.set('up', onUp)
@@ -33,10 +34,15 @@ const mocks = vi.hoisted(() => {
     unpublishAll: vi.fn((callback: () => void) => { callback() }),
     destroy: vi.fn((callback: () => void) => { callback() }),
   }
-  return { listeners, browser, bonjour }
+  return { listeners, browser, bonjour, options }
 })
 
-vi.mock('bonjour-service', () => ({ Bonjour: function Bonjour() { return mocks.bonjour } }))
+vi.mock('bonjour-service', () => ({
+  Bonjour: function Bonjour(opts?: unknown) {
+    mocks.options.push(opts)
+    return mocks.bonjour
+  },
+}))
 
 const { createBonjourDiscovery, LAN_HANDOFF_RESCAN_MS } = await import('../src/discovery.ts')
 
@@ -47,9 +53,24 @@ afterEach(() => {
 })
 
 describe('the bonjour adapter', () => {
+  it('publishes and browses on every configured interface', async () => {
+    const discovery = createBonjourDiscovery({ interfaces: ['192.168.1.8', '10.0.0.5'] })
+    expect(mocks.options).toEqual([{ interface: '192.168.1.8' }, { interface: '10.0.0.5' }])
+    discovery.publish({ name: 'self', type: 'easel-handoff', port: 40123, txt: { id: 'self' } })
+    expect(mocks.bonjour.publish).toHaveBeenCalledTimes(2)
+    // Each interface repeats its own query on the rescan cadence.
+    vi.useFakeTimers()
+    discovery.find('easel-handoff', () => undefined)
+    const before = mocks.browser.update.mock.calls.length
+    vi.advanceTimersByTime(LAN_HANDOFF_RESCAN_MS)
+    expect(mocks.browser.update.mock.calls.length - before).toBe(2)
+    await discovery.dispose()
+    vi.useRealTimers()
+  })
+
   it('repeats the browse query on the rescan cadence and releases the browser on dispose', async () => {
     vi.useFakeTimers()
-    const discovery = createBonjourDiscovery()
+    const discovery = createBonjourDiscovery({ interfaces: ['192.168.1.8'] })
     discovery.find('easel-handoff', () => undefined)
     expect(mocks.browser.update).not.toHaveBeenCalled()
 
@@ -65,7 +86,7 @@ describe('the bonjour adapter', () => {
   })
 
   it('reports a new service, its record updates, and its withdrawal to the host callbacks', async () => {
-    const discovery = createBonjourDiscovery()
+    const discovery = createBonjourDiscovery({ interfaces: ['192.168.1.8'] })
     const up: { port: number; addresses: readonly string[]; txt: Readonly<Record<string, unknown>> }[] = []
     const down: { port: number; addresses: readonly string[]; txt: Readonly<Record<string, unknown>> }[] = []
     discovery.find(
@@ -87,7 +108,7 @@ describe('the bonjour adapter', () => {
   })
 
   it('does not subscribe a withdrawal callback the host did not supply', async () => {
-    const discovery = createBonjourDiscovery()
+    const discovery = createBonjourDiscovery({ interfaces: ['192.168.1.8'] })
     discovery.find('easel-handoff', () => undefined)
     expect(mocks.listeners.has('down')).toBe(false)
     await discovery.dispose()

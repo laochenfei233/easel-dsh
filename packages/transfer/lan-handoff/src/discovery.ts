@@ -7,6 +7,7 @@
  * @module @easel-dsh/easel-air-transfer/discovery
  */
 
+import { networkInterfaces } from 'node:os'
 import { Bonjour, type Browser, type Service } from 'bonjour-service'
 import { brandString, type Branded } from '@deepseek-ai/dsh-brand'
 import type { DeviceId } from './identity.ts'
@@ -372,8 +373,46 @@ export function browseLanHandoff(
  * Real mDNS-backed discovery host backed by `bonjour-service`.
  * @returns the live discovery host.
  */
-export function createBonjourDiscovery(): LanDiscoveryHost {
-  const bonjour = new Bonjour()
+/** Composition overrides for the live mDNS host (tests pin the interface list). */
+export interface BonjourDiscoveryOptions {
+  /**
+   * Interface addresses to advertise and browse on; defaults to every
+   * non-internal IPv4 address, falling back to the library default when the
+   * host has none. One socket per interface keeps queries and answers on
+   * every link: a host with Ethernet and Wi-Fi otherwise sends its multicast
+   * out the default route only, so a peer on the other link is invisible.
+   */
+  readonly interfaces?: readonly string[]
+}
+
+/** This host's non-internal IPv4 interface addresses. */
+function localInterfaceAddresses(): readonly string[] {
+  const addresses: string[] = []
+  for (const entries of Object.values(networkInterfaces())) {
+    for (const entry of entries ?? []) {
+      if (entry.family === 'IPv4' && !entry.internal) addresses.push(entry.address)
+    }
+  }
+  return addresses
+}
+
+/**
+ * Create the live mDNS discovery host, one Bonjour instance per interface.
+ *
+ * `multicast-dns` joins the group on every interface but sends queries out one
+ * default-route interface, so a dual-NIC host silently misses peers on the
+ * other link. Each instance binds its own interface and publishes there, so
+ * every link both asks and answers.
+ * @param options - interface list override for tests.
+ * @returns the discovery host.
+ */
+export function createBonjourDiscovery(options: BonjourDiscoveryOptions = {}): LanDiscoveryHost {
+  const addresses = options.interfaces ?? localInterfaceAddresses()
+  const interfaces = addresses.length === 0 ? [undefined] : [...addresses]
+  const bonjours = interfaces.map(address => address === undefined
+    // multicast-dns accepts `interface`, which bonjour-service's types omit.
+    ? new Bonjour(undefined, () => undefined)
+    : new Bonjour({ interface: address } as never, () => undefined))
   const timers = new Set<NodeJS.Timeout>()
   const browsers = new Set<Browser>()
   const entryOf = (service: Service): LanDiscoveryEntry => ({
@@ -387,31 +426,37 @@ export function createBonjourDiscovery(): LanDiscoveryHost {
     publish: (advertisement) => {
       // TXT values this library hands back re-enter the wire as bytes; every
       // recorded value is ASCII already, so no reshaping is needed.
-      const published = bonjour.publish({
+      const published = bonjours.map(bonjour => bonjour.publish({
         name: advertisement.name,
         type: advertisement.type,
         port: advertisement.port,
         txt: advertisement.txt,
-      })
-      return { stop: () => { published.stop() } }
+      }))
+      return { stop: () => { for (const service of published) service.stop() } }
     },
     find: (type, onUp, onDown) => {
-      const browser = bonjour.find({ type }, (service: Service) => { onUp(entryOf(service)) })
-      browsers.add(browser)
-      // Port and TXT changes arrive as updates, not as a second `up`.
-      browser.on('srv-update', (service: Service) => { onUp(entryOf(service)) })
-      browser.on('txt-update', (service: Service) => { onUp(entryOf(service)) })
-      if (onDown !== undefined) browser.on('down', (service: Service) => { onDown(entryOf(service)) })
-      const timer = setInterval(() => { browser.update() }, LAN_HANDOFF_RESCAN_MS)
-      timer.unref()
-      timers.add(timer)
+      for (const bonjour of bonjours) {
+        const browser = bonjour.find({ type }, (service: Service) => { onUp(entryOf(service)) })
+        browsers.add(browser)
+        // Port and TXT changes arrive as updates, not as a second `up`.
+        browser.on('srv-update', (service: Service) => { onUp(entryOf(service)) })
+        browser.on('txt-update', (service: Service) => { onUp(entryOf(service)) })
+        if (onDown !== undefined) browser.on('down', (service: Service) => { onDown(entryOf(service)) })
+        const timer = setInterval(() => { browser.update() }, LAN_HANDOFF_RESCAN_MS)
+        timer.unref()
+        timers.add(timer)
+      }
     },
     dispose: () => new Promise((resolve) => {
       for (const timer of timers) clearInterval(timer)
       timers.clear()
       for (const browser of browsers) browser.stop()
       browsers.clear()
-      bonjour.unpublishAll(() => { bonjour.destroy(() => resolve(undefined)) })
+      let remaining = bonjours.length
+      if (remaining === 0) { resolve(undefined); return }
+      for (const bonjour of bonjours) {
+        bonjour.unpublishAll(() => { bonjour.destroy(() => { remaining -= 1; if (remaining === 0) resolve(undefined) }) })
+      }
     }),
   }
 }
