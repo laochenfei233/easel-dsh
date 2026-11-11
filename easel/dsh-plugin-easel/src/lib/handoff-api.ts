@@ -102,6 +102,14 @@ export function rejectPairing(id: string): Promise<{ ok: boolean }> {
   return request(`/api/handoff/pair/${encodeURIComponent(id)}/reject`, { method: 'POST' });
 }
 
+/**
+ * Remove one device from this device's pairing history.
+ * @param id - the paired device id.
+ */
+export function forgetPeer(id: string): Promise<{ ok: boolean }> {
+  return request(`/api/handoff/paired/${encodeURIComponent(id)}/forget`, { method: 'POST' });
+}
+
 /** Payload selection for one project handoff (spec easel-handoff-payload §S2). */
 export interface HandoffPayload {
   /** Include the workspace's attached session archives. */

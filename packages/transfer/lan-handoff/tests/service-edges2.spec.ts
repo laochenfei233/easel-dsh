@@ -191,6 +191,42 @@ it('reloads previously paired peers on the next start', async () => {
   expect(reloaded.service.pairedPeers().map(peer => String(peer.id))).toContain(betaId)
 })
 
+it('forgets one paired device durably and refuses its next sync dial', async () => {
+  const alpha = await device({})
+  const beta = await device({})
+  await pair(alpha, beta)
+  const betaId = String((await beta.service.ready).deviceId)
+  expect(alpha.service.pairedPeers().map(peer => String(peer.id))).toContain(betaId)
+
+  await alpha.service.forgetPeer(betaId)
+  expect(alpha.service.pairedPeers()).toEqual([])
+  // A second forget is a no-op.
+  await alpha.service.forgetPeer(betaId)
+  const reloaded = await device({ identityRoot: alpha.root })
+  expect(reloaded.service.pairedPeers()).toEqual([])
+  // A sync dial after forgetting is refused before any discovery lookup.
+  await expect(alpha.service.openSyncChannel(betaId)).rejects.toThrow(/not paired/u)
+})
+
+it('drops a pending pairing for the device being forgotten', async () => {
+  const alpha = await device({})
+  const beta = await device({})
+  const gamma = await device({})
+  const state = await beta.service.ready
+  const gammaState = await gamma.service.ready
+  const dialed = await alpha.service.pairWithPeer({ host: '127.0.0.1', port: state.port })
+  // A second pending pairing stays: forgetting beta must only drop beta's row.
+  await alpha.service.pairWithPeer({ host: '127.0.0.1', port: gammaState.port })
+  await vi.waitFor(() => { expect(beta.service.pairingOffers()).toHaveLength(1) })
+  expect(alpha.service.pairingOffers()).toHaveLength(2)
+  await alpha.service.forgetPeer(String((await beta.service.ready).deviceId))
+  expect(alpha.service.pairingOffers()).toHaveLength(1)
+  await expect(dialed.accept()).rejects.toBeDefined()
+  // Release the gamma pairing so its sockets do not hold the listeners open.
+  for (const offer of alpha.service.pairingOffers()) await alpha.service.rejectPairing(offer.id).catch(() => undefined)
+  for (const offer of gamma.service.pairingOffers()) await gamma.service.rejectPairing(offer.id).catch(() => undefined)
+})
+
 it('rejects a sync hello from a client that presents no certificate', async () => {
   const alpha = await device({})
   const state = await alpha.service.ready

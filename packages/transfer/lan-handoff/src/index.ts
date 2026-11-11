@@ -690,6 +690,29 @@ export class LanHandoffService extends Service {
   }
 
   /**
+   * Remove one device from this device's pairing history.
+   *
+   * A pending pairing for the same device is declined with it; discovery
+   * keeps listing the device as nearby, so it can be paired again. The former
+   * peer keeps its own record and is refused as unpaired until both sides
+   * pair again.
+   * @param peerId - the device id to forget.
+   */
+  async forgetPeer(peerId: string): Promise<void> {
+    const root = this.root
+    /* v8 ignore next -- ready resolved before any pairing can settle */
+    if (root === undefined) throw new Error('lan handoff peer state is not started')
+    for (const [id, offer] of this.pending) {
+      if (String(offer.peer.id) !== peerId) continue
+      this.pending.delete(id)
+      /* v8 ignore next -- a peer already gone makes the rejection throw on a dead socket */
+      void offer.reject().catch(() => undefined)
+    }
+    if (!this.paired.delete(peerId)) return
+    await savePairedPeers(root, this.paired)
+  }
+
+  /**
    * Decline one pending pairing by its UI id.
    * @param id - the id from {@link pairingOffers}.
    */

@@ -42,6 +42,10 @@ function fakeService() {
       assert.equal(id, 'p1')
       pending.length = 0
     },
+    async forgetPeer(peerId) {
+      assert.equal(peerId, PEER_ID)
+      this.forgotten = peerId
+    },
     async sendProjectToPeer(peerId, workspacePath, options) {
       assert.equal(peerId, PEER_ID)
       assert.equal(workspacePath, 'C:\\easel-root\\projects\\p1')
@@ -136,6 +140,13 @@ test('pair refuses a target without usable host and port', async () => {
     call(fakeService(), 'POST', ['handoff', 'pair'], { host: '', port: 'nope' }),
     error => error instanceof ApiError && error.status === 400,
   )
+})
+
+test('forget removes one paired device and keeps the rest', async () => {
+  const service = fakeService()
+  const result = await call(service, 'POST', ['handoff', 'paired', PEER_ID, 'forget'])
+  assert.deepEqual(result.json, { ok: true })
+  assert.equal(service.forgotten, PEER_ID)
 })
 
 test('accept and send relay to the service', async () => {

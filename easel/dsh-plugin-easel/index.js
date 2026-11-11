@@ -2658,6 +2658,12 @@ export function createHandoffRoutes(ctx) {
       await requireLan().rejectPairing(String(c.params.id))
       return { json: { ok: true } }
     }],
+    // 解除配对：从本机配对历史里删掉该设备；对端仍是已配对状态，
+    // 下次互传前需要重新配对（发现列表里它仍会作为附近设备出现）。
+    ['POST', ['handoff', 'paired', ':id', 'forget'], async (c) => {
+      await requireLan().forgetPeer(String(c.params.id))
+      return { json: { ok: true } }
+    }],
     ['GET', ['handoff', 'workspaces'], async () => {
       const registry = ctx.get?.('workspaceRegistry')
       if (registry === undefined) return { json: { workspaces: [] } }

@@ -11,6 +11,7 @@ import {
   pairWithAddress,
   pairWithPeer,
   rejectPairing,
+  forgetPeer,
   sendHandoff,
   type HandoffPayload,
   type HandoffPending,
@@ -31,6 +32,8 @@ export const COPY = {
     paired: 'Paired devices',
     pairedBadge: 'Paired',
     noPaired: 'Nothing paired yet. Pair a nearby device first.',
+    unpair: 'Unpair',
+    unpairConfirm: 'Unpair this device? It stays visible in Nearby devices and can be paired again; sending to it needs a new pairing.',
     nearby: 'Nearby devices',
     noNearby: 'No devices found. Keep both apps open on the same network, then refresh.',
     pair: 'Pair',
@@ -71,6 +74,8 @@ export const COPY = {
     paired: '已配对设备',
     pairedBadge: '已配对',
     noPaired: '还没有已配对的设备，先在附近设备里配对。',
+    unpair: '解除配对',
+    unpairConfirm: '解除与这台设备的配对？它会继续出现在「附近设备」里，可以重新配对；再次互传前需要重新配对。',
     nearby: '附近设备',
     noNearby: '尚未发现设备。请让两台设备都开着应用并处于同一网络，然后刷新。',
     pair: '配对',
@@ -251,7 +256,7 @@ interface HandoffSettingsProps {
   t: (key: keyof HandoffCopy) => string
 }
 
-type BusyAction = 'refresh' | 'send' | `pair:${string}` | `accept:${string}` | `reject:${string}`
+type BusyAction = 'refresh' | 'send' | `pair:${string}` | `accept:${string}` | `reject:${string}` | `forget:${string}`
 
 /**
  * Locale key naming one receipt phase.
@@ -507,6 +512,15 @@ export default function HandoffSettings({ t }: HandoffSettingsProps) {
                   <span className="ehs-muted">{peer.platform} · {peer.id.slice(0, 8)}{peer.compatible === false ? ' · ⚠' : ''}</span>
                 </div>
                 <span className="ehs-chip">{t('pairedBadge')}</span>
+                <button
+                  type="button"
+                  className="ehs-btn ehs-btn-ghost"
+                  disabled={busy !== undefined}
+                  onClick={() => {
+                    if (!window.confirm(t('unpairConfirm'))) return
+                    void run(`forget:${peer.id}`, () => forgetPeer(peer.id))
+                  }}
+                >{t('unpair')}</button>
               </div>
             ))}
           {status.paired.some(peer => peer.compatible === false) && (
