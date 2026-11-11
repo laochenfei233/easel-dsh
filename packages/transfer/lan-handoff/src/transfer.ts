@@ -15,8 +15,8 @@ import { isAbsolute } from 'node:path'
 import { ChannelClosedError, type ConnectionChannel } from './pairing.ts'
 import type { WireMessage } from './frame.ts'
 
-/** Version of the transfer message vocabulary; v3 adds portable config documents and source roots. */
-export const TRANSFER_PROTOCOL_VERSION = 3
+/** Version of the transfer message vocabulary; v4 adds byte-level partial resume. */
+export const TRANSFER_PROTOCOL_VERSION = 4
 
 /** Bytes of payload per `chunk` message. */
 export const TRANSFER_CHUNK_BYTES = 256 * 1024
@@ -31,6 +31,22 @@ export const TRANSFER_COMPLETION_TIMEOUT_MS = 10 * 60 * 1000
 
 /** Which part of a bundle one entry belongs to. */
 export type BundleEntryKind = 'file' | 'session' | 'data' | 'config'
+
+/**
+ * Bytes of one entry the receiver already holds from an interrupted attempt.
+ * The head bytes were never digest-checked on their own, so the receiver
+ * hashes the complete staged file before anything publishes.
+ */
+export interface BundlePartialProgress {
+  /** Entry kind: project file, session archive, device data file, or portable config document. */
+  readonly kind: BundleEntryKind
+  /** Entry path as carried on the manifest. */
+  readonly path: string
+  /** The manifest entry's whole-file SHA-256, for the receiver's completion gate. */
+  readonly sha256: string
+  /** Contiguous bytes of the entry already staged on the receiving device. */
+  readonly bytes: number
+}
 
 /** One file carried by a bundle: a project file (relative path) or a session archive. */
 export interface BundleEntryRef {
@@ -114,16 +130,27 @@ export class TransferRejectedError extends Error {
   }
 }
 
+/** Reason prefix the receiver puts on a connection-level failure a resend can continue from. */
+const RETRYABLE_PREFIX = 'retryable:'
+
+/** Reason prefix the receiver puts on a refusal resending cannot fix. */
+const FATAL_PREFIX = 'fatal:'
+
 /** Failure: the receiving device streamed the bundle but could not import it. */
 export class TransferCompletionError extends Error {
+  /** Whether resending the bundle can continue from the receiver's staged bytes. */
+  readonly retryable: boolean
+
   /**
    * @param remoteReason - the receiving device's own failure report, when it sent one.
    */
   constructor(readonly remoteReason: string | undefined) {
+    const retryable = remoteReason?.startsWith(RETRYABLE_PREFIX) === true
     super(remoteReason === undefined
       ? 'the receiving device could not complete the handoff'
-      : `the receiving device could not complete the handoff (${remoteReason})`)
+      : `the receiving device could not complete the handoff (${remoteReason.replace(`${RETRYABLE_PREFIX}`, '').replace(`${FATAL_PREFIX}`, '')})`)
     this.name = 'TransferCompletionError'
+    this.retryable = retryable
   }
 }
 
@@ -288,8 +315,8 @@ function parseSourceRoots(raw: unknown): BundleSourceRoots | undefined {
   return roots.data === undefined && roots.home === undefined ? undefined : roots
 }
 
-/** Sender-side source for one entry's bytes. */
-export type BundleEntryReader = (entry: BundleEntryRef) => AsyncIterable<Uint8Array>
+/** Sender-side source for one entry's bytes, from the given start offset (0 for a fresh entry). */
+export type BundleEntryReader = (entry: BundleEntryRef, startOffset: number) => AsyncIterable<Uint8Array>
 
 /** Outcome of sending one bundle. */
 export interface SentBundle {
@@ -303,12 +330,16 @@ export interface SentBundle {
  * Offer and stream one bundle.
  *
  * Waits for the receiver's acceptance, skips entries it reports complete,
+ * resumes entries it reports partially staged from the reported byte offset,
  * streams every other entry as `entry` + `chunk` messages, and verifies each
  * source's bytes against the manifest while streaming (a source that changed
- * after the manifest aborts the transfer instead of shipping a lie).
+ * after the manifest aborts the transfer instead of shipping a lie). A
+ * resumed entry streams only its tail: the tail alone cannot reproduce the
+ * whole-entry digest, so the receiver hashes the complete staged file before
+ * anything publishes.
  * @param channel - the authenticated connection channel.
  * @param manifest - the validated manifest (computed by the caller).
- * @param readEntry - source of one entry's bytes in order.
+ * @param readEntry - source of one entry's bytes in order, from the given start offset.
  * @param signal - optional cancellation.
  * @returns which entries were skipped and which were streamed, after the
  * receiver confirms that it verified and imported the bundle.
@@ -316,7 +347,7 @@ export interface SentBundle {
  * @throws {TransferCompletionError} when the receiver streamed but could not import.
  * @throws {ChannelClosedError} when the connection ends before the confirmation.
  * @throws {TransferIntegrityError} when a source no longer matches the manifest.
- * @throws {TransferProtocolError} when the receiver's resume list is invalid.
+ * @throws {TransferProtocolError} when the receiver's resume report is invalid.
  */
 export async function sendBundle(
   channel: ConnectionChannel,
@@ -329,6 +360,7 @@ export async function sendBundle(
   const answer = await channel.next(['accept', 'reject'], 120_000)
   if (answer.type === 'reject') throw new TransferRejectedError(typeof answer['reason'] === 'string' ? answer['reason'] : undefined)
   const completed = parseResumeList(answer['resume'], manifest)
+  const partial = parsePartialList(answer['partial'], manifest)
   const skipped: BundleEntryRef[] = []
   const sent: BundleEntryRef[] = []
   for (const entry of manifest.entries) {
@@ -337,8 +369,9 @@ export async function sendBundle(
       skipped.push(entry)
       continue
     }
+    const startOffset = partial.get(entryKey(entry)) ?? 0
     channel.write({ type: 'entry', binaryLength: 0, kind: entry.kind, path: entry.path, size: entry.size, sha256: entry.sha256 })
-    await streamEntry(channel, entry, readEntry(entry), signal)
+    await streamEntry(channel, entry, readEntry(entry, startOffset), signal, startOffset)
     sent.push(entry)
   }
   channel.write({ type: 'done', binaryLength: 0 })
@@ -369,7 +402,7 @@ function parseResumeList(raw: unknown, manifest: BundleManifest): Set<string> {
     const path = entry['path']
     const sha256 = entry['sha256']
     /* v8 ignore start -- short-circuit attribution: the refusal path is asserted through the incomplete-resume test */
-    if ((kind !== 'file' && kind !== 'session' && kind !== 'data') || typeof path !== 'string' || typeof sha256 !== 'string') {
+    if ((kind !== 'file' && kind !== 'session' && kind !== 'data' && kind !== 'config') || typeof path !== 'string' || typeof sha256 !== 'string') {
       throw new TransferProtocolError('resume entry is incomplete')
     }
     /* v8 ignore stop */
@@ -381,23 +414,62 @@ function parseResumeList(raw: unknown, manifest: BundleManifest): Set<string> {
 }
 
 /**
+ * Validate the receiver's partial-progress report against the manifest.
+ * @param raw - the partial field from the accept message.
+ * @param manifest - the offered manifest.
+ * @returns bytes already staged per entry key.
+ * @throws {TransferProtocolError} for a malformed report or an out-of-range byte count.
+ */
+function parsePartialList(raw: unknown, manifest: BundleManifest): Map<string, number> {
+  if (raw === undefined) return new Map()
+  if (!Array.isArray(raw)) throw new TransferProtocolError('accept carries a non-list partial field')
+  const known = new Map(manifest.entries.map(entry => [entryKey(entry), entry]))
+  const partial = new Map<string, number>()
+  for (const candidate of raw as readonly unknown[]) {
+    if (typeof candidate !== 'object' || candidate === null) throw new TransferProtocolError('partial entry is not an object')
+    const record = candidate as Record<string, unknown>
+    const kind = record['kind']
+    const path = record['path']
+    const sha256 = record['sha256']
+    const bytes = record['bytes']
+    if ((kind !== 'file' && kind !== 'session' && kind !== 'data' && kind !== 'config') || typeof path !== 'string' || typeof sha256 !== 'string') {
+      throw new TransferProtocolError('partial entry is incomplete')
+    }
+    const entry = known.get(entryKey({ kind, path, size: 0, sha256 }))
+    // A partial claim for content the bundle does not carry grants nothing.
+    if (entry === undefined) continue
+    if (typeof bytes !== 'number' || !Number.isSafeInteger(bytes) || bytes <= 0 || bytes >= entry.size) {
+      throw new TransferProtocolError(`partial entry "${path}" reports an out-of-range byte count`)
+    }
+    partial.set(entryKey(entry), bytes)
+  }
+  return partial
+}
+
+/**
  * Stream one entry as chunk frames and verify it against the manifest.
+ *
+ * A resumed entry streams only its tail, so the streaming hash cannot cover
+ * the whole entry: the digest gate for resumed bytes is the receiver hashing
+ * the complete staged file, and the size check here is the sender's own gate.
  * @param channel - the connection channel.
  * @param entry - the manifest entry.
- * @param source - the entry's bytes.
+ * @param source - the entry's bytes, starting at `startOffset`.
  * @param signal - optional cancellation.
+ * @param startOffset - byte offset this stream continues from; 0 for a fresh entry.
  */
 async function streamEntry(
   channel: ConnectionChannel,
   entry: BundleEntryRef,
   source: AsyncIterable<Uint8Array>,
   signal?: AbortSignal,
+  startOffset = 0,
 ): Promise<void> {
-  const hash = createHash('sha256')
-  let offset = 0
+  const hash = startOffset === 0 ? createHash('sha256') : undefined
+  let offset = startOffset
   for await (const chunk of source) {
     signal?.throwIfAborted()
-    hash.update(chunk)
+    hash?.update(chunk)
     let at = 0
     while (at < chunk.byteLength) {
       const end = Math.min(at + TRANSFER_CHUNK_BYTES, chunk.byteLength)
@@ -416,6 +488,7 @@ async function streamEntry(
     channel.write({ type: 'chunk', binaryLength: 0, offset: 0, final: true })
   }
   if (offset !== entry.size) throw new TransferIntegrityError(entry.path, `size ${String(entry.size)}`, `size ${String(offset)}`)
+  if (hash === undefined) return
   const digest = hash.digest('hex')
   if (digest !== entry.sha256) throw new TransferIntegrityError(entry.path, entry.sha256, digest)
 }
@@ -429,8 +502,16 @@ export interface BundleEntrySink {
   write(chunk: Uint8Array): Promise<void> | void
   /** The entry arrived complete and verified; publish it. */
   commit(): Promise<void>
-  /** The entry cannot be completed; discard partial state. */
+  /**
+   * The stream ended before the entry completed (dropped link, cancellation).
+   * Keep the staged bytes: a resend continues from them.
+   */
   abort(): Promise<void>
+  /**
+   * The staged bytes are corrupt (digest or size mismatch); drop them so the
+   * next attempt restarts the entry from zero.
+   */
+  discard(): Promise<void>
 }
 
 /** One receiver's answer to an offered bundle. */
@@ -441,6 +522,8 @@ export interface OfferDecision {
   readonly reason?: string
   /** Entries the receiver already holds complete. */
   readonly completed?: readonly BundleEntryRef[]
+  /** Entries the receiver holds partially, with their staged byte counts. */
+  readonly partial?: readonly BundlePartialProgress[]
 }
 
 /** Receiver-side decisions for one offered bundle. */
@@ -454,8 +537,10 @@ export interface ReceiveBundleHandlers {
   /**
    * Open a sink for one incoming entry.
    * @param entry - the manifest entry about to stream.
+   * @param startOffset - staged bytes this stream continues past; the sink
+   * appends from there. 0 for a fresh entry.
    */
-  openEntry(entry: BundleEntryRef): Promise<BundleEntrySink>
+  openEntry(entry: BundleEntryRef, startOffset: number): Promise<BundleEntrySink>
   /** Optional cancellation. */
   readonly signal?: AbortSignal
 }
@@ -501,8 +586,15 @@ export async function receiveBundle(
     channel.write({ type: 'reject', binaryLength: 0, reason: decision.reason ?? 'declined' })
     throw new TransferRejectedError(decision.reason)
   }
-  channel.write({ type: 'accept', binaryLength: 0, resume: decision.completed ?? [] })
+  channel.write({
+    type: 'accept',
+    binaryLength: 0,
+    resume: decision.completed ?? [],
+    partial: decision.partial ?? [],
+  })
   const byPath = new Map<string, BundleEntryRef>(manifest.entries.map(entry => [theKey(entry), entry]))
+  const startOffsets = new Map<string, number>((decision.partial ?? [])
+    .map(progress => [theKey(progress), progress.bytes]))
   const received: BundleEntryRef[] = []
   for (;;) {
     handlers.signal?.throwIfAborted()
@@ -523,7 +615,7 @@ export async function receiveBundle(
     if (entry === undefined || entry.sha256 !== announced.sha256 || entry.size !== announced.size) {
       throw new TransferProtocolError(`entry "${announced.path}" was not offered in the manifest`)
     }
-    await receiveEntry(channel, entry, handlers.openEntry, handlers.signal)
+    await receiveEntry(channel, entry, handlers.openEntry, handlers.signal, startOffsets.get(theKey(entry)) ?? 0)
     received.push(entry)
   }
 }
@@ -562,21 +654,28 @@ function entryOf(message: WireMessage): BundleEntryRef {
 }
 
 /**
- * Receive one entry's chunks into a sink and verify the whole entry.
+ * Receive one entry's chunks into a sink and verify it.
+ *
+ * A fresh entry (offset 0) verifies its streaming digest against the manifest
+ * before commit. A resumed entry streams only the tail past its staged bytes —
+ * the tail alone cannot reproduce the whole-entry digest, so its integrity
+ * gate is the receiver hashing the complete staged file before publishing.
  * @param channel - the connection channel.
  * @param entry - the manifest entry being received.
- * @param openEntry - sink factory.
+ * @param openEntry - sink factory, given the offset this stream continues from.
  * @param signal - optional cancellation.
+ * @param startOffset - staged bytes this stream continues past; 0 for a fresh entry.
  */
 async function receiveEntry(
   channel: ConnectionChannel,
   entry: BundleEntryRef,
   openEntry: ReceiveBundleHandlers['openEntry'],
   signal: AbortSignal | undefined,
+  startOffset = 0,
 ): Promise<void> {
-  const sink = await openEntry(entry)
-  const hash = createHash('sha256')
-  let offset = 0
+  const sink = await openEntry(entry, startOffset)
+  const hash = startOffset === 0 ? createHash('sha256') : undefined
+  let offset = startOffset
   try {
     for (;;) {
       signal?.throwIfAborted()
@@ -585,17 +684,24 @@ async function receiveEntry(
       if (chunkOffset !== offset) {
         throw new TransferProtocolError(`entry "${entry.path}" chunk offset ${String(chunkOffset)} does not continue at ${String(offset)}`)
       }
-      hash.update(binary)
+      hash?.update(binary)
       await sink.write(binary)
       offset += binary.byteLength
       if (message['final'] === true) break
     }
     if (offset !== entry.size) throw new TransferIntegrityError(entry.path, `size ${String(entry.size)}`, `size ${String(offset)}`)
+    if (hash === undefined) {
+      await sink.commit()
+      return
+    }
     const digest = hash.digest('hex')
     if (digest !== entry.sha256) throw new TransferIntegrityError(entry.path, entry.sha256, digest)
     await sink.commit()
   } catch (error) {
-    await sink.abort()
+    // Corrupt bytes must not seed the next resume; a dropped link leaves the
+    // staged bytes in place for the resend to continue from.
+    if (error instanceof TransferIntegrityError) await sink.discard()
+    else await sink.abort()
     throw error
   }
 }

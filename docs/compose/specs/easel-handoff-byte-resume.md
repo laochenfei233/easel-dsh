@@ -1,0 +1,48 @@
+---
+feature: easel-handoff-byte-resume
+status: delivered
+updated: 2026-11-11
+branch: feat/easel-handoff-parallel（worktree）
+commits: 3e4ecdef14..HEAD
+---
+
+# 隔空传送：字节级续传与发送端自动重试
+
+## Report
+
+**What was built** — 中断的传输现在按字节续传：接收端在 accept 里报告每个已暂存条目「连续收到多少字节」，发送端只补传尾部；发布前接收端对完整暂存文件再做一次摘要校验（只补尾部无法复现整文件摘要）。发送端对连接级失败（掉线、120s 空闲超时、对端回 `retryable:`）自动重发，默认 3 次、每次 2s 后重拨，并从接收端检查点继续；拒绝、协议错误与完整性错误从不重试。`sendRetryAttempts` 可配置（1 表示关闭）。传输协议升到 v4。
+
+**Verification** — `packages/transfer/lan-handoff` 189 通过 / 2 跳过（跳过两条=绑定不存在主机名的监听用例，本机 DNS 5s 超时，master 同样偶发）；`handoff.ts`/`transfer.ts` 覆盖率 100%（`index.ts` 99.33% 为 master 既有并发接收分支基线）；全仓 typecheck 5/5；插件测试 20/20。新增用例覆盖：字节偏移续传端到端、损坏前缀整文件摘要拒绝且不发布、损坏字节丢弃、零字节暂存重新传输、`sendRetryAttempts` 生效、等待期间取消。
+
+**Journey log** — 用户报 `connection did not advance within 120000 ms` 并怀疑文件太大。排查确认该文案出自 `pairing.ts:206` 的每帧空闲超时（每帧到达即清零），不是总时长/大小上限；但大载荷会拉长传输窗口，在这条不稳定的 Wi-Fi 上更容易撞上全静默。alpha.50 已做了条目级续传，但中断的文件仍从头重传（`StagingSink.abort()` 会删掉已收字节），所以这一版把续传下沉到字节级，并让发送端自己重试，用户不必手动再点。
+
+## [S1] Problem
+
+Windows → macOS 传大项目时链路中途整段静默 2 分钟，接收端判超时并回 `failed`；用户重新点发送后，之前已传的文件从零开始，一个 GB 级项目在抖动链路上几乎传不完。
+
+## [S2] Design
+
+- 协议 v4：accept 新增 `partial: [{kind, path, sha256, bytes}]`；`bytes` 必须是 `(0, entry.size)` 的安全整数，越界/非整数/非对象整包拒绝。
+- 接收端：`stagedProgress` 取代 `completedStagedEntries`，同时报告 complete 与 partial；`StagingSink` 带起始偏移（`r+` 追加），`abort()` 保留暂存字节，新增 `discard()` 在校验失败时删除；`receiveEntry` 只在全新条目（offset 0）用流式摘要自校验，续传条目的整文件摘要在 `completeReceipt` 发布前对 session/data/config 补做，file 条目由既有整树 reconciliation 覆盖。
+- 发送端：`sendBundle` 按 `partial` 让 reader 从偏移开始；`sendPreparedBundle` 对 `Uint8Array` 做 `subarray`、对磁盘文件用 `createReadStream({start})`。
+- 重试：`sendWithResends`（默认 3 次、2s 间隔、可取消）+ `resendableFailure` 只认 `ChannelClosedError`、idle-timeout `PairingError`、带 `retryable:` 前缀的 `TransferCompletionError`；接收端把连接级失败标 `retryable:`、其余标 `fatal:`（展示时剥掉前缀）。
+
+## [S3] Scope
+
+- In scope: `packages/transfer/lan-handoff`（transfer/handoff/index/discovery）与其测试、双语 README。
+- Out of scope: 多连接并行（另做）、发送窗口/限速、锁屏唤醒。
+
+## Tasks
+
+- [x] T1: 协议 v4 — partial 报告、字节偏移写入、整文件摘要闸门（depends: none）
+- [x] T2: 发送端从偏移续读与 `retryable:`/`fatal:` 分类（depends: T1）
+- [x] T3: `sendWithResends` 有界重试 + `sendRetryAttempts` 配置（depends: T2）
+- [x] T4: 端到端续传/损坏/零字节用例与覆盖率（depends: T1, T3）
+
+## [S4] Acceptance
+
+- [x] 同一 bundle 重发只补传尾部，接收端拼出正确文件（e2e）
+- [x] 续传条目的完整文件摘要不符时拒绝发布并清暂存（e2e）
+- [x] 校验失败的条目丢弃已收字节，下次从头（单测/覆盖率）
+- [x] 连接级失败自动重发并继续；拒绝/协议错误立即抛出（单测）
+- [x] v3 对端标记不兼容（协议测试）

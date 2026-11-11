@@ -15,6 +15,7 @@ import { copyFile, lstat, mkdir, open, readdir, readFile, realpath, rename, rm, 
 import type { Dirent } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import type { ConnectionChannel } from './pairing.ts'
+import { ChannelClosedError, PairingError } from './pairing.ts'
 import {
   computeTreeSummary,
   receiveBundle,
@@ -23,6 +24,7 @@ import {
   type BundleEntryRef,
   type BundleEntrySink,
   type BundleManifest,
+  type BundlePartialProgress,
   type OfferDecision,
   type SentBundle,
 } from './transfer.ts'
@@ -328,11 +330,11 @@ export function sendPreparedBundle(
   signal?: AbortSignal,
 ): Promise<SentBundle> {
   const { manifest, sources } = prepared
-  return sendBundle(channel, manifest, (entry) => {
+  return sendBundle(channel, manifest, (entry, startOffset) => {
     const source = sources.get(sourceKey(entry))
     if (source === undefined) throw new Error(`no prepared source for entry "${entry.path}"`)
-    if (source instanceof Uint8Array) return singleChunk(source)
-    return createReadStream(source.absolutePath)
+    if (source instanceof Uint8Array) return singleChunk(startOffset === 0 ? source : source.subarray(startOffset))
+    return createReadStream(source.absolutePath, startOffset === 0 ? undefined : { start: startOffset })
   }, signal)
 }
 
@@ -569,22 +571,48 @@ async function newestMtime(path: string): Promise<number | undefined> {
 /** Streaming sink writing one entry to one staging path. */
 class StagingSink implements BundleEntrySink {
   private handle: Awaited<ReturnType<typeof open>> | undefined
+  /** Absolute file offset the next write lands at. */
+  private position: number
 
   /**
    * @param absolutePath - staging file to create.
+   * @param startOffset - staged bytes this stream continues past; the sink
+   * appends from there and keeps them when the stream dies. 0 creates the file.
    */
-  constructor(private readonly absolutePath: string) {}
+  constructor(private readonly absolutePath: string, startOffset = 0) {
+    this.position = startOffset
+  }
 
   async write(chunk: Uint8Array): Promise<void> {
-    this.handle ??= await open(this.absolutePath, 'w')
+    this.handle ??= await this.openHandle()
     const handle = this.handle
     /* v8 ignore next -- the ??= above guarantees the handle */
     if (handle === undefined) return
     let offset = 0
     while (offset < chunk.byteLength) {
-      const { bytesWritten } = await handle.write(chunk, offset, chunk.byteLength - offset)
+      const { bytesWritten } = await handle.write(chunk, offset, chunk.byteLength - offset, this.position)
       offset += bytesWritten
+      this.position += bytesWritten
     }
+  }
+
+  /**
+   * Open the staging file for this sink's offset: append to the existing
+   * partial file, or create it fresh. A reported partial whose file vanished
+   * in between falls back to creating it, restarting that entry from zero.
+   */
+  private async openHandle() {
+    if (this.position > 0) {
+      try {
+        return await open(this.absolutePath, 'r+')
+      } catch (error) {
+        /* v8 ignore start -- a staged file vanishing between resume reporting and open needs a concurrent delete */
+        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+        this.position = 0
+        /* v8 ignore stop */
+      }
+    }
+    return open(this.absolutePath, 'w')
   }
 
   async commit(): Promise<void> {
@@ -596,6 +624,11 @@ class StagingSink implements BundleEntrySink {
   }
 
   async abort(): Promise<void> {
+    // Keep the staged bytes: a resend continues this entry from them.
+    await this.handle?.close()
+  }
+
+  async discard(): Promise<void> {
     try {
       await this.handle?.close()
     } finally {
@@ -691,6 +724,7 @@ export async function receiveHandoff(
   let title: string | undefined
   let mergeMode = false
   let skipped: readonly BundleEntryRef[] = []
+  let partial: readonly BundlePartialProgress[] = []
   const progress: MutableProgress = {
     phase: 'receiving',
     projectTitle: '',
@@ -719,6 +753,7 @@ export async function receiveHandoff(
       mergeMode,
       received,
       skipped,
+      resumedPartial: partial,
       onPhase: setPhase,
     })
     return { ...receipt, skipped }
@@ -733,24 +768,28 @@ export async function receiveHandoff(
         title = receivedTitle
         mergeMode = merge
       })
-      skipped = decision.completed ?? []
+      // The internal decideOffer always resolves both resume lists.
+      skipped = decision.completed
+      partial = decision.partial
       if (decision.accept) {
         progress.phase = 'receiving'
         progress.projectTitle = manifest.projectTitle
         progress.entriesDone = 0
         progress.entriesTotal = manifest.entries.length
-        progress.bytesDone = 0
+        // Resumed bytes are already on this device; count them as done so the
+        // progress card reflects the true remainder of a retried transfer.
+        progress.bytesDone = partial.reduce((total, item) => total + item.bytes, 0)
         progress.bytesTotal = manifest.treeSummary.totalBytes
         report()
       }
       return decision
     },
-    openEntry: async (entry) => {
+    openEntry: async (entry, startOffset) => {
       /* v8 ignore next 3 -- decideOffer runs before any entry opens */
       if (staging === undefined) throw new HandoffReceiveError('verification', 'receipt state was lost before receipt')
       const target = stagedPathOf(stagingRootOf(staging, entry.kind), entry)
       await mkdir(dirname(target), { recursive: true })
-      const sink = new StagingSink(target)
+      const sink = new StagingSink(target, startOffset)
       return {
         write: (chunk) => {
           progress.bytesDone += chunk.byteLength
@@ -763,6 +802,7 @@ export async function receiveHandoff(
           report()
         },
         abort: () => sink.abort(),
+        discard: () => sink.discard(),
       }
     },
   })
@@ -778,13 +818,29 @@ export async function receiveHandoff(
   } catch (error) {
     /* v8 ignore next -- this module throws Error instances; the fallback covers a foreign seam throw */
     const reason = error instanceof Error ? error.message : String(error)
+    // A connection-level failure (dropped link, idle stall) leaves staged
+    // bytes a resend continues from; a receipt refusal does not. The prefix
+    // tells the sender's retry policy which is which.
+    const retryable = isConnectionLevelReceiveError(error)
     try {
-      channel.write({ type: 'failed', binaryLength: 0, reason })
+      channel.write({ type: 'failed', binaryLength: 0, reason: `${retryable ? 'retryable' : 'fatal'}: ${reason}` })
     } catch {
       // The sender is gone; the local failure still reaches this caller.
     }
     throw error
   }
+}
+
+/**
+ * Whether one receive failure is connection-level, so resending the bundle
+ * continues from the receiver's staged bytes instead of starting over.
+ * @param error - the failure receiveHandoff is reporting.
+ * @returns true for a dropped link or an idle-stall timeout.
+ */
+function isConnectionLevelReceiveError(error: unknown): boolean {
+  // The receive loop's only PairingError is the channel's idle-stall timeout;
+  // pairing-time PairingErrors never reach it.
+  return error instanceof ChannelClosedError || error instanceof PairingError
 }
 
 /**
@@ -800,9 +856,9 @@ async function decideOffer(
   parent: string,
   dataDirectory: string | undefined,
   remember: (layout: StagingLayout, finalPath: string, title: string, mergeMode: boolean) => void,
-): Promise<OfferDecision> {
+): Promise<OfferDecision & Required<Pick<OfferDecision, 'completed' | 'partial'>>> {
   if (manifest.entries.some(entry => entry.kind === 'data') && (dataDirectory === undefined || dataDirectory.trim().length === 0)) {
-    return { accept: false, reason: 'dataDirectoryNotConfigured' }
+    return { accept: false, reason: 'dataDirectoryNotConfigured', completed: [], partial: [] }
   }
   const title = projectDirectoryName(manifest.projectTitle)
   const finalPath = join(parent, title)
@@ -818,10 +874,11 @@ async function decideOffer(
       // Quick push merges into the existing directory; a project handoff, or a
       // quick push whose title is already a file, refuses.
       if (manifest.mergeIntoExisting !== true || !existing.isDirectory()) {
-        return { accept: false, reason: `destinationExists:${finalPath}` }
+        return { accept: false, reason: `destinationExists:${finalPath}`, completed: [], partial: [] }
       }
       remember(staging, finalPath, title, true)
-      return { accept: true, completed: [] }
+      // Merge receipts re-copy every entry, so staged progress is irrelevant.
+      return { accept: true, completed: [], partial: [] }
     }
     await mkdir(staging.projectRoot, { recursive: true })
     await mkdir(staging.sessionRoot, { recursive: true })
@@ -833,17 +890,24 @@ async function decideOffer(
     /* v8 ignore stop */
   }
   remember(staging, finalPath, title, false)
-  return { accept: true, completed: await completedStagedEntries(staging, manifest) }
+  const progress = await stagedProgress(staging, manifest)
+  return { accept: true, completed: progress.completed, partial: progress.partial }
 }
 
 /**
- * Report entries whose staged copy already matches the manifest.
+ * Report the staged progress of a previous attempt: entries whose staged copy
+ * matches the manifest are complete; entries with contiguous partial bytes
+ * continue from their size.
  * @param staging - staging layout.
  * @param manifest - the offered manifest.
- * @returns matching entries.
+ * @returns complete entries and partial byte counts.
  */
-async function completedStagedEntries(staging: StagingLayout, manifest: BundleManifest): Promise<readonly BundleEntryRef[]> {
+async function stagedProgress(
+  staging: StagingLayout,
+  manifest: BundleManifest,
+): Promise<{ completed: readonly BundleEntryRef[]; partial: readonly BundlePartialProgress[] }> {
   const completed: BundleEntryRef[] = []
+  const partial: BundlePartialProgress[] = []
   for (const entry of manifest.entries) {
     let target: string
     try {
@@ -854,17 +918,23 @@ async function completedStagedEntries(staging: StagingLayout, manifest: BundleMa
     }
     try {
       const info = await stat(target)
-      if (!info.isFile() || info.size !== entry.size) continue
-      const { sha256 } = await hashFile(target, entry.path, undefined)
-      /* v8 ignore next -- the mismatch path is asserted by the same-size-different-content resume test; attribution drifts */
-      if (sha256 === entry.sha256) completed.push(entry)
+      if (!info.isFile()) continue
+      if (info.size === entry.size) {
+        const { sha256 } = await hashFile(target, entry.path, undefined)
+        /* v8 ignore next -- the mismatch path is asserted by the same-size-different-content resume test; attribution drifts */
+        if (sha256 === entry.sha256) completed.push(entry)
+        continue
+      }
+      if (info.size > 0 && info.size < entry.size) {
+        partial.push({ kind: entry.kind, path: entry.path, sha256: entry.sha256, bytes: info.size })
+      }
     } catch {
       /* v8 ignore start -- absence is the normal first-attempt path and is asserted via the resume tests */
       // Absence and unreadable partials both mean 'not complete'.
       /* v8 ignore stop */
     }
   }
-  return completed
+  return { completed, partial }
 }
 
 /** Completion inputs threaded from the receive loop into {@link completeReceipt}. */
@@ -879,6 +949,8 @@ interface CompletionContext {
   readonly received: readonly BundleEntryRef[]
   /** Entries the receiver already held complete (resume). */
   readonly skipped: readonly BundleEntryRef[]
+  /** Entries resumed from staged bytes; their complete files are digest-gated at completion. */
+  readonly resumedPartial: readonly BundlePartialProgress[]
   /** Called when the receipt moves to a later phase; absent when progress is not observed. */
   readonly onPhase?: (phase: HandoffReceivePhase) => void
 }
@@ -918,6 +990,21 @@ async function completeReceipt(
     return mergeReceipt(staging, finalPath, title, manifest, host, context)
   }
   context.onPhase?.('verifying')
+  // Entries resumed from staged bytes were digest-gated only by their tail
+  // stream (a tail cannot reproduce the whole-entry digest); hash their
+  // complete staged files now — session, data, and config entries are consumed
+  // directly from staging, and the tree reconciliation below covers files.
+  for (const progress of context.resumedPartial) {
+    if (progress.kind === 'file') continue
+    const entry = manifest.entries.find(candidate => candidate.kind === progress.kind && candidate.path === progress.path)
+    /* v8 ignore next -- the accept-time report is validated against the manifest before streaming */
+    if (entry === undefined) continue
+    const { sha256 } = await hashFile(stagedPathOf(stagingRootOf(staging, entry.kind), entry), entry.path, undefined)
+    if (sha256 !== entry.sha256) {
+      await cleanupStaging(staging)
+      throw new HandoffReceiveError('verification', `the resumed entry "${entry.path}" no longer matches the manifest digest; nothing was published`)
+    }
+  }
   if (!await reconcileStagedTree(staging, manifest)) {
     await cleanupStaging(staging)
     throw new HandoffReceiveError('verification', 'the received project tree does not match the manifest (file count, sizes, or digests); nothing was published')

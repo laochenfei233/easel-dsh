@@ -370,7 +370,7 @@ function discover(alpha: { discovery: RecordingDiscoveryHost }, beta: { deviceId
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
   })
 }
 

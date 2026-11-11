@@ -9,10 +9,12 @@ import { expect, it } from 'vitest'
 import { loadDeviceIdentity } from '../src/identity.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
 import { attachChannel, type ConnectionChannel } from '../src/pairing.ts'
+import type { WireMessage } from '../src/frame.ts'
 import {
   computeTreeSummary,
   receiveBundle,
   sendBundle,
+  TransferCompletionError,
   TransferIntegrityError,
   TransferProtocolError,
   TRANSFER_PROTOCOL_VERSION,
@@ -49,6 +51,9 @@ class MemorySink implements BundleEntrySink {
   readonly chunks: Uint8Array[] = []
   committed = false
   aborted = false
+  discarded = false
+
+  constructor(readonly startOffset = 0) {}
 
   write(chunk: Uint8Array): void {
     this.chunks.push(Buffer.from(chunk))
@@ -60,6 +65,10 @@ class MemorySink implements BundleEntrySink {
 
   async abort(): Promise<void> {
     this.aborted = true
+  }
+
+  async discard(): Promise<void> {
+    this.discarded = true
   }
 }
 
@@ -177,6 +186,142 @@ it('streams a bundle over loopback and verifies every entry', async () => {
   }
 })
 
+it('resumes an interrupted entry from the reported byte offset of the receiver', async () => {
+  const loop = await loopback()
+  try {
+    const bytes = encoder.encode('handoff notes')
+    const entry = entryRef('file', '素材/notes.txt', bytes)
+    const resumed = { kind: 'file' as const, path: entry.path, sha256: entry.sha256, bytes: 8 }
+    const sinks: MemorySink[] = []
+    const received = receiveBundle(loop.server, {
+      decideOffer: async () => ({ accept: true, partial: [resumed] }),
+      openEntry: (_candidate, startOffset) => {
+        const sink = new MemorySink(startOffset)
+        sinks.push(sink)
+        return Promise.resolve(sink)
+      },
+    })
+    const offsets: number[] = []
+    const sending = sendBundle(loop.client, manifestOf([entry]), async function* (_candidate, startOffset) {
+      offsets.push(startOffset)
+      yield bytes.subarray(startOffset)
+    })
+    await received
+    loop.server.write({ type: 'received', binaryLength: 0 })
+    const sent = await sending
+    // Only the tail past the staged bytes streams; the sink appends at the offset.
+    expect(offsets).toEqual([8])
+    expect(sent.sent).toEqual([entry])
+    expect(sent.skipped).toEqual([])
+    expect(sinks[0]?.startOffset).toBe(8)
+    expect(Buffer.concat(sinks[0]?.chunks ?? []).toString()).toBe('notes')
+    expect(sinks[0]?.committed).toBe(true)
+  } finally {
+    await loop.close()
+  }
+})
+
+it('refuses a partial report whose byte count is out of range or malformed', async () => {
+  const entry = entryRef('file', '素材/notes.txt', encoder.encode('handoff notes'))
+  const refuse = async (partial: unknown): Promise<void> => {
+    // A channel double answers the offer with the malformed accept directly:
+    // the sender's wire validation is what must refuse, before any payload.
+    const answer = { type: 'accept', binaryLength: 0, resume: [], partial }
+    const sent: WireMessage[] = []
+    const channel = {
+      write: (message: WireMessage): void => { sent.push(message) },
+      next: async () => answer,
+      nextFrame: async () => ({ message: answer, binary: new Uint8Array() }),
+    } as unknown as ConnectionChannel
+    await expect(sendBundle(channel, manifestOf([entry]), async function* () {
+      yield encoder.encode('handoff notes')
+    })).rejects.toBeInstanceOf(TransferProtocolError)
+    // The refusal happens at the accept: no entry was ever announced.
+    expect(sent.map(message => message.type)).toEqual(['offer'])
+  }
+  // A non-list report is refused before any candidate is read.
+  await refuse('nope')
+  await refuse(null)
+  // At or past the entry size, zero, negative, and non-integer counts are out
+  // of range; non-object candidates and malformed fields are refused too.
+  const candidates: readonly unknown[] = [
+    { kind: 'file', path: entry.path, sha256: entry.sha256, bytes: entry.size },
+    { kind: 'file', path: entry.path, sha256: entry.sha256, bytes: entry.size + 1 },
+    { kind: 'file', path: entry.path, sha256: entry.sha256, bytes: 0 },
+    { kind: 'file', path: entry.path, sha256: entry.sha256, bytes: -2 },
+    { kind: 'file', path: entry.path, sha256: entry.sha256, bytes: 1.5 },
+    { kind: 'file', path: entry.path, sha256: entry.sha256 },
+    null,
+    42,
+    'nope',
+    { kind: 7, path: entry.path, sha256: entry.sha256, bytes: 2 },
+    { kind: 'file', path: 7, sha256: entry.sha256, bytes: 2 },
+    { kind: 'file', path: entry.path, sha256: 7, bytes: 2 },
+  ]
+  for (const candidate of candidates) await refuse([candidate])
+})
+
+it('ignores a partial claim for content the bundle does not carry', async () => {
+  const entry = entryRef('file', '素材/notes.txt', encoder.encode('handoff notes'))
+  const answers = [
+    { type: 'accept', binaryLength: 0, resume: [], partial: [{ kind: 'file', path: 'not-carried.txt', sha256: 'a'.repeat(64), bytes: 2 }] },
+    { type: 'received', binaryLength: 0 },
+  ]
+  const channel = {
+    write: (): void => undefined,
+    next: async () => answers.shift() ?? { type: 'received', binaryLength: 0 },
+    nextFrame: async () => ({ message: { type: 'received', binaryLength: 0 }, binary: new Uint8Array() }),
+  } as unknown as ConnectionChannel
+  const offsets: number[] = []
+  const sent = await sendBundle(channel, manifestOf([entry]), async function* (_candidate, startOffset) {
+    offsets.push(startOffset)
+    yield encoder.encode('handoff notes')
+  })
+  // The uncarryable claim granted nothing: the entry streams from zero.
+  expect(offsets).toEqual([0])
+  expect(sent.sent).toEqual([entry])
+  expect(sent.skipped).toEqual([])
+})
+
+it('marks a receiver-reported failure retryable only under the retryable prefix', async () => {
+  const loop = await loopback()
+  try {
+    const send = (reason: string): Promise<unknown> => {
+      void receiveBundle(loop.server, {
+        decideOffer: async () => ({ accept: true }),
+        openEntry: async () => new MemorySink(),
+      }).then(() => undefined, () => undefined)
+      const sending = sendBundle(loop.client, manifestOf([PROJECT_FILE]), async function* () {
+        yield encoder.encode('handoff notes')
+      })
+      void sending.then(() => undefined, () => undefined)
+      loop.client.write({ type: 'entry', binaryLength: 0, ...PROJECT_FILE })
+      loop.client.write({ type: 'chunk', binaryLength: 13, offset: 0, final: true }, encoder.encode('handoff notes'))
+      loop.client.write({ type: 'done', binaryLength: 0 })
+      loop.server.write({ type: 'failed', binaryLength: 0, reason })
+      return sending
+    }
+    const retryable = await send('retryable: connection did not advance within 120000 ms').then(
+      () => undefined,
+      (error: unknown) => error,
+    )
+    expect(retryable).toBeInstanceOf(TransferCompletionError)
+    expect((retryable as TransferCompletionError).retryable).toBe(true)
+    expect((retryable as Error).message).toContain('connection did not advance')
+    expect((retryable as Error).message).not.toContain('retryable:')
+
+    const fatal = await send('fatal: importing its sessions failed').then(
+      () => undefined,
+      (error: unknown) => error,
+    )
+    expect(fatal).toBeInstanceOf(TransferCompletionError)
+    expect((fatal as TransferCompletionError).retryable).toBe(false)
+    expect((fatal as Error).message).not.toContain('fatal:')
+  } finally {
+    await loop.close()
+  }
+})
+
 it('skips entries the receiver reports complete', async () => {
   const loop = await loopback()
   try {
@@ -219,7 +364,7 @@ it('refuses a source whose bytes no longer match the manifest', async () => {
   }
 })
 
-it('aborts the receiving sink when arrived bytes disagree with the manifest', async () => {
+it('discards the receiving sink when arrived bytes disagree with the manifest', async () => {
   const loop = await loopback()
   try {
     const declared = entryRef('file', 'gone.txt', encoder.encode('expected bytes'))
@@ -238,7 +383,8 @@ it('aborts the receiving sink when arrived bytes disagree with the manifest', as
     })
     await expect(sendFailure).rejects.toBeInstanceOf(TransferIntegrityError)
     await expect(received).rejects.toBeInstanceOf(TransferIntegrityError)
-    expect(sinks[0]?.aborted).toBe(true)
+    // Corrupt bytes must not seed the next resume.
+    expect(sinks[0]?.discarded).toBe(true)
     expect(sinks[0]?.committed).toBe(false)
   } finally {
     await loop.close()
