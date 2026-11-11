@@ -40,6 +40,7 @@ import {
 } from './discovery.ts'
 import { defaultLanHandoffRoot, deviceIdFromCertificate, loadDeviceIdentity, type DeviceId, type DeviceIdentity } from './identity.ts'
 import { dialLanPeer, startLanListener, type LanListener } from './listener.ts'
+import { loadSavedPort, saveSavedPort } from './port.ts'
 import {
   answerPairing,
   attachChannel,
@@ -501,7 +502,34 @@ export class LanHandoffService extends Service {
           }
           /* v8 ignore next -- live mDNS stays out of loopback suites */
           const discovery = options?.discovery ?? createBonjourDiscovery()
-          const listener = await startLanListener(identity, config.port ?? 0, (socket) => { this.serveConnection(socket) })
+          const preferredPort = config.port ?? 0
+          // Rebind the port this root last used so a stored endpoint stays
+          // valid across restarts; a port taken by another process falls back
+          // to an OS-assigned one and is remembered in turn.
+          const rememberedPort = preferredPort === 0 ? await loadSavedPort(root) : undefined
+          const listen = (port: number): Promise<LanListener> =>
+            startLanListener(identity, port, (socket) => { this.serveConnection(socket) })
+          let listener: LanListener
+          if (rememberedPort !== undefined) {
+            try {
+              listener = await listen(rememberedPort)
+            } catch {
+              /* v8 ignore next -- a remembered port taken by another process needs an OS-level port conflict */
+              listener = await listen(preferredPort)
+            }
+          } else {
+            listener = await listen(preferredPort)
+          }
+          if (preferredPort === 0) {
+            // Await the write so a restart that begins right after `ready`
+            // still finds the port; an unwritable root must not fail the start.
+            try {
+              await saveSavedPort(root, listener.port)
+            } catch (error) {
+              /* v8 ignore next -- remembering the port needs a write failure on the handoff root */
+              ctx.logger.warn(`lan-handoff: could not remember the listener port: ${error instanceof Error ? error.message : String(error)}`)
+            }
+          }
           const published = advertiseLanHandoff(
             discovery,
             { deviceId: identity.deviceId, platform: lanPlatformOfHost(), protocol: LAN_HANDOFF_PROTOCOL_VERSION },
