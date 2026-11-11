@@ -511,7 +511,10 @@ export class LanHandoffService extends Service {
           browseLanHandoff(
             discovery,
             identity.deviceId,
-            (peer) => { this.discovered.set(peer.id, peer) },
+            (peer) => {
+              this.discovered.set(peer.id, peer)
+              void this.rememberEndpoint(peer)
+            },
             {
               ...options?.allowLoopbackPeers === true ? { allowLoopback: true } : {},
               onPeerGone: (deviceId) => { this.discovered.delete(deviceId) },
@@ -624,7 +627,7 @@ export class LanHandoffService extends Service {
     const socket = dialLanPeer(target, identity)
     try {
       const offer = await dialForPairing(socket, pairingIdentityOf(state.deviceId, identity.cert, state.name))
-      const persisted = this.persisting(offer)
+      const persisted = this.persisting(offer, target)
       // A dialed pairing is the same user decision as a received one: park it
       // so the UI confirms the confirmation string from one pending list.
       this.pending.set(randomBytes(6).toString('hex'), persisted)
@@ -951,12 +954,12 @@ export class LanHandoffService extends Service {
    * @param offer - the handshake offer.
    * @returns an offer with the same identity whose accept persists the peer.
    */
-  private persisting(offer: PairingOffer): PairingOffer {
+  private persisting(offer: PairingOffer, dialTarget?: { readonly host: string; readonly port: number }): PairingOffer {
     return {
       ...offer,
       accept: async () => {
         await offer.accept()
-        await this.recordPairedPeer(offer.peer)
+        await this.recordPairedPeer(offer.peer, dialTarget)
       },
     }
   }
@@ -965,13 +968,56 @@ export class LanHandoffService extends Service {
    * Persist one paired peer and publish it through {@link pairedPeers}.
    * @param peer - the confirmed peer.
    */
-  private async recordPairedPeer(peer: PairingPeer): Promise<void> {
+  private async recordPairedPeer(peer: PairingPeer, dialTarget?: { readonly host: string; readonly port: number }): Promise<void> {
     const root = this.root
     /* v8 ignore next -- ready resolved before any pairing can settle */
     if (root === undefined) throw new Error('lan handoff peer state is not started')
-    const record: PairedPeer = { id: peer.id, name: peer.name, platform: peer.platform, pairedAt: Date.now() }
+    const seen = this.discovered.get(peer.id)
+    const addresses = seen?.addresses ?? (dialTarget === undefined ? undefined : [dialTarget.host])
+    const port = seen?.port ?? dialTarget?.port
+    const record: PairedPeer = {
+      id: peer.id,
+      name: peer.name,
+      platform: peer.platform,
+      pairedAt: Date.now(),
+      ...addresses === undefined ? {} : { addresses },
+      ...port === undefined ? {} : { port },
+      ...seen === undefined ? {} : { lastSeenAt: Date.now() },
+    }
     this.paired.set(peer.id, record)
     await savePairedPeers(root, this.paired)
+  }
+
+  /**
+   * Refresh one paired peer's stored endpoint from a discovery report, so a
+   * later send can dial it while mDNS is blind. Only a changed endpoint is
+   * written; discovery re-emits unchanged advertisements often.
+   * @param peer - the discovered peer.
+   */
+  private async rememberEndpoint(peer: PeerAdvertisement): Promise<void> {
+    const root = this.root
+    const record = this.paired.get(peer.id)
+    if (root === undefined || record === undefined) return
+    if (record.port === peer.port
+      && record.addresses !== undefined
+      && record.addresses.length === peer.addresses.length
+      && record.addresses.every((address, index) => address === peer.addresses[index])) {
+      return
+    }
+    const next: PairedPeer = {
+      ...record,
+      addresses: [...peer.addresses],
+      port: peer.port,
+      lastSeenAt: Date.now(),
+    }
+    this.paired.set(peer.id, next)
+    try {
+      await savePairedPeers(root, this.paired)
+    } catch (error) {
+      // The in-memory record still serves this session's sends.
+      /* v8 ignore next -- persisting needs a write failure on the handoff root */
+      this.ctx.logger.warn(`lan-handoff: could not persist the endpoint for ${peer.id}: ${error instanceof Error ? error.message : String(error)}`)
+    }
   }
 
   /**
@@ -982,16 +1028,22 @@ export class LanHandoffService extends Service {
    */
   private addressOf(peerId: string): { readonly host: string; readonly port: number } {
     const peer = this.discovered.get(peerId)
-    if (peer === undefined) {
-      throw new Error(`device ${peerId} is not currently visible on the network; ask it to keep the app open and retry`)
+    const addresses = peer?.addresses ?? this.paired.get(peerId)?.addresses
+    const port = peer?.port ?? this.paired.get(peerId)?.port
+    if (addresses === undefined || port === undefined) {
+      throw new Error(this.paired.has(peerId)
+        ? `device ${peerId} is paired but not currently discoverable and has no remembered address; use "pair by address" with the peer's address and port, or wait for its advertisement`
+        : `device ${peerId} is not currently visible on the network; ask it to keep the app open and retry`)
     }
-    const host = selectDialAddress(peer.addresses, this.localNetworks, {
+    const host = selectDialAddress(addresses, this.localNetworks, {
       ...this.options.allowLoopbackPeers === true ? { allowLoopback: true } : {},
     })
     if (host === undefined) {
       throw new Error(`device ${peerId} advertises no dialable address on this network; ask it to reconnect and retry`)
     }
-    return { host, port: peer.port }
+    // A stored endpoint is the last advertised one; the caller's dial and
+    // resend then decide whether the peer is still reachable there.
+    return { host, port }
   }
 
   /**

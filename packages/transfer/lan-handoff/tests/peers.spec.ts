@@ -52,6 +52,40 @@ it('refuses malformed peers files loudly instead of starting empty', async () =>
   }
 })
 
+it('round-trips a remembered endpoint and accepts a record without one', async () => {
+  const root = await tempRoot()
+  try {
+    const remembered: PairedPeer = { ...PEER, addresses: ['192.168.1.9'], port: 40123, lastSeenAt: 1_700_000_000_500 }
+    await savePairedPeers(root, new Map([[PEER.id, remembered]]))
+    expect([...(await loadPairedPeers(root)).values()]).toEqual([remembered])
+    // A record written before endpoints were persisted still loads.
+    await writeFile(join(root, 'peers.json'), JSON.stringify({ version: 1, peers: [PEER] }), 'utf8')
+    expect([...(await loadPairedPeers(root)).values()]).toEqual([PEER])
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
+it('refuses a remembered endpoint with invalid addresses, port, or timestamp', async () => {
+  const root = await tempRoot()
+  try {
+    const file = join(root, 'peers.json')
+    for (const entry of [
+      { ...PEER, addresses: 'not-a-list' },
+      { ...PEER, addresses: ['ok', ''] },
+      { ...PEER, port: 0 },
+      { ...PEER, port: 70000 },
+      { ...PEER, port: 1.5 },
+      { ...PEER, lastSeenAt: 'recently' },
+    ]) {
+      await writeFile(file, JSON.stringify({ version: 1, peers: [entry] }), 'utf8')
+      await expect(loadPairedPeers(root)).rejects.toBeInstanceOf(PairedPeersCorruptError)
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
 it('writes the store with owner-only permissions on POSIX', async () => {
   const root = await tempRoot()
   try {

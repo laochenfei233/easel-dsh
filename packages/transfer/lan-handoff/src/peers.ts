@@ -1,10 +1,10 @@
 /**
  * Durable paired-device records for LAN handoff.
  *
- * The store is one JSON file under the handoff root. It records only ids,
- * display names, platforms, and pairing timestamps; identity keys live in the
- * identity file, and nothing from the peer beyond what discovery already
- * shows is duplicated here.
+ * The store is one JSON file under the handoff root. It records ids, display
+ * names, platforms, pairing timestamps, and the peer's last observed endpoint
+ * so a paired device stays dialable while mDNS discovery is blind to it;
+ * identity keys live in the identity file.
  * @module @easel-dsh/easel-air-transfer/peers
  */
 
@@ -23,6 +23,12 @@ export interface PairedPeer {
   readonly platform: LanPlatform
   /** Pairing time as epoch milliseconds. */
   readonly pairedAt: number
+  /** Addresses the peer advertised when this device last saw it. */
+  readonly addresses?: readonly string[]
+  /** Listener port the peer advertised when this device last saw it. */
+  readonly port?: number
+  /** Last time discovery reported the peer, as epoch milliseconds. */
+  readonly lastSeenAt?: number
 }
 
 /** On-disk record wrapper. */
@@ -83,11 +89,32 @@ export async function loadPairedPeers(root: string): Promise<Map<string, PairedP
     const name = record['name']
     const platform = record['platform']
     const pairedAt = record['pairedAt']
+    const addresses = record['addresses']
+    const port = record['port']
+    const lastSeenAt = record['lastSeenAt']
     if (typeof id !== 'string' || typeof name !== 'string' || typeof pairedAt !== 'number'
       || (platform !== 'windows' && platform !== 'macos' && platform !== 'linux')) {
       throw new PairedPeersCorruptError(file, new TypeError(`peers list contains an invalid entry for ${String(id)}`))
     }
-    peers.set(id, { id: id as DeviceId, name, platform, pairedAt })
+    if (addresses !== undefined
+      && (!Array.isArray(addresses) || addresses.some(address => typeof address !== 'string' || address.length === 0))) {
+      throw new PairedPeersCorruptError(file, new TypeError(`peers list entry for ${id} has invalid addresses`))
+    }
+    if (port !== undefined && (typeof port !== 'number' || !Number.isInteger(port) || port < 1 || port > 65535)) {
+      throw new PairedPeersCorruptError(file, new TypeError(`peers list entry for ${id} has an invalid port`))
+    }
+    if (lastSeenAt !== undefined && typeof lastSeenAt !== 'number') {
+      throw new PairedPeersCorruptError(file, new TypeError(`peers list entry for ${id} has an invalid lastSeenAt`))
+    }
+    peers.set(id, {
+      id: id as DeviceId,
+      name,
+      platform,
+      pairedAt,
+      ...addresses === undefined ? {} : { addresses: addresses as readonly string[] },
+      ...port === undefined ? {} : { port },
+      ...lastSeenAt === undefined ? {} : { lastSeenAt },
+    })
   }
   return peers
 }
