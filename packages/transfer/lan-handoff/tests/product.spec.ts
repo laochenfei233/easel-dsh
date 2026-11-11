@@ -157,7 +157,7 @@ it('sends a workspace to a paired discovery peer and registers it on receipt', a
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 
@@ -212,7 +212,7 @@ it('applies received model configuration and remaps session paths onto the recei
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 
@@ -243,7 +243,7 @@ it('refuses a sync dial to a device that is not paired', async () => {
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot()).toHaveLength(1) })
   await expect(alpha.service.openSyncChannel(beta.deviceId)).rejects.toThrow(/not paired/u)
@@ -283,7 +283,7 @@ it('projects live receipt progress until the session import settles', async () =
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 
@@ -331,7 +331,7 @@ it('reports the receiving device import failure to the sender', async () => {
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '3', vmin: '3' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 

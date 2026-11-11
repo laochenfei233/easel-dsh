@@ -43,7 +43,9 @@ import { dialLanPeer, startLanListener, type LanListener } from './listener.ts'
 import {
   answerPairing,
   attachChannel,
+  ChannelClosedError,
   dialForPairing,
+  PairingError,
   pairingIdentityOf,
   PAIRING_TIMEOUT_MS,
   type ConnectionChannel,
@@ -68,6 +70,60 @@ import {
   type SessionArchiveSource,
 } from './handoff.ts'
 import type { SentBundle } from './transfer.ts'
+import { TransferCompletionError } from './transfer.ts'
+
+/** How long a resend waits before redialing the peer. */
+const SEND_RETRY_DELAY_MS = 2_000
+
+/**
+ * Whether one send failure is connection-level, so a resend continues from
+ * the receiver's staged bytes instead of repeating a deterministic refusal.
+ * @param error - the failure the send loop caught.
+ * @returns true for a dropped link, an idle stall, or the receiver reporting
+ * a connection-level failure; false for refusals and protocol violations.
+ */
+export function resendableFailure(error: unknown): boolean {
+  if (error instanceof ChannelClosedError) return true
+  if (error instanceof PairingError && error.reason === 'timeout') return true
+  if (error instanceof TransferCompletionError) return error.retryable
+  return false
+}
+
+/**
+ * Run one bundle send with bounded resends: a connection-level failure waits
+ * briefly and redials, continuing from the receiver's staged bytes (the
+ * content-derived bundle id makes the peer report them). Refusals, protocol
+ * violations, and cancelled sends throw immediately.
+ * @param attempt - one full send; invoked once per attempt.
+ * @param attempts - total attempts, counting the first; `1` disables resending.
+ * @param signal - optional cancellation observed between attempts.
+ * @param delayMs - pause between attempts; injectable for tests.
+ * @returns the successful attempt's result.
+ * @throws the final attempt's error when every attempt fails or the failure is not resendable.
+ */
+export async function sendWithResends(
+  attempt: () => Promise<SentBundle>,
+  attempts: number,
+  signal?: AbortSignal,
+  delayMs = SEND_RETRY_DELAY_MS,
+): Promise<SentBundle> {
+  for (let attemptNumber = 1; ; attemptNumber += 1) {
+    try {
+      return await attempt()
+    } catch (error) {
+      // A cancelled send surfaces the cancellation, not the transfer failure.
+      if (signal?.aborted === true) throw signal.reason
+      if (attemptNumber >= attempts || !resendableFailure(error)) throw error
+      await new Promise<void>((resolveDelay, rejectDelay) => {
+        const timer = setTimeout(resolveDelay, delayMs)
+        signal?.addEventListener('abort', () => {
+          clearTimeout(timer)
+          rejectDelay(signal.reason)
+        }, { once: true })
+      })
+    }
+  }
+}
 
 export {
   DeviceIdentityCorruptError,
@@ -221,6 +277,14 @@ export interface Config {
    * at startup.
    */
   staleReceiptAgeMinutes?: number
+  /**
+   * Total send attempts per bundle, counting the first. A connection-level
+   * failure (dropped link, idle stall) resends from the receiver's staged
+   * bytes after a short delay; refusals and protocol violations are never
+   * retried. The default 3 attempts covers a flaky link; `1` disables
+   * resending.
+   */
+  sendRetryAttempts?: number
 }
 
 /** Live state of the receipt currently streaming into this device. */
@@ -317,6 +381,8 @@ export interface LanHandoffState {
   readonly dataDirectory: string
   /** Absolute harness home (`$DSH_HOME`), the target for home-rooted received paths. */
   readonly homeDirectory: string
+  /** Total send attempts per bundle, counting the first; resolved from config. */
+  readonly sendRetryAttempts: number
 }
 
 /** One pairing waiting for a user decision. */
@@ -359,6 +425,7 @@ export class LanHandoffService extends Service {
     handoffDirectory: z.string().default(''),
     dataDirectory: z.string().default(''),
     staleReceiptAgeMinutes: z.number().min(0).max(43200).default(30),
+    sendRetryAttempts: z.number().min(1).max(10).default(3),
   })
 
   /** Runtime state, resolved once on start; device id and bound port never change afterwards. */
@@ -373,6 +440,8 @@ export class LanHandoffService extends Service {
   private pairingRequestHandler: ((offer: PairingOffer) => void) | undefined
   private lastHandoff: LastHandoff | undefined
   private localNetworks: readonly LocalIpv4Network[] = []
+  /** Total send attempts per bundle; resolved from config at start. */
+  private sendRetryAttempts = 3
   private receiving: ReceivingHandoff | undefined
   private receivingId: string | undefined
 
@@ -400,6 +469,7 @@ export class LanHandoffService extends Service {
             : ''
           const homeDirectory = resolve(options?.homeDirectory ?? resolveDshHome())
           this.localNetworks = localIpv4Networks()
+          this.sendRetryAttempts = config.sendRetryAttempts ?? 3
           try {
             const removed = await cleanupStaleReceipts(handoffDirectory, (config.staleReceiptAgeMinutes ?? 30) * 60_000)
             if (removed.length > 0) ctx.logger.warn(`lan-handoff: removed ${String(removed.length)} staging group(s) from interrupted receipts`)
@@ -436,6 +506,7 @@ export class LanHandoffService extends Service {
             handoffDirectory,
             dataDirectory,
             homeDirectory,
+            sendRetryAttempts: this.sendRetryAttempts,
           })
           /* v8 ignore start -- attribution drifts across this fiber effect; every service test asserts the start contract */
           return () => this.teardown(published, listener, discovery)
@@ -685,7 +756,7 @@ export class LanHandoffService extends Service {
       throw error
       /* v8 ignore stop */
     }
-    return this.streamToPeer(peerId, prepared, options?.signal)
+    return this.sendToPeer(peerId, prepared, options?.signal)
   }
 
   /**
@@ -712,7 +783,29 @@ export class LanHandoffService extends Service {
       sessionArchives: [],
       mergeIntoExisting: true,
     })
-    return this.streamToPeer(peerId, prepared, options?.signal)
+    return this.sendToPeer(peerId, prepared, options?.signal)
+  }
+
+  /**
+   * Stream one prepared bundle to a paired peer, resending from the peer's
+   * staged bytes when a connection-level failure interrupts the transfer.
+   *
+   * An unstable Wi-Fi link stalls mid-transfer (the receiver's idle timeout
+   * reports it); the bundle id is content-derived, so each attempt continues
+   * from what the peer already holds instead of restarting the transfer.
+   * Receiver refusals (`TransferRejectedError`) and protocol/integrity errors
+   * are deterministic and never retried.
+   * @param peerId - the paired device's id.
+   * @param prepared - the prepared bundle.
+   * @param signal - optional cancellation.
+   * @returns which entries were streamed and which the peer already held.
+   */
+  private async sendToPeer(peerId: string, prepared: PreparedBundle, signal?: AbortSignal): Promise<SentBundle> {
+    return sendWithResends(
+      () => this.streamToPeer(peerId, prepared, signal),
+      this.sendRetryAttempts,
+      signal,
+    )
   }
 
   /**

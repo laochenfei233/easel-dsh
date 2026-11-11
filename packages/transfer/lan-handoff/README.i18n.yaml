@@ -3,8 +3,11 @@
 # After editing either side, bring the other along and re-record with:
 #   pnpm run verify-translation-pairing --write packages/transfer/lan-handoff/README.md
 /:
-  en: 9d35e9261afcb931
-  zh: e41c3c9d926554ec
+  en: cb3f91d54eee30e5
+  zh: cb3f91d54eee30e5
+/description-lan-project-handoff-peer-service-persistent-device-identity-tls-listener-and-mdns-discovery-for-moving-project-bundles-between-devices-kind-package-reference:
+  en: fbf584a14eacfee6
+  zh: 57f9eb86ca176b4a
 /easel-dsh-easel-air-transfer:
   en: c3d0d605fa4989d6
   zh: 8ee30207b5318939
@@ -12,14 +15,14 @@
   en: 65ac3beb69271729
   zh: d23d77eb8cefa270
 /easel-dsh-easel-air-transfer/table-of-contents:
-  en: f0fd240a3851a504
-  zh: 05cf978311e144e4
+  en: b70fb2e0d30652c1
+  zh: b0b966972b74c17c
 /easel-dsh-easel-air-transfer/use-this-package:
-  en: a8ae287a3a1bc9d0
-  zh: 91f117d92bf2c739
+  en: 9588fbcde255ea32
+  zh: 3f84af022eface28
 /easel-dsh-easel-air-transfer/known-limitations-and-deferred-work:
-  en: 2e630bcb9daf44df
-  zh: 968f71d02383128a
+  en: d7aa7995c8756af4
+  zh: 94ab02dd9eb0c342
 /easel-dsh-easel-air-transfer/known-limitations-and-deferred-work/dev-note:
   en: 0a1253c6f7b5e8b9
   zh: 9f56528562c7c914

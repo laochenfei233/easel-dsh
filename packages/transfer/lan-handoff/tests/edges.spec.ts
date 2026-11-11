@@ -170,7 +170,7 @@ it('refuses a peer that presents no certificate', async () => {
       type: 'hello',
       binaryLength: 0,
       intent: 'pair',
-      device: { name: 'x', platform: 'linux', protocol: { min: 3, max: 3 } },
+      device: { name: 'x', platform: 'linux', protocol: { min: 4, max: 4 } },
       nonce: 'a'.repeat(32),
     })
     const { channel, hello } = await pair.server
@@ -207,7 +207,7 @@ it('refuses a hello with an invalid nonce', async () => {
       type: 'hello',
       binaryLength: 0,
       intent: 'pair',
-      device: { name: 'x', platform: 'linux', protocol: { min: 3, max: 3 } },
+      device: { name: 'x', platform: 'linux', protocol: { min: 4, max: 4 } },
       nonce: 'not-hex',
     })
     const { socket, channel, hello } = await pair.server

@@ -4,7 +4,7 @@
  */
 
 import { Context } from '@deepseek-ai/cordis'
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { TLSSocket } from 'node:tls'
@@ -205,7 +205,7 @@ it('rejects a sync hello from a client that presents no certificate', async () =
   }
 })
 
-it('resumes past a staged file with the wrong size', async () => {
+it('continues a staged file from its partial bytes on a resend', async () => {
   const source = await mkdtemp(join(tmpdir(), 'dsh-final2-resume-'))
   await mkdir(join(source, 'sub'), { recursive: true })
   await writeFile(join(source, 'sub', 'a.txt'), 'abc', 'utf8')
@@ -213,18 +213,46 @@ it('resumes past a staged file with the wrong size', async () => {
   const prepared = await prepareBundle({ projectPath: source, projectTitle: 'R', sessionArchives: [] })
   const staging = join(destination, `.handoff-${prepared.manifest.bundleId}`)
   await mkdir(join(staging, 'sub'), { recursive: true })
-  await writeFile(join(staging, 'sub', 'a.txt'), 'x', 'utf8')
+  // A genuine prefix of the manifest's content: the resend reports 2 staged
+  // bytes and streams only the tail instead of restarting the file.
+  await writeFile(join(staging, 'sub', 'a.txt'), 'ab', 'utf8')
   const loop = await rawLoop()
   try {
-    const controller = new AbortController()
     const received = receiveHandoff(loop.server, {
       targetParentDirectory: destination,
-      signal: controller.signal,
       host: { importSessionArchives: async () => [], attachProject: async () => undefined },
     })
     const sent = await sendPreparedBundle(loop.client, prepared)
     expect(sent.skipped).toEqual([])
     await received
+    expect(await readFile(join(destination, 'R', 'sub', 'a.txt'), 'utf8')).toBe('abc')
+  } finally {
+    await loop.close()
+    await rm(source, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('refuses a receipt whose staged partial bytes do not match the manifest', async () => {
+  const source = await mkdtemp(join(tmpdir(), 'dsh-final2-resume-bad-'))
+  await mkdir(join(source, 'sub'), { recursive: true })
+  await writeFile(join(source, 'sub', 'a.txt'), 'abc', 'utf8')
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-final2-resume-bad-in-'))
+  const prepared = await prepareBundle({ projectPath: source, projectTitle: 'R', sessionArchives: [] })
+  const staging = join(destination, `.handoff-${prepared.manifest.bundleId}`)
+  await mkdir(join(staging, 'sub'), { recursive: true })
+  // A corrupt prefix cannot reproduce the manifest digest once the tail
+  // appends; the digest gate must refuse to publish it.
+  await writeFile(join(staging, 'sub', 'a.txt'), 'x', 'utf8')
+  const loop = await rawLoop()
+  try {
+    const received = receiveHandoff(loop.server, {
+      targetParentDirectory: destination,
+      host: { importSessionArchives: async () => [], attachProject: async () => undefined },
+    })
+    void sendPreparedBundle(loop.client, prepared).catch(() => undefined)
+    await expect(received).rejects.toMatchObject({ code: 'verification' })
+    await expect(stat(join(destination, 'R'))).rejects.toMatchObject({ code: 'ENOENT' })
   } finally {
     await loop.close()
     await rm(source, { recursive: true, force: true })
@@ -334,7 +362,7 @@ it('refuses a pairing confirm decline without a reason', async () => {
       channel.write({
         type: 'pairChallenge',
         binaryLength: 0,
-        device: { name: 'peer', platform: 'linux', protocol: { min: 3, max: 3 } },
+        device: { name: 'peer', platform: 'linux', protocol: { min: 4, max: 4 } },
         nonce: 'b'.repeat(32),
       })
     })
@@ -459,7 +487,7 @@ it('refuses a sync dial to a discovered peer whose advertised port is closed', a
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: 1,
-    txt: { id: String(betaState.deviceId), name: 'beta', pf: 'linux', v: '3', vmin: '3' },
+    txt: { id: String(betaState.deviceId), name: 'beta', pf: 'linux', v: '4', vmin: '4' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot()).toHaveLength(1) })
   await expect(alpha.service.openSyncChannel(String(betaState.deviceId))).rejects.toBeInstanceOf(Error)

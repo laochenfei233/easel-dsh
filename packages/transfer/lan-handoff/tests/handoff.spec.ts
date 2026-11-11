@@ -4,9 +4,9 @@
  */
 
 import { createHash } from 'node:crypto'
-import { mkdir, mkdtemp, readFile, realpath, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readdir, readFile, realpath, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import type { TLSSocket } from 'node:tls'
 import { expect, it, vi } from 'vitest'
 import {
@@ -25,6 +25,7 @@ import {
   type PreparedBundle,
   type ReceivedConfigDocument,
 } from '../src/handoff.ts'
+import { TransferIntegrityError } from '../src/transfer.ts'
 import { loadDeviceIdentity } from '../src/identity.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
 import { attachChannel, type ConnectionChannel } from '../src/pairing.ts'
@@ -433,6 +434,141 @@ it('resumes a retried send from the entries the receiver already staged', async 
     expect(host.imported).toHaveLength(1)
   } finally {
     await second.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('resumes a session archive from its staged bytes and digests the whole file', async () => {
+  const { project, prepared } = await preparedFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-resume-zip-'))
+  const archiveEntry = prepared.manifest.entries.find(entry => entry.kind === 'session')
+  if (archiveEntry === undefined) throw new Error('fixture has no session archive')
+  const loop = await loopback()
+  try {
+    // Half of the archive is already staged from an interrupted attempt.
+    const stagedArchive = join(destination, `.handoff-${prepared.manifest.bundleId}.sessions`, archiveEntry.path)
+    await mkdir(dirname(stagedArchive), { recursive: true })
+    const whole = await readFile(join(project.root, '素材', '成品', 'final.bin'))
+    void whole
+    await writeFile(stagedArchive, SESSION_ZIP.slice(0, SESSION_ZIP.byteLength - 4))
+    const host = new RecordingHost()
+    const receipt = receiveHandoff(loop.server, { targetParentDirectory: destination, host })
+    const sent = await sendPreparedBundle(loop.client, prepared)
+    const outcome = await receipt
+
+    expect(sent.skipped).toEqual([])
+    expect(sent.sent).toContainEqual(archiveEntry)
+    expect(outcome.sessionIds).toEqual(['session-1'])
+    expect(Buffer.from(host.imported[0]?.archives[0] ?? new Uint8Array())).toEqual(Buffer.from(SESSION_ZIP))
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('refuses a receipt whose resumed session archive no longer matches the manifest', async () => {
+  const { project, prepared } = await preparedFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-resume-zip-bad-'))
+  const archiveEntry = prepared.manifest.entries.find(entry => entry.kind === 'session')
+  if (archiveEntry === undefined) throw new Error('fixture has no session archive')
+  const loop = await loopback()
+  try {
+    const stagedArchive = join(destination, `.handoff-${prepared.manifest.bundleId}.sessions`, archiveEntry.path)
+    await mkdir(dirname(stagedArchive), { recursive: true })
+    // A corrupt prefix cannot reproduce the manifest digest once the tail
+    // appends; the completion gate must refuse to import it.
+    await writeFile(stagedArchive, encoder.encode('garbage!'))
+    const receipt = receiveHandoff(loop.server, {
+      targetParentDirectory: destination,
+      host: new RecordingHost(),
+    })
+    void sendPreparedBundle(loop.client, prepared).catch(() => undefined)
+    await expect(receipt).rejects.toMatchObject({ code: 'verification' })
+    await expect(readdir(dirname(stagedArchive))).rejects.toMatchObject({ code: 'ENOENT' })
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('discards a staged entry whose streamed bytes fail the digest', async () => {
+  const project = await projectFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-discard-'))
+  const loop = await loopback()
+  try {
+    // Same size, different bytes: only the receiving digest can catch this,
+    // and the corrupt staged bytes must not seed the next resume.
+    const target = join(project.root, '项目资料.md')
+    await writeFile(target, 'XXXXXXXXXXXX', 'utf8')
+    const prepared = await bundleFromFiles({
+      projectTitle: '损坏续传',
+      files: [{ absolutePath: target, relativePath: '项目资料.md' }],
+      sessionArchives: [],
+      sourceCwd: project.root,
+    })
+    await writeFile(target, 'YYYYYYYYYYYY', 'utf8')
+    const receipt = receiveHandoff(loop.server, {
+      targetParentDirectory: destination,
+      host: new RecordingHost(),
+    })
+    await expect(sendPreparedBundle(loop.client, prepared)).rejects.toBeInstanceOf(TransferIntegrityError)
+    await expect(receipt).rejects.toBeInstanceOf(TransferIntegrityError)
+    const staged = join(destination, `.handoff-${prepared.manifest.bundleId}`, '项目资料.md')
+    await expect(stat(staged)).rejects.toMatchObject({ code: 'ENOENT' })
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('restreams a zero-byte staged file instead of reporting it as partial', async () => {
+  const { project, prepared } = await preparedFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-resume-zero-'))
+  const notesEntry = prepared.manifest.entries.find(entry => entry.path === '素材/notes.txt')
+  if (notesEntry === undefined) throw new Error('fixture has no notes entry')
+  const loop = await loopback()
+  try {
+    // A zero-byte staged file matches no entry: it is neither complete nor a
+    // partial (a partial must hold bytes), so the entry restreams from zero.
+    const stagedEmpty = join(destination, `.handoff-${prepared.manifest.bundleId}`, notesEntry.path)
+    await mkdir(dirname(stagedEmpty), { recursive: true })
+    await writeFile(stagedEmpty, new Uint8Array())
+    const host = new RecordingHost()
+    const controller = new AbortController()
+    const receipt = receiveHandoff(loop.server, { targetParentDirectory: destination, host, signal: controller.signal })
+    const sent = await sendPreparedBundle(loop.client, prepared)
+    const outcome = await receipt
+    expect(sent.skipped).toEqual([])
+    expect(outcome.projectPath).toBe(join(destination, projectDirectoryName('项目 甲/测试')))
+    expect(host.attached).toHaveLength(1)
+  } finally {
+    await loop.close()
+    await rm(project.root, { recursive: true, force: true })
+    await rm(destination, { recursive: true, force: true })
+  }
+})
+
+it('fails loudly when a directory squats on a staged entry path', async () => {
+  const { project, prepared } = await preparedFixture()
+  const destination = await mkdtemp(join(tmpdir(), 'dsh-handoff-squat-'))
+  const loop = await loopback()
+  try {
+    // Progress reporting skips a non-file; the fresh write then cannot create
+    // the file, so the receipt fails loudly instead of publishing a lie.
+    await mkdir(join(destination, `.handoff-${prepared.manifest.bundleId}`, '项目资料.md'), { recursive: true })
+    const receipt = receiveHandoff(loop.server, {
+      targetParentDirectory: destination,
+      host: new RecordingHost(),
+    })
+    void sendPreparedBundle(loop.client, prepared).catch(() => undefined)
+    await expect(receipt).rejects.toBeDefined()
+    await expect(stat(join(destination, projectDirectoryName('项目 甲/测试')))).rejects.toMatchObject({ code: 'ENOENT' })
+  } finally {
+    await loop.close()
     await rm(project.root, { recursive: true, force: true })
     await rm(destination, { recursive: true, force: true })
   }

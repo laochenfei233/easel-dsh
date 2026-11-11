@@ -33,10 +33,11 @@ export interface ProtocolVersionRange {
 /**
  * The protocol range this harness build speaks.
  *
- * Version 3 adds portable config documents and source-root path remapping;
- * both sides carry and apply them, so a v2 peer is deliberately incompatible.
+ * Version 4 adds byte-level partial resume; a v3 peer cannot continue an
+ * interrupted entry from its staged bytes, so the two are deliberately
+ * incompatible.
  */
-export const LAN_HANDOFF_PROTOCOL_VERSION: ProtocolVersionRange = { min: 3, max: 3 }
+export const LAN_HANDOFF_PROTOCOL_VERSION: ProtocolVersionRange = { min: 4, max: 4 }
 
 /** Platform label advertised for a discovered device. */
 export type LanPlatform = 'windows' | 'macos' | 'linux'

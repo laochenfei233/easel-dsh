@@ -111,7 +111,7 @@ async function rawLoop(): Promise<{
 function receiver(): Parameters<typeof receiveBundle>[1] {
   return {
     decideOffer: async () => ({ accept: true }),
-    openEntry: async () => ({ write: () => undefined, commit: async () => undefined, abort: async () => undefined }),
+    openEntry: async () => ({ write: () => undefined, commit: async () => undefined, abort: async () => undefined, discard: async () => undefined }),
   }
 }
 
@@ -211,6 +211,7 @@ it('completes when the connection closes after every manifest entry arrived', as
         write: () => undefined,
         commit: async () => { committed.resolve() },
         abort: async () => undefined,
+        discard: async () => undefined,
       }),
     })
     loop.client.write({ type: 'offer', binaryLength: 0, manifest: manifestOf() })
@@ -230,7 +231,7 @@ it('completes on a close when the resume claims cover the manifest', async () =>
   try {
     const received = receiveBundle(loop.server, {
       decideOffer: async () => ({ accept: true, completed: [FILE] }),
-      openEntry: async () => ({ write: () => undefined, commit: async () => undefined, abort: async () => undefined }),
+      openEntry: async () => ({ write: () => undefined, commit: async () => undefined, abort: async () => undefined, discard: async () => undefined }),
     })
     loop.client.write({ type: 'offer', binaryLength: 0, manifest: manifestOf() })
     await loop.client.next('accept', 5_000)
@@ -291,7 +292,7 @@ it('declines without a reason when the offer decision carries none', async () =>
   try {
     const received = receiveBundle(loop.server, {
       decideOffer: async () => ({ accept: false }),
-      openEntry: async () => ({ write: () => undefined, commit: async () => undefined, abort: async () => undefined }),
+      openEntry: async () => ({ write: () => undefined, commit: async () => undefined, abort: async () => undefined, discard: async () => undefined }),
     }).catch((error: unknown) => error)
     const sent = sendBundle(loop.client, manifestOf(), async function* () { yield encoder.encode('a') })
       .catch((error: unknown) => error)
