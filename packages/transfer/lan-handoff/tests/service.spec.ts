@@ -2,12 +2,14 @@
 
 import { Context } from '@deepseek-ai/cordis'
 import { brandString } from '@deepseek-ai/dsh-brand'
-import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, stat, utimes, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { hostname } from 'node:os'
 import { afterEach, expect, it } from 'vitest'
-import type { DeviceId } from '../src/identity.ts'
+import { loadDeviceIdentity, type DeviceId } from '../src/identity.ts'
+import { startLanListener } from '../src/listener.ts'
+import { loadSavedPort } from '../src/port.ts'
 import { LanHandoffService, type LanAdvertisement, type LanDiscoveryEntry, type LanDiscoveryHost } from '../src/index.ts'
 
 class RecordingDiscoveryHost implements LanDiscoveryHost {
@@ -123,6 +125,8 @@ it('removes interrupted receipt staging groups at startup', async () => {
   const stale = join(handoff, `.handoff-${'a'.repeat(32)}`)
   await mkdir(join(stale, 'sub'), { recursive: true })
   await writeFile(join(stale, 'sub', 'file.txt'), 'x', 'utf8')
+  // A child newer than its directory exercises the deep mtime scan.
+  await utimes(join(stale, 'sub', 'file.txt'), new Date(Date.now() + 60_000), new Date(Date.now() + 60_000))
   await mkdir(`${stale}.data`, { recursive: true })
   await mkdir(`${stale}.sessions`, { recursive: true })
   ctx = new Context()
@@ -148,4 +152,35 @@ it('refuses to dial a peer that advertises only unusable addresses', async () =>
     txt: { id: peerId, name: 'link', pf: 'linux', v: '5', vmin: '5' },
   })
   await expect(service.pairWithDiscoveredPeer(peerId)).rejects.toThrow(/no dialable address/u)
+})
+
+it('rebinds the remembered listener port on the next start', async () => {
+  const root = await tempRoot()
+  ctx = new Context()
+  const first = new LanHandoffService(ctx, {}, { identityRoot: root, discovery: new RecordingDiscoveryHost() })
+  const firstState = await first.ready
+  await ctx.fiber.dispose()
+  ctx = undefined
+
+  ctx = new Context()
+  const second = new LanHandoffService(ctx, {}, { identityRoot: root, discovery: new RecordingDiscoveryHost() })
+  const secondState = await second.ready
+  expect(secondState.port).toBe(firstState.port)
+  await ctx.fiber.dispose()
+  ctx = undefined
+})
+
+it('binds a configured listener port and leaves the remembered port alone', async () => {
+  const root = await tempRoot()
+  // Reserve a free port, then release it for the service to bind.
+  const reservation = await startLanListener(await loadDeviceIdentity(await tempRoot()), 0, () => undefined, ['127.0.0.1'])
+  const port = reservation.port
+  await reservation.close()
+  ctx = new Context()
+  const service = new LanHandoffService(ctx, { port }, { identityRoot: root, discovery: new RecordingDiscoveryHost() })
+  const state = await service.ready
+  expect(state.port).toBe(port)
+  expect(await loadSavedPort(root)).toBeUndefined()
+  await ctx.fiber.dispose()
+  ctx = undefined
 })
