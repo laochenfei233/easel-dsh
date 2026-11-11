@@ -109,9 +109,10 @@ async function device(options: {
   readonly homeDirectory?: string
   readonly parallelConnections?: number
   readonly dataDirectory?: string
+  readonly identityRoot?: string
 }): Promise<Device> {
   const ctx = new Context()
-  const root = await mkdtemp(join(tmpdir(), 'dsh-prod-'))
+  const root = options.identityRoot ?? await mkdtemp(join(tmpdir(), 'dsh-prod-'))
   const destination = await mkdtemp(join(tmpdir(), 'dsh-prod-inbox-'))
   let seamOptions = {}
   if (options.withSeams) {
@@ -141,7 +142,7 @@ async function device(options: {
   const state = await service.ready
   disposers.push(async () => {
     await ctx.fiber.dispose()
-    await rm(root, { recursive: true, force: true })
+    if (options.identityRoot === undefined) await rm(root, { recursive: true, force: true })
     await rm(destination, { recursive: true, force: true })
   })
   return { ctx, service, discovery, root, destination, port: state.port, deviceId: String(state.deviceId) }
@@ -279,6 +280,71 @@ it('streams one project over the configured parallel connections', async () => {
     expect(await readFile(join(beta.destination, '并行项目', name), 'utf8')).toBe(`content-${name}`)
   }
   await rm(projectRoot, { recursive: true, force: true })
+})
+
+it('dials a paired peer from its stored endpoint while discovery is blind', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'dsh-prod-lastaddr-'))
+  await writeFile(join(projectRoot, 'a.txt'), 'AAAA', 'utf8')
+  const alpha = await device({
+    withSeams: true,
+    resolveWorkspaceTo: { path: projectRoot, title: '存储地址' },
+    parallelConnections: 1,
+  })
+  const beta = await device({ withSeams: true })
+  await pair(alpha, beta)
+  // No discovery event at all: the stored pairing endpoint is the only way
+  // this device knows where the peer listens.
+  expect(alpha.service.peersSnapshot()).toEqual([])
+  const record = await readFile(join(alpha.root, 'peers.json'), 'utf8')
+  expect(JSON.parse(record).peers).toEqual([expect.objectContaining({
+    id: beta.deviceId,
+    addresses: ['127.0.0.1'],
+    port: beta.port,
+  })])
+
+  await alpha.service.sendProjectToPeer(beta.deviceId, projectRoot)
+  await vi.waitFor(() => { expect(beta.service.lastHandoffOutcome()?.ok).toBe(true) }, { timeout: 5_000 })
+  expect(await readFile(join(beta.destination, '存储地址', 'a.txt'), 'utf8')).toBe('AAAA')
+  await rm(projectRoot, { recursive: true, force: true })
+})
+
+it('remembers a discovered endpoint at pairing time and dials it after a restart', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'dsh-prod-restart-'))
+  await writeFile(join(projectRoot, 'a.txt'), 'AAAA', 'utf8')
+  const alpha = await device({ withSeams: true, resolveWorkspaceTo: { path: projectRoot, title: '重启续用' }, parallelConnections: 1 })
+  const beta = await device({ withSeams: true })
+  alpha.discovery.emit({
+    addresses: ['127.0.0.1'],
+    port: beta.port,
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
+  })
+  await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
+  // Pair through discovery: the recorded endpoint includes lastSeenAt.
+  const dialed = await alpha.service.pairWithDiscoveredPeer(beta.deviceId)
+  await vi.waitFor(() => { expect(beta.service.pairingOffers()).toHaveLength(1) })
+  const pending = beta.service.pairingOffers()[0]
+  if (pending === undefined) throw new Error('no pending pairing')
+  await Promise.all([dialed.accept(), beta.service.acceptPairing(pending.id)])
+  const record = JSON.parse(await readFile(join(alpha.root, 'peers.json'), 'utf8')).peers[0]
+  expect(record).toMatchObject({ addresses: ['127.0.0.1'], port: beta.port })
+  expect(typeof record.lastSeenAt).toBe('number')
+  await rm(projectRoot, { recursive: true, force: true })
+})
+
+it('asks for an address when a paired peer has no remembered endpoint', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'dsh-prod-legacy-peers-'))
+  const peersFile = join(root, 'peers.json')
+  await writeFile(peersFile, JSON.stringify({
+    version: 1,
+    peers: [{ id: 'e'.repeat(20), name: 'legacy', platform: 'macos', pairedAt: 1 }],
+  }), 'utf8')
+  const alpha = await device({ withSeams: true, identityRoot: root })
+  try {
+    await expect(alpha.service.openSyncChannel('e'.repeat(20)))
+      .rejects.toThrow(/"pair by address"/u)
+  } finally {
+    await rm(root, { recursive: true, force: true })
+  }
 })
 
 it('refuses a sync dial to a device that is not paired', async () => {
