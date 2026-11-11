@@ -24,9 +24,11 @@ kind: "package-reference"
 
 交接本身是四个服务调用：`pairWithPeer` 或 `pairWithDiscoveredPeer` 发起配对并把待决项挂进 `pairingOffers()`；界面展示每一项的六位确认串，用 `acceptPairing(id)` 或 `rejectPairing(id)` 定夺。`sendProjectToPeer(peerId, workspacePath, options)` 导出该工作区的会话（`sessions: false` 关闭）、剔除命中 `exclude` 前缀的项目树文件、把 `dataFiles` 挂成按数据根寻址的条目，哈希项目树并流式发送交接包；收到的交接包自动落到 `handoffDirectory`，带会话时经挂载的 `sessionLogImporter` 导入，且仅在有会话到达时通过挂载的工作区注册表挂靠。`sendFilesToPeer(peerId, payload)` 把显式选择的文件作为无会话快推发送，接收端并入同名的既有目录而不是拒绝。`receivingSnapshot()` 报告当前接收的阶段（`receiving`、`verifying`、`importing`）、项目标题、条目数与字节数，接收结束后清空。
 
-发送会等待接收端的完成确认：校验、会话导入与工作区挂靠完成后收到 `received`，失败则收到带原因的 `failed`。所以发送成功代表对端真的已入库；连接先断开则报告连接关闭而不是成功。交接协议为 v4；v3 对端会被标记为不兼容并在拨号前拒绝，两端必须使用同一代协议。
+发送会等待接收端的完成确认：校验、会话导入与工作区挂靠完成后收到 `received`，失败则收到带原因的 `failed`。所以发送成功代表对端真的已入库；连接先断开则报告连接关闭而不是成功。交接协议为 v5；v4 对端会被标记为不兼容并在拨号前拒绝，两端必须使用同一代协议。
 
 续传按字节进行：接收端在 accept 里报告每个已暂存条目的连续字节数，发送端只补传尾部，发布前接收端再对完整暂存文件做一次摘要校验（只补尾部无法复现整文件摘要）。连接中断时已暂存字节保留；校验失败的字节会被丢弃，下次从该条目开头重来。`sendRetryAttempts`（默认 3）限制自动重发次数：连接级失败会短暂等待后重拨并从接收端检查点继续，拒绝与协议错误从不重试。内容派生的 bundleId 让重试落进同一个暂存组。
+
+项目发送按 `parallelConnections`（默认 2，1–8）开多条连接：每个 worker 承载清单条目的一个互不相交的条带、共用同一个 bundleId；第一个 worker 负责准备暂存与共享续传报告，最后一个 worker 的 `done` 让整张回执为所有连接只结算一次。高延迟链路上并行能提升吞吐；条目不会换手，所以一个 worker 不可能覆盖另一个的暂存路径。
 
 `configDocuments` 携带的是可移植配置而不是文件：接收端用本机自己的配置接缝应用每份文档，所以描述模型提供方、默认模型与其凭据引用的文档会落进对方的 profile 配置层和凭据库，而不会用发送端带本机路径的文件覆盖它们。收到的会话日志在入库前会把发送端的项目目录、数据根与 home 目录改写成本机路径；清单的 `sourceRoots` 提供发送端的更外层根，`homeDirectory`（默认 `$DSH_HOME`）提供接收端对应的 home。删除 `$DSH_HOME/lan-handoff/identity.json` 会重新铸造身份，记录过旧密钥的每台设备都要重新配对——与匿名用户 id 文件相同的寿命契约。
 

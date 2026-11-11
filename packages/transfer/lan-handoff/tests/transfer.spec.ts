@@ -13,6 +13,7 @@ import type { WireMessage } from '../src/frame.ts'
 import {
   computeTreeSummary,
   receiveBundle,
+  receiveOffer,
   sendBundle,
   TransferCompletionError,
   TransferIntegrityError,
@@ -146,6 +147,22 @@ it('validates manifests fail-closed before any payload moves', () => {
   expect(() => validateBundleManifest(bad({ sourceRoots: { home: 7 } }))).toThrow(/sourceRoots\.home/u)
   expect(() => validateBundleManifest(bad({ sourceRoots: 'nope' }))).toThrow(/must be an object/u)
   expect(validateBundleManifest(bad({ sourceRoots: {} }))).not.toHaveProperty('sourceRoots')
+})
+
+it('refuses a malformed worker slice on an offer', async () => {
+  const answer = { type: 'accept', binaryLength: 0, resume: [], partial: [] }
+  const channelWith = (offer: unknown): ConnectionChannel => ({
+    write: () => undefined,
+    next: async () => ({ type: 'offer', binaryLength: 0, manifest: manifestOf([PROJECT_FILE]), worker: offer }),
+    nextFrame: async () => ({ message: answer, binary: new Uint8Array() }),
+  }) as unknown as ConnectionChannel
+  await expect(receiveOffer(channelWith(null))).rejects.toBeInstanceOf(TransferProtocolError)
+  await expect(receiveOffer(channelWith({ index: 0, total: 0 }))).rejects.toBeInstanceOf(TransferProtocolError)
+  await expect(receiveOffer(channelWith({ index: 0, total: 9 }))).rejects.toBeInstanceOf(TransferProtocolError)
+  await expect(receiveOffer(channelWith({ index: -1, total: 2 }))).rejects.toBeInstanceOf(TransferProtocolError)
+  await expect(receiveOffer(channelWith({ index: 2, total: 2 }))).rejects.toBeInstanceOf(TransferProtocolError)
+  await expect(receiveOffer(channelWith({ index: 1.5, total: 2 }))).rejects.toBeInstanceOf(TransferProtocolError)
+  await expect(receiveOffer(channelWith(undefined))).resolves.toMatchObject({ worker: { index: 0, total: 1 } })
 })
 
 it('streams a bundle over loopback and verifies every entry', async () => {

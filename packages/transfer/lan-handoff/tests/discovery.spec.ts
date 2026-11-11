@@ -26,7 +26,7 @@ const PEER_ID: DeviceId = brandString<DeviceId>('b'.repeat(20))
 const PEER_ENTRY: LanDiscoveryEntry = {
   addresses: ['192.168.1.8'],
   port: 40123,
-  txt: { id: PEER_ID, name: '工作台', pf: 'macos', v: '4', vmin: '1' },
+  txt: { id: PEER_ID, name: '工作台', pf: 'macos', v: '5', vmin: '1' },
 }
 
 class RecordingDiscoveryHost implements LanDiscoveryHost {
@@ -69,8 +69,8 @@ describe('the device TXT document', () => {
   })
 
   it('defaults the lower protocol bound to the advertised maximum', () => {
-    const parsed = parseDeviceTxt({ id: PEER_ID, name: 'p', pf: 'linux', v: '4' })
-    expect(parsed?.protocol).toEqual({ min: 4, max: 4 })
+    const parsed = parseDeviceTxt({ id: PEER_ID, name: 'p', pf: 'linux', v: '5' })
+    expect(parsed?.protocol).toEqual({ min: 5, max: 5 })
   })
 
   it('refuses records with an invalid id, name, platform, or version', () => {
@@ -163,7 +163,7 @@ describe('discovered-entry listing', () => {
       id: PEER_ID,
       name: '工作台',
       platform: 'macos',
-      protocol: { min: 1, max: 4 },
+      protocol: { min: 1, max: 5 },
       port: 40123,
       addresses: ['192.168.1.8'],
       compatible: true,
@@ -198,7 +198,7 @@ describe('the recording host drives advertisement and browsing', () => {
       name: OWN_ID,
       type: 'easel-handoff',
       port: 40121,
-      txt: { id: OWN_ID, name: 'bill', pf: lanPlatformOfHost(), v: '4', vmin: '4' },
+      txt: { id: OWN_ID, name: 'bill', pf: lanPlatformOfHost(), v: '5', vmin: '5' },
     }])
     published.stop()
     expect(host.stopped).toBe(1)

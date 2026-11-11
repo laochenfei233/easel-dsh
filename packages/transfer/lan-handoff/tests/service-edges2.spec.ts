@@ -362,7 +362,7 @@ it('refuses a pairing confirm decline without a reason', async () => {
       channel.write({
         type: 'pairChallenge',
         binaryLength: 0,
-        device: { name: 'peer', platform: 'linux', protocol: { min: 4, max: 4 } },
+        device: { name: 'peer', platform: 'linux', protocol: { min: 5, max: 5 } },
         nonce: 'b'.repeat(32),
       })
     })
@@ -487,7 +487,7 @@ it('refuses a sync dial to a discovered peer whose advertised port is closed', a
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: 1,
-    txt: { id: String(betaState.deviceId), name: 'beta', pf: 'linux', v: '4', vmin: '4' },
+    txt: { id: String(betaState.deviceId), name: 'beta', pf: 'linux', v: '5', vmin: '5' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot()).toHaveLength(1) })
   await expect(alpha.service.openSyncChannel(String(betaState.deviceId))).rejects.toBeInstanceOf(Error)

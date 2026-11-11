@@ -15,8 +15,8 @@ import { isAbsolute } from 'node:path'
 import { ChannelClosedError, type ConnectionChannel } from './pairing.ts'
 import type { WireMessage } from './frame.ts'
 
-/** Version of the transfer message vocabulary; v4 adds byte-level partial resume. */
-export const TRANSFER_PROTOCOL_VERSION = 4
+/** Version of the transfer message vocabulary; v5 adds parallel worker slices. */
+export const TRANSFER_PROTOCOL_VERSION = 5
 
 /** Bytes of payload per `chunk` message. */
 export const TRANSFER_CHUNK_BYTES = 256 * 1024
@@ -326,8 +326,150 @@ export interface SentBundle {
   readonly sent: readonly BundleEntryRef[]
 }
 
+/** One worker's share of a parallel bundle: `index` of `total` connections. */
+export interface BundleWorkerSlice {
+  /** Zero-based worker index; 0 also carries the offer that prepares the receipt. */
+  readonly index: number
+  /** Worker count this bundle streams over. */
+  readonly total: number
+}
+
+/** One received offer, validated, with its worker slice. */
+export interface ReceivedOffer {
+  /** The validated manifest. */
+  readonly manifest: BundleManifest
+  /** The sender's worker slice; a single-connection send reports `{index:0,total:1}`. */
+  readonly worker: BundleWorkerSlice
+}
+
 /**
- * Offer and stream one bundle.
+ * Read and validate one offer frame, including its worker slice.
+ * @param channel - the connection channel.
+ * @returns the validated manifest and worker slice.
+ * @throws {TransferProtocolError} for a malformed offer or worker slice.
+ */
+export async function receiveOffer(channel: ConnectionChannel): Promise<ReceivedOffer> {
+  const offer = await channel.next('offer', 120_000)
+  const manifest = validateBundleManifest(offer['manifest'])
+  return { manifest, worker: parseWorkerSlice(offer['worker']) }
+}
+
+/**
+ * Validate one offer's worker slice. A missing slice means a single-connection
+ * send, which is what every pre-parallel sender produces.
+ * @param raw - the offer's worker field.
+ * @returns the validated slice.
+ * @throws {TransferProtocolError} for an out-of-range index or total.
+ */
+function parseWorkerSlice(raw: unknown): BundleWorkerSlice {
+  if (raw === undefined) return { index: 0, total: 1 }
+  if (typeof raw !== 'object' || raw === null) throw new TransferProtocolError('offer carries an invalid worker slice')
+  const record = raw as Record<string, unknown>
+  const index = record['index']
+  const total = record['total']
+  if (typeof total !== 'number' || !Number.isSafeInteger(total) || total < 1 || total > 8) {
+    throw new TransferProtocolError('offer worker total must be an integer between 1 and 8')
+  }
+  if (typeof index !== 'number' || !Number.isSafeInteger(index) || index < 0 || index >= total) {
+    throw new TransferProtocolError('offer worker index is out of range')
+  }
+  return { index, total }
+}
+
+/**
+ * Whether one manifest entry belongs to one worker's slice. The stride rule is
+ * the sender's wire contract: workers never stage the same entry.
+ * @param entries - the manifest's entries in order.
+ * @param entry - the entry to place.
+ * @param worker - the worker slice.
+ * @returns whether this worker streams the entry.
+ */
+export function workerOwnsEntry(
+  entries: readonly BundleEntryRef[],
+  entry: BundleEntryRef,
+  worker: BundleWorkerSlice,
+): boolean {
+  const index = entries.findIndex(candidate => candidate.kind === entry.kind && candidate.path === entry.path)
+  /* v8 ignore next -- callers only pass manifest entries */
+  if (index === -1) return false
+  return index % worker.total === worker.index
+}
+
+/**
+ * Announce one bundle offer and read the receiver's accept.
+ * @param channel - the connection channel.
+ * @param manifest - the validated manifest.
+ * @param worker - this connection's worker slice.
+ * @returns the completed-entry keys and partial byte counts the receiver reports.
+ * @throws {TransferRejectedError} when the receiver declines.
+ */
+export async function sendOffer(
+  channel: ConnectionChannel,
+  manifest: BundleManifest,
+  worker: BundleWorkerSlice = { index: 0, total: 1 },
+): Promise<{ completed: ReadonlySet<string>; partial: ReadonlyMap<string, number> }> {
+  channel.write({ type: 'offer', binaryLength: 0, manifest, worker })
+  const answer = await channel.next(['accept', 'reject'], 120_000)
+  if (answer.type === 'reject') throw new TransferRejectedError(typeof answer['reason'] === 'string' ? answer['reason'] : undefined)
+  return {
+    completed: parseResumeList(answer['resume'], manifest),
+    partial: parsePartialList(answer['partial'], manifest),
+  }
+}
+
+/**
+ * Stream this worker's slice of the bundle and send its terminal `done`.
+ * @param channel - the connection channel.
+ * @param manifest - the validated manifest.
+ * @param worker - this connection's worker slice.
+ * @param resume - the receiver's completed-entry keys and partial byte counts.
+ * @param readEntry - source of one entry's bytes from the given start offset.
+ * @param signal - optional cancellation.
+ * @returns which entries were skipped and which were streamed.
+ * @throws {TransferProtocolError} when a chunk stream disagrees with the manifest.
+ * @throws {TransferIntegrityError} when a source no longer matches the manifest.
+ */
+export async function sendEntries(
+  channel: ConnectionChannel,
+  manifest: BundleManifest,
+  worker: BundleWorkerSlice,
+  resume: { readonly completed: ReadonlySet<string>; readonly partial: ReadonlyMap<string, number> },
+  readEntry: BundleEntryReader,
+  signal?: AbortSignal,
+): Promise<SentBundle> {
+  const skipped: BundleEntryRef[] = []
+  const sent: BundleEntryRef[] = []
+  for (const entry of manifest.entries) {
+    signal?.throwIfAborted()
+    if (!workerOwnsEntry(manifest.entries, entry, worker)) continue
+    if (resume.completed.has(entryKey(entry))) {
+      skipped.push(entry)
+      continue
+    }
+    const startOffset = resume.partial.get(entryKey(entry)) ?? 0
+    channel.write({ type: 'entry', binaryLength: 0, kind: entry.kind, path: entry.path, size: entry.size, sha256: entry.sha256 })
+    await streamEntry(channel, entry, readEntry(entry, startOffset), signal, startOffset)
+    sent.push(entry)
+  }
+  channel.write({ type: 'done', binaryLength: 0 })
+  return { skipped, sent }
+}
+
+/**
+ * Wait for the receiver's terminal completion frame.
+ * @param channel - the connection channel.
+ * @throws {TransferCompletionError} when the receiver reports a failure.
+ * @throws {ChannelClosedError} when the connection ends first.
+ */
+export async function awaitBundleCompletion(channel: ConnectionChannel): Promise<void> {
+  const completion = await channel.next(['received', 'failed'], TRANSFER_COMPLETION_TIMEOUT_MS)
+  if (completion.type === 'failed') {
+    throw new TransferCompletionError(typeof completion['reason'] === 'string' ? completion['reason'] : undefined)
+  }
+}
+
+/**
+ * Offer and stream one bundle over one connection.
  *
  * Waits for the receiver's acceptance, skips entries it reports complete,
  * resumes entries it reports partially staged from the reported byte offset,
@@ -355,33 +497,10 @@ export async function sendBundle(
   readEntry: BundleEntryReader,
   signal?: AbortSignal,
 ): Promise<SentBundle> {
-  signal?.throwIfAborted()
-  channel.write({ type: 'offer', binaryLength: 0, manifest })
-  const answer = await channel.next(['accept', 'reject'], 120_000)
-  if (answer.type === 'reject') throw new TransferRejectedError(typeof answer['reason'] === 'string' ? answer['reason'] : undefined)
-  const completed = parseResumeList(answer['resume'], manifest)
-  const partial = parsePartialList(answer['partial'], manifest)
-  const skipped: BundleEntryRef[] = []
-  const sent: BundleEntryRef[] = []
-  for (const entry of manifest.entries) {
-    signal?.throwIfAborted()
-    if (completed.has(entryKey(entry))) {
-      skipped.push(entry)
-      continue
-    }
-    const startOffset = partial.get(entryKey(entry)) ?? 0
-    channel.write({ type: 'entry', binaryLength: 0, kind: entry.kind, path: entry.path, size: entry.size, sha256: entry.sha256 })
-    await streamEntry(channel, entry, readEntry(entry, startOffset), signal, startOffset)
-    sent.push(entry)
-  }
-  channel.write({ type: 'done', binaryLength: 0 })
-  // Success means the receiving device imported the bundle, not just that the
-  // bytes reached the socket. A receiver-side failure arrives as `failed`.
-  const completion = await channel.next(['received', 'failed'], TRANSFER_COMPLETION_TIMEOUT_MS)
-  if (completion.type === 'failed') {
-    throw new TransferCompletionError(typeof completion['reason'] === 'string' ? completion['reason'] : undefined)
-  }
-  return { skipped, sent }
+  const resume = await sendOffer(channel, manifest)
+  const sent = await sendEntries(channel, manifest, { index: 0, total: 1 }, resume, readEntry, signal)
+  await awaitBundleCompletion(channel)
+  return sent
 }
 
 /**
@@ -531,9 +650,10 @@ export interface ReceiveBundleHandlers {
   /**
    * Decide whether to accept the offer.
    * @param manifest - the validated manifest.
+   * @param worker - the sender's worker slice for this connection.
    * @returns acceptance, an optional decline reason, and the entries already held complete.
    */
-  decideOffer(manifest: BundleManifest): Promise<OfferDecision>
+  decideOffer(manifest: BundleManifest, worker: BundleWorkerSlice): Promise<OfferDecision>
   /**
    * Open a sink for one incoming entry.
    * @param entry - the manifest entry about to stream.
@@ -571,11 +691,27 @@ export async function receiveBundle(
   channel: ConnectionChannel,
   handlers: ReceiveBundleHandlers,
 ): Promise<ReceivedBundle> {
-  const offer = await channel.next('offer', 120_000)
-  const manifest = validateBundleManifest(offer['manifest'])
+  return receiveBundleFrom(channel, await receiveOffer(channel), handlers)
+}
+
+/**
+ * Receive one offer already read by {@link receiveOffer}: decide, acknowledge,
+ * and read this worker's entries until its terminal `done`.
+ * @param channel - the authenticated connection channel.
+ * @param offer - the validated offer and worker slice.
+ * @param handlers - offer decision and per-entry sinks.
+ * @returns the manifest and the entries received on this connection.
+ * @throws the same failures {@link receiveBundle} documents.
+ */
+export async function receiveBundleFrom(
+  channel: ConnectionChannel,
+  offer: ReceivedOffer,
+  handlers: ReceiveBundleHandlers,
+): Promise<ReceivedBundle> {
+  const { manifest, worker } = offer
   let decision: OfferDecision
   try {
-    decision = await handlers.decideOffer(manifest)
+    decision = await handlers.decideOffer(manifest, worker)
   } catch (error) {
     // A local refusal (unusable destination, storage failure) must still tell
     // the sender, or it waits out its own accept timeout on a dead choice.

@@ -19,13 +19,17 @@ import { ChannelClosedError, PairingError } from './pairing.ts'
 import {
   computeTreeSummary,
   receiveBundle,
+  receiveBundleFrom,
   sendBundle,
   TRANSFER_PROTOCOL_VERSION,
   type BundleEntryRef,
   type BundleEntrySink,
   type BundleManifest,
+  type BundleEntryReader,
   type BundlePartialProgress,
+  type BundleWorkerSlice,
   type OfferDecision,
+  type ReceiveBundleHandlers,
   type SentBundle,
 } from './transfer.ts'
 
@@ -329,13 +333,23 @@ export function sendPreparedBundle(
   prepared: PreparedBundle,
   signal?: AbortSignal,
 ): Promise<SentBundle> {
-  const { manifest, sources } = prepared
-  return sendBundle(channel, manifest, (entry, startOffset) => {
+  return sendBundle(channel, prepared.manifest, preparedEntryReader(prepared), signal)
+}
+
+/**
+ * Read one prepared entry's bytes from a start offset, for one connection.
+ * @param prepared - the prepared bundle.
+ * @returns a reader usable by {@link sendEntries}.
+ * @throws {Error} when the bundle has no source for the entry.
+ */
+export function preparedEntryReader(prepared: PreparedBundle): BundleEntryReader {
+  const { sources } = prepared
+  return (entry, startOffset) => {
     const source = sources.get(sourceKey(entry))
     if (source === undefined) throw new Error(`no prepared source for entry "${entry.path}"`)
     if (source instanceof Uint8Array) return singleChunk(startOffset === 0 ? source : source.subarray(startOffset))
     return createReadStream(source.absolutePath, startOffset === 0 ? undefined : { start: startOffset })
-  }, signal)
+  }
 }
 
 /** Yield one buffer as the complete byte sequence. */
@@ -716,6 +730,8 @@ export async function receiveHandoff(
     readonly signal?: AbortSignal
     /** Called with each progress change while the bundle streams and settles. */
     readonly onProgress?: (progress: HandoffReceiveProgress) => void
+    /** Offer already read by the caller; omitted reads it here. */
+    readonly offer?: import('./transfer.ts').ReceivedOffer
   },
 ): Promise<ReceivedHandoff> {
   const parent = resolve(options.targetParentDirectory)
@@ -759,7 +775,7 @@ export async function receiveHandoff(
     return { ...receipt, skipped }
   }
 
-  const receive = receiveBundle(channel, {
+  const handlers: ReceiveBundleHandlers = {
     ...options.signal === undefined ? {} : { signal: options.signal },
     decideOffer: async (manifest): Promise<OfferDecision> => {
       const decision = await decideOffer(manifest, parent, options.dataDirectory, (layout, path, receivedTitle, merge) => {
@@ -805,7 +821,10 @@ export async function receiveHandoff(
         discard: () => sink.discard(),
       }
     },
-  })
+  }
+  const receive = options.offer === undefined
+    ? receiveBundle(channel, handlers)
+    : receiveBundleFrom(channel, options.offer, handlers)
   try {
     const bundle = await receive
     const receipt = await finish(bundle.manifest, bundle.entries)
@@ -828,6 +847,226 @@ export async function receiveHandoff(
       // The sender is gone; the local failure still reaches this caller.
     }
     throw error
+  }
+}
+
+/**
+ * One bundle streaming in over several connections: the first worker prepares
+ * staging and the resume report, every worker stages its own slice, and the
+ * last worker's `done` settles the receipt once for all of them.
+ *
+ * Workers never share an entry: the sender partitions by stride, and a
+ * duplicate announcement is refused so two sinks cannot write one path.
+ */
+export class SharedReceipt {
+  private readonly received: BundleEntryRef[] = []
+  private readonly done = new Set<number>()
+  private readonly resumedPartial: BundlePartialProgress[] = []
+  private readonly completed: BundleEntryRef[] = []
+  private state: 'preparing' | 'ready' | 'settled' | 'failed' = 'preparing'
+  private staging: StagingLayout | undefined
+  private finalPath: string | undefined
+  private title: string | undefined
+  private readonly ready: Promise<void>
+  private resolveReady!: () => void
+  private rejectReady!: (error: Error) => void
+  private readonly settled: Promise<ReceivedHandoff>
+  private resolveSettled!: (receipt: ReceivedHandoff) => void
+  private rejectSettled!: (error: Error) => void
+  /** Live channels for this receipt, so the settle report reaches every worker. */
+  readonly channels = new Set<ConnectionChannel>()
+  /** Bytes written to staging so far, across workers. */
+  bytesDone = 0
+  /** Entries committed so far, across workers. */
+  entriesDone = 0
+  /** Owner of the settle attempt, so only one worker runs the completion. */
+  private settling = false
+  /** Whether this receipt merges into an existing destination (never in parallel sends). */
+  private mergeMode = false
+
+  /**
+   * @param manifest - the offered manifest, identical on every worker.
+   * @param parent - resolved target parent directory.
+   * @param dataDirectory - receiving data root, required by bundles carrying data entries.
+   * @param homeDirectory - receiving harness home for path remapping.
+   * @param host - product seams.
+   * @param total - worker count the sender announced.
+   * @param onProgress - progress observer, invoked after each write/commit.
+   */
+  constructor(
+    readonly manifest: BundleManifest,
+    private readonly parent: string,
+    private readonly dataDirectory: string | undefined,
+    private readonly homeDirectory: string | undefined,
+    private readonly host: HandoffImportHost,
+    readonly total: number,
+    private readonly onProgress: ((progress: HandoffReceiveProgress) => void) | undefined,
+  ) {
+    this.ready = new Promise<void>((resolveReady, rejectReady) => {
+      this.resolveReady = resolveReady
+      this.rejectReady = rejectReady
+    })
+    this.settled = new Promise<ReceivedHandoff>((resolveSettled, rejectSettled) => {
+      this.resolveSettled = resolveSettled
+      this.rejectSettled = rejectSettled
+    })
+  }
+
+  /** The receipt's own outcome, settling after every worker's `done`. */
+  get completion(): Promise<ReceivedHandoff> {
+    return this.settled
+  }
+
+  /**
+   * Prepare the receipt on the first worker.
+   * @returns the accept decision shared by every worker of this bundle.
+   * @throws when staging cannot be prepared; the caller reports the refusal.
+   */
+  async start(): Promise<OfferDecision> {
+    try {
+      const decision = await decideOffer(this.manifest, this.parent, this.dataDirectory, (layout, path, title, merge) => {
+        this.staging = layout
+        this.finalPath = path
+        this.title = title
+        this.mergeMode = merge
+      })
+      this.completed.push(...decision.completed)
+      this.resumedPartial.push(...decision.partial)
+      this.report('receiving')
+      if (!decision.accept) {
+        /* v8 ignore next -- every refusal decideOffer returns names a reason */
+        this.fail(new HandoffReceiveError('verification', `the receiving device refused the bundle (${decision.reason ?? 'declined'})`))
+      } else {
+        this.state = 'ready'
+        this.resolveReady()
+      }
+      return decision
+    } catch (error) {
+      /* v8 ignore start -- staging failures need an unwritable handoff directory, which the refusal tests do not force */
+      this.fail(error instanceof Error ? error : new Error(String(error)))
+      throw error
+      /* v8 ignore stop */
+    }
+  }
+
+  /**
+   * Answer one worker's offer with the receipt's shared resume report.
+   * @param worker - the worker's slice.
+   * @returns the accept decision.
+   */
+  async decide(worker: BundleWorkerSlice): Promise<OfferDecision> {
+    // A refused or failed first worker rejects ready, which is the refusal a
+    // later worker reports; a prepared receipt resolves it.
+    if (worker.index !== 0) await this.ready
+    return { accept: true, completed: this.completed, partial: this.resumedPartial }
+  }
+
+  /**
+   * Open one entry's staging sink for a worker.
+   * @param entry - the manifest entry about to stream.
+   * @param startOffset - staged bytes this stream continues past.
+   * @returns the sink writing into the shared staging layout.
+   * @throws {HandoffReceiveError} when staging was never prepared.
+   */
+  async openEntry(entry: BundleEntryRef, startOffset: number): Promise<BundleEntrySink> {
+    /* v8 ignore next 3 -- decideOffer runs before any entry opens */
+    if (this.staging === undefined) throw new HandoffReceiveError('verification', 'receipt state was lost before receipt')
+    const target = stagedPathOf(stagingRootOf(this.staging, entry.kind), entry)
+    await mkdir(dirname(target), { recursive: true })
+    const sink = new StagingSink(target, startOffset)
+    return {
+      write: (chunk) => {
+        this.bytesDone += chunk.byteLength
+        this.report('receiving')
+        return sink.write(chunk)
+      },
+      commit: async () => {
+        await sink.commit()
+        this.entriesDone += 1
+        this.report('receiving')
+      },
+      abort: () => sink.abort(),
+      discard: () => sink.discard(),
+    }
+  }
+
+  /**
+   * Record one worker's arrival. The last worker's record settles the receipt.
+   * @param worker - the worker's slice.
+   * @param entries - entries this worker streamed.
+   */
+  record(worker: BundleWorkerSlice, entries: readonly BundleEntryRef[]): void {
+    this.received.push(...entries)
+    this.done.add(worker.index)
+    if (this.done.size < this.total) return
+    void this.settle()
+  }
+
+  /**
+   * Mark the receipt failed for every worker; staged bytes stay for a resend
+   * when the failure is connection-level.
+   * @param error - the failure all workers report.
+   */
+  fail(error: Error): void {
+    if (this.state === 'failed' || this.state === 'settled') return
+    this.state = 'failed'
+    this.rejectReady(error)
+    this.rejectSettled(error)
+    this.broadcast(`failed:${isConnectionLevelReceiveError(error) ? 'retryable' : 'fatal'}: ${error.message}`)
+  }
+
+  /** Settle the receipt once: verify, publish, import, attach, then report to every worker. */
+  private async settle(): Promise<void> {
+    /* v8 ignore next -- record() settles only once, after every worker's done and a ready receipt */
+    if (this.settling || this.state !== 'ready') return
+    this.settling = true
+    /* v8 ignore next 3 -- start() sets these before any worker's done can arrive */
+    if (this.staging === undefined || this.finalPath === undefined || this.title === undefined) return
+    const staging = this.staging
+    const finalPath = this.finalPath
+    try {
+      this.report('verifying')
+      const receipt = await completeReceipt(staging, finalPath, this.title, this.manifest, this.host, {
+        dataDirectory: this.dataDirectory,
+        homeDirectory: this.homeDirectory,
+        mergeMode: this.mergeMode,
+        received: this.received,
+        skipped: this.completed,
+        resumedPartial: this.resumedPartial,
+        onPhase: phase => { this.report(phase) },
+      })
+      this.state = 'settled'
+      this.resolveSettled({ ...receipt, skipped: this.completed })
+      this.broadcast('received')
+    } catch (error) {
+      /* v8 ignore next -- completeReceipt throws HandoffReceiveError or host Error instances */
+      const failure = error instanceof Error ? error : new Error(String(error))
+      this.fail(failure)
+    }
+  }
+
+  /** Send the terminal frame to every worker still connected. */
+  private broadcast(kind: 'received' | `failed:${string}`): void {
+    for (const channel of this.channels) {
+      try {
+        if (kind === 'received') channel.write({ type: 'received', binaryLength: 0 })
+        else channel.write({ type: 'failed', binaryLength: 0, reason: kind.slice('failed:'.length) })
+      } catch {
+        // A worker that closed already has its own failure path.
+      }
+    }
+  }
+
+  /** Report aggregate progress to the service's receiving snapshot. */
+  private report(phase: HandoffReceivePhase): void {
+    this.onProgress?.({
+      phase,
+      projectTitle: this.manifest.projectTitle,
+      entriesDone: this.entriesDone,
+      entriesTotal: this.manifest.entries.length,
+      bytesDone: this.resumedPartial.reduce((total, item) => total + item.bytes, 0) + this.bytesDone,
+      bytesTotal: this.manifest.treeSummary.totalBytes,
+    })
   }
 }
 
@@ -977,8 +1216,8 @@ async function completeReceipt(
   // Every manifest entry must have arrived (this session or a resume), or the
   // bundle is incomplete and nothing may publish — the merge path skips the
   // whole-tree reconciliation, so this check is what keeps it honest.
-  const arrived = new Set(context.received)
-  const missing = manifest.entries.filter(entry => !arrived.has(entry) && !context.skipped.some(resumed => resumed.kind === entry.kind
+  const arrived = new Set(context.received.map(sourceKey))
+  const missing = manifest.entries.filter(entry => !arrived.has(sourceKey(entry)) && !context.skipped.some(resumed => resumed.kind === entry.kind
     && resumed.path === entry.path && resumed.sha256 === entry.sha256))
   if (missing.length > 0) {
     await cleanupStaging(staging)

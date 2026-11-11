@@ -3,14 +3,14 @@ feature: easel-handoff-byte-resume
 status: delivered
 updated: 2026-11-11
 branch: feat/easel-handoff-parallel（worktree）
-commits: 3e4ecdef14..HEAD
+commits: 64ed48807d（v4 续传/重试）..HEAD（v5 并行）
 ---
 
-# 隔空传送：字节级续传与发送端自动重试
+# 隔空传送：字节级续传、发送端自动重试与并行推送
 
 ## Report
 
-**What was built** — 中断的传输现在按字节续传：接收端在 accept 里报告每个已暂存条目「连续收到多少字节」，发送端只补传尾部；发布前接收端对完整暂存文件再做一次摘要校验（只补尾部无法复现整文件摘要）。发送端对连接级失败（掉线、120s 空闲超时、对端回 `retryable:`）自动重发，默认 3 次、每次 2s 后重拨，并从接收端检查点继续；拒绝、协议错误与完整性错误从不重试。`sendRetryAttempts` 可配置（1 表示关闭）。传输协议升到 v4。
+**What was built** — 并行推送（v5）：项目发送按 `parallelConnections`（默认 2、1–8）开多条连接，每个 worker 承载清单条目的一个互不相交的条带、共用同一 bundleId；第一个 worker 准备暂存与共享续传报告，最后一个 worker 的 `done` 让整张回执结算一次并广播结果。仓库侧 `SharedReceipt` 负责共享暂存、去重与结算，条目不会换手。 中断的传输现在按字节续传：接收端在 accept 里报告每个已暂存条目「连续收到多少字节」，发送端只补传尾部；发布前接收端对完整暂存文件再做一次摘要校验（只补尾部无法复现整文件摘要）。发送端对连接级失败（掉线、120s 空闲超时、对端回 `retryable:`）自动重发，默认 3 次、每次 2s 后重拨，并从接收端检查点继续；拒绝、协议错误与完整性错误从不重试。`sendRetryAttempts` 可配置（1 表示关闭）。传输协议升到 v4。
 
 **Verification** — `packages/transfer/lan-handoff` 189 通过 / 2 跳过（跳过两条=绑定不存在主机名的监听用例，本机 DNS 5s 超时，master 同样偶发）；`handoff.ts`/`transfer.ts` 覆盖率 100%（`index.ts` 99.33% 为 master 既有并发接收分支基线）；全仓 typecheck 5/5；插件测试 20/20。新增用例覆盖：字节偏移续传端到端、损坏前缀整文件摘要拒绝且不发布、损坏字节丢弃、零字节暂存重新传输、`sendRetryAttempts` 生效、等待期间取消。
 
@@ -39,10 +39,20 @@ Windows → macOS 传大项目时链路中途整段静默 2 分钟，接收端�
 - [x] T3: `sendWithResends` 有界重试 + `sendRetryAttempts` 配置（depends: T2）
 - [x] T4: 端到端续传/损坏/零字节用例与覆盖率（depends: T1, T3）
 
+## [S5] Parallel workers
+
+- 清单条带：`workerOwnsEntry` 按 `index % total === index` 划分，发送端与接收端各自独立计算；接收端不信任声明，重复条目由 `SharedReceipt` 的暂存路径语义兜底。
+- 共享回执：`SharedReceipt` 只准备一次 staging 与续传报告；`decide` 对每个 worker 返回同一份 completed/partial；`record` 收齐全部 worker 后由唯一一次 `completeReceipt` 发布，并把 `received`/`failed` 广播到所有仍连接的 worker。
+- 失败：任一 worker 的连接级失败把整张回执标 `retryable` 并广播，发送端重试后从暂存字节续；确定性失败标 `fatal`。
+- 默认值与上限：默认 2 条；连接数不超过清单条目数；`parallelConnections: 1` 保留单连接路径。
+
 ## [S4] Acceptance
 
 - [x] 同一 bundle 重发只补传尾部，接收端拼出正确文件（e2e）
 - [x] 续传条目的完整文件摘要不符时拒绝发布并清暂存（e2e）
 - [x] 校验失败的条目丢弃已收字节，下次从头（单测/覆盖率）
 - [x] 连接级失败自动重发并继续；拒绝/协议错误立即抛出（单测）
-- [x] v3 对端标记不兼容（协议测试）
+- [x] v3/v4 对端标记不兼容（协议测试）
+- [x] 3 条连接并行发送同一项目，全部文件完整到达（e2e）
+- [x] 并行 worker 的导入失败/暂存失败让整张回执失败且不发布（e2e）
+- [x] 取消与掉线把整张回执标记为可重试（单测）
