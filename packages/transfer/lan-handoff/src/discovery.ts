@@ -33,11 +33,10 @@ export interface ProtocolVersionRange {
 /**
  * The protocol range this harness build speaks.
  *
- * Version 4 adds byte-level partial resume; a v3 peer cannot continue an
- * interrupted entry from its staged bytes, so the two are deliberately
- * incompatible.
+ * Version 5 adds parallel worker slices; a v4 peer would treat each worker's
+ * offer as a whole bundle, so the two are deliberately incompatible.
  */
-export const LAN_HANDOFF_PROTOCOL_VERSION: ProtocolVersionRange = { min: 4, max: 4 }
+export const LAN_HANDOFF_PROTOCOL_VERSION: ProtocolVersionRange = { min: 5, max: 5 }
 
 /** Platform label advertised for a discovered device. */
 export type LanPlatform = 'windows' | 'macos' | 'linux'

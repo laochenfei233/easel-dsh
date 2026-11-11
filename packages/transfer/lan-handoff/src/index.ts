@@ -57,7 +57,9 @@ import {
   bundleFromFiles,
   cleanupStaleReceipts,
   HandoffReceiveError,
+  preparedEntryReader,
   receiveHandoff,
+  SharedReceipt,
   sendPreparedBundle,
   walkProjectTree,
   type ConfigDocumentSource,
@@ -70,7 +72,15 @@ import {
   type SessionArchiveSource,
 } from './handoff.ts'
 import type { SentBundle } from './transfer.ts'
-import { TransferCompletionError } from './transfer.ts'
+import {
+  awaitBundleCompletion,
+  receiveBundleFrom,
+  receiveOffer,
+  sendEntries,
+  sendOffer,
+  TransferCompletionError,
+  type ReceivedOffer,
+} from './transfer.ts'
 
 /** How long a resend waits before redialing the peer. */
 const SEND_RETRY_DELAY_MS = 2_000
@@ -285,6 +295,12 @@ export interface Config {
    * resending.
    */
   sendRetryAttempts?: number
+  /**
+   * Connections a project send may use in parallel (1–8; default 2). Workers
+   * stream disjoint entry slices of one bundle, which raises throughput on
+   * high-latency links; `1` keeps the single-connection path.
+   */
+  parallelConnections?: number
 }
 
 /** Live state of the receipt currently streaming into this device. */
@@ -426,6 +442,7 @@ export class LanHandoffService extends Service {
     dataDirectory: z.string().default(''),
     staleReceiptAgeMinutes: z.number().min(0).max(43200).default(30),
     sendRetryAttempts: z.number().min(1).max(10).default(3),
+    parallelConnections: z.number().min(1).max(8).default(2),
   })
 
   /** Runtime state, resolved once on start; device id and bound port never change afterwards. */
@@ -442,6 +459,10 @@ export class LanHandoffService extends Service {
   private localNetworks: readonly LocalIpv4Network[] = []
   /** Total send attempts per bundle; resolved from config at start. */
   private sendRetryAttempts = 3
+  /** Connections per project send; resolved from config at start. */
+  private parallelConnections = 2
+  /** Receipts streaming in over several connections, keyed by bundle id. */
+  private readonly sharedReceipts = new Map<string, SharedReceipt>()
   private receiving: ReceivingHandoff | undefined
   private receivingId: string | undefined
 
@@ -470,6 +491,7 @@ export class LanHandoffService extends Service {
           const homeDirectory = resolve(options?.homeDirectory ?? resolveDshHome())
           this.localNetworks = localIpv4Networks()
           this.sendRetryAttempts = config.sendRetryAttempts ?? 3
+          this.parallelConnections = config.parallelConnections ?? 2
           try {
             const removed = await cleanupStaleReceipts(handoffDirectory, (config.staleReceiptAgeMinutes ?? 30) * 60_000)
             if (removed.length > 0) ctx.logger.warn(`lan-handoff: removed ${String(removed.length)} staging group(s) from interrupted receipts`)
@@ -820,7 +842,9 @@ export class LanHandoffService extends Service {
     try {
       const opened = await this.openSyncChannel(peerId)
       socket = opened.socket
-      const sent = await sendPreparedBundle(opened.channel, prepared, signal)
+      const sent = this.parallelConnections > 1
+        ? await this.streamParallel(peerId, opened, prepared, signal)
+        : await sendPreparedBundle(opened.channel, prepared, signal)
       this.lastHandoff = { at: Date.now(), ok: true, detail: `sent ${String(sent.sent.length)} entries to ${peerId}` }
       return sent
     } catch (error) {
@@ -831,6 +855,57 @@ export class LanHandoffService extends Service {
       // Graceful close flushes frames still in the write buffer; destroy()
       // can discard the final `done` message and leave the peer waiting.
       socket?.end()
+    }
+  }
+
+  /**
+   * Stream one bundle over several connections, each carrying a disjoint
+   * stride of the entry list. Workers open after the primary's accept, so the
+   * receiver's shared receipt already holds the resume report they all use.
+   * @param peerId - the paired device's id.
+   * @param primary - the first connection, which also waits for completion.
+   * @param prepared - the prepared bundle.
+   * @param signal - optional cancellation.
+   * @returns the union of skipped and streamed entries across workers.
+   */
+  private async streamParallel(
+    peerId: string,
+    primary: Awaited<ReturnType<LanHandoffService['openSyncChannel']>>,
+    prepared: PreparedBundle,
+    signal?: AbortSignal,
+  ): Promise<SentBundle> {
+    // No benefit in more connections than entries; one connection stays the floor.
+    const total = Math.max(1, Math.min(this.parallelConnections, prepared.manifest.entries.length))
+    const worker = (index: number): { index: number; total: number } => ({ index, total })
+    signal?.throwIfAborted()
+    const opened: Awaited<ReturnType<LanHandoffService['openSyncChannel']>>[] = [primary]
+    const controller = new AbortController()
+    const onAbort = (): void => { abort() }
+    const abort = (): void => {
+      controller.abort()
+      for (const connection of opened) connection.socket.destroy()
+    }
+    signal?.addEventListener('abort', onAbort, { once: true })
+    try {
+      const resume = await sendOffer(primary.channel, prepared.manifest, worker(0))
+      for (let index = 1; index < total; index += 1) opened.push(await this.openSyncChannel(peerId))
+      await Promise.all(opened.slice(1).map(async (connection, index) => {
+        await sendOffer(connection.channel, prepared.manifest, worker(index + 1))
+      }))
+      const reader = preparedEntryReader(prepared)
+      const results = await Promise.all(opened.map(async (connection, index) =>
+        sendEntries(connection.channel, prepared.manifest, worker(index), resume, reader, controller.signal)))
+      await awaitBundleCompletion(primary.channel)
+      return {
+        skipped: results.flatMap(result => result.skipped),
+        sent: results.flatMap(result => result.sent),
+      }
+    } catch (error) {
+      abort()
+      throw error
+    } finally {
+      signal?.removeEventListener('abort', onAbort)
+      for (const connection of opened.slice(1)) connection.socket.end()
     }
   }
 
@@ -1023,6 +1098,7 @@ export class LanHandoffService extends Service {
       },
     }
     const state = await this.ready
+    const offer = await receiveOffer(channel)
     const receiptId = randomBytes(6).toString('hex')
     const startedAt = Date.now()
     const report = (progress: HandoffReceiveProgress): void => {
@@ -1030,13 +1106,16 @@ export class LanHandoffService extends Service {
       this.receiving = { ...progress, startedAt }
     }
     try {
-      const outcome: ReceivedHandoff = await receiveHandoff(channel, {
-        targetParentDirectory: state.handoffDirectory,
-        host,
-        ...state.dataDirectory === '' ? {} : { dataDirectory: state.dataDirectory },
-        homeDirectory: state.homeDirectory,
-        onProgress: report,
-      })
+      const outcome: ReceivedHandoff = offer.worker.total === 1
+        ? await receiveHandoff(channel, {
+            targetParentDirectory: state.handoffDirectory,
+            host,
+            ...state.dataDirectory === '' ? {} : { dataDirectory: state.dataDirectory },
+            homeDirectory: state.homeDirectory,
+            onProgress: report,
+            offer,
+          })
+        : await this.serveShared(channel, offer, host, report)
       this.lastHandoff = { at: Date.now(), ok: true, detail: `received "${outcome.projectPath}"` }
     } catch (error) {
       /* v8 ignore next -- receiveHandoff rejects with Error instances only */
@@ -1049,6 +1128,70 @@ export class LanHandoffService extends Service {
         this.receiving = undefined
         this.receivingId = undefined
       }
+    }
+  }
+
+  /**
+   * Join the shared receipt for one parallel worker: the first worker
+   * prepares staging, each worker stages its slice, and the last worker's
+   * `done` settles the receipt and reports to every connected worker.
+   * @param channel - this worker's authenticated connection.
+   * @param offer - the offer read for this connection.
+   * @param host - product seams for the settling worker.
+   * @param report - progress observer for the receiving snapshot.
+   * @returns the settled receipt.
+   */
+  private async serveShared(
+    channel: ConnectionChannel,
+    offer: ReceivedOffer,
+    host: Parameters<typeof receiveHandoff>[1]['host'],
+    report: (progress: HandoffReceiveProgress) => void,
+  ): Promise<ReceivedHandoff> {
+    const state = await this.ready
+    const bundleId = offer.manifest.bundleId
+    let shared = this.sharedReceipts.get(bundleId)
+    if (offer.worker.index === 0) {
+      /* v8 ignore next -- a second index-0 connection for one bundle needs a misbehaving sender */
+      if (shared !== undefined) throw new Error(`bundle ${bundleId} already has a first worker`)
+      shared = new SharedReceipt(
+        offer.manifest,
+        state.handoffDirectory,
+        state.dataDirectory === '' ? undefined : state.dataDirectory,
+        state.homeDirectory,
+        host,
+        offer.worker.total,
+        report,
+      )
+      this.sharedReceipts.set(bundleId, shared)
+      const settling = shared
+      void settling.completion.catch(() => undefined).finally(() => {
+        /* v8 ignore next -- only a misbehaving sender can register one bundle twice */
+        if (this.sharedReceipts.get(bundleId) === settling) this.sharedReceipts.delete(bundleId)
+      })
+    } else {
+      // Workers open after the primary's accept, but tolerate a slow LAN by
+      // waiting briefly for the receipt to register.
+      for (let attempt = 0; shared === undefined && attempt < 20; attempt += 1) {
+        await new Promise<void>(resolveWait => { setTimeout(resolveWait, 100) })
+        shared = this.sharedReceipts.get(bundleId)
+      }
+      if (shared === undefined) throw new Error(`bundle ${bundleId} has no first worker`)
+    }
+    const receipt = shared
+    receipt.channels.add(channel)
+    try {
+      const bundle: Awaited<ReturnType<typeof receiveBundleFrom>> = await receiveBundleFrom(channel, offer, {
+        decideOffer: (_manifest, worker) => worker.index === 0 ? receipt.start() : receipt.decide(worker),
+        openEntry: (entry, startOffset) => receipt.openEntry(entry, startOffset),
+      })
+      receipt.record(offer.worker, bundle.entries)
+      return await receipt.completion
+    } catch (error) {
+      /* v8 ignore next -- channel failures are Error instances */
+      receipt.fail(error instanceof Error ? error : new Error(String(error)))
+      throw error
+    } finally {
+      receipt.channels.delete(channel)
     }
   }
 

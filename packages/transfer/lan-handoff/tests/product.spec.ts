@@ -6,10 +6,14 @@
 
 import { Context } from '@deepseek-ai/cordis'
 import { SessionId } from '@deepseek-ai/dsh-session'
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
+import { bundleFromFiles } from '../src/handoff.ts'
+import { computeTreeSummary } from '../src/transfer.ts'
+import { ChannelClosedError } from '../src/pairing.ts'
 import {
   LanHandoffService,
   type HandoffImporter,
@@ -103,6 +107,8 @@ async function device(options: {
   readonly importer?: HandoffImporter
   readonly sessionExport?: HandoffSessionExport
   readonly homeDirectory?: string
+  readonly parallelConnections?: number
+  readonly dataDirectory?: string
 }): Promise<Device> {
   const ctx = new Context()
   const root = await mkdtemp(join(tmpdir(), 'dsh-prod-'))
@@ -120,7 +126,12 @@ async function device(options: {
     }
   }
   const discovery = new RecordingDiscoveryHost()
-  const service = new LanHandoffService(ctx, { name: 'loopback', handoffDirectory: destination }, {
+  const service = new LanHandoffService(ctx, {
+    name: 'loopback',
+    handoffDirectory: destination,
+    ...options.parallelConnections === undefined ? {} : { parallelConnections: options.parallelConnections },
+    ...options.dataDirectory === undefined ? {} : { dataDirectory: options.dataDirectory },
+  }, {
     identityRoot: root,
     discovery,
     allowLoopbackPeers: true,
@@ -149,7 +160,11 @@ it('sends a workspace to a paired discovery peer and registers it on receipt', a
   const projectRoot = await mkdtemp(join(tmpdir(), 'dsh-prod-src-'))
   await mkdir(join(projectRoot, '素材'), { recursive: true })
   await writeFile(join(projectRoot, '素材', 'notes.txt'), 'handoff notes', 'utf8')
-  const alpha = await device({ withSeams: true, resolveWorkspaceTo: { path: projectRoot, title: '项目甲' } })
+  const alpha = await device({
+    withSeams: true,
+    resolveWorkspaceTo: { path: projectRoot, title: '项目甲' },
+    parallelConnections: 1,
+  })
   const beta = await device({ withSeams: true })
   await pair(alpha, beta)
 
@@ -157,7 +172,7 @@ it('sends a workspace to a paired discovery peer and registers it on receipt', a
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 
@@ -212,7 +227,7 @@ it('applies received model configuration and remaps session paths onto the recei
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 
@@ -237,13 +252,42 @@ it('applies received model configuration and remaps session paths onto the recei
   await rm(alphaHome, { recursive: true, force: true })
 })
 
+it('streams one project over the configured parallel connections', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'dsh-prod-par-'))
+  const files = ['a.txt', 'b.txt', 'c.txt', 'd.txt', 'e.txt']
+  for (const name of files) await writeFile(join(projectRoot, name), `content-${name}`, 'utf8')
+  const alpha = await device({
+    withSeams: true,
+    resolveWorkspaceTo: { path: projectRoot, title: '并行项目' },
+    parallelConnections: 3,
+  })
+  const beta = await device({ withSeams: true })
+  await pair(alpha, beta)
+  alpha.discovery.emit({
+    addresses: ['127.0.0.1'],
+    port: beta.port,
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
+  })
+  await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
+
+  const opened = vi.spyOn(alpha.service, 'openSyncChannel')
+  const sent = await alpha.service.sendProjectToPeer(beta.deviceId, projectRoot)
+  expect(opened).toHaveBeenCalledTimes(3)
+  expect(sent.sent.map(entry => entry.path).sort()).toEqual(files.sort())
+  await vi.waitFor(() => { expect(beta.service.lastHandoffOutcome()?.ok).toBe(true) }, { timeout: 5_000 })
+  for (const name of files) {
+    expect(await readFile(join(beta.destination, '并行项目', name), 'utf8')).toBe(`content-${name}`)
+  }
+  await rm(projectRoot, { recursive: true, force: true })
+})
+
 it('refuses a sync dial to a device that is not paired', async () => {
   const alpha = await device({ withSeams: true })
   const beta = await device({ withSeams: true })
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot()).toHaveLength(1) })
   await expect(alpha.service.openSyncChannel(beta.deviceId)).rejects.toThrow(/not paired/u)
@@ -283,7 +327,7 @@ it('projects live receipt progress until the session import settles', async () =
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 
@@ -331,7 +375,7 @@ it('reports the receiving device import failure to the sender', async () => {
   alpha.discovery.emit({
     addresses: ['127.0.0.1'],
     port: beta.port,
-    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '4', vmin: '4' },
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
   })
   await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
 
@@ -360,4 +404,152 @@ it('refuses to dial a paired peer that speaks an older protocol', async () => {
 
 afterEach(async () => {
   for (const dispose of disposers.splice(0).reverse()) await dispose()
+})
+
+it('fails every parallel worker when the receiver cannot stage one entry', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'dsh-prod-par-bad-'))
+  await writeFile(join(projectRoot, 'a.txt'), 'AAAAAAAA', 'utf8')
+  await writeFile(join(projectRoot, 'b.txt'), 'BBBBBBBB', 'utf8')
+  const alpha = await device({
+    withSeams: true,
+    resolveWorkspaceTo: { path: projectRoot, title: '并行损坏' },
+    parallelConnections: 2,
+  })
+  const beta = await device({ withSeams: true })
+  await pair(alpha, beta)
+  alpha.discovery.emit({
+    addresses: ['127.0.0.1'],
+    port: beta.port,
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
+  })
+  await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
+  // Recompute the content-derived bundle id and squat a directory on one
+  // entry's staging path: the receiving sink cannot write that entry, so the
+  // shared receipt fails every worker and nothing publishes.
+  const prepared = await bundleFromFiles({
+    projectTitle: '并行损坏',
+    files: await Promise.all(['a.txt', 'b.txt'].map(async (name) => {
+      const absolutePath = join(projectRoot, name)
+      const info = await stat(absolutePath)
+      return { absolutePath, relativePath: name, size: info.size, sha256: createHash('sha256').update(await readFile(absolutePath)).digest('hex') }
+    })),
+    sessionArchives: [],
+    sourceCwd: projectRoot,
+  })
+  await mkdir(join(beta.destination, `.handoff-${prepared.manifest.bundleId}`, 'a.txt'), { recursive: true })
+  await expect(alpha.service.sendProjectToPeer(beta.deviceId, projectRoot))
+    .rejects.toBeDefined()
+  await expect(stat(join(beta.destination, '并行损坏'))).rejects.toMatchObject({ code: 'ENOENT' })
+  await rm(projectRoot, { recursive: true, force: true })
+})
+
+it('reports a parallel import failure to the sender and publishes nothing', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'dsh-prod-par-import-'))
+  await writeFile(join(projectRoot, 'a.txt'), 'AAAA', 'utf8')
+  await writeFile(join(projectRoot, 'b.txt'), 'BBBB', 'utf8')
+  const importer: HandoffImporter = {
+    importArchive: async () => { throw new Error('store refused the archive') },
+  }
+  const sessionExport: HandoffSessionExport = {
+    flush: async () => undefined,
+    readLog: async () => '{"header":{}}',
+    zip: async () => new Uint8Array([1, 2, 3]),
+  }
+  const alpha = await device({
+    withSeams: true,
+    resolveWorkspaceTo: { path: projectRoot, title: '并行导入失败', sessionIds: [SessionId('s1')] },
+    sessionExport,
+    parallelConnections: 2,
+  })
+  const beta = await device({ withSeams: true, importer })
+  await pair(alpha, beta)
+  alpha.discovery.emit({
+    addresses: ['127.0.0.1'],
+    port: beta.port,
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
+  })
+  await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
+  const failure = await alpha.service.sendProjectToPeer(beta.deviceId, projectRoot)
+    .then(() => undefined, (error: unknown) => error)
+  expect((failure as Error).message).toContain('store refused the archive')
+  await vi.waitFor(() => { expect(beta.service.lastHandoffOutcome()?.ok).toBe(false) }, { timeout: 5_000 })
+  await rm(projectRoot, { recursive: true, force: true })
+})
+
+it('streams a parallel bundle into a receiver that configures a data root', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'dsh-prod-par-data-'))
+  await writeFile(join(projectRoot, 'a.txt'), 'AAAA', 'utf8')
+  const alpha = await device({
+    withSeams: true,
+    resolveWorkspaceTo: { path: projectRoot, title: '并行数据根' },
+    parallelConnections: 2,
+  })
+  const beta = await device({ withSeams: true, dataDirectory: await mkdtemp(join(tmpdir(), 'dsh-prod-par-data-in-')) })
+  await pair(alpha, beta)
+  alpha.discovery.emit({
+    addresses: ['127.0.0.1'],
+    port: beta.port,
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
+  })
+  await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
+  await alpha.service.sendProjectToPeer(beta.deviceId, projectRoot)
+  await vi.waitFor(() => { expect(beta.service.lastHandoffOutcome()?.ok).toBe(true) }, { timeout: 5_000 })
+  expect(await readFile(join(beta.destination, '并行数据根', 'a.txt'), 'utf8')).toBe('AAAA')
+  await rm(projectRoot, { recursive: true, force: true })
+})
+
+it('aborts every worker when the caller cancels a parallel send', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'dsh-prod-par-abort-'))
+  // Large enough that the transfer is still running when the signal fires.
+  const chunk = Buffer.alloc(32 * 1024 * 1024, 7)
+  await writeFile(join(projectRoot, 'big.bin'), chunk)
+  const alpha = await device({
+    withSeams: true,
+    resolveWorkspaceTo: { path: projectRoot, title: '并行取消' },
+    parallelConnections: 2,
+  })
+  const beta = await device({ withSeams: true })
+  await pair(alpha, beta)
+  alpha.discovery.emit({
+    addresses: ['127.0.0.1'],
+    port: beta.port,
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
+  })
+  await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
+  const controller = new AbortController()
+  const sending = alpha.service.sendProjectToPeer(beta.deviceId, projectRoot, { signal: controller.signal })
+  // Abort only once the receiver is actually staging bytes, so the signal
+  // lands mid-transfer instead of during the TLS handshake.
+  await vi.waitFor(() => { expect(beta.service.receivingSnapshot()?.phase).toBe('receiving') }, { timeout: 5_000 })
+  controller.abort()
+  await expect(sending).rejects.toBeDefined()
+  await rm(projectRoot, { recursive: true, force: true })
+})
+
+it('refuses a worker that arrives without its first connection', async () => {
+  const alpha = await device({ withSeams: true })
+  const beta = await device({ withSeams: true })
+  await pair(alpha, beta)
+  alpha.discovery.emit({
+    addresses: ['127.0.0.1'],
+    port: beta.port,
+    txt: { id: beta.deviceId, name: 'beta', pf: 'linux', v: '5', vmin: '5' },
+  })
+  await vi.waitFor(() => { expect(alpha.service.peersSnapshot().map(peer => String(peer.id))).toContain(beta.deviceId) })
+  const entry = { kind: 'file' as const, path: 'a.txt', size: 1, sha256: 'a'.repeat(64) }
+  const manifest = {
+    protocolVersion: 5,
+    bundleId: 'orphan-worker',
+    projectTitle: '孤儿',
+    sourceCwd: '/tmp/x',
+    entries: [entry],
+    treeSummary: computeTreeSummary([entry]),
+  }
+  const opened = await alpha.service.openSyncChannel(beta.deviceId)
+  try {
+    opened.channel.write({ type: 'offer', binaryLength: 0, manifest, worker: { index: 1, total: 2 } })
+    await expect(opened.channel.next(['accept', 'reject'], 5_000)).rejects.toBeInstanceOf(ChannelClosedError)
+  } finally {
+    opened.socket.destroy()
+  }
 })
