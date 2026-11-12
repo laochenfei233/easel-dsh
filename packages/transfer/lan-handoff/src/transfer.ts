@@ -593,7 +593,9 @@ async function streamEntry(
     while (at < chunk.byteLength) {
       const end = Math.min(at + TRANSFER_CHUNK_BYTES, chunk.byteLength)
       const piece = chunk.subarray(at, end)
-      channel.write({
+      // Paced per chunk: without waiting for the socket's drain a multi-gigabyte
+      // entry outruns the link and queues itself whole in the sender's memory.
+      await channel.writeAwaited({
         type: 'chunk',
         binaryLength: piece.byteLength,
         offset,
@@ -604,7 +606,7 @@ async function streamEntry(
     }
   }
   if (offset === 0 && entry.size === 0) {
-    channel.write({ type: 'chunk', binaryLength: 0, offset: 0, final: true })
+    await channel.writeAwaited({ type: 'chunk', binaryLength: 0, offset: 0, final: true })
   }
   if (offset !== entry.size) throw new TransferIntegrityError(entry.path, `size ${String(entry.size)}`, `size ${String(offset)}`)
   if (hash === undefined) return
