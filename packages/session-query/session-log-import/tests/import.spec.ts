@@ -301,8 +301,20 @@ it('seeds the listing projection cache for the root and every seeded descendant'
   const context = await harness()
   const cache = new RecordingProjectionCache(context.hostCtx)
   try {
+    const call = JSON.stringify({
+      type: 'tool/call',
+      seq: 1,
+      time: 1_001,
+      data: {
+        turn: 1,
+        step: 1,
+        callId: 'call-1',
+        name: 'read_file',
+        arguments: JSON.stringify({ file_path: 'C:\\old\\project\\a.txt' }),
+      },
+    })
     const archive = zipSync({
-      'session.v4.jsonl': encoder.encode(logText(headerLine({ cwd: 'C:\\old\\project' }), eventLine(0))),
+      'session.v4.jsonl': encoder.encode(logText(headerLine({ cwd: 'C:\\old\\project' }), eventLine(0), call)),
       'subagents/child/session.v4.jsonl': encoder.encode(logText(
         headerLine({
           id: 'session-child',
@@ -316,11 +328,16 @@ it('seeds the listing projection cache for the root and every seeded descendant'
       )),
     }, { level: 0 })
 
-    await context.importer.importArchive(archive, { targetCwd: '/Users/me/project' })
+    await context.importer.importArchive(archive, {
+      targetCwd: '/Users/me/project',
+      pathRemaps: [{ from: 'C:\\old\\project', to: '/Users/me/project' }],
+    })
 
     expect(cache.seeds.map(seed => seed.header.id)).toEqual(['session-a', 'session-child'])
     expect(cache.seeds[0]?.header.cwd).toBe('/Users/me/project')
-    expect(cache.seeds[0]?.events.map(event => event.seq)).toEqual([0])
+    expect(cache.seeds[0]?.events.map(event => event.seq)).toEqual([0, 1])
+    // The seed must fold what was stored, not the sending device's spelling.
+    expect(JSON.stringify(cache.seeds[0]?.events[1])).toContain('/Users/me/project/a.txt')
     expect(cache.seeds[1]?.header.cwd).toBe('/Users/me/project')
     expect(cache.seeds[1]?.inherited).toBe(SessionLogOffset(1))
     expect(cache.seeds[1]?.events.map(event => event.seq)).toEqual([0, 1])

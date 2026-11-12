@@ -1,13 +1,20 @@
 ---
 feature: handoff-import-title-seed
-status: in-progress
+status: delivered
 updated: 2026-11-12
 branch: feat/handoff-import-title-seed
+commits: 1f2ec9f3af..049d3dcf99
 ---
 
 # Handoff Import Title Seed
 
 ## Report
+
+**What was built** — `SessionLogImporter` now folds every materialized session (root and seeded descendants) once into the listing projection cache right after the log is closed, using the cache's existing `coldSnapshot` path with the stored header, the stored events, and the stored inherited cut. A received handoff therefore lists each imported conversation under its recorded title instead of 「未命名」. The cache is optional and the seed is fail-soft: a fold or checkpoint-write failure only logs a warning, and the imported log stays authoritative.
+
+**Verification** — `vitest run packages/session-query/session-log-import/tests` 29/33 pass with 4 pre-existing macOS-only failures (Windows absolute `targetCwd` values; identical on the pristine baseline). `pnpm run typecheck` 5/5 gates pass. `run-oxlint` on the package: 0 warnings, 0 errors. `pnpm run build` (artifacts + check) 10/10 gates pass; `build:check` again after the version bump 2/2. `verify-version-sync`: 378 manifests carry 0.2.1-rc1.
+
+**Journey log** — The type-only cache import needs a tsconfig project reference; without it tsc pulls the cache's sources into the importer's `rootDir` and fails TS6059/TS6307. The first `tsc -b` run emitted stray `.js`/`.d.ts` files into several `src/` directories; they were deleted before committing. `verify-md-wrap` requires one physical line per paragraph, so the spec was unwrapped, and `verify-translation-pairing --write` re-recorded the README pair after the bilingual edit. Review flagged the cache peer as effectively required; `peerDependenciesMeta.optional` now marks it like the other consumers of this optional service.
 
 ## [S1] Problem
 
@@ -38,14 +45,14 @@ The session list keeps its zero-I/O contract (cold rows still read the cache onl
 
 ## Tasks
 
-- [ ] T1: Seed the projection cache after materializing each imported session and descendant, fail-soft, when the cache is mounted (depends: none, covers: S2.1, S2.2)
-- [ ] T2: Declare the optional cache dependency and update the package READMEs (depends: T1, covers: S2.1)
-- [ ] T3: Tests: root and descendant seeds carry the stored header/events; a throwing cache leaves the import successful (depends: T1, covers: S2.1, S2.2)
-- [ ] T4: Verify focused tests, typecheck, lint, and build:check (depends: T3)
+- [x] T1: Seed the projection cache after materializing each imported session and descendant, fail-soft, when the cache is mounted (depends: none, covers: S2.1, S2.2)
+- [x] T2: Declare the optional cache dependency and update the package READMEs (depends: T1, covers: S2.1)
+- [x] T3: Tests: root and descendant seeds carry the stored header/events; a throwing cache leaves the import successful (depends: T1, covers: S2.1, S2.2)
+- [x] T4: Verify focused tests, typecheck, lint, and build:check (depends: T3)
 
 ## [S4] Acceptance
 
-- [ ] An imported session's stored projection-checkpoint identity matches its stored header, so a cold listing read returns its recorded title.
-- [ ] Seeded descendants are seeded with their own header and inherited cut.
-- [ ] A projection-cache failure does not fail the import or lose the session.
-- [ ] The importer still works with no projection cache mounted.
+- [x] An imported session's stored projection-checkpoint identity matches its stored header, so a cold listing read returns its recorded title.
+- [x] Seeded descendants are seeded with their own header and inherited cut.
+- [x] A projection-cache failure does not fail the import or lose the session.
+- [x] The importer still works with no projection cache mounted.
