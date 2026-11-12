@@ -286,6 +286,7 @@ it('ignores a partial claim for content the bundle does not carry', async () => 
   ]
   const channel = {
     write: (): void => undefined,
+    writeAwaited: async (): Promise<void> => undefined,
     next: async () => answers.shift() ?? { type: 'received', binaryLength: 0 },
     nextFrame: async () => ({ message: { type: 'received', binaryLength: 0 }, binary: new Uint8Array() }),
   } as unknown as ConnectionChannel

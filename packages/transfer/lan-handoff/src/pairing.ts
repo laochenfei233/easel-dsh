@@ -145,6 +145,16 @@ export interface ConnectionChannel {
    * @param binary - optional payload bytes.
    */
   write(message: WireMessage, binary?: Uint8Array): void
+  /**
+   * Send one frame and wait until the socket accepted it for flushing, so a
+   * bulk sender cannot outrun the link and balloon its own write queue. For
+   * control frames use {@link ConnectionChannel.write}; only sustained bulk
+   * streams need the pacing.
+   * @param message - the header fields; `binaryLength` defaults to the payload length.
+   * @param binary - optional payload bytes.
+   * @throws {ChannelClosedError} when the connection fails while the frame waits.
+   */
+  writeAwaited(message: WireMessage, binary?: Uint8Array): Promise<void>
 }
 
 /**
@@ -216,7 +226,58 @@ export function attachChannel(socket: TLSSocket): ConnectionChannel {
       if (failed !== undefined) throw failed
       socket.write(encodeFrame(message, binary))
     },
+    writeAwaited(message: WireMessage, binary?: Uint8Array): Promise<void> {
+      if (failed !== undefined) return Promise.reject(failed)
+      return writeAndWait(socket, encodeFrame(message, binary))
+    },
   }
+}
+
+/**
+ * Write one frame and wait for the socket to accept it for flushing.
+ * The write callback fires once the frame left Node's queue for the OS, so a
+ * paced sender moves at the link's speed instead of queueing the whole
+ * payload in memory. A connection that fails while the frame waits rejects
+ * with {@link ChannelClosedError}, the same failure an unpaced write surfaces.
+ * @param socket - the established TLS connection.
+ * @param frame - the encoded frame.
+ * @returns resolved once the frame is accepted for flushing.
+ */
+function writeAndWait(socket: TLSSocket, frame: Buffer): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let settled = false
+    // One settlement serves both events: 'error' passes the failure through,
+    // 'close' rejects without one, and the write callback is the only path
+    // that removes the listeners from a socket that stays alive.
+    const onDrop = (error?: Error): void => {
+      if (settled) return
+      settled = true
+      socket.off('close', onClose)
+      reject(new ChannelClosedError(error))
+    }
+    const onClose = (): void => { onDrop() }
+    socket.on('error', onDrop)
+    socket.on('close', onClose)
+    try {
+      socket.write(frame, error => {
+        if (settled) return
+        settled = true
+        socket.off('error', onDrop)
+        socket.off('close', onDrop)
+        if (error !== null && error !== undefined) reject(new ChannelClosedError(error))
+        else resolve()
+      })
+    } catch (error) {
+      /* v8 ignore start -- a destroyed socket reports its drop through the write
+         callback and the error/close events; no real socket throws out of write. */
+      if (settled) return
+      settled = true
+      socket.off('error', onDrop)
+      socket.off('close', onClose)
+      reject(new ChannelClosedError(error instanceof Error ? error : new FrameError(String(error))))
+      /* v8 ignore stop */
+    }
+  })
 }
 
 /**
