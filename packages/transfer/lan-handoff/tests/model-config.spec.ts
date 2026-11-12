@@ -3,7 +3,7 @@
  * settings and credential seams: validation, ordering, and every refusal.
  */
 
-import { Context } from '@deepseek-ai/cordis'
+import { Context, Service } from '@deepseek-ai/cordis'
 import { expect, it } from 'vitest'
 import {
   applyModelConfigDocuments,
@@ -187,3 +187,59 @@ it('reports the reference whose credential write was refused', async () => {
     await ctx.fiber.dispose()
   }
 })
+
+it('applies settings through the service map when the seam comes from a sibling plugin', async () => {
+  // The shipped composition mounts the settings service and this package as
+  // separate plugin entries. Reading `ctx.settings` from a context that does
+  // not inject the name makes the context proxy throw "cannot get property
+  // settings without inject"; the seam has to resolve through `ctx.get`, which
+  // is how every other optional service in this package is read.
+  const root = new Context()
+  try {
+    await root.plugin(SettingsProvider)
+    const received: { ns: string; patch: object }[] = []
+    await root.plugin(RecordingConsumer, {
+      documents: [documentOf({
+        version: 1,
+        settings: { 'llm-pi-ai': { apiKeyEnv: 'XIAOMI_API_KEY' } },
+        credentials: {},
+      })],
+      received,
+    })
+    expect(received).toEqual([{ ns: 'llm-pi-ai', patch: { apiKeyEnv: 'XIAOMI_API_KEY' } }])
+  } finally {
+    await root.fiber.dispose()
+  }
+})
+
+/** Sibling entry that provides the settings service, as the shipped profile does. */
+class SettingsProvider extends Service {
+  static inject: string[] = []
+  constructor(ctx: Context) {
+    super(ctx, 'settings')
+  }
+
+  /** Record nothing; the consumer asserts only that the seam resolved. */
+  async update(_ns: string, _patch: object): Promise<void> {}
+}
+
+/** Sibling entry that runs the config application from its own fiber context. */
+class RecordingConsumer extends Service {
+  static inject: string[] = []
+  constructor(ctx: Context, private readonly options: { documents: { name: string; bytes: Uint8Array }[]; received: { ns: string; patch: object }[] }) {
+    super(ctx, 'recordingConsumer')
+    void this.run()
+  }
+
+  private async run(): Promise<void> {
+    const settings = this.ctx.get('settings') as { update(ns: string, patch: object): Promise<void> } | undefined
+    if (settings === undefined) throw new Error('the consumer resolved no settings service')
+    const update = settings.update.bind(settings)
+    settings.update = async (ns, patch) => {
+      this.options.received.push({ ns, patch })
+      await update(ns, patch)
+    }
+    await applyModelConfigDocuments(this.ctx, this.options.documents)
+  }
+}
+

@@ -1471,7 +1471,10 @@ export async function applyModelConfigDocuments(
       throw new HandoffReceiveError('config', `unknown handoff config document "${document.name}"`)
     }
     const parsed = parseModelConfigDocument(document.bytes)
-    const settings = Reflect.get(ctx, 'settings') as ModelSettingsWrite | undefined
+    // Resolve through `get`, not `Reflect.get`: the context proxy throws for a
+    // service name the fiber does not inject, so an optional seam has to be
+    // looked up the same way every other optional service in this package is.
+    const settings = ctx.get('settings') as ModelSettingsWrite | undefined
     if (settings === undefined) {
       throw new HandoffReceiveError('config', 'this device has no settings service; the received model configuration cannot be applied')
     }
@@ -1484,7 +1487,7 @@ export async function applyModelConfigDocuments(
       }
     }
     if (Object.keys(parsed.credentials).length === 0) continue
-    const credentials = Reflect.get(ctx, 'credentials') as ModelCredentialWrite | undefined
+    const credentials = ctx.get('credentials') as ModelCredentialWrite | undefined
     if (credentials === undefined) {
       throw new HandoffReceiveError('config', 'this device has no credential store; the received model keys cannot be applied')
     }
