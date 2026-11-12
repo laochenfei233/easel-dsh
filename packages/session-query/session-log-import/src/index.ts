@@ -3,6 +3,10 @@
  * exported session archive into the mounted persistence and attachment
  * stores, remapping every session's work directory to the importing device.
  *
+ * When the listing projection cache is mounted, each materialized session is
+ * folded into it once, so the Session list serves the recorded title without
+ * waiting for the session's first open.
+ *
  * The import is two-phase and fail-loud: every log is parsed, validated, and
  * checked for id collisions before the first write; attachments are deposited
  * before sessions, so a failed import leaves at most unreachable
@@ -16,10 +20,12 @@ import { Context, Service } from '@deepseek-ai/cordis'
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import {
   SessionLogOffset,
+  type SessionEvent,
   type SessionHeader,
   type SessionId,
 } from '@deepseek-ai/dsh-session'
 import type { SessionPersistence } from '@deepseek-ai/dsh-session-persistence'
+import type {} from '@deepseek-ai/dsh-session-projection-cache'
 import { readSessionArchive, type ArchiveContents } from './archive-read.ts'
 import { remapSessionEvent, type SessionPathRemap } from './path-remap.ts'
 import { parseSessionLog, type ParsedSessionLog } from './parse-log.ts'
@@ -214,12 +220,41 @@ export class SessionLogImporter extends Service {
       ...options.signal === undefined ? {} : { signal: options.signal },
     }
     const handle = await persistence.create(header, createOptions)
+    let stored: ImportedSession
     try {
       await handle.append(events, options.signal === undefined ? undefined : { signal: options.signal })
       await handle.flush(options.signal === undefined ? undefined : { signal: options.signal })
-      return { id: handle.header.id, header: handle.header }
+      stored = { id: handle.header.id, header: handle.header }
     } finally {
       await handle.close()
+    }
+    this.seedProjections(stored.header, events, log.inheritedEventCount)
+    return stored
+  }
+
+  /**
+   * Fold one materialized log into the listing projection cache.
+   *
+   * A cold Session row is served from that cache alone, so without this seed an
+   * imported conversation lists as untitled until its first open. The fold is
+   * derived data: a failure leaves the stored log authoritative and readable.
+   * @param header - the header as stored on this device.
+   * @param events - the events written for that header, in seq order.
+   * @param inheritedEventCount - fork-inherited prefix length for a seeded session.
+   */
+  private seedProjections(
+    header: SessionHeader,
+    events: readonly SessionEvent[],
+    inheritedEventCount: number | undefined,
+  ): void {
+    const cache = this.host.get('sessionProjectionCache')
+    if (cache === undefined) return
+    try {
+      cache.coldSnapshot(header, SessionLogOffset(inheritedEventCount ?? 0), events)
+    } catch (error: unknown) {
+      this.host.logger.warn(
+        `session log import: projection seed for "${header.id}" failed; the session stays readable and lists untitled until opened: ${String(error)}`,
+      )
     }
   }
 }

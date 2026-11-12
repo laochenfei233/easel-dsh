@@ -4,16 +4,18 @@
  * tampered-id refusal.
  */
 
-import { Context } from '@deepseek-ai/cordis'
+import { Context, Service } from '@deepseek-ai/cordis'
 import { AttachmentId, type FileAttachmentRef } from '@deepseek-ai/dsh-attachment'
 import { LocalAttachmentStore } from '@deepseek-ai/dsh-attachment-local'
 import { createHash } from 'node:crypto'
 import {
   SessionLogOffset,
+  SessionSeq,
   type SessionEvent,
   type SessionHeader,
   type SessionId,
 } from '@deepseek-ai/dsh-session'
+import type { ProjectionSnapshot } from '@deepseek-ai/dsh-session-projection'
 import {
   SessionAlreadyExistsError,
   SessionPersistence,
@@ -130,6 +132,25 @@ class MemoryHandle implements SessionHandle {
 
   async [Symbol.asyncDispose](): Promise<void> {
     await this.close()
+  }
+}
+
+/** Recording stand-in for the listing projection cache service. */
+class RecordingProjectionCache extends Service {
+  readonly seeds: Array<{
+    readonly header: SessionHeader
+    readonly inherited: SessionLogOffset
+    readonly events: readonly SessionEvent[]
+  }> = []
+
+  constructor(ctx: Context, private readonly failure?: Error) {
+    super(ctx, 'sessionProjectionCache')
+  }
+
+  coldSnapshot(header: SessionHeader, inherited: SessionLogOffset, events: readonly SessionEvent[]): ProjectionSnapshot {
+    this.seeds.push({ header, inherited, events })
+    if (this.failure !== undefined) throw this.failure
+    return { asOfSeq: SessionSeq(-1), values: {} }
   }
 }
 
@@ -271,6 +292,55 @@ it('imports a root plus a seeded subagent, remaps cwd, and restores attachments'
     const chunks: Uint8Array[] = []
     for await (const chunk of context.receiver.readFileStream(fileRef)) chunks.push(chunk)
     expect(Buffer.concat(chunks)).toEqual(Buffer.from(fileBytes))
+  } finally {
+    await teardown(context)
+  }
+})
+
+it('seeds the listing projection cache for the root and every seeded descendant', async () => {
+  const context = await harness()
+  const cache = new RecordingProjectionCache(context.hostCtx)
+  try {
+    const archive = zipSync({
+      'session.v4.jsonl': encoder.encode(logText(headerLine({ cwd: 'C:\\old\\project' }), eventLine(0))),
+      'subagents/child/session.v4.jsonl': encoder.encode(logText(
+        headerLine({
+          id: 'session-child',
+          parentSession: 'session-a',
+          cwd: 'C:\\old\\project',
+          isSeeded: true,
+          delegationDepth: 1,
+        }),
+        eventLine(0),
+        seedMarkerLine(1),
+      )),
+    }, { level: 0 })
+
+    await context.importer.importArchive(archive, { targetCwd: '/Users/me/project' })
+
+    expect(cache.seeds.map(seed => seed.header.id)).toEqual(['session-a', 'session-child'])
+    expect(cache.seeds[0]?.header.cwd).toBe('/Users/me/project')
+    expect(cache.seeds[0]?.events.map(event => event.seq)).toEqual([0])
+    expect(cache.seeds[1]?.header.cwd).toBe('/Users/me/project')
+    expect(cache.seeds[1]?.inherited).toBe(SessionLogOffset(1))
+    expect(cache.seeds[1]?.events.map(event => event.seq)).toEqual([0, 1])
+  } finally {
+    await teardown(context)
+  }
+})
+
+it('keeps the import successful when the projection cache seed fails', async () => {
+  const context = await harness()
+  new RecordingProjectionCache(context.hostCtx, new Error('cache unavailable'))
+  try {
+    const archive = zipSync({
+      'session.v4.jsonl': encoder.encode(logText(headerLine(), eventLine(0))),
+    }, { level: 0 })
+
+    const result = await context.importer.importArchive(archive, { targetCwd: '/Users/me/project' })
+
+    expect(result.root.id).toBe('session-a')
+    expect(context.memory.records.get('session-a')?.events.map(event => event.seq)).toEqual([0])
   } finally {
     await teardown(context)
   }
