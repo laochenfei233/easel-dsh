@@ -61,7 +61,7 @@ jobs:
             target: ''
     runs-on: ${{ matrix.platform }}
     permissions:
-      # tauri-action creates the draft Release and uploads installers;
+      # tauri-action creates the published Release and uploads installers;
       # actions:read lets the run's artifact downloads work from the UI.
       contents: write
       actions: read
@@ -213,12 +213,12 @@ jobs:
           tagName: v__VERSION__
           releaseName: 'v__VERSION__'
           releaseBody: ${{ steps.notes.outputs.body }}
-          releaseDraft: true
-          # Alpha builds publish as pre-releases. GitHub's releases/latest
-          # (the updater's fallback endpoint) skips pre-releases, so an
-          # installed client only sees a new build once it is published as a
-          # regular release.
-          prerelease: true
+          releaseDraft: false
+          # Publish as a regular release. Both updater endpoints — GitHub's
+          # releases/latest and the site mirror's sync — skip drafts and
+          # pre-releases, so an installed client only sees this build once the
+          # Release is published as a regular one.
+          prerelease: false
           # macOS installers join the Release unsigned; their updater artifacts
           # are minisign-signed and belong in latest.json so the app window's
           # About page can install updates on macOS.
