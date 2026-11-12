@@ -7,6 +7,7 @@
 import { Context, Service } from '@deepseek-ai/cordis'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { TLSSocket } from 'node:tls'
@@ -37,6 +38,12 @@ import {
 import { loadDeviceIdentity } from '../src/identity.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
 import { loadPairedPeers } from '../src/peers.ts'
+
+/** Write fixture archive bytes to the spool file the service hands over. */
+async function writeFixtureArchive(absolutePath: string, bytes: Uint8Array): Promise<{ readonly size: number; readonly sha256: string }> {
+  await writeFile(absolutePath, bytes)
+  return { size: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') }
+}
 
 const encoder = new TextEncoder()
 const PEER_ID = 'e'.repeat(20)
@@ -399,7 +406,7 @@ it('refuses a session that has no stored log', async () => {
     sessionExport: {
       flush: async () => undefined,
       readLog: async () => undefined,
-      zip: async () => new Uint8Array(),
+      writeArchive: async (_content, _id, absolutePath) => writeFixtureArchive(absolutePath, new Uint8Array()),
     },
   })
   try {
@@ -420,7 +427,7 @@ it('records non-Error send failures in the last outcome', async () => {
     sessionExport: {
       flush: async () => undefined,
       readLog: async () => 'log',
-      zip: async () => {
+      writeArchive: async () => {
         // A non-Error throw must still be readable in the recorded outcome.
         throw 'zip exploded'
       },

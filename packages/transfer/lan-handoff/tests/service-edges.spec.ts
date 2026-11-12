@@ -6,6 +6,7 @@
 import { Context } from '@deepseek-ai/cordis'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { TLSSocket } from 'node:tls'
@@ -27,6 +28,12 @@ import {
 } from '../src/index.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
 import { loadDeviceIdentity } from '../src/identity.ts'
+
+/** Write fixture archive bytes to the spool file the service hands over. */
+async function writeFixtureArchive(absolutePath: string, bytes: Uint8Array): Promise<{ readonly size: number; readonly sha256: string }> {
+  await writeFile(absolutePath, bytes)
+  return { size: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') }
+}
 
 const encoder = new TextEncoder()
 
@@ -182,9 +189,9 @@ it('sends one exported session archive alongside the project files', async () =>
     sessionExport: {
       flush: async (sessionId) => { exported.push(`flush:${String(sessionId)}`) },
       readLog: async sessionId => `log:${String(sessionId)}`,
-      zip: async (content, sessionId) => {
+      writeArchive: async (content, sessionId, absolutePath) => {
         exported.push(`zip:${String(sessionId)}:${content}`)
-        return encoder.encode('PK\u0003\u0004zip')
+        return writeFixtureArchive(absolutePath, encoder.encode('PK\u0003\u0004zip'))
       },
     },
   })
@@ -351,7 +358,7 @@ it('records a receiving-side import failure on the serving device', async () => 
   const alpha = await device({ workspaces: workspaceSeam({ path: projectRoot, title: 'p', sessionIds: [SessionId('s1')] }), sessionExport: {
     flush: async () => undefined,
     readLog: async () => 'log',
-    zip: async () => encoder.encode('PK zip'),
+    writeArchive: async (_content, _id, absolutePath) => writeFixtureArchive(absolutePath, encoder.encode('PK zip')),
   } })
   const beta = await device({
     workspaces: workspaceSeam(),

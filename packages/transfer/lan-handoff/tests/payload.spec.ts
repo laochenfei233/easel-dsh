@@ -6,6 +6,7 @@
 
 import { Context } from '@deepseek-ai/cordis'
 import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { TLSSocket } from 'node:tls'
@@ -32,6 +33,12 @@ import type { DeviceId } from '../src/identity.ts'
 import { loadDeviceIdentity } from '../src/identity.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
 import { attachChannel, type ConnectionChannel } from '../src/pairing.ts'
+
+/** Write fixture archive bytes to the spool file the service hands over. */
+async function writeFixtureArchive(absolutePath: string, bytes: Uint8Array): Promise<{ readonly size: number; readonly sha256: string }> {
+  await writeFile(absolutePath, bytes)
+  return { size: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') }
+}
 
 const encoder = new TextEncoder()
 
@@ -458,7 +465,7 @@ it('refuses a merge bundle that would carry session archives', async () => {
   await expect(bundleFromFiles({
     projectTitle: 'x',
     files: [{ absolutePath: join(root, 'a.txt'), relativePath: 'a.txt' }],
-    sessionArchives: [{ sessionId: 's', archiveName: 's.zip', open: async () => encoder.encode('PK') }],
+    sessionArchives: [{ sessionId: 's', archiveName: 's.zip', writeTo: async (absolutePath) => writeFixtureArchive(absolutePath, encoder.encode('PK')) }],
     mergeIntoExisting: true,
   })).rejects.toMatchObject({ name: 'HandoffPreparationError' })
 })

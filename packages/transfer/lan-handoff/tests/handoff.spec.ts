@@ -8,13 +8,14 @@ import { mkdir, mkdtemp, readdir, readFile, realpath, rm, stat, symlink, utimes,
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import type { TLSSocket } from 'node:tls'
-import { expect, it, vi } from 'vitest'
+import { afterEach, expect, it, vi } from 'vitest'
 import {
   bundleFromFiles,
   cleanupStaleReceipts,
   HandoffPreparationError,
   HandoffReceiveError,
   prepareBundle,
+  preparedEntryReader,
   projectDirectoryName,
   receiveHandoff,
   sendPreparedBundle,
@@ -31,6 +32,12 @@ import { dialLanPeer, startLanListener } from '../src/listener.ts'
 import { attachChannel, type ConnectionChannel } from '../src/pairing.ts'
 
 const encoder = new TextEncoder()
+
+/** Write fixture archive bytes to the spool file the sender hands over. */
+async function writeFixtureArchive(absolutePath: string, bytes: Uint8Array): Promise<{ readonly size: number; readonly sha256: string }> {
+  await writeFile(absolutePath, bytes)
+  return { size: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') }
+}
 
 /** One loopback channel pair and its teardown. */
 interface Loop {
@@ -75,10 +82,12 @@ class RecordingHost implements HandoffImportHost {
   ) {}
 
   async importSessionArchives(
-    archives: readonly Uint8Array[],
+    readers: readonly (() => Promise<Uint8Array>)[],
     targetCwd: string,
     remaps?: readonly HandoffPathRemap[],
   ): Promise<readonly string[]> {
+    const archives: Uint8Array[] = []
+    for (const read of readers) archives.push(await read())
     this.imported.push({ archives, targetCwd, ...remaps === undefined ? {} : { remaps } })
     if (this.failImport) throw new Error('store refused the archive')
     return this.sessionIds
@@ -127,11 +136,19 @@ async function preparedFixture() {
     sessionArchives: [{
       sessionId: 'session-1',
       archiveName: 'dsh-session-session-1.zip',
-      open: async () => SESSION_ZIP,
+      writeTo: async (absolutePath) => writeFixtureArchive(absolutePath, SESSION_ZIP),
     }],
   })
+  if (prepared.spoolDirectory !== undefined) spooled.push(prepared.spoolDirectory)
   return { project, prepared }
 }
+
+/** Spool directories prepared bundles created, removed after each suite run. */
+const spooled: string[] = []
+
+afterEach(async () => {
+  for (const directory of spooled.splice(0)) await rm(directory, { recursive: true, force: true })
+})
 
 /**
  * Stream one prepared bundle without the terminal `done`, then leave the
@@ -195,6 +212,111 @@ it('prepares a manifest whose summary matches its entries', async () => {
   } finally {
     await rm(project.root, { recursive: true, force: true })
   }
+})
+
+it('spools session archives to disk instead of holding their bytes', async () => {
+  const project = await projectFixture()
+  const spoolDirectory = await mkdtemp(join(tmpdir(), 'dsh-handoff-spool-prepared-'))
+  try {
+    const prepared = await prepareBundle({
+      projectPath: project.root,
+      projectTitle: '项目 甲/测试',
+      sessionArchives: [{
+        sessionId: 'session-1',
+        archiveName: 'dsh-session-session-1.zip',
+        writeTo: async (absolutePath) => writeFixtureArchive(absolutePath, SESSION_ZIP),
+      }],
+      spoolDirectory,
+    })
+    const found = prepared.spoolDirectory
+    if (found === undefined) throw new Error('the bundle reports its spool directory')
+    const session = prepared.manifest.entries.find(entry => entry.kind === 'session')
+    if (session === undefined) throw new Error('the bundle carries a session archive')
+    // The source is a path, not bytes: the archive streams from the spool file.
+    expect(prepared.sources.get(`session\u0000${session.path}`)).toEqual({
+      absolutePath: join(found, session.path),
+    })
+    expect(await readFile(join(found, session.path))).toEqual(Buffer.from(SESSION_ZIP))
+  } finally {
+    await rm(project.root, { recursive: true, force: true })
+    await rm(spoolDirectory, { recursive: true, force: true })
+  }
+})
+
+it('refuses an archive name that is not a single path segment', async () => {
+  for (const archiveName of ['../escape.zip', 'sub/dir.zip', 'sub\\dir.zip', '', '..']) {
+    await expect(bundleFromFiles({
+      projectTitle: '逃逸',
+      files: [],
+      sessionArchives: [{ sessionId: 's', archiveName, writeTo: async (absolutePath) => writeFixtureArchive(absolutePath, SESSION_ZIP) }],
+    })).rejects.toBeInstanceOf(HandoffPreparationError)
+  }
+})
+
+it('removes the spool directory it owns when an archive fails to write', async () => {
+  let spooledPath = ''
+  const failure = new Error('spool write failed')
+  await expect(bundleFromFiles({
+    projectTitle: '写失败',
+    files: [],
+    sessionArchives: [{
+      sessionId: 's',
+      archiveName: 'dsh-session-s.zip',
+      writeTo: async (absolutePath) => {
+        spooledPath = absolutePath
+        throw failure
+      },
+    }],
+  })).rejects.toBe(failure)
+  const spoolDirectory = dirname(spooledPath)
+  await expect(stat(spoolDirectory)).rejects.toMatchObject({ code: 'ENOENT' })
+})
+
+it('spools into the directory it is given and reports it back', async () => {
+  const spoolDirectory = await mkdtemp(join(tmpdir(), 'dsh-handoff-spool-test-'))
+  try {
+    const prepared = await bundleFromFiles({
+      projectTitle: '指定目录',
+      files: [],
+      sessionArchives: [{
+        sessionId: 's',
+        archiveName: 'dsh-session-s.zip',
+        writeTo: async (absolutePath) => writeFixtureArchive(absolutePath, SESSION_ZIP),
+      }],
+      spoolDirectory,
+    })
+    expect(prepared.spoolDirectory).toBe(spoolDirectory)
+    expect(await readFile(join(spoolDirectory, 'dsh-session-s.zip'))).toEqual(Buffer.from(SESSION_ZIP))
+    // A directory the caller owns survives a failed write: only the bundle's
+    // own temporary directory is cleaned up behind the failure.
+    await expect(bundleFromFiles({
+      projectTitle: '指定目录写失败',
+      files: [],
+      sessionArchives: [{
+        sessionId: 's2',
+        archiveName: 'dsh-session-s2.zip',
+        writeTo: async () => { throw new Error('spool write failed') },
+      }],
+      spoolDirectory,
+    })).rejects.toThrow(/spool write failed/u)
+    expect((await stat(spoolDirectory)).isDirectory()).toBe(true)
+  } finally {
+    await rm(spoolDirectory, { recursive: true, force: true })
+  }
+})
+
+it('reads inline bytes from a start offset for a resumed entry', async () => {
+  const prepared = await bundleFromFiles({
+    projectTitle: '内联',
+    files: [],
+    sessionArchives: [],
+    configDocuments: [{ name: 'model-config.json', bytes: encoder.encode('{"a":1}') }],
+  })
+  const entry = prepared.manifest.entries[0]
+  if (entry === undefined) throw new Error('the bundle carries a config document')
+  const chunks: Uint8Array[] = []
+  for await (const chunk of preparedEntryReader(prepared)(entry, 5)) chunks.push(chunk)
+  expect(Buffer.concat(chunks).toString('utf8')).toBe('1}')
 })
 
 it('records only the sending-device source roots it knows', async () => {
@@ -292,7 +414,7 @@ it('applies received config documents and source-root remaps before importing', 
       sessionArchives: [{
         sessionId: 'session-1',
         archiveName: 'dsh-session-session-1.zip',
-        open: async () => SESSION_ZIP,
+        writeTo: async (absolutePath) => writeFixtureArchive(absolutePath, SESSION_ZIP),
       }],
       configDocuments: [{ name: 'model-config.json', bytes: encoder.encode(configText) }],
       sourceCwd: project.root,
@@ -417,7 +539,7 @@ it('resumes a retried send from the entries the receiver already staged', async 
     sessionArchives: [{
       sessionId: 'session-1',
       archiveName: 'dsh-session-session-1.zip',
-      open: async () => SESSION_ZIP,
+      writeTo: async (absolutePath) => writeFixtureArchive(absolutePath, SESSION_ZIP),
     }],
   })
   expect(retried.manifest.bundleId).toBe(prepared.manifest.bundleId)

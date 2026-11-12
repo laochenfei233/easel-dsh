@@ -56,6 +56,12 @@ interface FakeSeams {
 }
 
 /** Importer seam reporting one imported session regardless of archive count. */
+/** Write fixture archive bytes to the spool file the service hands over. */
+async function writeFixtureArchive(absolutePath: string, bytes: Uint8Array): Promise<{ readonly size: number; readonly sha256: string }> {
+  await writeFile(absolutePath, bytes)
+  return { size: bytes.byteLength, sha256: createHash('sha256').update(bytes).digest('hex') }
+}
+
 const fakeImporter: HandoffImporter = {
   importArchive: async () => ({ root: { id: 'session-x' }, descendants: [] }),
 }
@@ -209,7 +215,7 @@ it('applies received model configuration and remaps session paths onto the recei
   const sessionExport: HandoffSessionExport = {
     flush: async () => undefined,
     readLog: async () => '{"header":{}}',
-    zip: async () => new Uint8Array([1, 2, 3]),
+    writeArchive: async (_content, _id, absolutePath) => writeFixtureArchive(absolutePath, new Uint8Array([1, 2, 3])),
   }
   const alpha = await device({
     withSeams: true,
@@ -381,7 +387,7 @@ it('projects live receipt progress until the session import settles', async () =
   const sessionExport: HandoffSessionExport = {
     flush: async () => undefined,
     readLog: async () => '{"header":{}}',
-    zip: async () => new Uint8Array([1, 2, 3]),
+    writeArchive: async (_content, _id, absolutePath) => writeFixtureArchive(absolutePath, new Uint8Array([1, 2, 3])),
   }
   const alpha = await device({
     withSeams: true,
@@ -429,7 +435,7 @@ it('reports the receiving device import failure to the sender', async () => {
   const sessionExport: HandoffSessionExport = {
     flush: async () => undefined,
     readLog: async () => '{"header":{}}',
-    zip: async () => new Uint8Array([1, 2, 3]),
+    writeArchive: async (_content, _id, absolutePath) => writeFixtureArchive(absolutePath, new Uint8Array([1, 2, 3])),
   }
   const alpha = await device({
     withSeams: true,
@@ -519,7 +525,7 @@ it('reports a parallel import failure to the sender and publishes nothing', asyn
   const sessionExport: HandoffSessionExport = {
     flush: async () => undefined,
     readLog: async () => '{"header":{}}',
-    zip: async () => new Uint8Array([1, 2, 3]),
+    writeArchive: async (_content, _id, absolutePath) => writeFixtureArchive(absolutePath, new Uint8Array([1, 2, 3])),
   }
   const alpha = await device({
     withSeams: true,

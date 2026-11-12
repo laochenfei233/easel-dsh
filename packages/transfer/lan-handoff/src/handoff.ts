@@ -11,8 +11,9 @@
 
 import { createHash } from 'node:crypto'
 import { createReadStream } from 'node:fs'
-import { copyFile, lstat, mkdir, open, readdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises'
+import { copyFile, lstat, mkdir, mkdtemp, open, readdir, readFile, realpath, rename, rm, stat, writeFile } from 'node:fs/promises'
 import type { Dirent } from 'node:fs'
+import { tmpdir } from 'node:os'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import type { ConnectionChannel } from './pairing.ts'
 import { ChannelClosedError, PairingError } from './pairing.ts'
@@ -137,14 +138,21 @@ export async function walkProjectTree(root: string, signal?: AbortSignal): Promi
   return files
 }
 
-/** One session archive to carry, opened lazily by the sender. */
+/** One session archive to carry, written to a spool file by the sender. */
 export interface SessionArchiveSource {
   /** Session id carried by the archive (for the receiving report only). */
   readonly sessionId: string
-  /** Archive file name on the wire, `dsh-session-<id>.zip`. */
+  /** Archive file name on the wire, `dsh-session-<id>.zip`; a single path segment. */
   readonly archiveName: string
-  /** Produce the archive bytes. */
-  open(): Promise<Uint8Array>
+  /**
+   * Write the archive into `absolutePath` — which the caller created and owns —
+   * and report what landed, so the manifest describes it without a second read
+   * pass over a potentially attachment-heavy archive.
+   * @param absolutePath - spool file to write.
+   * @param signal - optional cancellation.
+   * @returns the written byte count and its SHA-256.
+   */
+  writeTo(absolutePath: string, signal?: AbortSignal): Promise<{ readonly size: number; readonly sha256: string }>
 }
 
 /** A fully prepared bundle ready to stream. */
@@ -155,11 +163,24 @@ export interface PreparedBundle {
   readonly sources: ReadonlyMap<string, Uint8Array | { readonly absolutePath: string }>
   /** The pre-flight walk result, for reporting. */
   readonly files: readonly ProjectTreeFile[]
+  /** Directory holding spooled session archives; the sender removes it when the transfer ends. */
+  readonly spoolDirectory?: string
 }
 
 /** Key identifying one entry for source lookup. */
 function sourceKey(entry: Pick<BundleEntryRef, 'kind' | 'path'>): string {
   return `${entry.kind}\u0000${entry.path}`
+}
+
+/**
+ * Whether a wire name can serve as one file inside the spool directory.
+ * Archive names arrive from the session store, but they become filesystem
+ * paths here, so a separator or a bare relative segment is refused.
+ * @param name - the candidate archive file name.
+ * @returns true for a single, non-relative path segment.
+ */
+function isSingleSegmentName(name: string): boolean {
+  return name.length > 0 && name !== '.' && name !== '..' && !name.includes('/') && !name.includes('\\') && !name.includes('\u0000')
 }
 
 /** One project file offered to the packing core; digests may arrive pre-computed. */
@@ -228,30 +249,46 @@ export async function bundleFromFiles(options: {
   readonly sourceCwd?: string
   /** Sending device's data root and harness home, so received logs can be remapped. */
   readonly sourceRoots?: { readonly data?: string; readonly home?: string }
+  /** Directory receiving spooled session archives; a fresh temporary one is created when omitted. */
+  readonly spoolDirectory?: string
   /** Quick-push marker carried onto the manifest; bundles must stay session-less. */
   readonly mergeIntoExisting?: boolean
 }): Promise<PreparedBundle> {
   if (options.mergeIntoExisting === true && (options.sessionArchives.length > 0 || (options.configDocuments?.length ?? 0) > 0)) {
     throw new HandoffPreparationError('', 'building a merge bundle', new TypeError('merge bundles carry no session archives or config documents'))
   }
+  // Session archives spool to disk: a session whose log references large
+  // attachments would otherwise sit in memory for the whole send. A caller may
+  // name the directory; otherwise this bundle owns a fresh temporary one and
+  // the transfer removes it when it ends.
+  const ownSpool = options.sessionArchives.length > 0 && options.spoolDirectory === undefined
+  const spoolDirectory = options.spoolDirectory ?? (ownSpool ? await mkdtemp(join(tmpdir(), 'easel-handoff-spool-')) : undefined)
   const sources = new Map<string, Uint8Array | { readonly absolutePath: string }>()
   const entries: BundleEntryRef[] = []
   const walked: ProjectTreeFile[] = []
-  for (const file of options.files) {
-    const identity = file.size !== undefined && file.sha256 !== undefined
-      ? { size: file.size, sha256: file.sha256 }
-      : await hashFile(file.absolutePath, file.relativePath, undefined)
-    const entry: BundleEntryRef = { kind: 'file', path: file.relativePath, size: identity.size, sha256: identity.sha256 }
-    entries.push(entry)
-    walked.push({ relativePath: file.relativePath, absolutePath: file.absolutePath, size: identity.size, sha256: identity.sha256 })
-    sources.set(sourceKey(entry), { absolutePath: file.absolutePath })
-  }
-  for (const archive of options.sessionArchives) {
-    const bytes = await archive.open()
-    const sha256 = createHash('sha256').update(bytes).digest('hex')
-    const entry: BundleEntryRef = { kind: 'session', path: archive.archiveName, size: bytes.byteLength, sha256 }
-    entries.push(entry)
-    sources.set(sourceKey(entry), bytes)
+  try {
+    for (const file of options.files) {
+      const identity = file.size !== undefined && file.sha256 !== undefined
+        ? { size: file.size, sha256: file.sha256 }
+        : await hashFile(file.absolutePath, file.relativePath, undefined)
+      const entry: BundleEntryRef = { kind: 'file', path: file.relativePath, size: identity.size, sha256: identity.sha256 }
+      entries.push(entry)
+      walked.push({ relativePath: file.relativePath, absolutePath: file.absolutePath, size: identity.size, sha256: identity.sha256 })
+      sources.set(sourceKey(entry), { absolutePath: file.absolutePath })
+    }
+    for (const archive of options.sessionArchives) {
+      if (!isSingleSegmentName(archive.archiveName)) {
+        throw new HandoffPreparationError(archive.archiveName, 'spooling a session archive', new TypeError('archive name must be a single path segment'))
+      }
+      const target = join(spoolDirectory as string, archive.archiveName)
+      const identity = await archive.writeTo(target, undefined)
+      const entry: BundleEntryRef = { kind: 'session', path: archive.archiveName, size: identity.size, sha256: identity.sha256 }
+      entries.push(entry)
+      sources.set(sourceKey(entry), { absolutePath: target })
+    }
+  } catch (error) {
+    if (ownSpool) await rm(spoolDirectory as string, { recursive: true, force: true })
+    throw error
   }
   for (const data of options.dataFiles ?? []) {
     if (data.absolutePath === undefined && data.bytes === undefined) {
@@ -297,12 +334,17 @@ export async function bundleFromFiles(options: {
     treeSummary,
     ...options.mergeIntoExisting === true ? { mergeIntoExisting: true } : {},
   }
-  return { manifest, sources, files: walked }
+  return {
+    manifest,
+    sources,
+    files: walked,
+    ...spoolDirectory === undefined ? {} : { spoolDirectory },
+  }
 }
 
 /**
  * Build one bundle manifest from a project tree and session archives.
- * @param options - project directory, title, and lazy session archives.
+ * @param options - project directory, title, session archives, and their spool directory.
  * @returns the prepared bundle.
  * @throws {HandoffPreparationError} when the project tree is unreadable.
  */
@@ -310,6 +352,7 @@ export async function prepareBundle(options: {
   readonly projectPath: string
   readonly projectTitle: string
   readonly sessionArchives: readonly SessionArchiveSource[]
+  readonly spoolDirectory?: string
   readonly signal?: AbortSignal
 }): Promise<PreparedBundle> {
   const files = await walkProjectTree(options.projectPath, options.signal)
@@ -318,6 +361,7 @@ export async function prepareBundle(options: {
     files,
     sessionArchives: options.sessionArchives,
     sourceCwd: options.projectPath,
+    ...options.spoolDirectory === undefined ? {} : { spoolDirectory: options.spoolDirectory },
   })
 }
 
@@ -400,7 +444,8 @@ export interface ReceivedConfigDocument {
 export interface HandoffImportHost {
   /**
    * Import every archive into the local stores.
-   * @param archives - session archives in manifest order.
+   * @param archives - one lazy reader per session archive, in manifest order;
+   * reading one at a time keeps only the archive being imported in memory.
    * @param targetCwd - the receiving project directory, already in place.
    * @param remaps - sending-device roots and their receiving-device counterparts;
    * absolute paths inside the logs are rewritten onto this device before the
@@ -408,7 +453,7 @@ export interface HandoffImportHost {
    * @returns imported session ids in archive order.
    */
   importSessionArchives(
-    archives: readonly Uint8Array[],
+    archives: readonly (() => Promise<Uint8Array>)[],
     targetCwd: string,
     remaps: readonly HandoffPathRemap[],
   ): Promise<readonly string[]>
@@ -1252,12 +1297,15 @@ async function completeReceipt(
   // no project behind, so the sender can fix it and retry the whole bundle.
   await applyConfigDocuments(staging, manifest, host)
   context.onPhase?.('importing')
-  const archives: Uint8Array[] = []
-  for (const entry of manifest.entries) {
-    if (entry.kind !== 'session') continue
-    const path = stagedPathOf(staging.sessionRoot, entry)
-    archives.push(new Uint8Array(await readFileBytes(path)))
-  }
+  // One lazy reader per archive: the import reads each staged file when its
+  // turn comes, so a bundle of attachment-heavy sessions never holds more than
+  // the archive currently being imported.
+  const archives = manifest.entries
+    .filter(entry => entry.kind === 'session')
+    .map(entry => async (): Promise<Uint8Array> => {
+      const path = stagedPathOf(staging.sessionRoot, entry)
+      return new Uint8Array(await readFileBytes(path))
+    })
   await rename(staging.projectRoot, finalPath)
   // The project directory exists now, so its real path is authoritative: the
   // workspace registry registers projects by real path, and imported sessions

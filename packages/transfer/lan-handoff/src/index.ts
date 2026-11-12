@@ -9,7 +9,8 @@
  * @module @easel-dsh/easel-air-transfer
  */
 
-import { randomBytes } from 'node:crypto'
+import { randomBytes, createHash } from 'node:crypto'
+import { open, rm } from 'node:fs/promises'
 import { hostname, networkInterfaces } from 'node:os'
 import { join, resolve } from 'node:path'
 import type { TLSSocket } from 'node:tls'
@@ -360,8 +361,23 @@ export interface HandoffSessionExport {
   flush(sessionId: SessionId, signal: AbortSignal | undefined): Promise<void>
   /** Read one canonical session log. */
   readLog(sessionId: SessionId, signal: AbortSignal | undefined): Promise<string | undefined>
-  /** Pack one session log into an exported ZIP. */
-  zip(content: string, sessionId: SessionId, signal: AbortSignal | undefined): Promise<Uint8Array>
+  /**
+   * Stream one session's exported ZIP into `absolutePath`, which the caller
+   * created, and report its byte count and digest. Writing to a file instead of
+   * returning bytes keeps an attachment-heavy archive out of the sender's
+   * memory for the whole transfer.
+   * @param content - the session log text to pack.
+   * @param sessionId - the session the archive describes.
+   * @param absolutePath - spool file to write.
+   * @param signal - optional cancellation.
+   * @returns the written byte count and its SHA-256.
+   */
+  writeArchive(
+    content: string,
+    sessionId: SessionId,
+    absolutePath: string,
+    signal: AbortSignal | undefined,
+  ): Promise<{ readonly size: number; readonly sha256: string }>
 }
 
 /** Composition-time overrides for the peer service (loopback/test seams). */
@@ -799,7 +815,7 @@ export class LanHandoffService extends Service {
         archives.push({
           sessionId: String(sessionId),
           archiveName: sessionArchiveName(String(sessionId)),
-          open: () => exportSeam.zip(content, sessionId, options?.signal),
+          writeTo: (absolutePath, signal) => exportSeam.writeArchive(content, sessionId, absolutePath, signal),
         })
       }
     }
@@ -877,11 +893,26 @@ export class LanHandoffService extends Service {
    * @returns which entries were streamed and which the peer already held.
    */
   private async sendToPeer(peerId: string, prepared: PreparedBundle, signal?: AbortSignal): Promise<SentBundle> {
-    return sendWithResends(
-      () => this.streamToPeer(peerId, prepared, signal),
-      this.sendRetryAttempts,
-      signal,
-    )
+    try {
+      return await sendWithResends(
+        () => this.streamToPeer(peerId, prepared, signal),
+        this.sendRetryAttempts,
+        signal,
+      )
+    } finally {
+      if (prepared.spoolDirectory !== undefined) {
+        try {
+          await rm(prepared.spoolDirectory, { recursive: true, force: true })
+        } catch (error) {
+          /* v8 ignore start -- releasing a temporary directory fails only under
+             a concurrent delete or a locked file, which the suite cannot force */
+          // A spool directory the OS holds open costs disk only until the
+          // temporary directory is swept; it must not fail a finished send.
+          this.ctx.logger?.warn?.(`lan handoff: removing the spool directory failed (${error instanceof Error ? error.message : String(error)})`)
+          /* v8 ignore stop */
+        }
+      }
+    }
   }
 
   /**
@@ -995,7 +1026,7 @@ export class LanHandoffService extends Service {
       /* v8 ignore start -- the real service composition runs only in the shipped profile; unit suites inject the sessionExport seam */
       flush: (sessionId, signal) => flushLiveSessionLog({ sessions: this.ctx.get('sessions') }, sessionId, signal),
       readLog: (sessionId, signal) => readSessionLogText(persistence, sessionId, signal),
-      zip: (content, sessionId, signal) => collectZip(exportDeps, content, sessionId, signal),
+      writeArchive: (content, sessionId, absolutePath, signal) => spoolZip(exportDeps, content, sessionId, absolutePath, signal),
       /* v8 ignore stop */
     }
   }
@@ -1178,13 +1209,15 @@ export class LanHandoffService extends Service {
     if (importer === undefined) throw new Error('lan handoff requires the sessionLogImporter service to receive projects')
     const host = {
       importSessionArchives: async (
-        archives: readonly Uint8Array[],
+        archives: readonly (() => Promise<Uint8Array>)[],
         targetCwd: string,
         remaps: readonly HandoffPathRemap[],
       ): Promise<readonly string[]> => {
         const ids: string[] = []
-        for (const archive of archives) {
-          const result = await importer.importArchive(archive, { targetCwd, pathRemaps: remaps })
+        // Read and import one archive at a time: the staged files stay on disk
+        // between iterations, so only the archive in flight is held in memory.
+        for (const read of archives) {
+          const result = await importer.importArchive(await read(), { targetCwd, pathRemaps: remaps })
           ids.push(String(result.root.id), ...result.descendants.map(descendant => String(descendant.id)))
         }
         return ids
@@ -1342,7 +1375,12 @@ interface SessionServiceSeams {
   readonly sessionExport: HandoffSessionExport | undefined
   flush(sessionId: SessionId, signal: AbortSignal | undefined): Promise<void>
   readLog(sessionId: SessionId, signal: AbortSignal | undefined): Promise<string | undefined>
-  zip(content: string, sessionId: SessionId, signal: AbortSignal | undefined): Promise<Uint8Array>
+  writeArchive(
+    content: string,
+    sessionId: SessionId,
+    absolutePath: string,
+    signal: AbortSignal | undefined,
+  ): Promise<{ readonly size: number; readonly sha256: string }>
 }
 
 /** Wire name of one session archive inside a bundle. */
@@ -1462,13 +1500,22 @@ export async function applyModelConfigDocuments(
 }
 
 /* v8 ignore start -- the exporter ZIP stream runs only through the real service composition */
-/** Drain one exporter ZIP stream into memory. */
-async function collectZip(
+/**
+ * Stream one exporter ZIP into a spool file, hashing as it goes.
+ * @param deps - session export services.
+ * @param content - the session log text to pack.
+ * @param sessionId - the session the archive describes.
+ * @param absolutePath - spool file to write.
+ * @param signal - optional cancellation.
+ * @returns the written byte count and its SHA-256.
+ */
+async function spoolZip(
   deps: SessionLogExportReady,
   content: string,
   sessionId: SessionId,
+  absolutePath: string,
   signal: AbortSignal | undefined,
-): Promise<Uint8Array> {
+): Promise<{ readonly size: number; readonly sha256: string }> {
   const stream = streamSessionLogZip(
     deps,
     content,
@@ -1477,14 +1524,22 @@ async function collectZip(
     DEFAULT_SESSION_LOG_COMPRESSION_LEVEL,
     signal ?? new AbortController().signal,
   )
-  const chunks: Buffer[] = []
-  const reader = stream.getReader()
-  for (;;) {
-    const { done, value } = await reader.read()
-    if (done) break
-    chunks.push(Buffer.from(value))
+  const handle = await open(absolutePath, 'w')
+  const hash = createHash('sha256')
+  let size = 0
+  try {
+    const reader = stream.getReader()
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      hash.update(value)
+      size += value.byteLength
+      await handle.write(value)
+    }
+  } finally {
+    await handle.close()
   }
-  return Buffer.concat(chunks)
+  return { size, sha256: hash.digest('hex') }
 }
 
 /* v8 ignore stop */
