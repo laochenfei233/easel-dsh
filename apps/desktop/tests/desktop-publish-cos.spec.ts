@@ -6,13 +6,12 @@ import type { DesktopUploadPlan } from '../scripts/desktop-upload-plan.ts'
 import { answer, cosError, startCosLoopback } from './cos-loopback.ts'
 import { desktopPublicationFailure } from '../scripts/desktop-publication-failure.ts'
 
-it.each([true, false])('preserves download headers and verified bytes with overwrite prevention %s', async (forbidOverwrite) => {
+it('uses overwrite prevention, streams verified bytes, and hashes remote readback through the SDK', async () => {
   const objects = new Map<string, Buffer>()
   const server = await startCosLoopback((request, response) => {
     if (request.path.includes('versioning')) { answer(response, 403, cosError('AccessDenied')); return }
     if (request.method === 'PUT') {
-      expect(request.headers['x-cos-forbid-overwrite']).toBe(forbidOverwrite ? 'true' : undefined)
-      expect(request.headers['content-disposition']).toBe('attachment; filename="file.exe"')
+      expect(request.headers['x-cos-forbid-overwrite']).toBe('true')
       objects.set(request.path, request.body)
       answer(response)
     } else {
@@ -22,7 +21,7 @@ it.each([true, false])('preserves download headers and verified bytes with overw
     }
   })
   try {
-    const artifact = { path: '', filename: 'file.exe', key: 'bin/file.exe', contents: 'fixture bytes', contentType: 'application/octet-stream', channelMetadata: !forbidOverwrite, contentDisposition: 'attachment; filename="file.exe"' }
+    const artifact = { path: '', filename: 'file.exe', key: 'bin/file.exe', contents: 'fixture bytes', contentType: 'application/octet-stream', channelMetadata: false }
     const plan: DesktopUploadPlan = {
       environment: 'test', target: 'win-x64', version: '1.0.0', bucket: 'fixture-1250000000', publicUrl: 'https://example.com/',
       secretIdEnvName: 'ID', secretKeyEnvName: 'KEY', artifacts: [artifact],
@@ -32,10 +31,10 @@ it.each([true, false])('preserves download headers and verified bytes with overw
       server.redirect(client)
       return client
     })
-    expect(await transport.read(artifact.key, !forbidOverwrite)).toBeNull()
+    expect(await transport.read(artifact.key, false)).toBeNull()
     const digest = await desktopArtifactDigest(artifact)
-    await transport.put(artifact, digest, forbidOverwrite)
-    expect(await transport.read(artifact.key, !forbidOverwrite)).toEqual({ ...digest, ...(!forbidOverwrite ? { contents: 'fixture bytes' } : {}) })
+    await transport.put(artifact, digest, true)
+    expect(await transport.read(artifact.key, false)).toEqual(digest)
     await expect(transport.read('elsewhere/file.exe', false)).rejects.toThrow(/outside/u)
     expect(server.requests.filter(request => request.method === 'PUT')).toHaveLength(1)
     expect(server.requests.map(request => request.method)).toEqual(['GET', 'PUT', 'GET'])

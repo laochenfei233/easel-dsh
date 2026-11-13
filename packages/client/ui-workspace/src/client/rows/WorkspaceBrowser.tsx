@@ -39,8 +39,8 @@ import {
 } from '../tree.ts'
 import { ProjectRowItem, SearchResultItem, SessionNodeItem } from './Rows.tsx'
 import { FLAT_SESSION_ORDER_KEY, type SessionGroupBy } from '../stores.ts'
-import { getWorkspaceUIMode } from '../easel-mode.ts'
 import { WorkspacePickFlow } from '../WorkspacePicker.tsx'
+import { getWorkspaceUIMode } from '../easel-mode.ts'
 import css from './WorkspaceBrowser.module.css'
 
 /**

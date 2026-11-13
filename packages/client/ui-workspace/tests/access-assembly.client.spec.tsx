@@ -8,11 +8,6 @@
  * are the renderer's bindings over one non-owner snapshot.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-// EASEL-DIVERGENCE(easel-single-workspace D2/D4): this suite exercises the
-// upstream multi-workspace surface; the Easel single-mode default is off here.
-// Module level: the workspace view store singleton initializes at import.
-import { setWorkspaceUIMode } from '../src/client/easel-mode.ts'
-setWorkspaceUIMode('full')
 import { act, cleanup, screen } from '@testing-library/react'
 import type { TypertResourceKind } from '@deepseek-ai/dsh-api-remote-access/client'
 import { ClientAccessState } from '@deepseek-ai/dsh-api-remote-access/src/client/state.ts'

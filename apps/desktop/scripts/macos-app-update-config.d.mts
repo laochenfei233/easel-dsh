@@ -1,14 +1,14 @@
 /** Resolved fields required to embed a macOS updater feed. */
 export interface MacOSAppUpdateFeed {
   readonly publicUrl: string
-  readonly channel?: 'nightly' | 'stable'
+  readonly channel?: 'nightly' | 'latest'
 }
 
 /** Packaged electron-updater configuration for macOS. */
 export interface MacOSAppUpdateConfig {
   readonly provider: 'generic'
   readonly url: string
-  readonly channel: 'nightly' | 'stable'
+  readonly channel: 'nightly' | 'latest'
   readonly updaterCacheDirName: string
 }
 

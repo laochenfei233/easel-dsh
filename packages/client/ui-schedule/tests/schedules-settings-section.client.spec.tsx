@@ -26,6 +26,7 @@ function view(overrides: Partial<SchedulesSettingsSectionProps> = {}): Schedules
     useWorkspaceAccess: unusedHook,
     useWorkspaces: unusedHook,
     useResource: unusedHook,
+    useContextMenu: unusedHook,
     t: makeTranslate(en),
     ...overrides,
   }

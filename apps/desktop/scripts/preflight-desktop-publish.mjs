@@ -27,7 +27,7 @@ export function preflightDesktopPublish(repository, inputs, api) {
     throw new Error('desktop publish: GitHub returned invalid artifact metadata')
   }
   for (const { name } of pages.flatMap(page => page.artifacts)) {
-    if (!name.replace(/\.zip$/u, '').endsWith(`-${inputs.package_run_id}-${attempt}`)) continue
+    if (!name.endsWith(`-${inputs.package_run_id}-${attempt}`)) continue
     const qualification = name.startsWith('windows-x64-unsigned-') ? 'unsigned'
       : name.startsWith('macos-arm64-unnotarized-debug-') ? 'unnotarized' : ''
     const diagnostic = desktopPublishQualificationError(qualification)
