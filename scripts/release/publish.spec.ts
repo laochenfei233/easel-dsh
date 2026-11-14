@@ -310,3 +310,5 @@ describe('release publication channels', () => {
     expect(attemptEchoed).not.toHaveBeenCalled()
   })
 })
+// EASEL-DIVERGENCE: upstream's helper-source verification test has no referent
+// in the fork (no CUA helper payload ships).

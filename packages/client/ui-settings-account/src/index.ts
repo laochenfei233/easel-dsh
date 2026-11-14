@@ -2,11 +2,11 @@
 import type { Context, Volatile } from '@deepseek-ai/cordis'
 import type {} from '@deepseek-ai/dsh-host-webserver'
 import type {} from '@deepseek-ai/dsh-settings'
-import { type NoticeConfig, NoticeConfigFields, NOTICE_CONFIG_GLOBAL } from './notice-config.ts'
+import { type ContactConfig, ContactConfigFields, CONTACT_CONFIG_GLOBAL } from './contact-config.ts'
 import z from '@deepseek-ai/schemastery'
 import { OnboardingSettingsFields, type OnboardingStep, type OnboardingPurpose, type OnboardingProcess } from './onboarding-settings.ts'
-/** Public bonus-notice options and live device-local onboarding progress. */
-export interface Config extends NoticeConfig {
+/** Public contact options and live device-local onboarding progress. */
+export interface Config extends ContactConfig {
   /** Onboarding progress format version. */
   version: Volatile<1>
   /** Last accepted onboarding page. */
@@ -25,8 +25,8 @@ export interface Config extends NoticeConfig {
 
 /** Configuration projected through the account plugin's shared form. */
 export const Config = z.object({
-  bonusAckRetryDelayMs: NoticeConfigFields.bonusAckRetryDelayMs,
-  bonusAckRetryMaxDelayMs: NoticeConfigFields.bonusAckRetryMaxDelayMs,
+  contactFormUrl: ContactConfigFields.contactFormUrl,
+  contactSource: ContactConfigFields.contactSource,
   version: OnboardingSettingsFields.version.volatile(),
   step: OnboardingSettingsFields.step.volatile(),
   purpose: OnboardingSettingsFields.purpose.volatile(),
@@ -37,7 +37,7 @@ export const Config = z.object({
 })
 
 /**
- * Publish public bonus-notice options before browser plugins activate.
+ * Publish public questionnaire options before browser plugins activate.
  * @param ctx - Host context collecting page initialization data.
  * @param config - validated deployment options.
  */
@@ -46,8 +46,8 @@ export function apply(ctx: Context, config: Config): void {
     scope.effect(() => scope.settings.configure({ auto: false }, ctx.fiber))
   })
   ctx.on('webserver/index-inject', (table) => {
-    table.push({ kind: 'global', name: NOTICE_CONFIG_GLOBAL, value: {
-      bonusAckRetryDelayMs: config.bonusAckRetryDelayMs, bonusAckRetryMaxDelayMs: config.bonusAckRetryMaxDelayMs,
-    } satisfies NoticeConfig })
+    table.push({ kind: 'global', name: CONTACT_CONFIG_GLOBAL, value: {
+      contactFormUrl: config.contactFormUrl, contactSource: config.contactSource,
+    } satisfies ContactConfig })
   })
 }

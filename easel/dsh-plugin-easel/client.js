@@ -4860,13 +4860,13 @@ var LITERAL_TEXT_ELEMENT_NAMES = [
   "noscript"
 ];
 var LITERAL_TEXT_ELEMENTS = freeze(addToSet({}, LITERAL_TEXT_ELEMENT_NAMES));
-var LITERAL_TEXT_CLOSE = function() {
+var LITERAL_TEXT_CLOSE = (function() {
   const map = {};
   arrayForEach(LITERAL_TEXT_ELEMENT_NAMES, (name) => {
     map[name] = seal(new RegExp("</" + name + "(?=[\\t\\n\\f\\r />])", "i"));
   });
   return freeze(map);
-}();
+})();
 var getGlobal = function getGlobal2() {
   return typeof window === "undefined" ? null : window;
 };
@@ -13969,6 +13969,9 @@ function acceptPairing(id) {
 function rejectPairing(id) {
   return request3(`/api/handoff/pair/${encodeURIComponent(id)}/reject`, { method: "POST" });
 }
+function forgetPeer(id) {
+  return request3(`/api/handoff/paired/${encodeURIComponent(id)}/forget`, { method: "POST" });
+}
 function sendHandoff(peerId, workspacePath, payload) {
   return request3("/api/handoff/send", {
     method: "POST",
@@ -13990,6 +13993,8 @@ var COPY = {
     paired: "Paired devices",
     pairedBadge: "Paired",
     noPaired: "Nothing paired yet. Pair a nearby device first.",
+    unpair: "Unpair",
+    unpairConfirm: "Unpair this device? It stays visible in Nearby devices and can be paired again; sending to it needs a new pairing.",
     nearby: "Nearby devices",
     noNearby: "No devices found. Keep both apps open on the same network, then refresh.",
     pair: "Pair",
@@ -14004,8 +14009,8 @@ var COPY = {
     withSessions: "Sessions (agent continuation)",
     withMaterials: "Project materials (\u7D20\u6750/)",
     withLibrary: "Content library (outputs/)",
-    withConfig: "Config (.env / profiles / skills)",
-    configHint: "Contains API keys \u2014 only sent when selected, merged into the receiving device\u2019s own config on arrival.",
+    withConfig: "Config (.env / profiles / skills / models)",
+    configHint: "Contains API keys. Sent only when selected; model providers, the default model, and their keys merge into the receiving device\u2019s own config on arrival.",
     send: "Send",
     sending: "Sending\u2026",
     sent: "Handoff complete.",
@@ -14030,6 +14035,8 @@ var COPY = {
     paired: "\u5DF2\u914D\u5BF9\u8BBE\u5907",
     pairedBadge: "\u5DF2\u914D\u5BF9",
     noPaired: "\u8FD8\u6CA1\u6709\u5DF2\u914D\u5BF9\u7684\u8BBE\u5907\uFF0C\u5148\u5728\u9644\u8FD1\u8BBE\u5907\u91CC\u914D\u5BF9\u3002",
+    unpair: "\u89E3\u9664\u914D\u5BF9",
+    unpairConfirm: "\u89E3\u9664\u4E0E\u8FD9\u53F0\u8BBE\u5907\u7684\u914D\u5BF9\uFF1F\u5B83\u4F1A\u7EE7\u7EED\u51FA\u73B0\u5728\u300C\u9644\u8FD1\u8BBE\u5907\u300D\u91CC\uFF0C\u53EF\u4EE5\u91CD\u65B0\u914D\u5BF9\uFF1B\u518D\u6B21\u4E92\u4F20\u524D\u9700\u8981\u91CD\u65B0\u914D\u5BF9\u3002",
     nearby: "\u9644\u8FD1\u8BBE\u5907",
     noNearby: "\u5C1A\u672A\u53D1\u73B0\u8BBE\u5907\u3002\u8BF7\u8BA9\u4E24\u53F0\u8BBE\u5907\u90FD\u5F00\u7740\u5E94\u7528\u5E76\u5904\u4E8E\u540C\u4E00\u7F51\u7EDC\uFF0C\u7136\u540E\u5237\u65B0\u3002",
     pair: "\u914D\u5BF9",
@@ -14044,8 +14051,8 @@ var COPY = {
     withSessions: "\u4F1A\u8BDD\uFF08agent \u7EED\u4F5C\u4E0A\u4E0B\u6587\uFF09",
     withMaterials: "\u9879\u76EE\u7D20\u6750\uFF08\u7D20\u6750/\uFF09",
     withLibrary: "\u5185\u5BB9\u5E93\uFF08outputs/\uFF09",
-    withConfig: "\u914D\u7F6E\u9879\uFF08.env / \u753B\u50CF / \u6280\u80FD\uFF09",
-    configHint: "\u914D\u7F6E\u9879\u542B API \u5BC6\u94A5\uFF0C\u53EA\u5728\u52FE\u9009\u540E\u968F\u5305\u53D1\u9001\uFF1B\u5230\u8FBE\u540E\u5408\u5E76\u8FDB\u5BF9\u65B9\u672C\u673A\u914D\u7F6E\u3002",
+    withConfig: "\u914D\u7F6E\u9879\uFF08.env / \u753B\u50CF / \u6280\u80FD / \u5927\u6A21\u578B\uFF09",
+    configHint: "\u914D\u7F6E\u9879\u542B API \u5BC6\u94A5\uFF0C\u53EA\u5728\u52FE\u9009\u540E\u968F\u5305\u53D1\u9001\uFF1B\u5230\u8FBE\u540E\u6A21\u578B\u5217\u8868\u3001\u9ED8\u8BA4\u6A21\u578B\u4E0E\u5BC6\u94A5\u4F1A\u5408\u5E76\u8FDB\u5BF9\u65B9\u672C\u673A\u914D\u7F6E\u3002",
     send: "\u53D1\u9001",
     sending: "\u53D1\u9001\u4E2D\u2026",
     sent: "\u4EA4\u63A5\u5B8C\u6210\u3002",
@@ -14470,7 +14477,20 @@ function HandoffSettings({ t }) {
             peer.compatible === false ? " \xB7 \u26A0" : ""
           ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-chip", children: t("pairedBadge") })
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-chip", children: t("pairedBadge") }),
+        /* @__PURE__ */ (0, import_jsx_runtime29.jsx)(
+          "button",
+          {
+            type: "button",
+            className: "ehs-btn ehs-btn-ghost",
+            disabled: busy !== void 0,
+            onClick: () => {
+              if (!window.confirm(t("unpairConfirm"))) return;
+              void run(`forget:${peer.id}`, () => forgetPeer(peer.id));
+            },
+            children: t("unpair")
+          }
+        )
       ] }, peer.id)),
       status.paired.some((peer) => peer.compatible === false) && /* @__PURE__ */ (0, import_jsx_runtime29.jsx)("span", { className: "ehs-hint", children: t("pairedIncompatible") })
     ] }),

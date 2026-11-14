@@ -144,6 +144,7 @@ export const TRANSLATION_SCOPE_GLOB_EXCLUDES = [
   'apps/web/dist/**',
   'apps/desktop-tauri/runtime/**',
   'apps/desktop-tauri/src-tauri/target/**',
+  'apps/cli/docs/**',
   '.artifacts/**',
   'python/sdk-runtime/src/deepseek_harness_runtime/runtime/**',
   'vendor/**',
@@ -158,6 +159,7 @@ function isTranslationSourceExcluded(file: string): boolean {
     || file.startsWith('apps/web/dist/')
     || file.startsWith('apps/desktop-tauri/runtime/')
     || file.startsWith('apps/desktop-tauri/src-tauri/target/')
+    || file.startsWith('apps/cli/docs/')
     || file.startsWith('python/sdk-runtime/src/deepseek_harness_runtime/runtime/')
 }
 

@@ -15,9 +15,11 @@ import { hostname, networkInterfaces } from 'node:os'
 import { join, resolve } from 'node:path'
 import type { TLSSocket } from 'node:tls'
 import { Context, Service } from '@deepseek-ai/cordis'
+import { applyModelConfigDocuments } from './model-config.ts'
 import z from '@deepseek-ai/schemastery'
 import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import { resolveDshHome } from '@deepseek-ai/dsh-home-paths'
+import { sendWithResends } from './resend.ts'
 import { SessionId } from '@deepseek-ai/dsh-session'
 import {
   DEFAULT_SESSION_LOG_COMPRESSION_LEVEL,
@@ -45,9 +47,7 @@ import { loadSavedPort, saveSavedPort } from './port.ts'
 import {
   answerPairing,
   attachChannel,
-  ChannelClosedError,
   dialForPairing,
-  PairingError,
   pairingIdentityOf,
   PAIRING_TIMEOUT_MS,
   type ConnectionChannel,
@@ -58,7 +58,6 @@ import { loadPairedPeers, savePairedPeers, type PairedPeer } from './peers.ts'
 import {
   bundleFromFiles,
   cleanupStaleReceipts,
-  HandoffReceiveError,
   preparedEntryReader,
   receiveHandoff,
   SharedReceipt,
@@ -80,173 +79,21 @@ import {
   receiveOffer,
   sendEntries,
   sendOffer,
-  TransferCompletionError,
   type ReceivedOffer,
 } from './transfer.ts'
 
 /** How long a resend waits before redialing the peer. */
-const SEND_RETRY_DELAY_MS = 2_000
 
-/**
- * Whether one send failure is connection-level, so a resend continues from
- * the receiver's staged bytes instead of repeating a deterministic refusal.
- * @param error - the failure the send loop caught.
- * @returns true for a dropped link, an idle stall, or the receiver reporting
- * a connection-level failure; false for refusals and protocol violations.
+/* The plugin entry re-exports only its Error family: everything else lives in
+ * the submodules (verify-plugin-entry-exports keeps the Loader surface minimal).
  */
-export function resendableFailure(error: unknown): boolean {
-  if (error instanceof ChannelClosedError) return true
-  if (error instanceof PairingError && error.reason === 'timeout') return true
-  if (error instanceof TransferCompletionError) return error.retryable
-  return false
-}
+export { DeviceIdentityCorruptError } from './identity.ts'
+export { ChannelClosedError, PairingError, PairingIncompatibleError, PairingRejectedError } from './pairing.ts'
+export { PairedPeersCorruptError } from './peers.ts'
+export { FrameError } from './frame.ts'
+export { TransferCompletionError, TransferIntegrityError, TransferProtocolError, TransferRejectedError } from './transfer.ts'
+export { HandoffPreparationError, HandoffReceiveError } from './handoff.ts'
 
-/**
- * Run one bundle send with bounded resends: a connection-level failure waits
- * briefly and redials, continuing from the receiver's staged bytes (the
- * content-derived bundle id makes the peer report them). Refusals, protocol
- * violations, and cancelled sends throw immediately.
- * @param attempt - one full send; invoked once per attempt.
- * @param attempts - total attempts, counting the first; `1` disables resending.
- * @param signal - optional cancellation observed between attempts.
- * @param delayMs - pause between attempts; injectable for tests.
- * @returns the successful attempt's result.
- * @throws the final attempt's error when every attempt fails or the failure is not resendable.
- */
-export async function sendWithResends(
-  attempt: () => Promise<SentBundle>,
-  attempts: number,
-  signal?: AbortSignal,
-  delayMs = SEND_RETRY_DELAY_MS,
-): Promise<SentBundle> {
-  for (let attemptNumber = 1; ; attemptNumber += 1) {
-    try {
-      return await attempt()
-    } catch (error) {
-      // A cancelled send surfaces the cancellation, not the transfer failure.
-      if (signal?.aborted === true) throw signal.reason
-      if (attemptNumber >= attempts || !resendableFailure(error)) throw error
-      await new Promise<void>((resolveDelay, rejectDelay) => {
-        const timer = setTimeout(resolveDelay, delayMs)
-        signal?.addEventListener('abort', () => {
-          clearTimeout(timer)
-          rejectDelay(signal.reason)
-        }, { once: true })
-      })
-    }
-  }
-}
-
-export {
-  DeviceIdentityCorruptError,
-  defaultLanHandoffRoot,
-  LAN_HANDOFF_ROOT_NAME,
-  type DeviceId,
-  type DeviceIdentity,
-} from './identity.ts'
-export {
-  advertiseLanHandoff,
-  browseLanHandoff,
-  createBonjourDiscovery,
-  encodeDeviceTxt,
-  isLinkLocalAddress,
-  isLoopbackAddress,
-  LAN_HANDOFF_PROTOCOL_VERSION,
-  LAN_HANDOFF_RESCAN_MS,
-  LAN_HANDOFF_SERVICE_TYPE,
-  lanPlatformOfHost,
-  parseDeviceTxt,
-  parseDiscoveredEntry,
-  protocolRangesOverlap,
-  selectDialAddress,
-  type DeviceTxtDocument,
-  type LanAdvertisement,
-  type LanDiscoveryEntry,
-  type LanDiscoveryHost,
-  type LanPlatform,
-  type LocalIpv4Network,
-  type PeerAdvertisement,
-  type ProtocolVersionRange,
-} from './discovery.ts'
-export { dialLanPeer, startLanListener, type LanListener } from './listener.ts'
-export {
-  answerPairing,
-  attachChannel,
-  ChannelClosedError,
-  dialForPairing,
-  PAIRING_TIMEOUT_MS,
-  PairingError,
-  PairingIncompatibleError,
-  PairingRejectedError,
-  pairingIdentityOf,
-  type ChannelFrame,
-  type ConnectionChannel,
-  type PairingDeviceInfo,
-  type PairingIdentity,
-  type PairingOffer,
-  type PairingPeer,
-} from './pairing.ts'
-export { loadPairedPeers, PairedPeersCorruptError, savePairedPeers, type PairedPeer } from './peers.ts'
-export {
-  createFrameReader,
-  encodeFrame,
-  FRAME_BINARY_MAX_BYTES,
-  FRAME_HEADER_MAX_BYTES,
-  FRAME_UNAUTHENTICATED_HEADER_MAX_BYTES,
-  FrameError,
-  type FrameReader,
-  type WireMessage,
-} from './frame.ts'
-export { deriveSas, deriveSasFromKeys, SAS_LENGTH, spkiOf, type SasMaterial } from './sas.ts'
-export {
-  computeTreeSummary,
-  receiveBundle,
-  sendBundle,
-  TransferCompletionError,
-  TransferIntegrityError,
-  TransferProtocolError,
-  TransferRejectedError,
-  TRANSFER_CHUNK_BYTES,
-  TRANSFER_COMPLETION_TIMEOUT_MS,
-  TRANSFER_PROTOCOL_VERSION,
-  validateBundleManifest,
-  type BundleEntryKind,
-  type BundleEntryReader,
-  type BundleEntryRef,
-  type BundleEntrySink,
-  type BundleManifest,
-  type BundleTreeSummary,
-  type OfferDecision,
-  type ReceivedBundle,
-  type ReceiveBundleHandlers,
-  type SentBundle,
-} from './transfer.ts'
-/* v8 ignore start -- type-only and documentation specifiers carry no executable code; the reported flags are remap drift */
-export {
-  HandoffPreparationError,
-  HandoffReceiveError,
-  bundleFromFiles,
-  cleanupStaleReceipts,
-  mergeEnvText,
-  prepareBundle,
-  projectDirectoryName,
-  receiveHandoff,
-  sendPreparedBundle,
-  walkProjectTree,
-  type BundleFileInput,
-  type ConfigDocumentSource,
-  type DataFileSource,
-  type HandoffImportHost,
-  type HandoffPathRemap,
-  type HandoffReceivePhase,
-  type HandoffReceiveProgress,
-  type PreparedBundle,
-  type ProjectTreeFile,
-  type ReceivedConfigDocument,
-  type ReceivedHandoff,
-  type SessionArchiveSource,
-} from './handoff.ts'
-/* v8 ignore stop */
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
@@ -1386,120 +1233,6 @@ interface SessionServiceSeams {
 /** Wire name of one session archive inside a bundle. */
 function sessionArchiveName(sessionId: string): string {
   return `dsh-session-${sessionId.replace(/[^A-Za-z0-9_-]/gu, '_')}.zip`
-}
-
-/** Document name carrying the model settings and their credential references. */
-export const MODEL_CONFIG_DOCUMENT = 'model-config.json'
-
-/** The settings operations a received config document uses. */
-interface ModelSettingsWrite {
-  update(ns: string, patch: object): Promise<void>
-}
-
-/** The credential operations a received config document uses. */
-interface ModelCredentialWrite {
-  set(ref: string, value: string): Promise<void>
-}
-
-/** One portable model-config document as the sending device assembles it. */
-interface ModelConfigDocument {
-  /** Document layout version; only 1 is accepted. */
-  readonly version: 1
-  /** Settings namespace id → user patch, applied in document order. */
-  readonly settings: Readonly<Record<string, Record<string, unknown>>>
-  /** Credential reference → literal secret. */
-  readonly credentials: Readonly<Record<string, string>>
-}
-
-/**
- * Parse and validate one received model-config document.
- * @param bytes - the document bytes as received and verified.
- * @returns the validated document.
- * @throws {HandoffReceiveError} with code `config` for any structural violation.
- */
-function parseModelConfigDocument(bytes: Uint8Array): ModelConfigDocument {
-  let raw: unknown
-  try {
-    raw = JSON.parse(new TextDecoder().decode(bytes))
-  } catch (error) {
-    throw new HandoffReceiveError('config', 'the received model configuration is not valid JSON', error)
-  }
-  if (typeof raw !== 'object' || raw === null) throw new HandoffReceiveError('config', 'the received model configuration is not an object')
-  const record = raw as Record<string, unknown>
-  if (record['version'] !== 1) throw new HandoffReceiveError('config', `model configuration version ${String(record['version'])} is not supported`)
-  const settings = record['settings']
-  const credentials = record['credentials']
-  if (typeof settings !== 'object' || settings === null || Array.isArray(settings)) {
-    throw new HandoffReceiveError('config', 'the received model configuration carries no settings object')
-  }
-  if (typeof credentials !== 'object' || credentials === null || Array.isArray(credentials)) {
-    throw new HandoffReceiveError('config', 'the received model configuration carries no credentials object')
-  }
-  const patches: Record<string, Record<string, unknown>> = {}
-  for (const [ns, patch] of Object.entries(settings)) {
-    if (typeof patch !== 'object' || patch === null || Array.isArray(patch)) {
-      throw new HandoffReceiveError('config', `model configuration for "${ns}" is not an object`)
-    }
-    patches[ns] = patch as Record<string, unknown>
-  }
-  const secrets: Record<string, string> = {}
-  for (const [ref, value] of Object.entries(credentials)) {
-    if (typeof value !== 'string' || value.length === 0) {
-      throw new HandoffReceiveError('config', `model configuration credential "${ref}" is not a non-empty string`)
-    }
-    secrets[ref] = value
-  }
-  return { version: 1, settings: patches, credentials: secrets }
-}
-
-/**
- * Apply received portable config documents through this device's own
- * configuration seams: settings land in the active profile patch, credentials
- * in the managed credential store, so each file stays in the directory its
- * owner resolves.
- * @param ctx - host context carrying the optional settings and credentials services.
- * @param documents - received documents in manifest order.
- * @throws {HandoffReceiveError} with code `config` for an unknown document, a
- * missing seam, or a refused write.
- */
-export async function applyModelConfigDocuments(
-  ctx: Context,
-  documents: readonly ReceivedConfigDocument[],
-): Promise<void> {
-  for (const document of documents) {
-    if (document.name !== MODEL_CONFIG_DOCUMENT) {
-      throw new HandoffReceiveError('config', `unknown handoff config document "${document.name}"`)
-    }
-    const parsed = parseModelConfigDocument(document.bytes)
-    // Resolve through `get`, not `Reflect.get`: the context proxy throws for a
-    // service name the fiber does not inject, so an optional seam has to be
-    // looked up the same way every other optional service in this package is.
-    const settings = ctx.get('settings') as ModelSettingsWrite | undefined
-    if (settings === undefined) {
-      throw new HandoffReceiveError('config', 'this device has no settings service; the received model configuration cannot be applied')
-    }
-    for (const [ns, patch] of Object.entries(parsed.settings)) {
-      try {
-        await settings.update(ns, patch)
-      } catch (error) {
-        /* v8 ignore next -- settings seams throw Error instances */
-        throw new HandoffReceiveError('config', `applying the received "${ns}" settings failed (${error instanceof Error ? error.message : String(error)})`, error)
-      }
-    }
-    if (Object.keys(parsed.credentials).length === 0) continue
-    const credentials = ctx.get('credentials') as ModelCredentialWrite | undefined
-    if (credentials === undefined) {
-      throw new HandoffReceiveError('config', 'this device has no credential store; the received model keys cannot be applied')
-    }
-    for (const [ref, value] of Object.entries(parsed.credentials)) {
-      try {
-        await credentials.set(ref, value)
-      } catch (error) {
-        /* v8 ignore next -- credential seams throw Error instances */
-        throw new HandoffReceiveError('config', `storing the received credential "${ref}" failed (${error instanceof Error ? error.message : String(error)})`, error)
-      }
-    }
-  }
 }
 
 /* v8 ignore start -- the exporter ZIP stream runs only through the real service composition */

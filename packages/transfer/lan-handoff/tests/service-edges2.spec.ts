@@ -10,30 +10,48 @@ import { join } from 'node:path'
 import type { TLSSocket } from 'node:tls'
 import { afterEach, expect, it, vi } from 'vitest'
 import {
-  attachChannel,
-  computeTreeSummary,
-  createFrameReader,
-  encodeFrame,
   HandoffPreparationError,
   LanHandoffService,
+  TransferRejectedError,
+} from '../src/index.ts'
+import type {
+  HandoffImporter,
+  HandoffWorkspaces,
+} from '../src/index.ts'
+import type {
+  LanAdvertisement,
+  LanDiscoveryEntry,
+  LanDiscoveryHost,
+} from '../src/discovery.ts'
+import type {
+  WireMessage,
+} from '../src/frame.ts'
+import type {
+  ConnectionChannel,
+} from '../src/pairing.ts'
+import type {
+  BundleEntryRef,
+  BundleManifest,
+} from '../src/transfer.ts'
+import {
+  createFrameReader,
+  encodeFrame,
+} from '../src/frame.ts'
+import {
   prepareBundle,
   projectDirectoryName,
   receiveHandoff,
-  sendBundle,
   sendPreparedBundle,
+} from '../src/handoff.ts'
+import {
+  attachChannel,
+} from '../src/pairing.ts'
+import {
+  computeTreeSummary,
+  sendBundle,
   TRANSFER_CHUNK_BYTES,
   TRANSFER_PROTOCOL_VERSION,
-  TransferRejectedError,
-  type BundleEntryRef,
-  type BundleManifest,
-  type ConnectionChannel,
-  type HandoffImporter,
-  type HandoffWorkspaces,
-  type LanAdvertisement,
-  type LanDiscoveryEntry,
-  type LanDiscoveryHost,
-  type WireMessage,
-} from '../src/index.ts'
+} from '../src/transfer.ts'
 import { loadDeviceIdentity } from '../src/identity.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
 
