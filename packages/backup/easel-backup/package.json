@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-easel-backup",
   "description": "Remote backup engine for Easel: grouped zip archives, WebDAV/SMB/S3 destinations, passphrase encryption, restore, and schedule math",
-  "version": "0.2.1-rc1",
+  "version": "0.2.1-rc2",
   "publishConfig": {
     "access": "public"
   },
