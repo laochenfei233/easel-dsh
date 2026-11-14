@@ -4860,13 +4860,13 @@ var LITERAL_TEXT_ELEMENT_NAMES = [
   "noscript"
 ];
 var LITERAL_TEXT_ELEMENTS = freeze(addToSet({}, LITERAL_TEXT_ELEMENT_NAMES));
-var LITERAL_TEXT_CLOSE = (function() {
+var LITERAL_TEXT_CLOSE = function() {
   const map = {};
   arrayForEach(LITERAL_TEXT_ELEMENT_NAMES, (name) => {
     map[name] = seal(new RegExp("</" + name + "(?=[\\t\\n\\f\\r />])", "i"));
   });
   return freeze(map);
-})();
+}();
 var getGlobal = function getGlobal2() {
   return typeof window === "undefined" ? null : window;
 };
