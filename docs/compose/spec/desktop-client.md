@@ -20,7 +20,7 @@ English | [中文](desktop-client.zh.md)
 
 ## [S1] Problem
 
-DeepSeek Harness（`dsh`）目前是 CLI + 浏览器形态：`dsh web` 在 `http://127.0.0.1:3080` 起本地服务并打开系统浏览器。用户需要一款**桌面独立客户端**：双击即用、关窗不退出（托盘常驻）、无需理解端口与浏览器标签页、安装包尽量小（选定 Tauri 而非 Electron）、全平台（Windows / macOS / Linux）发行，并由 GitHub Actions 打包 release 包。同时四个 agent preset（`standard` / `minimal` / `code` / `cordis`）的全部功能必须原样保留且可正常运行，插件安装/更新（dsh plugin、dsh-plugin 插件中心）等机制在桌面端也必须可用。
+DeepSeek Harness（`dsh`）目前是 CLI + 浏览器形态：`dsh web` 在 `http://127.0.0.1:3080` 起本地服务并打开系统浏览器。用户需要一款**桌面独立客户端**：双击即用、关窗不退出（托盘常驻）、无需理解端口与浏览器标签页、安装包尽量小（选定 Tauri 而非 Electron）、全平台（Windows / macOS / Linux）发行，并由 GitHub Actions 打包 release 包。同时四个 agent preset（`standard` / `minimal` / `code` / `@deepseek-ai/cordis`）的全部功能必须原样保留且可正常运行，插件安装/更新（dsh plugin、dsh-plugin 插件中心）等机制在桌面端也必须可用。
 
 仓库形态：fork `deepseek-ai/deepseek-harness` → `laochenfei233/deepseek-harness`，Tauri 壳作为新目录 `apps/desktop-tauri/` 并入 fork。上游同步 = 单向 `git pull upstream`（**绝不 push 上游**）；四 preset 由上游 `apps/cli/config/agent-presets/` 提供，壳不修改任何上游 `packages/` 代码，因此同步即保留全部功能。
 
@@ -80,7 +80,7 @@ apps/desktop-tauri/
 
 首次运行（无已存在 profile）展示向导页（壳前端页面，非 dsh UI）：
 
-1. **默认预设选择**：`standard` / `minimal` / `code` / `cordis` 四选一（对应上游 agent-presets，默认 `standard`）；
+1. **默认预设选择**：`standard` / `minimal` / `code` / `@deepseek-ai/cordis` 四选一（对应上游 agent-presets，默认 `standard`）；
 2. **默认插件（自动安装，不可取消）**：`dsh-plugin`（dshplugin/dsh-plugin-hub 插件中心）、`dsh-win-terminal-inspector`（仅 Windows）；
 3. **可选插件（勾选安装，全部默认不勾选）**：
    - `dsh-better-sidebar`（omdsh-dev/DSH-better-sidebar）
