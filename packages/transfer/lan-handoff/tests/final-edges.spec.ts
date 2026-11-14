@@ -13,28 +13,36 @@ import { join } from 'node:path'
 import type { TLSSocket } from 'node:tls'
 import { afterEach, expect, it } from 'vitest'
 import {
-  attachChannel,
-  computeTreeSummary,
-  defaultLanHandoffRoot,
   LanHandoffService,
   PairingIncompatibleError,
-  receiveBundle,
-  sendBundle,
   TransferCompletionError,
   TransferProtocolError,
   TransferRejectedError,
+} from '../src/index.ts'
+import type {
+  BundleEntryRef,
+  BundleManifest,
+  ConnectionChannel,
+  HandoffSessionExport,
+  HandoffWorkspaces,
+  LanAdvertisement,
+  LanDiscoveryEntry,
+  LanDiscoveryHost,
+  LanHandoffStartOptions,
+} from '../src/index.ts'
+import {
+  defaultLanHandoffRoot,
+} from '../src/identity.ts'
+import {
+  attachChannel,
+} from '../src/pairing.ts'
+import {
+  computeTreeSummary,
+  receiveBundle,
+  sendBundle,
   TRANSFER_PROTOCOL_VERSION,
   validateBundleManifest,
-  type BundleEntryRef,
-  type BundleManifest,
-  type ConnectionChannel,
-  type HandoffSessionExport,
-  type HandoffWorkspaces,
-  type LanAdvertisement,
-  type LanDiscoveryEntry,
-  type LanDiscoveryHost,
-  type LanHandoffStartOptions,
-} from '../src/index.ts'
+} from '../src/transfer.ts'
 import { loadDeviceIdentity } from '../src/identity.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
 import { loadPairedPeers } from '../src/peers.ts'

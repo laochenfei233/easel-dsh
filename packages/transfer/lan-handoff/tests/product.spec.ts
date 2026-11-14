@@ -16,12 +16,14 @@ import { computeTreeSummary } from '../src/transfer.ts'
 import { ChannelClosedError } from '../src/pairing.ts'
 import {
   LanHandoffService,
-  type HandoffImporter,
-  type HandoffSessionExport,
-  type HandoffWorkspaces,
-  type LanAdvertisement,
-  type LanDiscoveryEntry,
-  type LanDiscoveryHost,
+} from '../src/index.ts'
+import type {
+  HandoffImporter,
+  HandoffSessionExport,
+  HandoffWorkspaces,
+  LanAdvertisement,
+  LanDiscoveryEntry,
+  LanDiscoveryHost,
 } from '../src/index.ts'
 
 /** Discovery host that records publications and lets the test inject peers. */

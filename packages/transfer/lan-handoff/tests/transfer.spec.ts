@@ -9,7 +9,9 @@ import { expect, it } from 'vitest'
 import { loadDeviceIdentity } from '../src/identity.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
 import { attachChannel, type ConnectionChannel } from '../src/pairing.ts'
-import type { WireMessage } from '../src/frame.ts'
+import type {
+  WireMessage,
+} from '../src/frame.ts'
 import {
   computeTreeSummary,
   receiveBundle,

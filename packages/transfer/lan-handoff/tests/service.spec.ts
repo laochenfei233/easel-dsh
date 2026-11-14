@@ -10,7 +10,14 @@ import { afterEach, expect, it } from 'vitest'
 import { loadDeviceIdentity, type DeviceId } from '../src/identity.ts'
 import { startLanListener } from '../src/listener.ts'
 import { loadSavedPort } from '../src/port.ts'
-import { LanHandoffService, type LanAdvertisement, type LanDiscoveryEntry, type LanDiscoveryHost } from '../src/index.ts'
+import {
+  LanHandoffService,
+} from '../src/index.ts'
+import type {
+  LanAdvertisement,
+  LanDiscoveryEntry,
+  LanDiscoveryHost,
+} from '../src/index.ts'
 
 class RecordingDiscoveryHost implements LanDiscoveryHost {
   readonly published: LanAdvertisement[] = []

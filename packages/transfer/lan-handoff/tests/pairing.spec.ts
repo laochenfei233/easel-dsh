@@ -7,13 +7,19 @@ import { join } from 'node:path'
 import { afterEach, expect, it, vi } from 'vitest'
 import {
   LanHandoffService,
-  loadPairedPeers,
   PairingRejectedError,
-  type LanDiscoveryEntry,
-  type LanDiscoveryHost,
-  type PairingOffer,
 } from '../src/index.ts'
-import type { LanAdvertisement } from '../src/index.ts'
+import type {
+  LanDiscoveryEntry,
+  LanDiscoveryHost,
+  PairingOffer,
+} from '../src/index.ts'
+import {
+  loadPairedPeers,
+} from '../src/peers.ts'
+import type {
+  LanAdvertisement,
+} from '../src/index.ts'
 
 /** Discovery host that records publications and lets the test inject entries. */
 class RecordingDiscoveryHost implements LanDiscoveryHost {

@@ -34,7 +34,10 @@ import {
   SessionImportAttachmentMismatchError,
   SessionImportCollisionError,
 } from '../src/errors.ts'
-import { apply, SessionLogImporter } from '../src/index.ts'
+import {
+  apply,
+  SessionLogImporter,
+} from '../src/index.ts'
 
 /** Well-known valid 1x1 PNG; the real image pipeline normalizes it. */
 const PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='

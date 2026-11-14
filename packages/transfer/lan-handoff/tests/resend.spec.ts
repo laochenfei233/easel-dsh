@@ -9,7 +9,10 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { expect, it, vi } from 'vitest'
 import { ChannelClosedError, PairingError } from '../src/pairing.ts'
-import { LanHandoffService, resendableFailure, sendWithResends } from '../src/index.ts'
+import {
+  LanHandoffService,
+} from '../src/index.ts'
+import { resendableFailure, sendWithResends } from '../src/resend.ts'
 import { TransferCompletionError, TransferProtocolError, TransferRejectedError } from '../src/transfer.ts'
 
 /** One successful send result. */

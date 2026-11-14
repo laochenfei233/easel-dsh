@@ -5,7 +5,9 @@ import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { expect, it } from 'vitest'
-import type { DeviceId } from '../src/identity.ts'
+import type {
+  DeviceId,
+} from '../src/identity.ts'
 import { loadPairedPeers, PairedPeersCorruptError, savePairedPeers, type PairedPeer } from '../src/peers.ts'
 
 const PEER: PairedPeer = {

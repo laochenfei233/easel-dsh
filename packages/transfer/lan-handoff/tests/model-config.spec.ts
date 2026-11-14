@@ -5,11 +5,8 @@
 
 import { Context, Service } from '@deepseek-ai/cordis'
 import { expect, it } from 'vitest'
-import {
-  applyModelConfigDocuments,
-  HandoffReceiveError,
-  MODEL_CONFIG_DOCUMENT,
-} from '../src/index.ts'
+import { HandoffReceiveError } from '../src/handoff.ts'
+import { applyModelConfigDocuments, MODEL_CONFIG_DOCUMENT } from '../src/model-config.ts'
 
 const encoder = new TextEncoder()
 

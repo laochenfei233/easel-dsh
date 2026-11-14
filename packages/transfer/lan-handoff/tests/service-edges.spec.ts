@@ -12,20 +12,26 @@ import { join } from 'node:path'
 import type { TLSSocket } from 'node:tls'
 import { afterEach, expect, it, vi } from 'vitest'
 import {
-  attachChannel,
   HandoffReceiveError,
   LanHandoffService,
+} from '../src/index.ts'
+import type {
+  ConnectionChannel,
+  HandoffImporter,
+  HandoffSessionExport,
+  HandoffWorkspaces,
+  LanAdvertisement,
+  LanDiscoveryEntry,
+  LanDiscoveryHost,
+} from '../src/index.ts'
+import {
   prepareBundle,
   receiveHandoff,
   sendPreparedBundle,
-  type ConnectionChannel,
-  type HandoffImporter,
-  type HandoffSessionExport,
-  type HandoffWorkspaces,
-  type LanAdvertisement,
-  type LanDiscoveryEntry,
-  type LanDiscoveryHost,
-} from '../src/index.ts'
+} from '../src/handoff.ts'
+import {
+  attachChannel,
+} from '../src/pairing.ts'
 import { dialLanPeer, startLanListener } from '../src/listener.ts'
 import { loadDeviceIdentity } from '../src/identity.ts'
 

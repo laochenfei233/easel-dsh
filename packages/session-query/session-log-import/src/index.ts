@@ -36,16 +36,6 @@ export {
   SessionImportFormatError,
   type SessionImportErrorCode,
 } from './errors.ts'
-export {
-  ARCHIVE_MEDIA_TYPES,
-  readSessionArchive,
-  type ArchiveContents,
-  type ArchiveFileEntry,
-  type ArchiveMediaEntry,
-  type ArchiveMediaType,
-} from './archive-read.ts'
-export { remapEventText, remapSessionEvent, type SessionPathRemap } from './path-remap.ts'
-export { parseSessionLog, type ParsedSessionLog } from './parse-log.ts'
 
 declare module '@deepseek-ai/cordis' {
   interface Context {

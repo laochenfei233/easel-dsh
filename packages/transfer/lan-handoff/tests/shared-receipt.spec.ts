@@ -15,7 +15,9 @@ import {
   type HandoffImportHost,
   type HandoffReceiveProgress,
 } from '../src/handoff.ts'
-import type { BundleEntryRef } from '../src/transfer.ts'
+import type {
+  BundleEntryRef,
+} from '../src/transfer.ts'
 
 /** Host that records what the receipt handed it. */
 function recordingHost(): HandoffImportHost & { attached: string[] } {

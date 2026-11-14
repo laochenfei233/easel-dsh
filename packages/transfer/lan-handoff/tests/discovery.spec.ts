@@ -2,7 +2,9 @@
 
 import { brandString } from '@deepseek-ai/dsh-brand'
 import { describe, expect, it } from 'vitest'
-import type { DeviceId } from '../src/identity.ts'
+import type {
+  DeviceId,
+} from '../src/identity.ts'
 import {
   advertiseLanHandoff,
   browseLanHandoff,
