@@ -20,16 +20,22 @@ import {
   TransferRejectedError,
 } from '../src/index.ts'
 import type {
-  BundleEntryRef,
-  BundleManifest,
-  ConnectionChannel,
   HandoffSessionExport,
   HandoffWorkspaces,
+  LanHandoffStartOptions,
+} from '../src/index.ts'
+import type {
   LanAdvertisement,
   LanDiscoveryEntry,
   LanDiscoveryHost,
-  LanHandoffStartOptions,
-} from '../src/index.ts'
+} from '../src/discovery.ts'
+import type {
+  ConnectionChannel,
+} from '../src/pairing.ts'
+import type {
+  BundleEntryRef,
+  BundleManifest,
+} from '../src/transfer.ts'
 import {
   defaultLanHandoffRoot,
 } from '../src/identity.ts'

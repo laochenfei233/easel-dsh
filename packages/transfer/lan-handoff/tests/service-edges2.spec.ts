@@ -15,16 +15,24 @@ import {
   TransferRejectedError,
 } from '../src/index.ts'
 import type {
-  BundleEntryRef,
-  BundleManifest,
-  ConnectionChannel,
   HandoffImporter,
   HandoffWorkspaces,
+} from '../src/index.ts'
+import type {
   LanAdvertisement,
   LanDiscoveryEntry,
   LanDiscoveryHost,
+} from '../src/discovery.ts'
+import type {
   WireMessage,
-} from '../src/index.ts'
+} from '../src/frame.ts'
+import type {
+  ConnectionChannel,
+} from '../src/pairing.ts'
+import type {
+  BundleEntryRef,
+  BundleManifest,
+} from '../src/transfer.ts'
 import {
   createFrameReader,
   encodeFrame,

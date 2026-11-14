@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-client-ui-agent-team",
   "description": "Web shared task board for a subagent tree",
-  "version": "0.2.1-alpha.55",
+  "version": "0.2.1-rc1",
   "publishConfig": {
     "access": "public"
   },

@@ -17,7 +17,7 @@ import type {
   LanAdvertisement,
   LanDiscoveryEntry,
   LanDiscoveryHost,
-} from '../src/index.ts'
+} from '../src/discovery.ts'
 
 class RecordingDiscoveryHost implements LanDiscoveryHost {
   readonly published: LanAdvertisement[] = []

@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-file-reference-local",
   "description": "Local-filesystem ctx.fileReferences provider with bounded fuzzy indexes",
-  "version": "0.2.1-alpha.55",
+  "version": "0.2.1-rc1",
   "publishConfig": {
     "access": "public"
   },

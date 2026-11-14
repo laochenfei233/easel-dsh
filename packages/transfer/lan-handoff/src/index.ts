@@ -47,9 +47,7 @@ import { loadSavedPort, saveSavedPort } from './port.ts'
 import {
   answerPairing,
   attachChannel,
-  ChannelClosedError,
   dialForPairing,
-  PairingError,
   pairingIdentityOf,
   PAIRING_TIMEOUT_MS,
   type ConnectionChannel,
@@ -60,7 +58,6 @@ import { loadPairedPeers, savePairedPeers, type PairedPeer } from './peers.ts'
 import {
   bundleFromFiles,
   cleanupStaleReceipts,
-  HandoffReceiveError,
   preparedEntryReader,
   receiveHandoff,
   SharedReceipt,
@@ -82,7 +79,6 @@ import {
   receiveOffer,
   sendEntries,
   sendOffer,
-  TransferCompletionError,
   type ReceivedOffer,
 } from './transfer.ts'
 

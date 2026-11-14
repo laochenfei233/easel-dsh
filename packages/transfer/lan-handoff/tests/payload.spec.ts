@@ -16,14 +16,20 @@ import {
   TransferProtocolError,
 } from '../src/index.ts'
 import type {
-  BundleEntryRef,
-  HandoffImportHost,
   HandoffImporter,
   HandoffWorkspaces,
+} from '../src/index.ts'
+import type {
   LanAdvertisement,
   LanDiscoveryEntry,
   LanDiscoveryHost,
-} from '../src/index.ts'
+} from '../src/discovery.ts'
+import type {
+  HandoffImportHost,
+} from '../src/handoff.ts'
+import type {
+  BundleEntryRef,
+} from '../src/transfer.ts'
 import {
   bundleFromFiles,
   mergeEnvText,

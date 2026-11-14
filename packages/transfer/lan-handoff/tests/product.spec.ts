@@ -21,10 +21,12 @@ import type {
   HandoffImporter,
   HandoffSessionExport,
   HandoffWorkspaces,
+} from '../src/index.ts'
+import type {
   LanAdvertisement,
   LanDiscoveryEntry,
   LanDiscoveryHost,
-} from '../src/index.ts'
+} from '../src/discovery.ts'
 
 /** Discovery host that records publications and lets the test inject peers. */
 class RecordingDiscoveryHost implements LanDiscoveryHost {

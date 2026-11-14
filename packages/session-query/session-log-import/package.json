@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-session-log-import",
   "description": "Host-side session-log import: materializes exported session archives into the mounted persistence and attachment stores",
-  "version": "0.2.1-alpha.55",
+  "version": "0.2.1-rc1",
   "publishConfig": {
     "access": "public"
   },
@@ -30,7 +30,13 @@
     "@deepseek-ai/cordis": "workspace:~",
     "@deepseek-ai/dsh-attachment": "workspace:*",
     "@deepseek-ai/dsh-session": "workspace:*",
-    "@deepseek-ai/dsh-session-persistence": "workspace:*"
+    "@deepseek-ai/dsh-session-persistence": "workspace:*",
+    "@deepseek-ai/dsh-session-projection-cache": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@deepseek-ai/dsh-session-projection-cache": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@deepseek-ai/dsh-session-format": "workspace:*",
@@ -42,6 +48,7 @@
     "@deepseek-ai/dsh-attachment-local": "workspace:*",
     "@deepseek-ai/dsh-session": "workspace:*",
     "@deepseek-ai/dsh-session-persistence": "workspace:*",
-    "@deepseek-ai/dsh-session-persistence-jsonl": "workspace:*"
+    "@deepseek-ai/dsh-session-persistence-jsonl": "workspace:*",
+    "@deepseek-ai/dsh-session-projection-cache": "workspace:*"
   }
 }

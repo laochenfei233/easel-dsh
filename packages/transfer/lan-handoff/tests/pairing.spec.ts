@@ -12,14 +12,16 @@ import {
 import type {
   LanDiscoveryEntry,
   LanDiscoveryHost,
+} from '../src/discovery.ts'
+import type {
   PairingOffer,
-} from '../src/index.ts'
+} from '../src/pairing.ts'
 import {
   loadPairedPeers,
 } from '../src/peers.ts'
 import type {
   LanAdvertisement,
-} from '../src/index.ts'
+} from '../src/discovery.ts'
 
 /** Discovery host that records publications and lets the test inject entries. */
 class RecordingDiscoveryHost implements LanDiscoveryHost {

@@ -16,14 +16,18 @@ import {
   LanHandoffService,
 } from '../src/index.ts'
 import type {
-  ConnectionChannel,
   HandoffImporter,
   HandoffSessionExport,
   HandoffWorkspaces,
+} from '../src/index.ts'
+import type {
   LanAdvertisement,
   LanDiscoveryEntry,
   LanDiscoveryHost,
-} from '../src/index.ts'
+} from '../src/discovery.ts'
+import type {
+  ConnectionChannel,
+} from '../src/pairing.ts'
 import {
   prepareBundle,
   receiveHandoff,
