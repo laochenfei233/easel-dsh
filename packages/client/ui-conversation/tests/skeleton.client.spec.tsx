@@ -85,13 +85,17 @@ function fireResize(el: Element): void {
   }
 }
 
+beforeEach(() => {
+  // EASEL-DIVERGENCE(easel-single-workspace D2): upstream sections exercise the
+  // multi-workspace chrome; afterEach restores the Easel single-mode default.
+  setWorkspaceUIMode('full')
+})
+
 afterEach(() => {
   cleanup()
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   resizeObservers.length = 0
-  // EASEL-DIVERGENCE(easel-single-workspace D2): tests default to the Easel
-  // single-mode gates; tests that exercise the multi-workspace surface opt out.
   setWorkspaceUIMode('single')
 })
 beforeEach(() => {
@@ -621,7 +625,7 @@ describe('ConversationRoot resident composer', () => {
     expect(b.slotCalls).not.toContain('conversation.session.header.utilities')
     expect(b.headerFactory).not.toHaveBeenCalled()
     expect(b.slotCalls).not.toContain('conversation.session.header.actions')
-    expect(b.view.getByText('探索未至之境')).toBeTruthy()
+    expect(b.view.getByText(/有什么可以帮到你的吗？/)).toBeTruthy()
     expect(b.view.getByText('预览版')).toBeTruthy()
     expect(b.view.queryByTestId('view-chat')).toBeNull()
     // The same machine-backed textarea is live in the hero, and the
@@ -655,7 +659,7 @@ describe('ConversationRoot resident composer', () => {
     expect(conversationPhase(failed, EMPTY_CONVERSATION_SNAPSHOT)).toBe('engaging')
     const b = mount(failed, undefined, undefined, { summaryBlank: true })
     expect(b.view.container.querySelector('[data-phase]')?.getAttribute('data-phase')).toBe('active')
-    expect(b.view.queryByText('探索未至之境')).toBeNull()
+    expect(b.view.queryByText(/有什么可以帮到你的吗？/)).toBeNull()
   })
 
   it('settling phase: a summary that does not prove the session blank hides the composer while it opens', () => {
@@ -687,7 +691,7 @@ describe('ConversationRoot resident composer', () => {
     // blank the column for the history round-trip.
     const root = b.view.container.querySelector('[data-phase]')
     expect(root?.getAttribute('data-phase')).toBe('hero')
-    expect(b.view.getByText('探索未至之境')).toBeTruthy()
+    expect(b.view.getByText(/有什么可以帮到你的吗？/)).toBeTruthy()
     expect(b.view.getByRole('textbox')).toBeTruthy()
   })
 

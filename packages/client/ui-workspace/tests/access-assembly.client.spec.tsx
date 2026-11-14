@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { setWorkspaceUIMode } from '../src/client/easel-mode.ts'
+setWorkspaceUIMode('full')
 /**
  * Workspace header actions under a non-owner access snapshot, through the assembled renderer.
  *

@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { setWorkspaceUIMode } from '../src/client/easel-mode.ts'
+setWorkspaceUIMode('full')
 import { contextMenuHook } from '@deepseek-ai/dsh-client-test-runtime'
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 import type { GlobalStandardProps } from '@deepseek-ai/dsh-client-ui-slots'
@@ -508,6 +510,21 @@ describe('WorkspaceBrowser', () => {
       if (previous === null) localStorage.removeItem(key)
       else localStorage.setItem(key, previous)
     }
+  })
+
+  // EASEL-DIVERGENCE(easel-project-archive): the plugin import entry lives in
+  // the browsing region's header action strip.
+  it('renders header actions from the extension slot with the column state', () => {
+    const seen: boolean[] = []
+    const renderSlot = ((name: string, owner: { wide?: boolean }) => {
+      if (name !== 'sidebar.workspaces.header.action') return null
+      seen.push(owner.wide === true)
+      return <button type="button" data-testid="header-action">Import</button>
+    }) as WorkspaceBrowserProps['renderSlot']
+    mount({ renderSlot })
+    expect(screen.getByTestId('header-action')).not.toBeNull()
+    expect(seen.length).toBeGreaterThan(0)
+    expect(seen.every(Boolean)).toBe(true)
   })
 
   it('renders the grouped tree by default and switches to the flat list via Group by', () => {
@@ -2467,18 +2484,18 @@ describe('WorkspaceBrowser', () => {
       ])),
       renameWorkspace,
     })
-    expect(screen.getByRole('button', { name: '工作区“默认工作区”的操作' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '工作区“主项目”的操作' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '工作区“default-workspace backup”的操作' })).toBeTruthy()
     // The dialog edits the text on screen, and the stored title — not that
     // text — decides whether confirming saves. So confirming the untouched
     // prefill pins the localized name and the row stops following the language.
-    browser.openDialog(wid('alpha'), '默认工作区', 'rename')
-    expect(screen.getByLabelText<HTMLInputElement>('工作区名称').value).toBe('默认工作区')
+    browser.openDialog(wid('alpha'), '主项目', 'rename')
+    expect(screen.getByLabelText<HTMLInputElement>('工作区名称').value).toBe('主项目')
     expect(screen.queryByRole('alert')).toBeNull()
     const confirm = screen.getByRole<HTMLButtonElement>('button', { name: '重命名' })
     expect(confirm.disabled).toBe(false)
     fireEvent.click(confirm)
-    expect(renameWorkspace).toHaveBeenCalledWith(wid('alpha'), '默认工作区')
+    expect(renameWorkspace).toHaveBeenCalledWith(wid('alpha'), '主项目')
   })
 
   it('renames a workspace through the row menu dialog', async () => {

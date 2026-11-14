@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import { setWorkspaceUIMode } from '../src/client/easel-mode.ts'
+setWorkspaceUIMode('full')
 import type {
   SessionListState, SessionProjectionMap, SessionSummary,
 } from '@deepseek-ai/dsh-api-session-controller/client'

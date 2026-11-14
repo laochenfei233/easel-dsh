@@ -1,4 +1,6 @@
 // @vitest-environment jsdom
+import { setWorkspaceUIMode } from '../src/client/easel-mode.ts'
+setWorkspaceUIMode('full')
 import { apply as applyMenus, inject as injectMenus } from '@deepseek-ai/dsh-client-ui-context-menu/client'
 import { createSnapshotStore } from '@deepseek-ai/dsh-client-store'
 /**
