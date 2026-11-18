@@ -819,6 +819,19 @@ pub(crate) fn ensure_libtv_skills(app: &AppHandle) -> Result<(), String> {
     ensure_libtv_skills_at(&dir, &dsh_home())
 }
 
+/// Bin directory of the env tools the breakdown page downloads on first run
+/// (`<data root>/tools/bin`, spec easel-breakdown-env-bootstrap). The plugin
+/// fills it lazily, so the dir must already exist to join the spawned PATH —
+/// user installs keep precedence either way (same rule as dreamina/libtv).
+pub(crate) fn env_tools_bin_dir() -> Option<PathBuf> {
+    let root = match std::env::var("EASEL_TOOLS_DIR") {
+        Ok(dir) => PathBuf::from(dir),
+        Err(_) => crate::layout::data_root().join("tools"),
+    };
+    let dir = root.join("bin");
+    dir.exists().then_some(dir)
+}
+
 /// Insert-if-absent registration row for the bundled LibTV skill. A
 /// user-edited insert row (for example disabled) is left as-is.
 fn ensure_libtv_skills_at(staged: &Path, home: &Path) -> Result<(), String> {
@@ -881,6 +894,19 @@ mod easel_tests {
 
     fn patch_text(home: &Path) -> String {
         fs::read_to_string(profile_web_dir(home).join("cordis.patch.yml")).unwrap()
+    }
+
+    #[test]
+    fn env_tools_bin_dir_requires_existing_dir() {
+        // EASEL_TOOLS_DIR pins the root so the test never depends on the real
+        // data root; a missing bin/ contributes no PATH entry (spawn-side rule).
+        let root = temp_dir("env-tools");
+        fs::create_dir_all(root.join("bin")).unwrap();
+        std::env::set_var("EASEL_TOOLS_DIR", &root);
+        assert_eq!(env_tools_bin_dir(), Some(root.join("bin")));
+        fs::remove_dir_all(root.join("bin")).unwrap();
+        assert_eq!(env_tools_bin_dir(), None);
+        std::env::remove_var("EASEL_TOOLS_DIR");
     }
 
     #[test]

@@ -199,7 +199,8 @@ function spawnCapture(cmd, { timeout = 300_000 } = {}) {
 /** The spawn failed because the binary itself is gone → actionable 500. */
 function requireFfmpeg(proc) {
   if (proc.spawnError?.code === 'ENOENT') {
-    throw new AsrError(500, '未找到 ffmpeg，无法处理音频/视频。请安装 ffmpeg（如 winget install ffmpeg 或 choco install ffmpeg）并确保在 PATH 上后重试')
+    throw new AsrError(500, '未找到 ffmpeg，无法处理音频/视频。拆解页点「开始采集」会自动下载安装；'
+      + '也可 winget install ffmpeg 或 choco install ffmpeg 后重试')
   }
 }
 

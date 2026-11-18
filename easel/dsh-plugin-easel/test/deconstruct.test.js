@@ -4,6 +4,10 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createDeconstruct, deconstructBusy, resumeDeconstruct } from '../lib/deconstruct.js'
+import { envToolProbeDeps } from '../lib/plugins/deconstruct.js'
+
+// 环境探测换恒成功桩（同 local-api.test.js）：宿主装没装 ffmpeg 不改变路由测试走向。
+envToolProbeDeps.current = { spawnSyncImpl: () => ({ status: 0, stdout: 'stub version 1.0', stderr: '', error: undefined }) }
 
 // Regression guard for the 2026-10-17 accident: the pipeline closure was named
 // `run`, shadowing the module-level command helper, so the fetch stage awaited
@@ -415,7 +419,7 @@ test('resumeDeconstruct holds the single-flight lock while resuming and releases
 // ---- retry 路由（T1）：404 / 409 / 成功续跑，响应形状同 POST deconstruct ----
 
 const callRetry = (root, id) => dispatchLocalApi(
-  { projectRoot: root }, 'POST', ['deconstruct', id, 'retry'], new URLSearchParams(),
+  { projectRoot: root, envToolsDir: join(root, 'tools') }, 'POST', ['deconstruct', id, 'retry'], new URLSearchParams(),
   async () => ({}), {}, DECONSTRUCT_ROUTES,
 )
 

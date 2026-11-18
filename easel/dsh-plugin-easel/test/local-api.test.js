@@ -5,7 +5,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CORE_ROUTES, createRouteRegistry, dispatchLocalApi, parseHotJson, parseRssItems, resolveSettings, safeLinkUrl } from '../index.js'
 import { AUTOMATION_ROUTES } from '../lib/plugins/automation.js'
-import { DECONSTRUCT_ROUTES } from '../lib/plugins/deconstruct.js'
+import { DECONSTRUCT_ROUTES, envToolProbeDeps } from '../lib/plugins/deconstruct.js'
+
+// 环境探测换恒成功桩：测试机装没装 ffmpeg 不影响 create/preflight 的走向
+// （装配引擎自身的探测语义在 env-tools.test.js 用注入缝单独钉）。
+envToolProbeDeps.current = { spawnSyncImpl: () => ({ status: 0, stdout: 'stub version 1.0', stderr: '', error: undefined }) }
 
 // The route table the running server composes from its three plugin entries.
 const ALL_ROUTES = [...CORE_ROUTES, ...AUTOMATION_ROUTES, ...DECONSTRUCT_ROUTES]
@@ -17,6 +21,8 @@ const settings = {
   skillsDir: join(root, 'skills', 'openclaw'),
   backendUrl: new URL('http://127.0.0.1:1'),
   basePath: '/easel',
+  // 拆解 create 的环境守卫读它；测试里指向临时根，探测必然 miss → 400 文案路径。
+  envToolsDir: join(root, 'tools'),
 }
 
 mkdirSync(join(root, 'profiles', '造作星期八'), { recursive: true })

@@ -292,6 +292,10 @@ python3 -m playwright install chromium
 # 手动安装时仍需提前安装 ffmpeg
 ```
 
+桌面安装版无需手动装 ffmpeg：**爆款拆解**页首次点「开始采集」时自动下载
+ffmpeg/ffprobe（sha256 校验，装到数据根 `tools/bin`，仅 PATH 缺失的机器触发；
+B站/YouTube 链接还会按需补装 yt-dlp），完成后自动继续采集。
+
 ## ⚙️ 配置说明
 
 最小配置只需要在项目根目录 `.env` 中提供一个可用的 LLM：

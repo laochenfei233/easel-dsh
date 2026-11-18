@@ -626,7 +626,7 @@ function findEndOfCentralDirectory(tail) {
  * @param {string} archivePath - local zip.
  * @returns {Promise<Map<string, {crc: number, size: number}>>} entries keyed by the raw archive name.
  */
-async function readCentralDirectory(archivePath) {
+export async function readCentralDirectory(archivePath) {
   const handle = await open(archivePath, 'r')
   try {
     const info = await handle.stat()
@@ -748,6 +748,8 @@ async function readManifest(staging) {
 
 /**
  * Extract one zip into staging, validating every entry and its path.
+ * Also the extraction engine of the env bootstrap (lib/env-tools.js), which
+ * stages the whole archive and moves its pinned entries into the tools bin.
  * @param {string} source - zip path.
  * @param {string} staging - empty staging directory under projects/.
  * @param {number} byteLimit - maximum uncompressed bytes this extraction may write.
@@ -755,7 +757,7 @@ async function readManifest(staging) {
  * @param {Map<string, {crc: number, size: number}>} expected - central-directory entries keyed by raw name.
  * @returns {Promise<{files: Array<{path: string, size: number}>, skippedJunk: number}>} extracted files.
  */
-async function extractEntries(source, staging, byteLimit, onProgress, expected) {
+export async function extractEntries(source, staging, byteLimit, onProgress, expected) {
   const fflate = await loadFflate()
   const unzip = new fflate.Unzip()
   unzip.register(fflate.UnzipInflate)

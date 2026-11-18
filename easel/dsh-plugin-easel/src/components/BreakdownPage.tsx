@@ -50,11 +50,38 @@ interface SourceRow {
   loggedIn: boolean;
 }
 
+/** preflight env 快照里的单个工具（spec easel-breakdown-env-bootstrap）。 */
+interface EnvToolRow {
+  id: string;
+  installed: boolean;
+  /** 装不上的具体可执行文件（ffmpeg 工具 = ffmpeg+ffprobe）。 */
+  missing: string[];
+}
+
+/** preflight 的运行环境快照：required 工具是否齐备。 */
+interface EnvGate {
+  tools: EnvToolRow[];
+  ready: boolean;
+}
+
 interface Preflight {
   platform: string;
   blocked: boolean;
+  /** env 门控（运行环境缺失）优先于登录/下载器门控显示。 */
+  blockedReason?: 'env';
   row: SourceRow | null;
   channels?: ChannelsGate;
+  env?: EnvGate;
+}
+
+/** GET /easel/api/env/install/status 的快照。 */
+interface EnvInstallState {
+  phase: 'idle' | 'running' | 'done' | 'failed' | 'interrupted';
+  tools?: string[];
+  current?: string | null;
+  receivedBytes?: number;
+  totalBytes?: number;
+  detail?: string;
 }
 
 const FETCH_STAGES: Array<{ key: DeconstructJob['stage']; label: string }> = [
@@ -80,6 +107,17 @@ const CHANNELS_URL_RE = /channels\.weixin\.qq\.com/i;
 interface ChannelsGate {
   wechat: { running: boolean; loggedIn: boolean; loginScreen: boolean };
   tool: { installed: boolean; running: boolean; stagingDir?: string };
+}
+
+/** 环境门卡上各工具的展示元数据（实际字节以 install status 为准）。 */
+const ENV_TOOL_META: Record<string, { label: string; sizeHint: string }> = {
+  ffmpeg: { label: 'ffmpeg（含 ffprobe）', sizeHint: '约 115MB' },
+  'yt-dlp': { label: 'yt-dlp', sizeHint: '约 18MB' },
+};
+
+function mb(bytes?: number): string {
+  if (bytes === undefined || bytes <= 0) return '';
+  return (bytes / 1048576).toFixed(1);
 }
 
 function stageIndex(stage: DeconstructJob['stage']): number {
@@ -114,6 +152,13 @@ export default function BreakdownPage({ onNavigate, remote }: BreakdownPageProps
   const [retryNote, setRetryNote] = useState('');
   const [analyzeState, setAnalyzeState] = useState<'idle' | 'running' | 'done' | 'error'>('idle');
   const [report, setReport] = useState('');
+  // 运行环境自动下载（spec easel-breakdown-env-bootstrap）：env 门卡出现即开装，
+  // 轮询到 done 后自动续跑采集；失败停在卡片上给「重试下载」。
+  const [envInstall, setEnvInstall] = useState<EnvInstallState | null>(null);
+  const envInstallKeyRef = useRef('');
+  const envPendingUrlRef = useRef('');
+  const envPollingRef = useRef(false);
+  const envAliveRef = useRef(true);
   // 画像归属（spec easel-breakdown-persona-push §S2.1）：空值=默认画像（画像页
   // 显式设置→最初创建的画像，宿主 /status 解析）。
   const [personas, setPersonas] = useState<{ name: string; description?: string }[]>([]);
@@ -121,7 +166,7 @@ export default function BreakdownPage({ onNavigate, remote }: BreakdownPageProps
   const [personaPick, setPersonaPick] = useState('');
   const abortRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => () => { abortRef.current?.(); }, []);
+  useEffect(() => () => { abortRef.current?.(); envAliveRef.current = false; }, []);
 
   // 画像清单与立项弹窗同一来源（GET /easel/api/status 的 personas）。
   useEffect(() => {
@@ -186,21 +231,10 @@ export default function BreakdownPage({ onNavigate, remote }: BreakdownPageProps
     return await res.json() as Preflight;
   }, [input]);
 
-  const startCapture = async () => {
-    const url = input.trim();
-    if (!url || capturing) return;
+  /** preflight 通过后的创建步；环境下载完成后的自动续跑也走这里。 */
+  const createCapture = async (url: string) => {
     setCapturing(true);
-    setPreflight(null);
     try {
-      const gate = await checkGate();
-      if (gate === null) {
-        setPreflight({ platform: 'other', blocked: true, row: null });
-        return;
-      }
-      if (gate.blocked) {
-        setPreflight(gate);
-        return;
-      }
       setJob(null);
       setReport('');
       setAnalyzeState('idle');
@@ -220,6 +254,83 @@ export default function BreakdownPage({ onNavigate, remote }: BreakdownPageProps
       setCapturing(false);
     }
   };
+
+  const startCapture = async () => {
+    const url = input.trim();
+    if (!url || capturing) return;
+    setCapturing(true);
+    setPreflight(null);
+    try {
+      const gate = await checkGate();
+      if (gate === null) {
+        setPreflight({ platform: 'other', blocked: true, row: null });
+        return;
+      }
+      if (gate.blocked) {
+        // env 门卡由下方 effect 自动开装；其余门卡等用户处理后重新点。
+        if (gate.blockedReason === 'env') envPendingUrlRef.current = url;
+        setPreflight(gate);
+        return;
+      }
+      await createCapture(url);
+    } finally {
+      setCapturing(false);
+    }
+  };
+
+  /** 启动缺失工具的下载：POST 后轮询 install status 到终态。 */
+  const startEnvInstall = async (tools: string[]) => {
+    try {
+      const res = await fetch('/easel/api/env/install', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ tools }),
+      });
+      const data = await res.json() as EnvInstallState & { detail?: string };
+      if (!res.ok) throw new Error(data.detail ?? '环境下载启动失败');
+      setEnvInstall(data);
+      void pollEnvInstall();
+    } catch (error) {
+      setEnvInstall({ phase: 'failed', detail: String((error as Error).message ?? error) });
+    }
+  };
+
+  const pollEnvInstall = async () => {
+    if (envPollingRef.current) return;
+    envPollingRef.current = true;
+    try {
+      while (envAliveRef.current) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        const res = await fetch('/easel/api/env/install/status').catch(() => null);
+        if (!res?.ok || !envAliveRef.current) continue;
+        const state = await res.json() as EnvInstallState;
+        setEnvInstall(state);
+        if (state.phase === 'done') {
+          setPreflight(null);
+          setEnvInstall(null);
+          envInstallKeyRef.current = '';
+          const url = envPendingUrlRef.current || input.trim();
+          envPendingUrlRef.current = '';
+          if (url !== '') await createCapture(url);
+          return;
+        }
+        if (state.phase === 'failed' || state.phase === 'interrupted') return;
+      }
+    } finally {
+      envPollingRef.current = false;
+    }
+  };
+
+  // 环境门卡出现即自动开装（用户拍板：首次运行先下载环境，完成后自动继续采集）。
+  useEffect(() => {
+    if (preflight?.blockedReason !== 'env' || preflight.env?.ready) return;
+    const missing = preflight.env?.tools.filter(tool => !tool.installed).map(tool => tool.id) ?? [];
+    if (missing.length === 0) return;
+    const key = missing.join(',');
+    if (envInstallKeyRef.current === key) return;
+    envInstallKeyRef.current = key;
+    void startEnvInstall(missing);
+  }, [preflight]);
 
   /** 从失败处继续：以 job.json 为检查点只补缺失段（spec easel-upstream-adoptions S2.1）。 */
   const retryCapture = async () => {
@@ -412,7 +523,59 @@ export default function BreakdownPage({ onNavigate, remote }: BreakdownPageProps
           </p>
         )}
 
-        {preflight?.blocked && (preflight?.channels ? (
+        {preflight?.blocked && (preflight.blockedReason === 'env' ? (
+          <div className="panel" style={{ marginTop: 16, borderColor: 'var(--amber, #d97706)' }}>
+            <div className="panel-title"><IconFire size={14} /> 首次使用：下载拆解运行环境</div>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '8px 0 10px' }}>
+              本机缺少抓取/转写需要的工具，首次使用自动下载并安装到数据目录（sha256 校验），
+              完成后会自动开始本次采集。
+            </p>
+            <ul style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '0 0 10px', paddingLeft: 20, lineHeight: 1.9 }}>
+              {preflight.env?.tools.map(tool => {
+                const meta = ENV_TOOL_META[tool.id] ?? { label: tool.id, sizeHint: '' };
+                const installing = envInstall !== null && envInstall.phase === 'running' && envInstall.current === tool.id;
+                const stuck = envInstall?.phase === 'failed' || envInstall?.phase === 'interrupted';
+                const totalMb = mb(envInstall?.totalBytes);
+                return (
+                  <li key={tool.id}>
+                    {tool.installed
+                      ? `✓ ${meta.label}：已就绪`
+                      : stuck
+                        ? `✕ ${meta.label}：下载未完成`
+                        : installing
+                          ? `⬇ ${meta.label}：${envInstall.phase === 'extracting'
+                            ? '安装中…'
+                            : `${mb(envInstall.receivedBytes) || '0'} / ${totalMb || '…'} MB`}`
+                          : `○ ${meta.label}：待下载（${meta.sizeHint}）`}
+                  </li>
+                );
+              })}
+            </ul>
+            {envInstall?.phase === 'running' && (envInstall.totalBytes ?? 0) > 0 && (
+              <div style={{ height: 4, borderRadius: 2, background: 'var(--surface-2, #252c37)', overflow: 'hidden', marginBottom: 4 }}>
+                <div style={{
+                  width: `${Math.min(100, Math.round((envInstall.receivedBytes ?? 0) / (envInstall.totalBytes ?? 1) * 100))}%`,
+                  height: '100%',
+                  background: 'var(--accent-start, #63c9cf)',
+                }} />
+              </div>
+            )}
+            {(envInstall?.phase === 'failed' || envInstall?.phase === 'interrupted') && (
+              <div style={{ marginTop: 10 }}>
+                <p style={{ fontSize: 12.5, color: 'var(--red)', margin: '0 0 8px' }}>{envInstall.detail ?? '下载未完成'}</p>
+                <button className="btn btn-sm" onClick={() => {
+                  const missing = preflight.env?.tools.filter(tool => !tool.installed).map(tool => tool.id) ?? [];
+                  envInstallKeyRef.current = '';
+                  setEnvInstall(null);
+                  if (missing.length > 0) void startEnvInstall(missing);
+                }}>重试下载</button>
+              </div>
+            )}
+            <p style={{ fontSize: 12, color: 'var(--text-tertiary, #9ca3af)', margin: '10px 0 0' }}>
+              下载源：gyan.dev / GitHub（失败自动切换）；下载完成前请保持网络可用。
+            </p>
+          </div>
+        ) : preflight?.channels ? (
           <div className="panel" style={{ marginTop: 16, borderColor: 'var(--amber, #d97706)' }}>
             <div className="panel-title"><IconFire size={14} /> 视频号还没准备好</div>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '8px 0 10px' }}>

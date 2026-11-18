@@ -13,6 +13,9 @@ import { createDeconstruct, DeconstructBusyError, deconstructBusy, readDeconstru
 import { parsePlatform, sourceStatus, writeCookie } from '../sourcedata.js'
 import { detectWeChat, downloaderRunning, findChannelsTool, launchChannelsTool } from '../channels.js'
 import {
+  EnvToolError, checkEnvTools, envInstallStatus, envToolsBinDir, requiresYtDlp, resolveEnvTool, startEnvToolInstall,
+} from '../env-tools.js'
+import {
   ApiError, isDirectory, isFile, personaDir, readEnvFile, readJsonFile, validPersonaName, writeJsonFile,
 } from '../../index.js'
 import { SHARED_SCRIPTS, accountBrowserArgs, loadRegistry, resolveAccountStrict, runCapture, runnerEnv } from './automation.js'
@@ -21,6 +24,34 @@ import { SHARED_SCRIPTS, accountBrowserArgs, loadRegistry, resolveAccountStrict,
 
 // dsh webServer 端口（apply 时捕获；技能经 outputs/_easel_api.json 发现 base）。
 let webServerPort = null
+
+// 环境探测的注入缝（仅测试覆写）：宿主装没装 ffmpeg 不该决定路由测试的
+// 走向，测试把 spawnSync 换成恒成功桩；生产永远走默认的真探测。
+export const envToolProbeDeps = { current: {} }
+
+/** 平台所需的自动装配工具：ffmpeg/ffprobe 恒需；yt-dlp 仅走通用下载的平台。 */
+function requiredEnvTools(platform) {
+  return requiresYtDlp(platform) ? ['ffmpeg', 'yt-dlp'] : ['ffmpeg']
+}
+
+/**
+ * 解析 ffmpeg 家族两个可执行文件的绝对路径（PATH 优先、tools/bin 兜底）。
+ * 未就绪时抛 400，文案指回拆解页的自动下载。
+ */
+function resolveFfmpegBins(settings, deps = {}) {
+  const resolved = resolveEnvTool(settings, 'ffmpeg', deps)
+  if (!resolved.installed) {
+    throw new ApiError(400, '运行环境未就绪：ffmpeg/ffprobe 缺失。回到拆解页点「开始采集」会自动下载安装')
+  }
+  return { ffmpegBin: resolved.bins.ffmpeg.path, ffprobeBin: resolved.bins.ffprobe.path }
+}
+
+/** 下载子进程的环境注入：tools/bin 前插 PATH（video_fetch 的 yt-dlp 解析）。 */
+function envToolsFetchEnv(settings) {
+  const binDir = envToolsBinDir(settings)
+  if (!existsSync(binDir)) return {}
+  return { PATH: `${binDir}${sep}${process.env.PATH ?? ''}` }
+}
 
 async function apiAsr(c) {
   const body = await c.body()
@@ -49,12 +80,15 @@ async function apiAsr(c) {
       + '可选 MIMO_BASE_URL / MIMO_ASR_MODEL（默认 https://api.xiaomimimo.com/v1 与 mimo-v2.5-asr）')
   }
   try {
+    const { ffmpegBin, ffprobeBin } = resolveFfmpegBins(c.settings, envToolProbeDeps.current)
     const result = await transcribeToSubtitle({
       input,
       format,
       language,
       projectRoot: c.settings.projectRoot,
       credentials,
+      ffmpegBin,
+      ffprobeBin,
     })
     return { json: { file: result.file, segments: result.segments, seconds: result.seconds } }
   } catch (error) {
@@ -116,13 +150,17 @@ export async function resolveDshAsrCredentials(ctx, providerId, modelId) {
  */
 function deconstructTranscribe(c) {
   return async ({ input, format, projectRoot, model, outDir, outStem }) => {
+    // ffmpeg 路径每段解析一次（PATH 优先、tools/bin 兜底）；缺了直接落 job.failed。
+    const { ffmpegBin, ffprobeBin } = resolveFfmpegBins(c.settings, envToolProbeDeps.current)
     const split = typeof model === 'string' ? model.indexOf('::') : -1
     if (split > 0) {
       const resolved = await resolveDshAsrCredentials(hostCtx, model.slice(0, split), model.slice(split + 2))
       if (!resolved.ok) {
         throw new Error(`无法用所选模型 ${model} 转写：${resolved.reason}（可在 设置→模型 处理，或改选其他模型）`)
       }
-      return transcribeToSubtitle({ input, format, projectRoot, credentials: resolved.credentials, outDir, outStem })
+      return transcribeToSubtitle({
+        input, format, projectRoot, credentials: resolved.credentials, outDir, outStem, ffmpegBin, ffprobeBin,
+      })
     }
     const env = await readEnvFile(join(c.settings.projectRoot, '.env'))
     for (const key of ['MIMO_API_KEY', 'MIMO_BASE_URL', 'MIMO_ASR_MODEL']) {
@@ -134,7 +172,9 @@ function deconstructTranscribe(c) {
       throw new Error('未配置 mimo ASR 凭据：请设置 MIMO_API_KEY（环境变量或项目 .env）；'
         + '可选 MIMO_BASE_URL / MIMO_ASR_MODEL')
     }
-    return transcribeToSubtitle({ input, format, projectRoot, credentials, outDir, outStem })
+    return transcribeToSubtitle({
+      input, format, projectRoot, credentials, outDir, outStem, ffmpegBin, ffprobeBin,
+    })
   }
 }
 
@@ -154,11 +194,21 @@ async function apiDeconstructCreate(c) {
       throw new ApiError(404, `画像「${persona}」不存在`)
     }
   }
+  // 运行环境守卫（spec easel-breakdown-env-bootstrap）：preflight 与 create 之间
+  // 可能隔了手动删目录等变化，create 再查一次，缺失直接 400（fail loud）。
+  const platform = parsePlatform(url)
+  const envGate = checkEnvTools(c.settings, requiredEnvTools(platform), envToolProbeDeps.current)
+  const missingTools = envGate.tools.filter(tool => !tool.installed).map(tool => tool.id)
+  if (missingTools.length > 0) {
+    throw new ApiError(400, `运行环境未就绪：缺少 ${missingTools.join('、')}。回到拆解页点「开始采集」会自动下载安装`)
+  }
   // 视频号（spec easel-breakdown-channels）：识别到 sph 才触碰微信检测——
   // 启动采集前守卫微信登录（用户拍板），并把下载器 staging 目录注入下载子进程。
-  const fetchEnv = parsePlatform(url) === 'sph'
-    ? { EASEL_CHANNELS_DIR: (await ensureChannelsReady(c)).stagingDir }
-    : undefined
+  // tools/bin 无论平台都前插 PATH：yt-dlp（通用平台）与 skills 侧二进制同源解析。
+  const fetchEnv = {
+    ...(platform === 'sph' ? { EASEL_CHANNELS_DIR: (await ensureChannelsReady(c)).stagingDir } : {}),
+    ...envToolsFetchEnv(c.settings),
+  }
   const job = createDeconstruct({
     projectRoot: c.settings.projectRoot,
     url,
@@ -166,6 +216,7 @@ async function apiDeconstructCreate(c) {
     persona: persona !== '' ? persona : undefined,
     transcribe: deconstructTranscribe(c),
     fetchEnv,
+    ffmpegBin: resolveEnvTool(c.settings, 'ffmpeg', envToolProbeDeps.current).bins.ffmpeg.path,
   })
   return { json: job }
 }
@@ -181,13 +232,22 @@ async function apiDeconstructGet(c) {
 async function apiDeconstructRetry(c) {
   const existing = await readDeconstruct(c.settings.projectRoot, c.params.id)
   if (existing === undefined) throw new ApiError(404, `拆解任务不存在：${c.params.id}`)
+  // 环境守卫与 create 同强（重试可能重跑 fetch/frames/asr 任意段）。
+  const platform = parsePlatform(existing.url)
+  const envGate = checkEnvTools(c.settings, requiredEnvTools(platform), envToolProbeDeps.current)
+  const missingTools = envGate.tools.filter(tool => !tool.installed).map(tool => tool.id)
+  if (missingTools.length > 0) {
+    throw new ApiError(400, `运行环境未就绪：缺少 ${missingTools.join('、')}。回到拆解页点「开始采集」会自动下载安装`)
+  }
   // 视频号任务的重试可能重跑 fetch 段：同样按平台注入 staging 目录（守卫同 create）。
-  const fetchEnv = parsePlatform(existing.url) === 'sph'
-    ? { EASEL_CHANNELS_DIR: (await ensureChannelsReady(c)).stagingDir }
-    : undefined
+  const fetchEnv = {
+    ...(platform === 'sph' ? { EASEL_CHANNELS_DIR: (await ensureChannelsReady(c)).stagingDir } : {}),
+    ...envToolsFetchEnv(c.settings),
+  }
   let job
   try {
-    job = await resumeDeconstruct(c.settings.projectRoot, c.params.id, deconstructTranscribe(c), fetchEnv)
+    job = await resumeDeconstruct(c.settings.projectRoot, c.params.id, deconstructTranscribe(c), fetchEnv,
+      resolveEnvTool(c.settings, 'ffmpeg', envToolProbeDeps.current).bins.ffmpeg.path)
   } catch (error) {
     // busy 由 resumeDeconstruct 在占锁点同步抛出：检查到占锁之间没有 await，
     // 并发 retry 不会双双绕过 409。
@@ -246,22 +306,56 @@ async function apiChannelsLaunch(c) {
   return { json: { ok: true, status: await channelsSnapshot(c), stagingDir: tool.stagingDir } }
 }
 
-// 拆解 preflight：按链接判平台，需要登录态而当前没有时拒绝创建任务。
+// 拆解 preflight：按链接判平台；运行环境缺失先于登录门控拦下（首次使用
+// 下载 spec easel-breakdown-env-bootstrap），登录/下载器门控其次。
 async function apiDeconstructPreflight(c) {
   const body = await c.body()
   const url = typeof body?.url === 'string' ? body.url.trim() : ''
   if (!url) throw new ApiError(400, '缺少 url')
   const platform = parsePlatform(url)
+  // 运行环境快照（只读 -version 探测）：缺 ffmpeg/yt-dlp 时直接给门卡，
+  // 页面据此自动下载，完成后重新走 create。
+  const env = checkEnvTools(c.settings, requiredEnvTools(platform), envToolProbeDeps.current)
+  if (!env.ready) {
+    return { json: { platform, blocked: true, blockedReason: 'env', row: null, env } }
+  }
   // 视频号不走 cookies.json 门控：门在微信登录与下载器安装上（识别到才检测）。
   if (platform === 'sph') {
     const channels = await channelsSnapshot(c)
     const blocked = !channels.tool.installed || !channels.wechat.loggedIn
-    return { json: { platform, blocked, row: null, channels } }
+    return { json: { platform, blocked, row: null, channels, env } }
   }
   const status = await sourceStatus(c.settings.projectRoot)
   const row = status.platforms.find(item => item.platform === platform)
   const blocked = row !== undefined && row.authRequired && !row.cookieSet && !row.loggedIn
-  return { json: { platform, blocked, row: row ?? null } }
+  return { json: { platform, blocked, row: row ?? null, env } }
+}
+
+// ── 运行环境自动装配（spec easel-breakdown-env-bootstrap）────────────────
+// POST env/install 启动（校验同步、下载异步），GET env/install/status 轮询；
+// 进度落数据根 tools/install-state.json，应用重启后改判 interrupted。
+
+const ENV_INSTALLABLE = new Set(['ffmpeg', 'yt-dlp'])
+
+async function apiEnvInstall(c) {
+  const body = await c.body()
+  const ids = Array.isArray(body?.tools) ? body.tools.filter(id => typeof id === 'string') : []
+  const unknown = ids.filter(id => !ENV_INSTALLABLE.has(id))
+  if (ids.length === 0 || unknown.length > 0) {
+    throw new ApiError(400, `tools 无效：${unknown.join('、') || '(空)'}（可安装：ffmpeg、yt-dlp）`)
+  }
+  try {
+    return { json: startEnvToolInstall(c.settings, ids) }
+  } catch (error) {
+    if (error instanceof EnvToolError) {
+      throw new ApiError(error.code === 'busy' ? 409 : 400, error.message)
+    }
+    throw error
+  }
+}
+
+async function apiEnvInstallStatus(c) {
+  return { json: await envInstallStatus(c.settings) }
 }
 
 // 从已登录的浏览器会话导出 cookie 写入拆解数据源（登录成功后的「回传」步）。
@@ -307,6 +401,8 @@ export const DECONSTRUCT_ROUTES = [
   ['POST', ['cookies', 'import'], apiCookiesImport],
   ['GET', ['channels', 'status'], apiChannelsStatus],
   ['POST', ['channels', 'launch'], apiChannelsLaunch],
+  ['POST', ['env', 'install'], apiEnvInstall],
+  ['GET', ['env', 'install', 'status'], apiEnvInstallStatus],
   ['POST', ['deconstruct', 'preflight'], apiDeconstructPreflight],
   ['POST', ['deconstruct'], apiDeconstructCreate],
   ['GET', ['deconstruct', ':id'], apiDeconstructGet],

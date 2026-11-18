@@ -11442,6 +11442,14 @@ var PLATFORM_NAMES = {
   other: "\u901A\u7528\u94FE\u63A5"
 };
 var CHANNELS_URL_RE = /channels\.weixin\.qq\.com/i;
+var ENV_TOOL_META = {
+  ffmpeg: { label: "ffmpeg\uFF08\u542B ffprobe\uFF09", sizeHint: "\u7EA6 115MB" },
+  "yt-dlp": { label: "yt-dlp", sizeHint: "\u7EA6 18MB" }
+};
+function mb(bytes) {
+  if (bytes === void 0 || bytes <= 0) return "";
+  return (bytes / 1048576).toFixed(1);
+}
 function stageIndex(stage) {
   const i = FETCH_STAGES.findIndex((item) => item.key === stage);
   return i < 0 ? FETCH_STAGES.length : i;
@@ -11466,12 +11474,18 @@ function BreakdownPage({ onNavigate, remote }) {
   const [retryNote, setRetryNote] = (0, import_react15.useState)("");
   const [analyzeState, setAnalyzeState] = (0, import_react15.useState)("idle");
   const [report, setReport] = (0, import_react15.useState)("");
+  const [envInstall, setEnvInstall] = (0, import_react15.useState)(null);
+  const envInstallKeyRef = (0, import_react15.useRef)("");
+  const envPendingUrlRef = (0, import_react15.useRef)("");
+  const envPollingRef = (0, import_react15.useRef)(false);
+  const envAliveRef = (0, import_react15.useRef)(true);
   const [personas, setPersonas] = (0, import_react15.useState)([]);
   const [defaultPersona, setDefaultPersona] = (0, import_react15.useState)("");
   const [personaPick, setPersonaPick] = (0, import_react15.useState)("");
   const abortRef = (0, import_react15.useRef)(null);
   (0, import_react15.useEffect)(() => () => {
     abortRef.current?.();
+    envAliveRef.current = false;
   }, []);
   (0, import_react15.useEffect)(() => {
     let alive = true;
@@ -11528,21 +11542,9 @@ function BreakdownPage({ onNavigate, remote }) {
     if (!res?.ok) return null;
     return await res.json();
   }, [input]);
-  const startCapture = async () => {
-    const url = input.trim();
-    if (!url || capturing) return;
+  const createCapture = async (url) => {
     setCapturing(true);
-    setPreflight(null);
     try {
-      const gate = await checkGate();
-      if (gate === null) {
-        setPreflight({ platform: "other", blocked: true, row: null });
-        return;
-      }
-      if (gate.blocked) {
-        setPreflight(gate);
-        return;
-      }
       setJob(null);
       setReport("");
       setAnalyzeState("idle");
@@ -11562,6 +11564,76 @@ function BreakdownPage({ onNavigate, remote }) {
       setCapturing(false);
     }
   };
+  const startCapture = async () => {
+    const url = input.trim();
+    if (!url || capturing) return;
+    setCapturing(true);
+    setPreflight(null);
+    try {
+      const gate = await checkGate();
+      if (gate === null) {
+        setPreflight({ platform: "other", blocked: true, row: null });
+        return;
+      }
+      if (gate.blocked) {
+        if (gate.blockedReason === "env") envPendingUrlRef.current = url;
+        setPreflight(gate);
+        return;
+      }
+      await createCapture(url);
+    } finally {
+      setCapturing(false);
+    }
+  };
+  const startEnvInstall = async (tools) => {
+    try {
+      const res = await fetch("/easel/api/env/install", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ tools })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail ?? "\u73AF\u5883\u4E0B\u8F7D\u542F\u52A8\u5931\u8D25");
+      setEnvInstall(data);
+      void pollEnvInstall();
+    } catch (error) {
+      setEnvInstall({ phase: "failed", detail: String(error.message ?? error) });
+    }
+  };
+  const pollEnvInstall = async () => {
+    if (envPollingRef.current) return;
+    envPollingRef.current = true;
+    try {
+      while (envAliveRef.current) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        const res = await fetch("/easel/api/env/install/status").catch(() => null);
+        if (!res?.ok || !envAliveRef.current) continue;
+        const state = await res.json();
+        setEnvInstall(state);
+        if (state.phase === "done") {
+          setPreflight(null);
+          setEnvInstall(null);
+          envInstallKeyRef.current = "";
+          const url = envPendingUrlRef.current || input.trim();
+          envPendingUrlRef.current = "";
+          if (url !== "") await createCapture(url);
+          return;
+        }
+        if (state.phase === "failed" || state.phase === "interrupted") return;
+      }
+    } finally {
+      envPollingRef.current = false;
+    }
+  };
+  (0, import_react15.useEffect)(() => {
+    if (preflight?.blockedReason !== "env" || preflight.env?.ready) return;
+    const missing = preflight.env?.tools.filter((tool) => !tool.installed).map((tool) => tool.id) ?? [];
+    if (missing.length === 0) return;
+    const key = missing.join(",");
+    if (envInstallKeyRef.current === key) return;
+    envInstallKeyRef.current = key;
+    void startEnvInstall(missing);
+  }, [preflight]);
   const retryCapture = async () => {
     if (!job?.id || retrying || capturing) return;
     setRetrying(true);
@@ -11732,7 +11804,35 @@ ${ideaEntry}\uFF0C
         "\uFF09\u3002\u8BF7\u5728\u300C\u8BBE\u7F6E \u2192 \u6A21\u578B\u300D\u786E\u8BA4\u6A21\u578B\u914D\u7F6E\u540E\u5237\u65B0\u672C\u9875\uFF1B \u91C7\u96C6\u4E0E\u62C6\u89E3\u9700\u8981\u53EF\u7528\u6A21\u578B\u3002"
       ] }),
       visionModel !== "" && models.length > 0 && !models.some((entry) => `${entry.provider}::${entry.model.id}` === visionModel && entry.model.inputModalities?.includes("image") === true) && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12.5, color: "var(--text-secondary)", margin: "8px 0 0" }, children: "\u6240\u9009\u89C6\u89C9\u6A21\u578B\u672A\u6807\u6CE8\u56FE\u50CF\u8F93\u5165\uFF1A\u82E5\u7F51\u5173\u5B9E\u9645\u652F\u6301\u770B\u56FE\uFF0C\u53EF\u5728 \u8BBE\u7F6E\u2192\u6A21\u578B \u5C55\u5F00\u8BE5\u6A21\u578B\u884C\u52FE\u9009\u300C\u56FE\u50CF\u300D\uFF0C \u4E0B\u62C9\u91CC\u5B83\u4F1A\u6392\u5230\u524D\u9762\uFF1B\u672A\u6807\u6CE8\u65F6\u770B\u5E27\u62C6\u89E3\u53EF\u80FD\u9000\u5316\u6216\u5931\u8D25\u3002" }),
-      preflight?.blocked && (preflight?.channels ? /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 16, borderColor: "var(--amber, #d97706)" }, children: [
+      preflight?.blocked && (preflight.blockedReason === "env" ? /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 16, borderColor: "var(--amber, #d97706)" }, children: [
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel-title", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 14 }),
+          " \u9996\u6B21\u4F7F\u7528\uFF1A\u4E0B\u8F7D\u62C6\u89E3\u8FD0\u884C\u73AF\u5883"
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 13, color: "var(--text-secondary)", margin: "8px 0 10px" }, children: "\u672C\u673A\u7F3A\u5C11\u6293\u53D6/\u8F6C\u5199\u9700\u8981\u7684\u5DE5\u5177\uFF0C\u9996\u6B21\u4F7F\u7528\u81EA\u52A8\u4E0B\u8F7D\u5E76\u5B89\u88C5\u5230\u6570\u636E\u76EE\u5F55\uFF08sha256 \u6821\u9A8C\uFF09\uFF0C \u5B8C\u6210\u540E\u4F1A\u81EA\u52A8\u5F00\u59CB\u672C\u6B21\u91C7\u96C6\u3002" }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("ul", { style: { fontSize: 13, color: "var(--text-secondary)", margin: "0 0 10px", paddingLeft: 20, lineHeight: 1.9 }, children: preflight.env?.tools.map((tool) => {
+          const meta = ENV_TOOL_META[tool.id] ?? { label: tool.id, sizeHint: "" };
+          const installing = envInstall !== null && envInstall.phase === "running" && envInstall.current === tool.id;
+          const stuck = envInstall?.phase === "failed" || envInstall?.phase === "interrupted";
+          const totalMb = mb(envInstall?.totalBytes);
+          return /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("li", { children: tool.installed ? `\u2713 ${meta.label}\uFF1A\u5DF2\u5C31\u7EEA` : stuck ? `\u2715 ${meta.label}\uFF1A\u4E0B\u8F7D\u672A\u5B8C\u6210` : installing ? `\u2B07 ${meta.label}\uFF1A${envInstall.phase === "extracting" ? "\u5B89\u88C5\u4E2D\u2026" : `${mb(envInstall.receivedBytes) || "0"} / ${totalMb || "\u2026"} MB`}` : `\u25CB ${meta.label}\uFF1A\u5F85\u4E0B\u8F7D\uFF08${meta.sizeHint}\uFF09` }, tool.id);
+        }) }),
+        envInstall?.phase === "running" && (envInstall.totalBytes ?? 0) > 0 && /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { style: { height: 4, borderRadius: 2, background: "var(--surface-2, #252c37)", overflow: "hidden", marginBottom: 4 }, children: /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("div", { style: {
+          width: `${Math.min(100, Math.round((envInstall.receivedBytes ?? 0) / (envInstall.totalBytes ?? 1) * 100))}%`,
+          height: "100%",
+          background: "var(--accent-start, #63c9cf)"
+        } }) }),
+        (envInstall?.phase === "failed" || envInstall?.phase === "interrupted") && /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { style: { marginTop: 10 }, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12.5, color: "var(--red)", margin: "0 0 8px" }, children: envInstall.detail ?? "\u4E0B\u8F7D\u672A\u5B8C\u6210" }),
+          /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("button", { className: "btn btn-sm", onClick: () => {
+            const missing = preflight.env?.tools.filter((tool) => !tool.installed).map((tool) => tool.id) ?? [];
+            envInstallKeyRef.current = "";
+            setEnvInstall(null);
+            if (missing.length > 0) void startEnvInstall(missing);
+          }, children: "\u91CD\u8BD5\u4E0B\u8F7D" })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime25.jsx)("p", { style: { fontSize: 12, color: "var(--text-tertiary, #9ca3af)", margin: "10px 0 0" }, children: "\u4E0B\u8F7D\u6E90\uFF1Agyan.dev / GitHub\uFF08\u5931\u8D25\u81EA\u52A8\u5207\u6362\uFF09\uFF1B\u4E0B\u8F7D\u5B8C\u6210\u524D\u8BF7\u4FDD\u6301\u7F51\u7EDC\u53EF\u7528\u3002" })
+      ] }) : preflight?.channels ? /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel", style: { marginTop: 16, borderColor: "var(--amber, #d97706)" }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime25.jsxs)("div", { className: "panel-title", children: [
           /* @__PURE__ */ (0, import_jsx_runtime25.jsx)(IconFire, { size: 14 }),
           " \u89C6\u9891\u53F7\u8FD8\u6CA1\u51C6\u5907\u597D"

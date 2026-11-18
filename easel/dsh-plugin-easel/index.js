@@ -93,6 +93,9 @@ export function resolveSettings(config) {
   if (config.projectArchive !== undefined && typeof config.projectArchive !== 'boolean') {
     throw new Error('easel: projectArchive must be a boolean')
   }
+  if (config.envToolsDir !== undefined && (typeof config.envToolsDir !== 'string' || config.envToolsDir.trim() === '')) {
+    throw new Error('easel: envToolsDir must be a non-empty string')
+  }
   return {
     projectRoot,
     skillsDir: resolve(config.skillsDir ?? join(projectRoot, 'skills', 'openclaw')),
@@ -105,6 +108,11 @@ export function resolveSettings(config) {
     // 视频号下载器（wx_channels_download）安装目录或 exe 路径；缺省走 lib/channels.js
     // 的开发态回退。仅视频号拆解链路读取，启动/页面加载不触碰。
     channelsDownloader: config.channelsDownloader ?? process.env.EASEL_CHANNELS_DOWNLOADER,
+    // 爆款拆解自动装配的运行工具目录（spec easel-breakdown-env-bootstrap）：
+    // config → EASEL_TOOLS_DIR → 数据根 tools（EASEL_DATA_ROOT 缺席的开发态回
+    // 退到 projectRoot 兄弟目录）。仅拆解 preflight/install 链路读取。
+    envToolsDir: resolve(config.envToolsDir ?? process.env.EASEL_TOOLS_DIR
+      ?? join(process.env.EASEL_DATA_ROOT ?? dirname(projectRoot), 'tools')),
   }
 }
 

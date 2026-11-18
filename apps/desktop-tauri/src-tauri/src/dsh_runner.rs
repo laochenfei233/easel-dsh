@@ -372,6 +372,13 @@ impl DshHandle {
             path_parts
                 .extend(std::env::split_paths(&existing).map(|p| p.to_string_lossy().into_owned()));
         }
+        // The breakdown page's downloaded env tools (ffmpeg/yt-dlp) come after
+        // the inherited PATH: a user install keeps precedence, the download
+        // covers machines without one. The plugin creates the dir only after
+        // its first download, so an absent dir contributes no entry.
+        if let Some(tools_bin) = crate::setup::env_tools_bin_dir() {
+            path_parts.push(tools_bin.to_string_lossy().into_owned());
+        }
         // The bundled Jimeng CLIs come last: after the inherited PATH, so an
         // install made through the CLIs' own installers keeps precedence and
         // the bundle covers machines without one (setup.rs registers their

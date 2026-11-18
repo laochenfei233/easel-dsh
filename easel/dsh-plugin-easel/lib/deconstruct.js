@@ -138,9 +138,12 @@ function run(cmd, args, cwd, timeout, extraEnv) {
  * @param job - 可变的 job 状态（createDeconstruct 的新 job，或 readDeconstruct
  *   读回的旧 job）；段推进直接改写并落盘 job.json。
  * @param transcribe - lib/asr.js 的 transcribeToSubtitle（由 index.js 注入，避免循环依赖）。
- * @param fetchEnv - 仅注入下载子进程的环境变量（视频号 staging 目录）；缺省继承宿主环境。
+ * @param fetchEnv - 仅注入下载子进程的环境变量（视频号 staging 目录 + tools/bin PATH）；
+ *   缺省继承宿主环境。
+ * @param ffmpegBin - 抽帧用的 ffmpeg 可执行路径（路由层按 PATH 优先解析；
+ *   缺省裸名，走宿主 PATH）。
  */
-async function runPipeline(projectRoot, job, transcribe, fetchEnv) {
+async function runPipeline(projectRoot, job, transcribe, fetchEnv, ffmpegBin) {
   const dir = deconstructDir(projectRoot, job.id)
   if (dir === null) throw new Error(`invalid deconstruct id: ${job.id}`)
   running.add(projectRoot)
@@ -181,7 +184,7 @@ async function runPipeline(projectRoot, job, transcribe, fetchEnv) {
     if (frames === 0 && job.framesError === undefined) {
       try {
         const ff = await run(
-          'ffmpeg', ['-y', '-i', videoAbs, '-vf', 'fps=1/2', '-q:v', '3', join(framesAbs, 'f-%03d.jpg')],
+          ffmpegBin ?? 'ffmpeg', ['-y', '-i', videoAbs, '-vf', 'fps=1/2', '-q:v', '3', join(framesAbs, 'f-%03d.jpg')],
           projectRoot, 5 * 60_000,
         )
         if (ff.code !== 0) throw new Error(ff.stderr.split('\n').slice(-2).join(' ').trim())
@@ -229,10 +232,11 @@ async function runPipeline(projectRoot, job, transcribe, fetchEnv) {
  * 创建并启动一次拆解采集。返回创建时的 job 快照（stage=fetch）。
  * @param deps.transcribe - lib/asr.js 的 transcribeToSubtitle（由 index.js 注入，避免循环依赖）。
  * @param deps.fetchEnv - 仅注入下载子进程的环境变量（如视频号 staging 目录）。
+ * @param deps.ffmpegBin - 抽帧用的 ffmpeg 可执行路径；缺省裸名走宿主 PATH。
  * @param deps.persona - 本次拆解归属的画像目录名；缺省不写该字段（spec
  *   easel-breakdown-persona-push §S2.1，存在性校验在路由层）。
  */
-export function createDeconstruct({ projectRoot, url, asrModel, persona, transcribe, fetchEnv }) {
+export function createDeconstruct({ projectRoot, url, asrModel, persona, transcribe, fetchEnv, ffmpegBin }) {
   const id = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
   const dir = deconstructDir(projectRoot, id)
   if (dir === null) throw new Error(`invalid deconstruct id: ${id}`)
@@ -246,7 +250,7 @@ export function createDeconstruct({ projectRoot, url, asrModel, persona, transcr
   }
   // id 在上面已校验，runPipeline 的真实失败都落 job.failed；这里的 catch 只兜
   // 防御性 id 守卫重抛的噪声，不让 fire-and-forget 的拒绝崩掉宿主进程。
-  void runPipeline(projectRoot, job, transcribe, fetchEnv).catch(() => {})
+  void runPipeline(projectRoot, job, transcribe, fetchEnv, ffmpegBin).catch(() => {})
   return job
 }
 
@@ -263,11 +267,12 @@ export class DeconstructBusyError extends Error {
  * await 之前（与 createDeconstruct 的同步窗口同强），并发 retry 不会双双绕过
  * busy 检查。
  * @param fetchEnv - 仅注入下载子进程的环境变量（视频号 staging 目录）；重试会重跑 fetch 段。
+ * @param ffmpegBin - 抽帧用的 ffmpeg 可执行路径；缺省裸名走宿主 PATH。
  * @returns 续跑启动时的 job 快照（stage 已重置为 fetch）。
  * @throws {DeconstructBusyError} 已有采集在跑（路由层转 409）。
  * @throws 任务不存在或 job.id 非法时抛出带明确原因的错误（路由层转 404）。
  */
-export async function resumeDeconstruct(projectRoot, id, transcribe, fetchEnv) {
+export async function resumeDeconstruct(projectRoot, id, transcribe, fetchEnv, ffmpegBin) {
   if (running.has(projectRoot)) throw new DeconstructBusyError()
   running.add(projectRoot)
   const job = await readDeconstruct(projectRoot, id)
@@ -284,7 +289,7 @@ export async function resumeDeconstruct(projectRoot, id, transcribe, fetchEnv) {
     running.delete(projectRoot)
     throw error
   }
-  void runPipeline(projectRoot, job, transcribe, fetchEnv).catch(() => {})
+  void runPipeline(projectRoot, job, transcribe, fetchEnv, ffmpegBin).catch(() => {})
   // 返回快照而非活引用：流水线从现在起会持续改写 job，路由的响应不能跟着抖。
   return { ...job }
 }

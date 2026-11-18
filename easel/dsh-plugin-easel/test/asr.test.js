@@ -12,7 +12,10 @@ import {
   extractAudio16kMono, detectSpeechSegments, transcribeToSubtitle,
 } from '../lib/asr.js'
 import { dispatchLocalApi } from '../index.js'
-import { DECONSTRUCT_ROUTES } from '../lib/plugins/deconstruct.js'
+import { DECONSTRUCT_ROUTES, envToolProbeDeps } from '../lib/plugins/deconstruct.js'
+
+// 环境探测换恒成功桩（同 local-api.test.js）：凭据门/流水线语义与宿主是否装了 ffmpeg 解耦。
+envToolProbeDeps.current = { spawnSyncImpl: () => ({ status: 0, stdout: 'stub version 1.0', stderr: '', error: undefined }) }
 
 // ── 环境探测：ffmpeg / 样音 / 测试 key ────────────────────────────────
 const hasFfmpeg = spawnSync('ffmpeg', ['-version'], { windowsHide: true }).status === 0
@@ -184,7 +187,7 @@ test('resolveMimoCredentials defaults are protocol constants, never a key', () =
 const routeRoot = mkdtempSync(join(tmpdir(), 'easel-asr-route-'))
 mkdirSync(join(routeRoot, 'media'), { recursive: true })
 writeFileSync(join(routeRoot, 'media', 'talk.wav'), 'RIFF....', 'utf8')
-const routeSettings = { projectRoot: routeRoot, skillsDir: join(routeRoot, 'skills', 'openclaw'), basePath: '/easel' }
+const routeSettings = { projectRoot: routeRoot, skillsDir: join(routeRoot, 'skills', 'openclaw'), basePath: '/easel', envToolsDir: join(routeRoot, 'tools') }
 const callAsr = body => dispatchLocalApi(routeSettings, 'POST', ['asr'], new URLSearchParams(),
   async () => body, {}, DECONSTRUCT_ROUTES)
 

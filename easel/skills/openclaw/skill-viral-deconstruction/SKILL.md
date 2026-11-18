@@ -22,8 +22,8 @@ faster-whisper 转写口播 → 视觉模型看帧 → 按时间轴合并素材 
 | 依赖 | 检查 | 缺失时的指引 |
 |------|------|--------------|
 | 视觉模型 | 当前会话模型能否读图（用 Read 试读一张任意图片/帧后即知） | 让用户在 **dsh 设置 → 模型管理** 配置一个视觉模型（自定义 OpenAI 兼容 provider，如火山方舟 `https://ark.cn-beijing.volces.com/api/v3` + `doubao-seed-2-1-*`；GLM-4V / Qwen-VL 等均可，模型自选），并在对话里把模型切过去后继续 |
-| yt-dlp | `yt-dlp --version`（B站/YouTube/通用站点需要；抖音/小红书/快手/视频号走内置路径不需要） | `pip install yt-dlp` |
-| ffmpeg | `ffmpeg -version` | `winget install ffmpeg` 或 https://ffmpeg.org/download.html |
+| yt-dlp | `yt-dlp --version`（B站/YouTube/通用站点需要；抖音/小红书/快手/视频号走内置路径不需要） | 缺失时**拆解页点「开始采集」会自动下载**（sha256 校验后装到数据根 `tools/bin`，会话 PATH 已含）；也可 `pip install yt-dlp` |
+| ffmpeg | `ffmpeg -version` | 同上自动下载（gyan 9.0.2 essentials）；也可 `winget install ffmpeg` 或 https://ffmpeg.org/download.html |
 | 小红书 cookie | `outputs/_deconstruct/cookies.json` 里有无 `"xhs"` 字段 | 让用户把网页版小红书的请求 Cookie 粘贴进该文件（`{"xhs": "粘贴到这里"}`）；**抖音/快手不需要 cookie**（快手被风控时可让用户填网页版游客 cookie 到 `"kuaishou"` 字段） |
 | 视频号（仅 sph 链接） | 微信 PC 端是否运行且已登录；下载器是否运行（管理页 `127.0.0.1:2022` 通不通） | 未登录 → 让用户在微信里登录；下载器没跑 → 启动 `dist/tools/wx-channels-download/wx_video_download.exe`（首次需管理员装证书）。**视频号链接必须先过这一步再继续** |
 | mimo ASR | `MIMO_API_KEY` 已配置（.env 或环境变量）；dsh 壳在跑（`outputs/_easel_api.json` 存在） | 在项目 `.env` 写 `MIMO_API_KEY=<key>`（转写走本地路由 + mimo-v2.5-asr 云端，零本地模型） |
