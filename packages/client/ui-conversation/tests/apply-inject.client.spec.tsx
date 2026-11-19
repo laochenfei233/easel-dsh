@@ -589,6 +589,18 @@ describe('Conversation inject API', () => {
     }
   })
 
+  it('cites dropped files that carry their own host path without the shell bridge', async () => {
+    const b = await bench()
+    const folder = new File([], 'my project')
+    const note = new File([Uint8Array.of(1)], 'notes.md', { type: 'text/markdown' })
+    // WebView2 reports the host path on the File itself; no bridge is installed.
+    Object.defineProperty(folder, 'path', { value: '/Users/me/my project' })
+    Object.defineProperty(note, 'path', { value: '/Users/me/notes.md' })
+    expect(b.composerApi(ROOT).addFiles?.([folder, note], new Set([folder]))).toBeNull()
+    expect(b.inputApi(ROOT).state.getSnapshot().draft).toBe('@"/Users/me/my project/" @/Users/me/notes.md ')
+    await b.runtime.dispose()
+  })
+
   it('preserves selected text and file order and restores pasted directory chips from the draft', async () => {
     vi.stubGlobal('__DSH_HOST_PATHS__', { pathFor: (file: File) => `/proj/${file.name}` })
     onTestFinished(() => { vi.unstubAllGlobals(); cleanup() })

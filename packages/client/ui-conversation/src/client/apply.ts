@@ -101,8 +101,9 @@ const ABSENT_FILE_UPLOADS = {
 
 /**
  * Browser-shell bridge reporting the harness-host path of a picked file. The
- * Desktop preload exposes it on the application document; a served Web page
- * has none, so every non-image file uploads there.
+ * Electron Desktop preload exposes it on the application document; a served
+ * Web page has none, so there the file's own WebView2 `path` property (see
+ * `fileHostPath`) is the remaining source.
  */
 interface HostPathBridge {
   /** Absolute harness-host path of one picked file, or empty when the shell has none for it. */
@@ -112,6 +113,16 @@ interface HostPathBridge {
 /** The shell-installed bridge, when this document runs inside the Desktop application. */
 function hostPathBridge(): HostPathBridge | undefined {
   return (globalThis as { __DSH_HOST_PATHS__?: HostPathBridge }).__DSH_HOST_PATHS__
+}
+
+/**
+ * Host path a desktop webview reports on the File itself: WebView2 exposes
+ * the nonstandard `path` on dropped and picked files. A browser File carries
+ * no such property, so this answers '' there and the upload path applies.
+ */
+function fileHostPath(file: File): string {
+  const path = (file as { path?: unknown }).path
+  return typeof path === 'string' ? path : ''
 }
 
 interface WorkspaceNavigation {
@@ -516,9 +527,12 @@ export function apply(ctx: Context, config: Config = Config({})): void {
           const cwd = sessions.list.getSnapshot().byId[sessionId]?.cwd
           for (const file of files) {
             const directory = directories.has(file)
-            if (bridge === undefined && directory) return t('attachment.directoryDesktopOnly')
-            const path = bridge?.pathFor(file) ?? ''
-            if (directory && path === '') return t('attachment.pathUnavailable')
+            const path = bridge?.pathFor(file) ?? fileHostPath(file)
+            if (directory && path === '') {
+              // Without the bridge a pathless folder means a browser drop;
+              // with one, the shell merely failed to name this folder.
+              return bridge === undefined ? t('attachment.directoryDesktopOnly') : t('attachment.pathUnavailable')
+            }
             if (path === '' || (!directory && isImageMediaType(file.type))) {
               uploads.push(file)
               continue
