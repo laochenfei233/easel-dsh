@@ -1,14 +1,57 @@
 ---
 feature: easel-link-double-open
-status: in-progress
+status: delivered
 updated: 2026-11-20
 branch: feat/easel-link-double-open
-commits: a81a340d75..pending
+commits: a81a340d75..a8d52f4ac9
 ---
 
 # External link opens once
 
 ## Report
+
+**What was built** — Clicking an external link in the Easel desktop opens the
+target exactly once. The bundle-injected host bridge
+(`apps/desktop-tauri/scripts/bundle-runtime.mjs`) previously relayed one click
+twice: its capture-phase anchor listener and its `window.open` override both
+posted the `dsh-desktop-host` open message, and the shell invoked the opener
+plugin per post. The capture listener now records the URL in a `pendingOpen`
+slot and relays it on a zero-delay task, so a plain anchor nothing else
+handles still opens after the dispatch settles; the `window.open` override
+relays synchronously and empties the slot first, so a click reaching the
+bridge through both paths relays exactly once. The slot is immune to the
+between-listener microtask checkpoints that falsified the first design. The
+relay cases live in the existing `scripts/desktop-host-bridge.spec.ts` lane,
+reusing its extraction helpers, and the stub asserts the
+`dsh-desktop-host` source the real shell requires.
+
+**Verification** — `pnpm vitest run scripts/desktop-host-bridge.spec.ts` 8/8
+(the regression case is red against the falsified flag design and green
+here); `node --check` on the bundle script PASS; oxlint 0 warnings 0 errors
+on the touched files; `pnpm run typecheck` 5 gates PASS. Review re-ran a
+real-engine end-to-end harness with the actual bridge code: one trusted
+markdown click yields exactly one post, a second click posts again,
+plain external anchors relay once after settle, same-origin anchors never
+enter the slot, and `preventDefault` stays synchronous.
+
+**Journey log**
+
+- Root cause imported from the sibling investigation (sess_ee91a5f7,
+  prism-agent): their `new-window.log` absence proved the Rust
+  `on_new_window` path never fires for these clicks, pinning the JS bridge.
+- Workspace override as in easel-file-drop: main checkout on a stacked feature
+  branch (base = feat/easel-file-drop tip a81a340d75) so both fixes ride one
+  repack.
+- Review falsified the first design (an `anchorClickOpened` flag cleared by
+  `queueMicrotask`): the clear runs at the microtask checkpoint between the
+  capture listener and the app's delegated onClick, so the double open
+  persisted — reproduced end-to-end with the real bridge code in a real
+  engine. Pivoted to the deferred-relay slot; the regression test now drains
+  microtasks between the capture listener and the app's open to reproduce
+  that checkpoint in the vm lane.
+- The sibling session's fix (`faef95d3e3` on prism-agent) uses the same
+  queueMicrotask flag design that review falsified here; it likely does not
+  fix real clicks either and needs the same re-verification.
 
 ## [S1] Problem
 
@@ -48,27 +91,11 @@ twice. Both paths cancel the default navigation, which is why the Rust
 
 ## [S4] Acceptance
 
-- [ ] One markdown click (capture path + `window.open` in the same dispatch,
+- [x] One markdown click (capture path + `window.open` in the same dispatch,
       with the between-listener microtask checkpoint drained) produces exactly
       one `open` relay; `preventDefault` still applies.
-- [ ] A plain external anchor nothing else handles relays once the dispatch
+- [x] A plain external anchor nothing else handles relays once the dispatch
       settles; `window.open` after the dispatch settles still relays; internal
       (same-origin, non-`_blank`) anchors never enter the slot.
-- [ ] The relay cases live in the existing `scripts/desktop-host-bridge.spec.ts`
+- [x] The relay cases live in the existing `scripts/desktop-host-bridge.spec.ts`
       lane and pass; oxlint clean on the touched files.
-
-## Journey log
-
-- Root cause imported from the sibling investigation (sess_ee91a5f7,
-  prism-agent): their `new-window.log` absence proved the Rust
-  `on_new_window` path never fires for these clicks, pinning the JS bridge.
-- Workspace override as in easel-file-drop: main checkout on a stacked feature
-  branch (base = feat/easel-file-drop tip a81a340d75) so both fixes ride one
-  repack.
-- Review falsified the first design (an `anchorClickOpened` flag cleared by
-  `queueMicrotask`): the clear runs at the microtask checkpoint between the
-  capture listener and the app's delegated onClick, so the double open
-  persisted — reproduced end-to-end with the real bridge code in a real
-  engine. Pivoted to the deferred-relay slot above; the regression test now
-  drains microtasks between the capture listener and the app's open to
-  reproduce that checkpoint in the vm lane.
