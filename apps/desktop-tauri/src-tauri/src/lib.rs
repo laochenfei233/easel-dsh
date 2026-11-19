@@ -47,7 +47,11 @@ fn build_main_window(app: &tauri::AppHandle) -> Result<(), String> {
         .map_err(|e| e.to_string())?
         .on_new_window(move |url, _features: NewWindowFeatures| {
             open_new_window_externally(&handle, &url)
-        });
+        })
+        // Tauri's drag-drop handler replaces WebView2's own, so the page never
+        // sees HTML5 drag events on Windows and the composer cannot take file
+        // drops; nothing in the shell listens to Tauri's DragDropEvents.
+        .disable_drag_drop_handler();
     // WebKit shells host the dsh UI in its own window, so top-level
     // navigations need the routing the shell page used to relay through the
     // iframe host bridge: the dsh origins stay in the window, everything else

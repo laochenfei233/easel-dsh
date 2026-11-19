@@ -125,6 +125,13 @@ document.getElementById('btn-retry').addEventListener('click', () => {
 
 window.addEventListener('message', handleHostBridge);
 
+// The shell page runs with Tauri's native drag-drop handler disabled so the
+// dsh UI receives HTML5 drop events; a file then dropped on the splash or
+// error surface outside the iframe would navigate this page to the file.
+// Cancel those drops here; the dsh UI cancels its own.
+document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('drop', (e) => e.preventDefault());
+
 (async () => {
   let bridge = true;
   try {

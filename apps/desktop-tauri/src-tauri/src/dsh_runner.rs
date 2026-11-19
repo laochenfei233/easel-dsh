@@ -1340,6 +1340,9 @@ pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), St
             let handle = handle.clone();
             move |url| crate::allow_app_navigation(&handle, url)
         })
+        // Same as the main window: the composer intake is HTML5 drag-and-drop,
+        // so Tauri's native drop handler must not swallow WKWebView drops.
+        .disable_drag_drop_handler()
         .build();
         match built {
             Ok(window) => {
