@@ -142,8 +142,11 @@ describe('desktop host bridge', () => {
       let clickListener: ((event: unknown) => void) | undefined
       const win = fakeWindow({ addEventListener: () => {} })
       win.parent = {
-        postMessage: (payload: { kind?: string; url?: string }): void => {
-          if (payload.kind === 'open' && typeof payload.url === 'string') posted.push(payload.url)
+        postMessage: (payload: { source?: string; kind?: string; url?: string }): void => {
+          // The real shell drops host-bridge messages without this source.
+          if (payload.source === 'dsh-desktop-host' && payload.kind === 'open' && typeof payload.url === 'string') {
+            posted.push(payload.url)
+          }
         },
       }
       win.open = () => undefined
