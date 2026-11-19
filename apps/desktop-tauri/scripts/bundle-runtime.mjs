@@ -536,6 +536,13 @@ function injectNotificationBridge(distDest) {
   }
   Object.defineProperty(window, "Notification", { configurable: true, value: DshNotification })
 
+  // One click can reach this bridge twice: the anchor here, and the app's own
+  // onClick calling window.open (markdown links do both). Defer the anchor
+  // relay by one task so a window.open in the same gesture relays once and
+  // cancels this one; anything still pending after the dispatch settles is a
+  // plain link nobody handled. The pending slot cannot be cleared by a
+  // microtask: checkpoints run between listeners inside one dispatch.
+  let pendingOpen = null
   document.addEventListener("click", (event) => {
     const anchor = event.target.closest?.("a")
     if (!anchor) return
@@ -546,7 +553,12 @@ function injectNotificationBridge(distDest) {
     const external = url.protocol === "http:" || url.protocol === "https:" || url.protocol === "mailto:"
     if (external && (anchor.target === "_blank" || url.origin !== location.origin)) {
       event.preventDefault()
-      post({ kind: "open", url: url.href })
+      pendingOpen = url.href
+      setTimeout(() => {
+        if (pendingOpen === null) return
+        post({ kind: "open", url: pendingOpen })
+        pendingOpen = null
+      }, 0)
     }
   }, true)
 
@@ -555,6 +567,7 @@ function injectNotificationBridge(distDest) {
     try {
       const target = new URL(String(url), location.href)
       if (target.protocol === "http:" || target.protocol === "https:" || target.protocol === "mailto:") {
+        pendingOpen = null
         post({ kind: "open", url: target.href })
         return null
       }

@@ -129,4 +129,86 @@ describe('desktop host bridge', () => {
     handlers[0]?.({ data: { source: 'dsh-desktop-host', kind: 'rpc-event', event: 'easel://update-available', payload: { version: '2.0.0' } } })
     expect(seen).toEqual([{ version: '2.0.0' }])
   })
+
+  describe('external link relay', () => {
+    /** Nested-window stub with the click listener captured and open relays recorded. */
+    function relayWindow(): {
+      posted: string[]
+      click(anchor: { href: string; target?: string }): boolean
+      open(url: string): unknown
+    } {
+      const posted: string[] = []
+      let prevented = false
+      let clickListener: ((event: unknown) => void) | undefined
+      const win = fakeWindow({ addEventListener: () => {} })
+      win.parent = {
+        postMessage: (payload: { kind?: string; url?: string }): void => {
+          if (payload.kind === 'open' && typeof payload.url === 'string') posted.push(payload.url)
+        },
+      }
+      win.open = () => undefined
+      runBridge(win, {
+        URL: globalThis.URL,
+        location: { href: 'https://app.local/ui/', origin: 'https://app.local' },
+        document: {
+          addEventListener: (type: string, listener: (event: unknown) => void) => {
+            if (type === 'click') clickListener = listener
+          },
+        },
+      })
+      return {
+        posted,
+        // Returns whether the bridge canceled the click's default navigation.
+        click(anchor: { href: string; target?: string }): boolean {
+          if (clickListener === undefined) throw new Error('bridge installed no click listener')
+          prevented = false
+          const target = {
+            target: anchor.target ?? '',
+            getAttribute: (name: string) => (name === 'href' ? anchor.href : null),
+            closest: () => target,
+          }
+          clickListener({ target, preventDefault: () => { prevented = true } })
+          return prevented
+        },
+        open(url: string): unknown {
+          return (win.open as (url: string) => unknown)(url)
+        },
+      }
+    }
+
+    it('relays one external link exactly once when the app opens it from the same click', async () => {
+      const relay = relayWindow()
+      expect(relay.click({ href: 'https://example.com/article', target: '_blank' })).toBe(true)
+      // A real dispatch runs a microtask checkpoint between the capture
+      // listener and the app's delegated onClick; drain them here too.
+      await Promise.resolve()
+      expect(relay.open('https://example.com/article')).toBeNull()
+      expect(relay.posted).toEqual(['https://example.com/article'])
+      await new Promise((resolve) => { setTimeout(resolve, 0) })
+      expect(relay.posted).toEqual(['https://example.com/article'])
+    })
+
+    it('still relays plain external anchors that nothing else handles', async () => {
+      const relay = relayWindow()
+      expect(relay.click({ href: 'https://example.com/card', target: '_blank' })).toBe(true)
+      expect(relay.posted).toEqual([])
+      await new Promise((resolve) => { setTimeout(resolve, 0) })
+      expect(relay.posted).toEqual(['https://example.com/card'])
+    })
+
+    it('still relays window.open after the click dispatch settles', async () => {
+      const relay = relayWindow()
+      expect(relay.click({ href: 'https://example.com/article', target: '_blank' })).toBe(true)
+      await new Promise((resolve) => { setTimeout(resolve, 0) })
+      relay.open('https://example.com/next')
+      expect(relay.posted).toEqual(['https://example.com/article', 'https://example.com/next'])
+    })
+
+    it('leaves same-origin anchor clicks unmarked and unrelated opens untouched', () => {
+      const relay = relayWindow()
+      expect(relay.click({ href: '/settings' })).toBe(false)
+      relay.open('https://example.com/elsewhere')
+      expect(relay.posted).toEqual(['https://example.com/elsewhere'])
+    })
+  })
 })
