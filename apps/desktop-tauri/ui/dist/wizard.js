@@ -1,6 +1,11 @@
 // First-run wizard: pick the default agent preset, then apply it through the
 // shell command (set_preset) and land on the main UI.
 
+// The shell page runs with Tauri's native drag-drop handler disabled; cancel
+// drops here too, or a stray file navigates this page away from the wizard.
+document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('drop', (e) => e.preventDefault());
+
 const PRESETS = [
   { id: 'standard', name: '标准', desc: '通用编码智能体：文件、终端、网络与子代理能力均衡（默认）' },
   { id: 'code', name: '代码', desc: '面向软件开发：更强的代码编辑与工程能力' },
