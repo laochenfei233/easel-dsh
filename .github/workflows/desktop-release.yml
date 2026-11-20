@@ -221,7 +221,9 @@ jobs:
           prerelease: false
           # macOS installers join the Release unsigned; their updater artifacts
           # are minisign-signed and belong in latest.json so the app window's
-          # About page can install updates on macOS.
+          # About page can install updates on macOS. The `app` bundle target in
+          # tauri.conf.json emits the .app.tar.gz and its .sig; a `dmg`-only
+          # target list leaves latest.json without darwin entries.
           uploadUpdaterJson: true
           args: --verbose ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
 
