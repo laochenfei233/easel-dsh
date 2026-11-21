@@ -50,6 +50,11 @@ worktree: .worktrees/easel-app-update
 - override：壳启动时读数据根 `home` 下的 `update-source.json`：`{"endpoints": ["https://…"]}`；存在则整体替换内置列表。该文件坏形 = 误配置 fail loud：写入 `update-state.lastError`，About 展示原因，自动检查本轮跳过。
 - 失败呈现：启动延迟的自动检查失败 → 静默（记入 state，不打扰）；设置页手动检查 → 在 About 内报明"无法连接更新源 + 当前源 URL"。
 
+### 国内源端点迁到 COS/CDN（2026-11-20）
+
+- 产品站下载与更新清单已迁到腾讯云 COS、经 `cdn.xyern.com` 分发（easel-dsh-website 的 sync_releases.py 重写清单内的资产 URL），旧路径 `easel.xyern.com/downloads/updates/latest.json` 已 404。默认首端点随之改为 `https://cdn.xyern.com/easel/updates/latest.json`，GitHub 兜底不变。
+- 展示与实际分离：关于页对默认源仍以官方站域名 `easel.xyern.com` 呈现（`sourceHint` 点名官方源域名），CDN 地址不出现在任何用户可见界面；`state.endpoints` 快照保持实际端点，默认源分支不渲染它。
+
 ### 版本判定（无状态延迟）
 
 - 提醒命中条件：`latest.version > 当前版本 && now >= pub_date + 24h`。基准取发布时间（用户已默认），不记录本机检测时刻；同一版本对所有用户统一。

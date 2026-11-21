@@ -59,7 +59,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://easel.xyern.com/downloads/updates/latest.json",
+        "https://cdn.xyern.com/easel/updates/latest.json",
         "https://github.com/laochenfei233/easel-dsh/releases/latest/download/latest.json"
       ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEEwOUJCOUZBQTYxOEQwQTUKUldTbDBCaW0rcm1ib0xhRzVDY0ZZcWlQVEp4OXlNandwTWp2WVpPMTRrTVVFTmpXRDBUV1dwencK",

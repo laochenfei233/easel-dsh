@@ -19,7 +19,10 @@ export const EASEL_ABOUT_COPY = {
     sourceDefault: '官方站点（优先）',
     sourceGithub: 'GitHub（Release）',
     sourceCustom: '自定义…',
-    sourceHint: '官方站点不可用时自动回退到 GitHub。',
+    // The hint names the official site domain on purpose: the actual endpoint
+    // in tauri.conf.json is the COS/CDN feed, while the source keeps the
+    // official-site presentation (easel-app-update spec, 2026-11-20 note).
+    sourceHint: '官方源 easel.xyern.com，不可用时自动回退到 GitHub。',
     customUrlHint: '填入 latest.json 地址后点「保存」。',
     sourceUnavailable: '不可用',
     customUrlLabel: '地址',
@@ -55,7 +58,7 @@ export const EASEL_ABOUT_COPY = {
     sourceDefault: 'Official site (preferred)',
     sourceGithub: 'GitHub release',
     sourceCustom: 'Custom…',
-    sourceHint: 'Falls back to GitHub when the official site is unavailable.',
+    sourceHint: 'Official source easel.xyern.com; falls back to GitHub when unavailable.',
     customUrlHint: 'Enter a latest.json URL, then save.',
     sourceUnavailable: 'Unavailable',
     customUrlLabel: 'URL',
