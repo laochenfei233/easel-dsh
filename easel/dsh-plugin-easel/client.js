@@ -2963,7 +2963,7 @@ __export(ideas_exports, {
 // src/components/IdeasPage.tsx
 var import_react5 = require("react");
 
-// ../../../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -4120,7 +4120,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -16292,7 +16292,10 @@ var EASEL_ABOUT_COPY = {
     sourceDefault: "\u5B98\u65B9\u7AD9\u70B9\uFF08\u4F18\u5148\uFF09",
     sourceGithub: "GitHub\uFF08Release\uFF09",
     sourceCustom: "\u81EA\u5B9A\u4E49\u2026",
-    sourceHint: "\u5B98\u65B9\u7AD9\u70B9\u4E0D\u53EF\u7528\u65F6\u81EA\u52A8\u56DE\u9000\u5230 GitHub\u3002",
+    // The hint names the official site domain on purpose: the actual endpoint
+    // in tauri.conf.json is the COS/CDN feed, while the source keeps the
+    // official-site presentation (easel-app-update spec, 2026-11-20 note).
+    sourceHint: "\u5B98\u65B9\u6E90 easel.xyern.com\uFF0C\u4E0D\u53EF\u7528\u65F6\u81EA\u52A8\u56DE\u9000\u5230 GitHub\u3002",
     customUrlHint: "\u586B\u5165 latest.json \u5730\u5740\u540E\u70B9\u300C\u4FDD\u5B58\u300D\u3002",
     sourceUnavailable: "\u4E0D\u53EF\u7528",
     customUrlLabel: "\u5730\u5740",
@@ -16328,7 +16331,7 @@ var EASEL_ABOUT_COPY = {
     sourceDefault: "Official site (preferred)",
     sourceGithub: "GitHub release",
     sourceCustom: "Custom\u2026",
-    sourceHint: "Falls back to GitHub when the official site is unavailable.",
+    sourceHint: "Official source easel.xyern.com; falls back to GitHub when unavailable.",
     customUrlHint: "Enter a latest.json URL, then save.",
     sourceUnavailable: "Unavailable",
     customUrlLabel: "URL",
