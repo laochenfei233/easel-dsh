@@ -3,6 +3,7 @@ import { fetchSchedule, createSchedule, updateSchedule, deleteSchedule, fetchSch
   fetchCaldavAccounts, putCaldavAccounts, discoverCaldav, syncCaldav, fetchCaldavEvents } from '../lib/api';
 import type { ScheduleItem, ScheduleInput, ScheduleContext, CaldavAccount, CaldavEvent, CaldavCalendarRef } from '../lib/api';
 import { festivalsFor } from '../lib/festivals';
+import { GreenlightDialog, TopicPersonaDialog } from './PersonaDialogs';
 import { IconCalendar, IconTrash, IconChevron } from './icons';
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -54,7 +55,13 @@ function syncAgo(ts?: number | null): string {
   return `${Math.floor(s / 86400)} 天前同步`;
 }
 
-export default function CalendarPage() {
+interface CalendarPageProps {
+  onUseTopic: (title: string, projectDir?: string, bodyPath?: string, persona?: string) => void;
+  /** 画像清单（shell 状态）：空列表时做内容跳过画像弹窗，保持一键直进。 */
+  personas: { name: string }[];
+}
+
+export default function CalendarPage({ onUseTopic, personas }: CalendarPageProps) {
   const today = useMemo(() => new Date(), []);
   const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [items, setItems] = useState<ScheduleItem[]>([]);
@@ -65,6 +72,10 @@ export default function CalendarPage() {
   const [ctx, setCtx] = useState<ScheduleContext | null>(null);
   const [showSuggest, setShowSuggest] = useState(true);
   const [dayView, setDayView] = useState<string | null>(null);   // 展开查看某天全部（date，null=关闭）
+  const [toast, setToast] = useState('');
+  // easel-topic-persona-switch S2.4：内容条目的 做内容/立项 动作（点开先关编辑弹窗）。
+  const [useDialog, setUseDialog] = useState<string | null>(null);
+  const [greenlight, setGreenlight] = useState<{ title: string; note?: string; source: string } | null>(null);
 
   // CalDAV 订阅
   const [caldav, setCaldav] = useState<CaldavAccount[]>([]);
@@ -226,6 +237,20 @@ export default function CalendarPage() {
     if (!editing) return;
     setSaving(true);
     try { await deleteSchedule(editing.id); close(); load(); } finally { setSaving(false); }
+  };
+
+  // easel-topic-persona-switch S2.4：排期条目直接 做内容/立项。动作吃当前表单值
+  //（用户改了标题还没保存，就该按看到的开做），先关编辑弹窗再进动作弹窗。
+  const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2200); };
+  const openUseFromForm = () => {
+    if (!form?.title.trim()) return;
+    setUseDialog(form.title.trim());
+    close();
+  };
+  const openGreenlightFromForm = () => {
+    if (!form?.title.trim()) return;
+    setGreenlight({ title: form.title.trim(), note: form.note, source: '内容日历' });
+    close();
   };
 
   const monthLabel = `${cursor.getFullYear()} 年 ${cursor.getMonth() + 1} 月`;
@@ -614,9 +639,19 @@ export default function CalendarPage() {
             <textarea className="field" style={{ minHeight: 60 }} value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })} />
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 18 }}>
-              {editing
-                ? <button className="btn btn-sm btn-danger" onClick={remove} disabled={saving}><IconTrash size={13} /> 删除</button>
-                : <span />}
+              <div style={{ display: 'flex', gap: 8 }}>
+                {editing
+                  ? <button className="btn btn-sm btn-danger" onClick={remove} disabled={saving}><IconTrash size={13} /> 删除</button>
+                  : <span />}
+                {editing && !isEvent && (
+                  <>
+                    <button className="btn btn-sm" title="按当前表单标题开一个新会话动笔"
+                      disabled={saving || !form.title.trim()} onClick={openUseFromForm}>做内容</button>
+                    <button className="btn btn-sm" title="按当前表单标题建同名项目工作区并装配资料"
+                      disabled={saving || !form.title.trim()} onClick={openGreenlightFromForm}>🚩 立项</button>
+                  </>
+                )}
+              </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="btn btn-sm" onClick={close}>取消</button>
                 <button className="btn btn-sm btn-primary" onClick={save} disabled={saving || !form.title.trim() || !form.date}>
@@ -627,6 +662,22 @@ export default function CalendarPage() {
           </div>
         </div>
       )}
+
+      {useDialog && (
+        <TopicPersonaDialog
+          topic={useDialog}
+          onConfirm={(persona) => { onUseTopic(useDialog, undefined, undefined, persona); setUseDialog(null); }}
+          onClose={() => setUseDialog(null)} />
+      )}
+
+      {greenlight && (
+        <GreenlightDialog
+          topic={greenlight}
+          onDone={() => { setGreenlight(null); showToast('已立项：资料已装入项目工作区'); }}
+          onClose={() => setGreenlight(null)} />
+      )}
+
+      {toast && <div className="toast ok"><span className="toast-icon">✓</span>{toast}</div>}
     </div>
   );
 }
