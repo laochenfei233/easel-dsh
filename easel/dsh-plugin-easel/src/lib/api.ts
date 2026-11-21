@@ -696,9 +696,11 @@ export function setProfileDefault(name: string): Promise<{ ok: boolean; defaultP
 /**
  * 立项工作区资料装配（spec easel-project-materials）：宿主建 projects/<safe>/
  * 并播种选题卡/拆解素材/画像快照，选题卡置 project。返回清洗后的目录名。
+ * `ideaId` 可选（easel-topic-persona-switch S2.3）：日历/雷达立项没有选题卡，
+ * 服务端只在带 ideaId 时回写选题状态。
  */
 export function projectizeTopic(body: {
-  ideaId: string; title: string; note?: string; source?: string; fallback?: string;
+  ideaId?: string; title: string; note?: string; source?: string; fallback?: string;
   deconstruct?: string; persona?: string;
 }): Promise<{ safe: string }> {
   return request('/api/projectize', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });

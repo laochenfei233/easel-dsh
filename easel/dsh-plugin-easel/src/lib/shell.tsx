@@ -10,6 +10,7 @@ import { useSyncExternalStore } from 'react'
 import {
   configureTasks, findWorkspaceByPath, getWorkspaceService, projectRoot, resolveHomeWorkspaceId,
 } from './task'
+import { topicPrompt } from './topic-prompt.js'
 
 /** Everything the shell can hand a ported page; each page destructures its own. */
 export interface PageProps {
@@ -23,8 +24,9 @@ export interface PageProps {
   gatewayStatus: string
   apiDirect: boolean
   onNavigate: (page: string) => void
-  /** topic hand-off; `bodyPath` 选题有抓取的正文时注入其内容库路径，agent 先读正文再动笔。 */
-  onUseTopic: (title: string, projectDir?: string, bodyPath?: string) => void
+  /** topic hand-off; `bodyPath` 选题有抓取的正文时注入其内容库路径，agent 先读正文再动笔。
+   *  `persona`（easel-topic-persona-switch S2.2）非空时提示词追加画像行。 */
+  onUseTopic: (title: string, projectDir?: string, bodyPath?: string, persona?: string) => void
   jumpPath: string
   onJumpHandled: () => void
   onDeleted: () => void
@@ -42,26 +44,6 @@ export interface PageProps {
 /** The `main` slot key for a view (also the rail entry id). */
 export function pageKey(view: string): string {
   return `easel.${view}`
-}
-
-/**
- * Easel's topic prompt, verbatim from the App component this port replaces.
- * `bodyPath`（easel-hotspot-radar D6）：选题卡带正文时，prompt 指向内容库
- * 里的正文文件（调用方解析好的绝对路径；解析失败时不传，保持无感）。
- */
-export function topicPrompt(title: string, projectDir?: string, inProject = false, bodyPath?: string): string {
-  const base = `围绕当前热点「${title}」：先判断它适不适合我的账号赛道；若合适，给 2-3 个差异化的二创角度，并把你最推荐的那条写成可直接发布的文案初稿。`
-  const body = bodyPath
-    ? `\n\n这条热点的正文已抓取到内容库：${bodyPath}。先读它再动笔，不要凭标题臆测内容。`
-    : ''
-  // EASEL-DIVERGENCE(easel-project-materials/easel-deconstruct-title-attach): 已立项
-  // 选题注入项目目录落点。inProject = 会话 cwd 已是项目目录（create({workspaceId})），
-  // 路径用目录内语义；否则 cwd=项目根，带前缀。
-  if (!projectDir) return `${base}${body}`
-  const project = inProject
-    ? `\n\n本项目已立项：先读 项目资料.md（就在当前目录，选题卡、拆解素材、画像快照都在里面，按需参考），本次创作的脚本/文案/成片等产物一律写入当前目录（项目工作区）。`
-    : `\n\n本项目已立项：先读 ${projectDir}/项目资料.md（选题卡、拆解素材、画像快照都在里面，按需参考），本次创作的脚本/文案/成片等产物一律写入 ${projectDir}/ 目录。`
-  return `${base}${body}${project}`
 }
 
 interface StatusPayload {
@@ -132,7 +114,7 @@ export interface EaselShell {
   /** Select a dsh main panel (`chat` maps to the conversation). */
   navigate: (page: string) => void
   /** Hand a topic to a fresh dsh conversation. */
-  useTopic: (title: string, projectDir?: string) => void
+  useTopic: (title: string, projectDir?: string, bodyPath?: string, persona?: string) => void
   /** Rail label lookup, bound to the `easel.panel` dictionaries. */
   t: (view: string) => string
   /** Re-read /easel/api/status. */
@@ -162,7 +144,7 @@ export function createShellBridge(ctx: any, t: (view: string) => string): EaselS
    * agent turn starts immediately. Falls back to the clipboard when the
    * session plane is unavailable.
    */
-  const useTopic = (title: string, projectDir?: string, bodyPath?: string) => {
+  const useTopic = (title: string, projectDir?: string, bodyPath?: string, persona?: string) => {
     const fallbackPrompt = topicPrompt(title, projectDir)
     const clipboardFallback = () => {
       void navigator.clipboard?.writeText(fallbackPrompt).catch(() => {})
@@ -182,7 +164,7 @@ export function createShellBridge(ctx: any, t: (view: string) => string): EaselS
         const project = projectDir ? findWorkspaceByPath(projectDir) : null
         const homeId = project?.workspaceId ?? await resolveHomeWorkspaceId()
         const bodyPrompt = await bodyPromptLine(bodyPath)
-        const prompt = topicPrompt(title, projectDir, project !== null, bodyPrompt)
+        const prompt = topicPrompt(title, projectDir, project !== null, bodyPrompt, persona)
         const id = homeId ? await sessions.create({ workspaceId: homeId }) : await sessions.create()
         uiWorkspace.openSession(id)
         await sessions.using(id, { source: 'easelTopic' }, async () => {
