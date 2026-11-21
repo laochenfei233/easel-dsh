@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { fetchIdeas, createIdea, updateIdea, deleteIdea, createSchedule, fetchStatus, projectizeTopic, fetchOutputContent } from '../lib/api';
-import { getWorkspaceService } from '../lib/task';
+import { fetchIdeas, createIdea, updateIdea, deleteIdea, createSchedule, fetchOutputContent } from '../lib/api';
 import type { Idea, IdeaInput } from '../lib/api';
 import { renderMarkdown } from '../lib/sanitize';
+import { GreenlightDialog, TopicPersonaDialog } from './PersonaDialogs';
 import { IconIdea, IconEdit, IconTrash, IconChat, IconCalendar, IconChevron } from './icons';
 
 interface IdeasPageProps {
-  onUseTopic: (title: string, projectDir?: string, bodyPath?: string) => void;
+  onUseTopic: (title: string, projectDir?: string, bodyPath?: string, persona?: string) => void;
+  /** 画像清单（shell 状态）：空列表时做内容跳过画像弹窗，保持一键直进。 */
+  personas: { name: string }[];
 }
 
 const COLUMNS: { key: string; label: string; color: string }[] = [
@@ -20,15 +22,13 @@ const COLUMNS: { key: string; label: string; color: string }[] = [
 const NEXT: Record<string, string> = { pending: 'doing', doing: 'done', done: 'pending' };
 const EMPTY: IdeaInput = { title: '', note: '', source: '', status: 'pending' };
 
-export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
+export default function IdeasPage({ onUseTopic, personas }: IdeasPageProps) {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [form, setForm] = useState<IdeaInput | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [toast, setToast] = useState('');
   const [greenlight, setGreenlight] = useState<Idea | null>(null);
-  const [personas, setPersonas] = useState<{ name: string; description?: string }[]>([]);
-  const [personaPick, setPersonaPick] = useState('');
-  const [busy, setBusy] = useState(false);
+  const [useDialog, setUseDialog] = useState<{ title: string; projectDir?: string; bodyPath?: string } | null>(null);
 
   const load = useCallback(() => { fetchIdeas().then(setIdeas).catch(() => {}); }, []);
   useEffect(() => { load(); }, [load]);
@@ -65,47 +65,15 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
     setForm(null); setEditId(null); load();
   };
   // EASEL-DIVERGENCE(easel-project-materials): 立项 = 宿主建 projects/<safe>/ 并播种
-  // 资料（选题卡/拆解素材/画像快照；标题清洗与媒体硬链接都在宿主侧），前端拿 safe
-  // 建 dsh 工作区。projectDir 由宿主写回选题卡，「做内容」凭它注入产物落点。
-  const openGreenlight = async (it: Idea) => {
-    setGreenlight(it);
-    setPersonaPick('');
-    const status = await fetchStatus();
-    const list = status?.personas ?? [];
-    setPersonas(list);
-    // 拆解选题带 persona（spec easel-breakdown-persona-push §S2.1）：默认带入快照；
-    // 画像已不存在时回退现状——唯一画像自动选，否则不选。
-    if (it.persona && list.some(p => p.name === it.persona)) setPersonaPick(it.persona);
-    else if (list.length === 1) setPersonaPick(list[0].name);
+  // 资料（PersonaDialogs.GreenlightDialog：选题卡/拆解素材/画像快照；标题清洗与媒体
+  // 硬链接都在宿主侧），前端拿 safe 建 dsh 工作区。projectDir 由宿主写回选题卡，
+  // 「做内容」凭它注入产物落点。easel-topic-persona-switch S2.4：做内容先过画像弹窗，
+  // 装好还没建画像时保持一键直进。
+  const openUse = (it: Idea) => {
+    if (personas.length === 0) { onUseTopic(it.title, it.projectDir, it.bodyPath); return; }
+    setUseDialog({ title: it.title, projectDir: it.projectDir, bodyPath: it.bodyPath });
   };
-  const confirmGreenlight = async () => {
-    const it = greenlight;
-    if (!it || busy) return;
-    setBusy(true);
-    try {
-      const status = await fetchStatus();
-      const root = status?.projectRoot ?? '';
-      if (!root) throw new Error('拿不到项目根');
-      const { safe } = await projectizeTopic({
-        ideaId: it.id, title: it.title, note: it.note, source: it.source,
-        fallback: it.id, deconstruct: it.deconstruct, persona: personaPick,
-      });
-      const ws = getWorkspaceService();
-      if (!ws) throw new Error('工作区服务不可达');
-      try {
-        await ws.create({ path: `${root.replace(/[\/]+$/, '')}/projects/${safe}/` });
-      } catch {
-        // 重复立项时工作区已存在：播种照常完成，这里不当作失败。
-      }
-      setGreenlight(null);
-      showToast('已立项：资料已装入项目工作区');
-      load();
-    } catch (error) {
-      showToast(`立项失败：${(error as Error).message ?? error}`);
-    } finally {
-      setBusy(false);
-    }
-  };
+  const openGreenlight = (it: Idea) => setGreenlight(it);
 
   const advance = async (it: Idea) => { await updateIdea(it.id, { ...it, status: NEXT[it.status] }); load(); };
   const remove = async (it: Idea) => { await deleteIdea(it.id); load(); };
@@ -151,7 +119,7 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
                     </div>
                   )}
                   <div className="idea-foot">
-                    <button className="idea-act" onClick={() => onUseTopic(it.title, it.projectDir, it.bodyPath)}><IconChat size={13} /> 做内容</button>
+                    <button className="idea-act" onClick={() => openUse(it)}><IconChat size={13} /> 做内容</button>
                     <button className="idea-act" onClick={() => schedule(it)}><IconCalendar size={13} /> 排期</button>
                     {it.status !== 'project' && (
                       <button className="idea-act" title="确认立项：建同名工作区并装配资料" onClick={() => openGreenlight(it)}>🚩 立项</button>
@@ -217,30 +185,24 @@ export default function IdeasPage({ onUseTopic }: IdeasPageProps) {
         </div>
       )}
 
+      {useDialog && (
+        <TopicPersonaDialog
+          topic={useDialog.title}
+          onConfirm={(persona) => {
+            onUseTopic(useDialog.title, useDialog.projectDir, useDialog.bodyPath, persona);
+            setUseDialog(null);
+          }}
+          onClose={() => setUseDialog(null)} />
+      )}
+
       {greenlight && (
-        <div className="overlay" onClick={() => setGreenlight(null)}>
-          <div className="modal" style={{ width: 420, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <h3 style={{ margin: 0 }}>立项：{greenlight.title.slice(0, 20)}{greenlight.title.length > 20 ? '…' : ''}</h3>
-              <button className="icon-btn" onClick={() => setGreenlight(null)}>×</button>
-            </div>
-            <p style={{ margin: '6px 0 12px', fontSize: 12.5, color: 'var(--text-secondary)' }}>
-              将建同名项目工作区并装配资料{greenlight.deconstruct ? '（拆解报告、字幕、视频与关键帧）' : ''}，
-              账户画像按下选择带入快照。侧栏出现同名工作区分组。
-            </p>
-            <label className="field-label">账户画像</label>
-            <select className="field" value={personaPick} onChange={(e) => setPersonaPick(e.target.value)}>
-              <option value="">不带入</option>
-              {personas.map((p) => (
-                <option key={p.name} value={p.name}>{p.name}{p.description ? ` — ${p.description}` : ''}</option>
-              ))}
-            </select>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
-              <button className="btn btn-sm" onClick={() => setGreenlight(null)}>取消</button>
-              <button className="btn btn-sm btn-primary" onClick={confirmGreenlight} disabled={busy}>🚩 确认立项</button>
-            </div>
-          </div>
-        </div>
+        <GreenlightDialog
+          topic={{
+            title: greenlight.title, note: greenlight.note, source: greenlight.source,
+            deconstruct: greenlight.deconstruct, ideaId: greenlight.id, ideaPersona: greenlight.persona,
+          }}
+          onDone={() => { setGreenlight(null); showToast('已立项：资料已装入项目工作区'); load(); }}
+          onClose={() => setGreenlight(null)} />
       )}
 
       {toast && <div className="toast ok"><span className="toast-icon">✓</span>{toast}</div>}
