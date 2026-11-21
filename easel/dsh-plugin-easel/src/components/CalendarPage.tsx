@@ -244,8 +244,11 @@ export default function CalendarPage({ onUseTopic, personas }: CalendarPageProps
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2200); };
   const openUseFromForm = () => {
     if (!form?.title.trim()) return;
-    setUseDialog(form.title.trim());
+    const title = form.title.trim();
     close();
+    // easel-topic-persona-switch S2.1：装好还没建画像时保持一键直进。
+    if (personas.length === 0) { onUseTopic(title); return; }
+    setUseDialog(title);
   };
   const openGreenlightFromForm = () => {
     if (!form?.title.trim()) return;

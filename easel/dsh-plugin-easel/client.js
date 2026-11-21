@@ -7139,8 +7139,13 @@ function CalendarPage({ onUseTopic, personas }) {
   };
   const openUseFromForm = () => {
     if (!form?.title.trim()) return;
-    setUseDialog(form.title.trim());
+    const title = form.title.trim();
     close();
+    if (personas.length === 0) {
+      onUseTopic(title);
+      return;
+    }
+    setUseDialog(title);
   };
   const openGreenlightFromForm = () => {
     if (!form?.title.trim()) return;
