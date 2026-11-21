@@ -1,10 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchTrends, createIdea, fetchRadarConfig, saveRadarConfig } from '../lib/api';
 import type { TrendGroup, TrendItem, TrendCluster, WatchGroup, RadarConfig, RadarSource } from '../lib/api';
+import { GreenlightDialog, TopicPersonaDialog } from './PersonaDialogs';
 import { IconFire, IconRefresh, IconBookmark, IconCheck } from './icons';
 
 interface TrendsPageProps {
-  onUseTopic: (title: string) => void;   // 一键做成内容 → 跳 chat
+  onUseTopic: (title: string, projectDir?: string, bodyPath?: string, persona?: string) => void;
+  /** 画像清单（shell 状态）：空列表时做内容跳过画像弹窗，保持一键直进。 */
+  personas: { name: string }[];
 }
 
 const ALL_PLATFORMS: { key: string; label: string }[] = [
@@ -58,13 +61,14 @@ function TrendBadges({ item }: { item: TrendItem }) {
   );
 }
 
-/** 单条热点：真实榜位 + 标题 + 热度 + 徽标 + 收藏/做内容；整行是右键菜单面。 */
-function TrendRow({ row, showPlatform, saved, onSave, onUse }: {
+/** 单条热点：真实榜位 + 标题 + 热度 + 徽标 + 收藏/做内容/立项；整行是右键菜单面。 */
+function TrendRow({ row, showPlatform, saved, onSave, onUse, onGreenlight }: {
   row: RowRef;
   showPlatform?: boolean;
   saved: boolean;
   onSave: () => void;
   onUse: () => void;
+  onGreenlight: () => void;
 }) {
   const payload = JSON.stringify({
     title: row.title, url: row.url, source: row.source, platform: row.platform, rank: row.rank, hot: row.hot,
@@ -87,6 +91,7 @@ function TrendRow({ row, showPlatform, saved, onSave, onUse }: {
         {saved ? <IconCheck size={14} /> : <IconBookmark size={14} />}
       </button>
       <button className="trend-use" title="做成内容" onClick={onUse}>做内容</button>
+      <button className="trend-use" title="立项：建同名项目工作区并装配资料" onClick={onGreenlight}>立项</button>
     </div>
   );
 }
@@ -95,10 +100,11 @@ interface RowHandlers {
   isSaved: (title: string) => boolean;
   onSave: (row: RowRef) => void;
   onUse: (title: string) => void;
+  onGreenlight: (row: RowRef) => void;
 }
 
 /** 分列视图的一列（内置平台与自定义源同构）。 */
-function TrendColumn({ group, rising, loading, isSaved, onSave, onUse }: {
+function TrendColumn({ group, rising, loading, isSaved, onSave, onUse, onGreenlight }: {
   group: TrendGroup & { source: string };
   rising: boolean;
   loading: boolean;
@@ -123,7 +129,7 @@ function TrendColumn({ group, rising, loading, isSaved, onSave, onUse }: {
           const row: RowRef = { ...it, platform: group.platform, label: group.label, source: group.source };
           return (
             <TrendRow key={it.url || `${it.title}-${i}`} row={row} saved={isSaved(it.title)}
-              onSave={() => onSave(row)} onUse={() => onUse(it.title)} />
+              onSave={() => onSave(row)} onUse={() => onUse(it.title)} onGreenlight={() => onGreenlight(row)} />
           );
         })}
       </div>
@@ -132,7 +138,7 @@ function TrendColumn({ group, rising, loading, isSaved, onSave, onUse }: {
 }
 
 /** 「我的关注」置顶卡：每个命中词一行，各词最多 3 条。 */
-function WatchCard({ watch, isSaved, onSave, onUse }: { watch: WatchGroup[] } & RowHandlers) {
+function WatchCard({ watch, isSaved, onSave, onUse, onGreenlight }: { watch: WatchGroup[] } & RowHandlers) {
   const total = watch.reduce((sum, g) => sum + g.items.length, 0);
   const newCount = watch.reduce((sum, g) => sum + g.items.filter((it) => it.isNew).length, 0);
   const shown = watch.slice(0, 5);
@@ -150,7 +156,8 @@ function WatchCard({ watch, isSaved, onSave, onUse }: { watch: WatchGroup[] } & 
               const row: RowRef = { ...it, source: sourceOf(it.label) };
               return (
                 <TrendRow key={it.platform + (it.url || it.title) + i} row={row} showPlatform
-                  saved={isSaved(it.title)} onSave={() => onSave(row)} onUse={() => onUse(it.title)} />
+                  saved={isSaved(it.title)} onSave={() => onSave(row)} onUse={() => onUse(it.title)}
+                  onGreenlight={() => onGreenlight(row)} />
               );
             })}
           </div>
@@ -163,7 +170,7 @@ function WatchCard({ watch, isSaved, onSave, onUse }: { watch: WatchGroup[] } & 
 }
 
 /** 跨平台聚合卡：代表标题 + 平台标签；卡内各平台条目仍可单独右键。 */
-function ClusterCard({ cluster, isSaved, onSave, onUse }: { cluster: TrendCluster } & RowHandlers) {
+function ClusterCard({ cluster, isSaved, onSave, onUse, onGreenlight }: { cluster: TrendCluster } & RowHandlers) {
   const rep = cluster.items[0];
   const shownLabels = cluster.labels.slice(0, 4);
   const extra = cluster.labels.length - shownLabels.length;
@@ -192,6 +199,11 @@ function ClusterCard({ cluster, isSaved, onSave, onUse }: { cluster: TrendCluste
             {isSaved(cluster.title) ? <IconCheck size={14} /> : <IconBookmark size={14} />}
           </button>
           <button className="trend-use" title="做成内容" onClick={() => onUse(cluster.title)}>做内容</button>
+          <button className="trend-use" title="立项：建同名项目工作区并装配资料"
+            onClick={() => onGreenlight({
+              title: cluster.title, url: rep?.url ?? '', hot: '',
+              platform: cluster.platforms.join(','), label: '聚合', source,
+            })}>立项</button>
         </div>
       </div>
       <div className="trend-cluster-platforms">
@@ -203,7 +215,8 @@ function ClusterCard({ cluster, isSaved, onSave, onUse }: { cluster: TrendCluste
           const row: RowRef = { ...it, source: sourceOf(it.label) };
           return (
             <TrendRow key={it.platform + (it.url || it.title) + i} row={row} showPlatform
-              saved={isSaved(it.title)} onSave={() => onSave(row)} onUse={() => onUse(it.title)} />
+              saved={isSaved(it.title)} onSave={() => onSave(row)} onUse={() => onUse(it.title)}
+              onGreenlight={() => onGreenlight(row)} />
           );
         })}
       </div>
@@ -345,7 +358,7 @@ function RadarSettings({ cfg, onSaved, onClose }: {
   );
 }
 
-export default function TrendsPage({ onUseTopic }: TrendsPageProps) {
+export default function TrendsPage({ onUseTopic, personas }: TrendsPageProps) {
   const [selected, setSelected] = useState<string[]>(['weibo', 'douyin', 'zhihu', 'douyin_rule', 'douyin_activity']);
   const [groups, setGroups] = useState<TrendGroup[]>([]);
   const [clusters, setClusters] = useState<null | TrendCluster[]>(null);
@@ -356,6 +369,10 @@ export default function TrendsPage({ onUseTopic }: TrendsPageProps) {
   const [saved, setSaved] = useState<Set<string>>(new Set());
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [radarCfg, setRadarCfg] = useState<RadarConfig | null>(null);
+  const [toast, setToast] = useState('');
+  // easel-topic-persona-switch S2.4：做内容/立项 动作弹窗。
+  const [useDialog, setUseDialog] = useState<string | null>(null);
+  const [greenlight, setGreenlight] = useState<{ title: string; source?: string } | null>(null);
   // 视图与排序；聚合视图首次切换才带 view=cluster 请求（响应里仍含 trends）
   const [viewMode, setViewMode] = useState<'list' | 'cluster'>('list');
   const [rising, setRising] = useState(false);
@@ -365,6 +382,8 @@ export default function TrendsPage({ onUseTopic }: TrendsPageProps) {
   const loadRadar = useCallback(() => {
     fetchRadarConfig().then(setRadarCfg).catch(() => {});
   }, []);
+
+  const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2200); };
 
   const save = async (title: string, source: string) => {
     if (saved.has(title)) return;
@@ -421,8 +440,12 @@ export default function TrendsPage({ onUseTopic }: TrendsPageProps) {
   const handlers: RowHandlers = useMemo(() => ({
     isSaved: (title) => saved.has(title),
     onSave: (row) => { void save(row.title, row.source); },
-    onUse: (title) => { onUseTopic(title); },
-  }), [saved, onUseTopic]);   // save 以闭包读最新 saved；handlers 随 saved 重建
+    // easel-topic-persona-switch S2.4：做内容先过画像弹窗；装好还没建画像时保持一键直进。
+    onUse: (title) => {
+      if (personas.length > 0) setUseDialog(title); else onUseTopic(title);
+    },
+    onGreenlight: (row) => { setGreenlight({ title: row.title, source: row.source }); },
+  }), [saved, onUseTopic, personas]);   // save 以闭包读最新 saved；handlers 随 saved 重建
 
   // 自定义源的分组与其分类标签
   const customGroups = groups.filter((g) => g.platform.startsWith('custom:'));
@@ -515,6 +538,22 @@ export default function TrendsPage({ onUseTopic }: TrendsPageProps) {
           </div>
         </div>
       )}
+
+      {useDialog && (
+        <TopicPersonaDialog
+          topic={useDialog}
+          onConfirm={(persona) => { onUseTopic(useDialog, undefined, undefined, persona); setUseDialog(null); }}
+          onClose={() => setUseDialog(null)} />
+      )}
+
+      {greenlight && (
+        <GreenlightDialog
+          topic={greenlight}
+          onDone={() => { setGreenlight(null); showToast('已立项：资料已装入项目工作区'); }}
+          onClose={() => setGreenlight(null)} />
+      )}
+
+      {toast && <div className="toast ok"><span className="toast-icon">✓</span>{toast}</div>}
     </div>
   );
 }
