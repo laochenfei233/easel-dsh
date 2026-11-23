@@ -1300,6 +1300,22 @@ async function apiIdeasCreate(c) {
 
 async function apiIdeasUpdate(c) {
   const body = await c.body()
+  // persona 三态对齐 schedule update（spec easel-idea-trend-persona-color §S2.3）：
+  // 字段缺失保留原值；显式空串清除；非空必须指向真实画像目录（与 create 同校验）。
+  // 在 mutateIdeas 之外先解析，回调里保持同步。
+  let personaNext
+  if (body?.persona === undefined) {
+    personaNext = undefined   // 保留原值
+  } else {
+    const personaInput = String(body.persona).trim()
+    if (personaInput !== '') {
+      const { dir } = personaDir(c.settings, personaInput)
+      if (!validPersonaName(personaInput) || !(await isDirectory(dir))) {
+        throw new ApiError(404, `画像「${personaInput}」不存在`)
+      }
+    }
+    personaNext = personaInput
+  }
   const { json } = await mutateIdeas(c.settings, (items) => {
     const item = items.find(entry => entry.id === c.params.iid)
     if (item === undefined) throw new ApiError(404, '选题不存在')
@@ -1309,6 +1325,7 @@ async function apiIdeasUpdate(c) {
       source: String(body?.source ?? ''),
       status: IDEA_STATUSES.has(body?.status) ? body.status : (typeof item.status === 'string' && item.status ? item.status : 'pending'),
     })
+    if (personaNext !== undefined) item.persona = personaNext
     return { items, json: item }
   })
   return { json }
