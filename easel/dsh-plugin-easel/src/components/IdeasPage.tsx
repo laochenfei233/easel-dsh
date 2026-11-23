@@ -3,12 +3,15 @@ import { fetchIdeas, createIdea, updateIdea, deleteIdea, createSchedule, fetchOu
 import type { Idea, IdeaInput } from '../lib/api';
 import { renderMarkdown } from '../lib/sanitize';
 import { GreenlightDialog, TopicPersonaDialog } from './PersonaDialogs';
+import { personaColor } from '../lib/persona-color.js';
 import { IconIdea, IconEdit, IconTrash, IconChat, IconCalendar, IconChevron } from './icons';
 
 interface IdeasPageProps {
   onUseTopic: (title: string, projectDir?: string, bodyPath?: string, persona?: string) => void;
   /** 画像清单（shell 状态）：空列表时做内容跳过画像弹窗，保持一键直进。 */
   personas: { name: string }[];
+  /** 显式画像色表（spec easel-persona-color §S2.1），卡片色点与日历同源。 */
+  personaColors: Record<string, string>;
 }
 
 const COLUMNS: { key: string; label: string; color: string }[] = [
@@ -20,9 +23,9 @@ const COLUMNS: { key: string; label: string; color: string }[] = [
 // EASEL-DIVERGENCE(easel-single-workspace D3): 已立项的选题拥有同名工作区，
 // 不再参与 往复推进，只保留编辑/删除。
 const NEXT: Record<string, string> = { pending: 'doing', doing: 'done', done: 'pending' };
-const EMPTY: IdeaInput = { title: '', note: '', source: '', status: 'pending' };
+const EMPTY: IdeaInput = { title: '', note: '', source: '', status: 'pending', persona: '' };
 
-export default function IdeasPage({ onUseTopic, personas }: IdeasPageProps) {
+export default function IdeasPage({ onUseTopic, personas, personaColors }: IdeasPageProps) {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [form, setForm] = useState<IdeaInput | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -58,7 +61,7 @@ export default function IdeasPage({ onUseTopic, personas }: IdeasPageProps) {
   }, [ideas]);
 
   const openNew = () => { setEditId(null); setForm({ ...EMPTY }); };
-  const openEdit = (it: Idea) => { setEditId(it.id); setForm({ title: it.title, note: it.note, source: it.source, status: it.status }); };
+  const openEdit = (it: Idea) => { setEditId(it.id); setForm({ title: it.title, note: it.note, source: it.source, status: it.status, persona: it.persona ?? '' }); };
   const save = async () => {
     if (!form || !form.title.trim()) return;
     if (editId) await updateIdea(editId, form); else await createIdea(form);
@@ -110,7 +113,12 @@ export default function IdeasPage({ onUseTopic, personas }: IdeasPageProps) {
                   </div>
                   <div className="idea-title">{it.title}</div>
                   {it.source && <span className="badge" style={{ marginTop: 6 }}>{it.source}</span>}
-                  {it.persona && <span className="badge" style={{ marginTop: 6, marginLeft: 6 }}>画像 {it.persona}</span>}
+                  {it.persona && (
+                    <span className="badge" style={{ marginTop: 6, marginLeft: 6, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: personaColor(it.persona, personaColors), flexShrink: 0 }} />
+                      {it.persona}
+                    </span>
+                  )}
                   {it.note && <div className="idea-note">{it.note}</div>}
                   {(it.bodyPath || it.url) && (
                     <div className="idea-links">
@@ -160,6 +168,14 @@ export default function IdeasPage({ onUseTopic, personas }: IdeasPageProps) {
                   onClick={() => setForm({ ...form, status: c.key })}>{c.label}</button>
               ))}
             </div>
+            <label className="field-label">关联画像（可选）</label>
+            <select className="field" value={form.persona || ''}
+              onChange={(e) => setForm({ ...form, persona: e.target.value })}>
+              <option value="">不关联</option>
+              {personas.map((p) => (
+                <option key={p.name} value={p.name}>{p.name}</option>
+              ))}
+            </select>
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
               <button className="btn btn-sm" onClick={() => setForm(null)}>取消</button>
               <button className="btn btn-sm btn-primary" onClick={save} disabled={!form.title.trim()}>保存</button>

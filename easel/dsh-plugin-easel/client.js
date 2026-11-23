@@ -6127,6 +6127,27 @@ function renderMarkdown(md) {
   return purify_default.sanitize(raw);
 }
 
+// src/lib/persona-color.js
+var PERSONA_PALETTE = [
+  "#c2643a",
+  "#8a63c9",
+  "#2f9e8f",
+  "#c9a227",
+  "#d16ba5",
+  "#5a8fd9",
+  "#b0763f",
+  "#6aa84f",
+  "#a0522d",
+  "#4fb3bf"
+];
+function personaColor(name, colors = {}) {
+  const explicit = colors[name];
+  if (typeof explicit === "string" && /^#[0-9a-fA-F]{6}$/.test(explicit)) return explicit;
+  let hash = 0;
+  for (const ch of String(name)) hash = hash * 31 + ch.codePointAt(0) >>> 0;
+  return PERSONA_PALETTE[hash % PERSONA_PALETTE.length];
+}
+
 // src/components/IdeasPage.tsx
 var import_jsx_runtime7 = require("react/jsx-runtime");
 var COLUMNS = [
@@ -6136,8 +6157,8 @@ var COLUMNS = [
   { key: "done", label: "\u5DF2\u5B8C\u6210", color: "var(--layer-publish)" }
 ];
 var NEXT = { pending: "doing", doing: "done", done: "pending" };
-var EMPTY = { title: "", note: "", source: "", status: "pending" };
-function IdeasPage({ onUseTopic, personas }) {
+var EMPTY = { title: "", note: "", source: "", status: "pending", persona: "" };
+function IdeasPage({ onUseTopic, personas, personaColors }) {
   const [ideas, setIdeas] = (0, import_react5.useState)([]);
   const [form, setForm] = (0, import_react5.useState)(null);
   const [editId, setEditId] = (0, import_react5.useState)(null);
@@ -6181,7 +6202,7 @@ function IdeasPage({ onUseTopic, personas }) {
   };
   const openEdit = (it) => {
     setEditId(it.id);
-    setForm({ title: it.title, note: it.note, source: it.source, status: it.status });
+    setForm({ title: it.title, note: it.note, source: it.source, status: it.status, persona: it.persona ?? "" });
   };
   const save = async () => {
     if (!form || !form.title.trim()) return;
@@ -6238,8 +6259,8 @@ function IdeasPage({ onUseTopic, personas }) {
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "idea-title", children: it.title }),
           it.source && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { className: "badge", style: { marginTop: 6 }, children: it.source }),
-          it.persona && /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("span", { className: "badge", style: { marginTop: 6, marginLeft: 6 }, children: [
-            "\u753B\u50CF ",
+          it.persona && /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("span", { className: "badge", style: { marginTop: 6, marginLeft: 6, display: "inline-flex", alignItems: "center", gap: 5 }, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("span", { style: { width: 8, height: 8, borderRadius: "50%", background: personaColor(it.persona, personaColors), flexShrink: 0 } }),
             it.persona
           ] }),
           it.note && /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("div", { className: "idea-note", children: it.note }),
@@ -6312,6 +6333,19 @@ function IdeasPage({ onUseTopic, personas }) {
         },
         c.key
       )) }),
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("label", { className: "field-label", children: "\u5173\u8054\u753B\u50CF\uFF08\u53EF\u9009\uFF09" }),
+      /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)(
+        "select",
+        {
+          className: "field",
+          value: form.persona || "",
+          onChange: (e) => setForm({ ...form, persona: e.target.value }),
+          children: [
+            /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("option", { value: "", children: "\u4E0D\u5173\u8054" }),
+            personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("option", { value: p.name, children: p.name }, p.name))
+          ]
+        }
+      ),
       /* @__PURE__ */ (0, import_jsx_runtime7.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
         /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("button", { className: "btn btn-sm", onClick: () => setForm(null), children: "\u53D6\u6D88" }),
         /* @__PURE__ */ (0, import_jsx_runtime7.jsx)("button", { className: "btn btn-sm btn-primary", onClick: save, disabled: !form.title.trim(), children: "\u4FDD\u5B58" })
@@ -6887,27 +6921,6 @@ function festivalsFor(year, month) {
     if (list.length > 0) result.set(ymd2, list);
   }
   return result;
-}
-
-// src/lib/persona-color.js
-var PERSONA_PALETTE = [
-  "#c2643a",
-  "#8a63c9",
-  "#2f9e8f",
-  "#c9a227",
-  "#d16ba5",
-  "#5a8fd9",
-  "#b0763f",
-  "#6aa84f",
-  "#a0522d",
-  "#4fb3bf"
-];
-function personaColor(name, colors = {}) {
-  const explicit = colors[name];
-  if (typeof explicit === "string" && /^#[0-9a-fA-F]{6}$/.test(explicit)) return explicit;
-  let hash = 0;
-  for (const ch of String(name)) hash = hash * 31 + ch.codePointAt(0) >>> 0;
-  return PERSONA_PALETTE[hash % PERSONA_PALETTE.length];
 }
 
 // src/components/CalendarPage.tsx
