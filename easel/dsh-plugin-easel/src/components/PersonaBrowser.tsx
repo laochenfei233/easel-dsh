@@ -8,11 +8,42 @@
 import { useEffect, useState } from 'react'
 import ProfilePage from './ProfilePage'
 import OnboardingWizard from './OnboardingWizard'
-import { setProfileDefault } from '../lib/api'
+import { setProfileDefault, setProfileColor } from '../lib/api'
+import { PERSONA_PALETTE, personaColor } from '../lib/persona-color.js'
 import type { PageProps } from '../nav'
 
-export default function PersonaBrowser({ persona, personas, defaultPersona, onPersonaChange, onDeleted, onRefresh }: PageProps) {
+/** 色点旁的选色小弹层：10 色板 + 清除自定义（回自动色）。 */
+function ColorPicker({ name, colors, onPick, onClose }: {
+  name: string;
+  colors: Record<string, string>;
+  onPick: (color: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="modal" style={{ width: 300, maxWidth: '100%' }} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+          <h3 style={{ margin: 0, fontSize: 14 }}>画像颜色：{name}</h3>
+          <button className="icon-btn" onClick={onClose}>×</button>
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {PERSONA_PALETTE.map((c) => (
+            <button key={c} title={c} onClick={() => { onPick(c); onClose(); }}
+              style={{ width: 26, height: 26, borderRadius: '50%', background: c, cursor: 'pointer',
+                border: personaColor(name, colors) === c ? '2px solid var(--text)' : '0.5px solid var(--border)' }} />
+          ))}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 14 }}>
+          <button className="btn btn-sm" onClick={() => { onPick(''); onClose(); }}>清除自定义（用自动色）</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function PersonaBrowser({ persona, personas, defaultPersona, personaColors, onPersonaChange, onDeleted, onRefresh }: PageProps) {
   const [wizardOpen, setWizardOpen] = useState(false)
+  const [colorFor, setColorFor] = useState<string | null>(null)
 
   // Agent sessions create/rename persona directories behind this page's back;
   // the shell list is a boot-time snapshot, so re-read it on every mount.
@@ -27,6 +58,13 @@ export default function PersonaBrowser({ persona, personas, defaultPersona, onPe
   // onRefresh 重读 /status 让徽标与各页面消费的 defaultPersona 同步。
   const handleSetDefault = (name: string) => {
     setProfileDefault(name)
+      .then(() => onRefresh?.())
+      .catch(() => {})
+  }
+
+  // 选色（spec easel-persona-color §S2.3）：'' = 清除自定义回自动色。
+  const handleSetColor = (name: string, color: string) => {
+    setProfileColor(name, color)
       .then(() => onRefresh?.())
       .catch(() => {})
   }
@@ -56,6 +94,12 @@ export default function PersonaBrowser({ persona, personas, defaultPersona, onPe
               onClick={() => onPersonaChange(p.name)}
               title={p.description}
             >
+              <span
+                title="点击更换画像颜色"
+                onClick={(e) => { e.stopPropagation(); setColorFor(p.name); }}
+                style={{ width: 10, height: 10, borderRadius: '50%', flexShrink: 0, cursor: 'pointer',
+                  background: personaColor(p.name, personaColors), border: '0.5px solid var(--border)' }}
+              />
               <span className="persona-row-name">{p.name}{p.name === defaultPersona && <span className="badge" style={{ marginLeft: 6 }}>默认</span>}</span>
               {p.description && <span className="persona-row-desc">{p.description}</span>}
             </button>
@@ -85,6 +129,13 @@ export default function PersonaBrowser({ persona, personas, defaultPersona, onPe
             onPersonaChange(name)
           }}
         />
+      )}
+      {colorFor !== null && (
+        <ColorPicker
+          name={colorFor}
+          colors={personaColors}
+          onPick={(color) => handleSetColor(colorFor, color)}
+          onClose={() => setColorFor(null)} />
       )}
     </div>
   )
