@@ -746,12 +746,48 @@ async function listPersonas(settings) {
 }
 
 // ---- 默认画像（spec easel-breakdown-persona-push §S2.1 增补）----
+// ---- 画像颜色（spec easel-persona-color §S2.1）：colors 存 _profile_config.json ----
 
 const PROFILE_CONFIG_FILE = '_profile_config.json'
+const PERSONA_COLOR_RE = /^#[0-9a-fA-F]{6}$/
 
 async function readProfileConfig(settings) {
   const raw = await readJsonFile(join(settings.projectRoot, 'outputs', PROFILE_CONFIG_FILE), null)
   return raw !== null && typeof raw === 'object' ? raw : {}
+}
+
+/**
+ * 读取画像颜色表，只保留现存画像的键（画像被删后残留色自动不可见）。
+ * @param {object} settings - 宿主 settings（projectRoot）。
+ * @param {{name: string}[]} personas - listPersonas 的结果。
+ * @returns {Promise<Record<string, string>>} 画像名 → #RRGGBB。
+ */
+async function readPersonaColors(settings, personas) {
+  const config = await readProfileConfig(settings)
+  const colors = config.colors !== null && typeof config.colors === 'object' ? config.colors : {}
+  const names = new Set(personas.map(p => p.name))
+  const result = {}
+  for (const [name, color] of Object.entries(colors)) {
+    if (names.has(name) && typeof color === 'string' && PERSONA_COLOR_RE.test(color)) result[name] = color
+  }
+  return result
+}
+
+async function apiProfileColorSet(c) {
+  const body = await c.body()
+  const name = typeof body?.name === 'string' ? body.name.trim() : ''
+  const color = typeof body?.color === 'string' ? body.color.trim() : ''
+  if (name !== '') {
+    const { dir } = personaDir(c.settings, name)
+    if (!validPersonaName(name) || !(await isDirectory(dir))) throw new ApiError(404, `画像「${name}」不存在`)
+  }
+  if (color !== '' && !PERSONA_COLOR_RE.test(color)) throw new ApiError(400, `颜色「${color}」不是 #RRGGBB`)
+  const config = await readProfileConfig(c.settings)
+  const colors = config.colors !== null && typeof config.colors === 'object' ? { ...config.colors } : {}
+  if (color === '') delete colors[name]
+  else colors[name] = color
+  await writeJsonFile(join(c.settings.projectRoot, 'outputs', PROFILE_CONFIG_FILE), { ...config, colors })
+  return { json: { ok: true, name, color } }
 }
 
 /**
@@ -922,8 +958,12 @@ async function apiStatus(c) {
   // dsh 自己就是对话运行时：网关恒在线；transport 标 'dsh'（前端 apiDirect 判 'api'，保持 false）。
   // projectRoot 供 client 半的 pushTask 决定会话工作目录（agent 的文件工具由此读写仓库）。
   // defaultPersona 是解析后的默认画像（显式设置→最初创建），拆解页空选项语义用。
-  const defaultPersona = await resolveDefaultPersona(c.settings, personas)
-  return { json: { gateway: true, transport: 'dsh', projectRoot: c.settings.projectRoot, skills, personas, defaultPersona } }
+  // personaColors（spec easel-persona-color §S2.1）只含现存画像的显式色。
+  const [defaultPersona, personaColors] = await Promise.all([
+    resolveDefaultPersona(c.settings, personas),
+    readPersonaColors(c.settings, personas),
+  ])
+  return { json: { gateway: true, transport: 'dsh', projectRoot: c.settings.projectRoot, skills, personas, defaultPersona, personaColors } }
 }
 
 async function apiSkillDetail(c) {
@@ -1301,6 +1341,8 @@ async function apiScheduleCreate(c) {
     event_type: String(body?.event_type ?? ''),
     end_date: String(body?.end_date ?? ''),
     repeat: body?.repeat === 'yearly' ? 'yearly' : '',
+    // 关联画像（spec easel-persona-color §S2.4）：只存名字不校验存在——条目寿命可能长于画像。
+    persona: validPersonaName(String(body?.persona ?? '').trim()) ? String(body.persona).trim() : '',
   }
   items.push(item)
   await writeJsonFile(join(c.settings.projectRoot, 'outputs', SCHEDULE_FILE), items)
@@ -1327,6 +1369,10 @@ async function apiScheduleUpdate(c) {
     // repeat 仅 yearly 合法；旧调用方不带该字段时保留原值，显式空串清除
     repeat: body?.repeat === 'yearly' ? 'yearly'
       : (body?.repeat === undefined && typeof item.repeat === 'string' ? item.repeat : ''),
+    // 关联画像：不带字段保留原值，显式空串清除（spec easel-persona-color §S2.4）
+    persona: body?.persona === undefined
+      ? (typeof item.persona === 'string' ? item.persona : '')
+      : (validPersonaName(String(body.persona).trim()) ? String(body.persona).trim() : ''),
   })
   await writeJsonFile(join(c.settings.projectRoot, 'outputs', SCHEDULE_FILE), items)
   return { json: item }
@@ -2363,6 +2409,7 @@ export const CORE_ROUTES = [
   ['GET', ['caldav', 'events'], apiCaldavEventsGet],
   ['POST', ['profile', 'build'], apiProfileBuild],
   ['PUT', ['profile', 'default'], apiProfileDefaultSet],
+  ['PUT', ['profile', 'color'], apiProfileColorSet],
   ['POST', ['mkdir'], apiMkdir],
   ['POST', ['projectize'], apiProjectize],
 ]
