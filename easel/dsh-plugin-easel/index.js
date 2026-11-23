@@ -824,7 +824,9 @@ async function apiProfileDefaultSet(c) {
     const { dir } = personaDir(c.settings, name)
     if (!validPersonaName(name) || !(await isDirectory(dir))) throw new ApiError(404, `画像「${name}」不存在`)
   }
-  await writeJsonFile(join(c.settings.projectRoot, 'outputs', PROFILE_CONFIG_FILE), { defaultPersona: name })
+  // 保留同文件里的 colors 等其他字段——整文档覆写会清空画像色（复审 BUG-1）。
+  const config = await readProfileConfig(c.settings)
+  await writeJsonFile(join(c.settings.projectRoot, 'outputs', PROFILE_CONFIG_FILE), { ...config, defaultPersona: name })
   return { json: { ok: true, defaultPersona: name } }
 }
 

@@ -1071,7 +1071,7 @@ function createShell() {
       };
       notify();
     }).catch(() => {
-      state = { ...state, personaColors: {}, gatewayStatus: "disconnected" };
+      state = { ...state, gatewayStatus: "disconnected" };
       notify();
     });
   };

@@ -3,7 +3,8 @@
 // always renders the same color. Plain JS (context-menu-model.js precedent)
 // so node --test can import it.
 
-/** 10 色板：中饱和度、互相可区分，避开日历状态色的红/绿/蓝语义。 */
+/** 10 色板：中饱和度、互相可区分；与日历状态色（灰/紫/琥珀/薄荷/天蓝）无精确同值，
+ * 但紫/绿/蓝/黄与状态色同色相族——深浅饱和不同，仍可区分。 */
 export const PERSONA_PALETTE = [
   '#c2643a', '#8a63c9', '#2f9e8f', '#c9a227', '#d16ba5',
   '#5a8fd9', '#b0763f', '#6aa84f', '#a0522d', '#4fb3bf',

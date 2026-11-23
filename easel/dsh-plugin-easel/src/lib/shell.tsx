@@ -54,6 +54,8 @@ interface StatusPayload {
   transport?: string
   /** 宿主解析后的默认画像（显式设置→最初创建）；拆解页空选项语义用。 */
   defaultPersona?: string
+  /** 显式画像色表（spec easel-persona-color §S2.1）。 */
+  personaColors?: Record<string, string>
 }
 
 interface ShellState {
@@ -93,7 +95,8 @@ export function createShell() {
         notify()
       })
       .catch(() => {
-        state = { ...state, personaColors: {}, gatewayStatus: 'disconnected' }
+        // 刷新失败保留旧画像色，避免已设色的画像在色点上闪回自动色。
+        state = { ...state, gatewayStatus: 'disconnected' }
         notify()
       })
   }
