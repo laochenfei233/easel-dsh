@@ -777,6 +777,8 @@ async function apiProfileColorSet(c) {
   const body = await c.body()
   const name = typeof body?.name === 'string' ? body.name.trim() : ''
   const color = typeof body?.color === 'string' ? body.color.trim() : ''
+  // 空名只配「清除」语义（对齐 apiProfileDefaultSet）；带着颜色写空名会污染 colors['']，响亮拒绝。
+  if (name === '' && color !== '') throw new ApiError(400, '缺少画像名')
   if (name !== '') {
     const { dir } = personaDir(c.settings, name)
     if (!validPersonaName(name) || !(await isDirectory(dir))) throw new ApiError(404, `画像「${name}」不存在`)
