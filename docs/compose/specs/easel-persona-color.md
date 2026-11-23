@@ -1,11 +1,20 @@
 ---
 feature: easel-persona-color
-status: in-progress
+status: delivered
 updated: 2026-11-23
 branch: feat/easel-persona-color
+commits: 3731d74e22..942568e07c
 ---
 
 # 画像颜色 + 内容日历按画像上色
+
+## Report
+
+**What was built** — 画像有了可辨识的颜色：`outputs/_profile_config.json` 新增 `colors` 映射（`PUT /easel/api/profile/color` 写入/清除，name 与 #RRGGBB 服务端校验），`/easel/api/status` 下发 `personaColors`（只含现存画像）；画像页每个画像名前有色点，点开 10 色板可选色/清除回自动色；未设置显式色的画像按名字哈希从固定色板取色（同名恒同色）。内容日历的排期条目新增可选 `persona` 关联（create/update 透传，partial update 保留语义对齐 repeat），关联后日历 chip 按画像色渲染，未关联维持状态色；图例新增「画像色」说明。
+
+**Verification** — `node --test test/persona-color.test.js` 5/5 PASS；`node --test`（插件全量）358 tests / 354 pass / 4 pre-existing skips / 0 fail；`node build.mjs` PASS（886.8kb，client.js 与 src 同步）。独立复审两轮：首轮抓出 Major（`apiProfileDefaultSet` 整文档覆写会清空 colors，已改为合并写入并做回归实证）与两个 Minor（断线闪变、类型声明缺失，均已修）；复核轮确认全部处置到位，结论 SHIP。
+
+**Journey log** — 复审最有价值的一捕：同文件第二个写方（设默认画像）会静默清掉本特性写入的 `colors`——「本特性不改既有写方」的假设在共享存储文件上不成立，凡是往既有 JSON 加字段的特性都要审同文件其他写方。行为探针（临时目录直驱 dispatchLocalApi）先于复审抓到空名写 `colors[""]` 的边界，比等复审便宜。
 
 ## [S1] Problem
 
@@ -40,17 +49,17 @@ PersonaBrowser 左侧列表每项名字前加色点（用 S2.2 的解析色）�
 
 ## Tasks
 
-- [ ] T1: 服务端 readProfileConfig 扩展 colors + PUT /easel/api/profile/color + status 带 personaColors (depends: none)
-- [ ] T2: 前端 api.ts setProfileColor + fetchStatus 类型 + personaColor 纯函数（src/lib/persona-color.js）+ 单测 (depends: none)
-- [ ] T3: PersonaBrowser 色点+选色弹窗 (depends: T1, T2)
-- [ ] T4: CalendarPage 编辑弹窗画像下拉 + renderChip 上色 + 图例 (depends: T1, T2)
-- [ ] T5: shell.tsx 透传 personaColors（PageProps） (depends: T1)
-- [ ] T6: node build.mjs 重建 client.js；node --test 全绿 (depends: T3–T5)
+- [x] T1: 服务端 readProfileConfig 扩展 colors + PUT /easel/api/profile/color + status 带 personaColors (depends: none)
+- [x] T2: 前端 api.ts setProfileColor + fetchStatus 类型 + personaColor 纯函数（src/lib/persona-color.js）+ 单测 (depends: none)
+- [x] T3: PersonaBrowser 色点+选色弹窗 (depends: T1, T2)
+- [x] T4: CalendarPage 编辑弹窗画像下拉 + renderChip 上色 + 图例 (depends: T1, T2)
+- [x] T5: shell.tsx 透传 personaColors（PageProps） (depends: T1)
+- [x] T6: node build.mjs 重建 client.js；node --test 全绿 (depends: T3–T5)
 
 ## [S4] Acceptance
 
-- [ ] `PUT /easel/api/profile/color` 合法色写入、非法色 400、不存在画像 404、空串清除；status 返回 personaColors。
-- [ ] 画像页每个画像有名前色点，可换色/清除；未设置时显示自动分配色。
-- [ ] personaColor 同名稳定、显式色优先、哈希分布不撞状态色板。
-- [ ] 日历条目可选关联画像；关联后 chip 用画像色，未关联维持状态色；图例有说明。
-- [ ] node --test 插件全绿；build.mjs 语法门过。
+- [x] `PUT /easel/api/profile/color` 合法色写入、非法色 400、不存在画像 404、空串清除；status 返回 personaColors。
+- [x] 画像页每个画像有名前色点，可换色/清除；未设置时显示自动分配色。
+- [x] personaColor 同名稳定、显式色优先、哈希分布不撞状态色板。
+- [x] 日历条目可选关联画像；关联后 chip 用画像色，未关联维持状态色；图例有说明。
+- [x] node --test 插件全绿；build.mjs 语法门过。
