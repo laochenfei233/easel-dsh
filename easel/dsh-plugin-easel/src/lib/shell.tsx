@@ -19,6 +19,8 @@ export interface PageProps {
   personas: { name: string; description: string }[]
   /** 宿主解析后的默认画像（显式设置→最初创建）；画像页设默认、拆解页空选项语义用。 */
   defaultPersona: string
+  /** 显式画像色表（画像名 → #RRGGBB；spec easel-persona-color §S2.1）。 */
+  personaColors: Record<string, string>
   /** Switch the shell persona; other ported pages follow on their next mount. */
   onPersonaChange: (name: string) => void
   gatewayStatus: string
@@ -58,6 +60,7 @@ interface ShellState {
   persona: string
   personas: { name: string; description: string }[]
   defaultPersona: string
+  personaColors: Record<string, string>
   gatewayStatus: string
   apiDirect: boolean
 }
@@ -67,7 +70,7 @@ interface ShellState {
  * Created per plugin materialization, so an invalidation starts clean.
  */
 export function createShell() {
-  let state: ShellState = { persona: '', personas: [], defaultPersona: '', gatewayStatus: 'connecting', apiDirect: false }
+  let state: ShellState = { persona: '', personas: [], defaultPersona: '', personaColors: {}, gatewayStatus: 'connecting', apiDirect: false }
   const readers = new Set<() => void>()
   const notify = () => readers.forEach((r) => r())
   const refresh = () => {
@@ -83,13 +86,14 @@ export function createShell() {
           persona,
           personas,
           defaultPersona: data.defaultPersona ?? '',
+          personaColors: data.personaColors ?? {},
           gatewayStatus: data.gateway ? 'connected' : 'disconnected',
           apiDirect: data.transport === 'api',
         }
         notify()
       })
       .catch(() => {
-        state = { ...state, gatewayStatus: 'disconnected' }
+        state = { ...state, personaColors: {}, gatewayStatus: 'disconnected' }
         notify()
       })
   }
@@ -242,6 +246,7 @@ export function createShellBridge(ctx: any, t: (view: string) => string): EaselS
       persona: snap.persona,
       personas: snap.personas,
       defaultPersona: snap.defaultPersona,
+      personaColors: snap.personaColors,
       onPersonaChange: shell.setPersona,
       gatewayStatus: snap.gatewayStatus,
       apiDirect: snap.apiDirect,

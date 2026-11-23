@@ -225,6 +225,7 @@ export interface ScheduleItem {
   repeat?: string;        // '' | 'yearly'（每年重复，日历客户端按月/日展开）
   accountId?: string;     // 发布页成功回写时带的目标账号（旧条目缺省）
   accountName?: string;   // 账号展示名（有 accountId 才有）
+  persona?: string;       // 关联画像目录名（spec easel-persona-color §S2.4；''=未关联，旧条目缺省）
 }
 export type ScheduleInput = Omit<ScheduleItem, 'id'>;
 export interface ScheduleContext {
@@ -684,8 +685,22 @@ export function createScheduledTask(input: ScheduledTaskInput): Promise<unknown>
 }
 
 /** 项目根与画像列表（/easel/api/status；立项建工作区与画像选择要用）。 */
-export async function fetchStatus(): Promise<{ projectRoot?: string; personas?: { name: string; description?: string }[]; defaultPersona?: string } | null> {
-  return request<{ projectRoot?: string; personas?: { name: string; description?: string }[]; defaultPersona?: string }>('/api/status').catch(() => null);
+export async function fetchStatus(): Promise<StatusPayload | null> {
+  return request<StatusPayload>('/api/status').catch(() => null);
+}
+
+/** /easel/api/status 的画像相关字段（spec easel-persona-color §S2.1）。 */
+export interface StatusPayload {
+  projectRoot?: string;
+  personas?: { name: string; description?: string }[];
+  defaultPersona?: string;
+  /** 显式画像色（画像名 → #RRGGBB），只含现存画像。 */
+  personaColors?: Record<string, string>;
+}
+
+/** 设画像颜色（spec easel-persona-color §S2.1）：空串清除，回到自动配色。 */
+export function setProfileColor(name: string, color: string): Promise<{ ok: boolean; name: string; color: string }> {
+  return request('/api/profile/color', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, color }) });
 }
 
 /** 设默认画像（spec easel-breakdown-persona-push §S2.1 增补）：空名清除设置，回退最初创建。 */
