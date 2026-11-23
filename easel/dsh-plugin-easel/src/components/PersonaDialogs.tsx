@@ -24,10 +24,12 @@ const shortTitle = (title: string) => `${title.slice(0, 20)}${title.length > 20 
  * 做内容前的画像弹窗：空选 = 默认画像（拆解页 easel-breakdown-persona-push 的
  * 空选语义），确认后把解析画像交给调用方进会话。
  */
-export function TopicPersonaDialog({ topic, onConfirm, onClose }: {
+export function TopicPersonaDialog({ topic, onConfirm, onClose, confirmLabel = '开始创作' }: {
   topic: string;
   onConfirm: (persona: string) => void;
   onClose: () => void;
+  /** 确认按钮文案；雷达收藏复用本弹窗时传「收藏」。 */
+  confirmLabel?: string;
 }) {
   const [choice, setChoice] = useState<PersonaChoice | null>(null);
   const [pick, setPick] = useState('');
@@ -63,7 +65,7 @@ export function TopicPersonaDialog({ topic, onConfirm, onClose }: {
         )}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
           <button className="btn btn-sm" onClick={onClose}>取消</button>
-          <button className="btn btn-sm btn-primary" onClick={confirm} disabled={choice === null || busy}>开始创作</button>
+          <button className="btn btn-sm btn-primary" onClick={confirm} disabled={choice === null || busy}>{confirmLabel}</button>
         </div>
       </div>
     </div>

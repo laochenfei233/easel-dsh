@@ -8,6 +8,8 @@ interface TrendsPageProps {
   onUseTopic: (title: string, projectDir?: string, bodyPath?: string, persona?: string) => void;
   /** 画像清单（shell 状态）：空列表时做内容跳过画像弹窗，保持一键直进。 */
   personas: { name: string }[];
+  /** 显式画像色表（spec easel-persona-color §S2.1）；本页收藏弹窗消费。 */
+  personaColors?: Record<string, string>;
 }
 
 const ALL_PLATFORMS: { key: string; label: string }[] = [
@@ -358,7 +360,8 @@ function RadarSettings({ cfg, onSaved, onClose }: {
   );
 }
 
-export default function TrendsPage({ onUseTopic, personas }: TrendsPageProps) {
+export default function TrendsPage({ onUseTopic, personas }: TrendsPageProps) {  // personaColors 由 TopicPersonaDialog 内部经 fetchStatus 取，不需要 prop
+
   const [selected, setSelected] = useState<string[]>(['weibo', 'douyin', 'zhihu', 'douyin_rule', 'douyin_activity']);
   const [groups, setGroups] = useState<TrendGroup[]>([]);
   const [clusters, setClusters] = useState<null | TrendCluster[]>(null);
@@ -373,6 +376,8 @@ export default function TrendsPage({ onUseTopic, personas }: TrendsPageProps) {
   // easel-topic-persona-switch S2.4：做内容/立项 动作弹窗。
   const [useDialog, setUseDialog] = useState<string | null>(null);
   const [greenlight, setGreenlight] = useState<{ title: string; source?: string } | null>(null);
+  // easel-idea-trend-persona-color §S2.2：收藏先选画像（零画像时保持一键直进）。
+  const [saveDialog, setSaveDialog] = useState<{ title: string; source: string } | null>(null);
   // 视图与排序；聚合视图首次切换才带 view=cluster 请求（响应里仍含 trends）
   const [viewMode, setViewMode] = useState<'list' | 'cluster'>('list');
   const [rising, setRising] = useState(false);
@@ -385,11 +390,12 @@ export default function TrendsPage({ onUseTopic, personas }: TrendsPageProps) {
 
   const showToast = (m: string) => { setToast(m); setTimeout(() => setToast(''), 2200); };
 
-  const save = async (title: string, source: string) => {
+  const save = async (title: string, source: string, persona = '') => {
     if (saved.has(title)) return;
     try {
-      await createIdea({ title, source, status: 'pending' });
+      await createIdea({ title, source, status: 'pending', ...(persona ? { persona } : {}) });
       setSaved((prev) => new Set(prev).add(title));
+      showToast(persona ? `已收藏到选题库（画像 ${persona}）` : '已收藏到选题库');
     } catch { /* ignore */ }
   };
 
@@ -439,7 +445,11 @@ export default function TrendsPage({ onUseTopic, personas }: TrendsPageProps) {
 
   const handlers: RowHandlers = useMemo(() => ({
     isSaved: (title) => saved.has(title),
-    onSave: (row) => { void save(row.title, row.source); },
+    // easel-idea-trend-persona-color §S2.2：有画像先过选择弹窗，零画像一键收藏。
+    onSave: (row) => {
+      if (personas.length === 0) { void save(row.title, row.source); return; }
+      setSaveDialog({ title: row.title, source: row.source });
+    },
     // easel-topic-persona-switch S2.4：做内容先过画像弹窗；装好还没建画像时保持一键直进。
     onUse: (title) => {
       if (personas.length > 0) setUseDialog(title); else onUseTopic(title);
@@ -544,6 +554,17 @@ export default function TrendsPage({ onUseTopic, personas }: TrendsPageProps) {
           topic={useDialog}
           onConfirm={(persona) => { onUseTopic(useDialog, undefined, undefined, persona); setUseDialog(null); }}
           onClose={() => setUseDialog(null)} />
+      )}
+
+      {saveDialog && (
+        <TopicPersonaDialog
+          topic={saveDialog.title}
+          confirmLabel="收藏"
+          onConfirm={(persona) => {
+            void save(saveDialog.title, saveDialog.source, persona);
+            setSaveDialog(null);
+          }}
+          onClose={() => setSaveDialog(null)} />
       )}
 
       {greenlight && (

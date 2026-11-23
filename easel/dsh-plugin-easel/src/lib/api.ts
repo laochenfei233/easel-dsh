@@ -305,7 +305,7 @@ export interface Idea {
   /** 正文在内容库的相对路径（不含 outputs/，宿主写入）；「正文」预览凭它读文件。 */
   bodyPath?: string;
 }
-export type IdeaInput = { title: string; note?: string; source?: string; status?: string };
+export type IdeaInput = { title: string; note?: string; source?: string; status?: string; persona?: string };
 export function fetchIdeas(): Promise<Idea[]> { return request('/api/ideas'); }
 export function createIdea(item: IdeaInput): Promise<Idea> {
   return request('/api/ideas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(item) });

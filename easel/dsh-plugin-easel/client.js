@@ -2187,7 +2187,7 @@ async function fetchPersonaChoice() {
   return { personas: status?.personas ?? [], defaultPersona: status?.defaultPersona ?? "" };
 }
 var shortTitle = (title) => `${title.slice(0, 20)}${title.length > 20 ? "\u2026" : ""}`;
-function TopicPersonaDialog({ topic, onConfirm, onClose }) {
+function TopicPersonaDialog({ topic, onConfirm, onClose, confirmLabel = "\u5F00\u59CB\u521B\u4F5C" }) {
   const [choice, setChoice] = (0, import_react3.useState)(null);
   const [pick, setPick] = (0, import_react3.useState)("");
   const [busy, setBusy] = (0, import_react3.useState)(false);
@@ -2221,7 +2221,7 @@ function TopicPersonaDialog({ topic, onConfirm, onClose }) {
     ] }),
     /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)("div", { style: { display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 18 }, children: [
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "btn btn-sm", onClick: onClose, children: "\u53D6\u6D88" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "btn btn-sm btn-primary", onClick: confirm, disabled: choice === null || busy, children: "\u5F00\u59CB\u521B\u4F5C" })
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)("button", { className: "btn btn-sm btn-primary", onClick: confirm, disabled: choice === null || busy, children: confirmLabel })
     ] })
   ] }) });
 }
@@ -2725,6 +2725,7 @@ function TrendsPage({ onUseTopic, personas }) {
   const [toast, setToast] = (0, import_react4.useState)("");
   const [useDialog, setUseDialog] = (0, import_react4.useState)(null);
   const [greenlight, setGreenlight] = (0, import_react4.useState)(null);
+  const [saveDialog, setSaveDialog] = (0, import_react4.useState)(null);
   const [viewMode, setViewMode] = (0, import_react4.useState)("list");
   const [rising, setRising] = (0, import_react4.useState)(false);
   const [categoryFilter, setCategoryFilter] = (0, import_react4.useState)("");
@@ -2736,11 +2737,12 @@ function TrendsPage({ onUseTopic, personas }) {
     setToast(m2);
     setTimeout(() => setToast(""), 2200);
   };
-  const save = async (title, source) => {
+  const save = async (title, source, persona = "") => {
     if (saved.has(title)) return;
     try {
-      await createIdea({ title, source, status: "pending" });
+      await createIdea({ title, source, status: "pending", ...persona ? { persona } : {} });
       setSaved((prev) => new Set(prev).add(title));
+      showToast2(persona ? `\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93\uFF08\u753B\u50CF ${persona}\uFF09` : "\u5DF2\u6536\u85CF\u5230\u9009\u9898\u5E93");
     } catch {
     }
   };
@@ -2782,8 +2784,13 @@ function TrendsPage({ onUseTopic, personas }) {
   };
   const handlers = (0, import_react4.useMemo)(() => ({
     isSaved: (title) => saved.has(title),
+    // easel-idea-trend-persona-color §S2.2：有画像先过选择弹窗，零画像一键收藏。
     onSave: (row) => {
-      void save(row.title, row.source);
+      if (personas.length === 0) {
+        void save(row.title, row.source);
+        return;
+      }
+      setSaveDialog({ title: row.title, source: row.source });
     },
     // easel-topic-persona-switch S2.4：做内容先过画像弹窗；装好还没建画像时保持一键直进。
     onUse: (title) => {
@@ -2899,6 +2906,18 @@ function TrendsPage({ onUseTopic, personas }) {
           setUseDialog(null);
         },
         onClose: () => setUseDialog(null)
+      }
+    ),
+    saveDialog && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
+      TopicPersonaDialog,
+      {
+        topic: saveDialog.title,
+        confirmLabel: "\u6536\u85CF",
+        onConfirm: (persona) => {
+          void save(saveDialog.title, saveDialog.source, persona);
+          setSaveDialog(null);
+        },
+        onClose: () => setSaveDialog(null)
       }
     ),
     greenlight && /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
