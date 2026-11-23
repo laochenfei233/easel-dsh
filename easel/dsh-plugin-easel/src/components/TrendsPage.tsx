@@ -8,8 +8,6 @@ interface TrendsPageProps {
   onUseTopic: (title: string, projectDir?: string, bodyPath?: string, persona?: string) => void;
   /** 画像清单（shell 状态）：空列表时做内容跳过画像弹窗，保持一键直进。 */
   personas: { name: string }[];
-  /** 显式画像色表（spec easel-persona-color §S2.1）；本页收藏弹窗消费。 */
-  personaColors?: Record<string, string>;
 }
 
 const ALL_PLATFORMS: { key: string; label: string }[] = [
