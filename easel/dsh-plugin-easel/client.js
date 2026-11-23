@@ -1054,7 +1054,7 @@ function pageKey(view12) {
   return `easel.${view12}`;
 }
 function createShell() {
-  let state = { persona: "", personas: [], defaultPersona: "", gatewayStatus: "connecting", apiDirect: false };
+  let state = { persona: "", personas: [], defaultPersona: "", personaColors: {}, gatewayStatus: "connecting", apiDirect: false };
   const readers = /* @__PURE__ */ new Set();
   const notify = () => readers.forEach((r) => r());
   const refresh = () => {
@@ -1065,12 +1065,13 @@ function createShell() {
         persona,
         personas,
         defaultPersona: data.defaultPersona ?? "",
+        personaColors: data.personaColors ?? {},
         gatewayStatus: data.gateway ? "connected" : "disconnected",
         apiDirect: data.transport === "api"
       };
       notify();
     }).catch(() => {
-      state = { ...state, gatewayStatus: "disconnected" };
+      state = { ...state, personaColors: {}, gatewayStatus: "disconnected" };
       notify();
     });
   };
@@ -1163,6 +1164,7 @@ function createShellBridge(ctx, t) {
       persona: snap.persona,
       personas: snap.personas,
       defaultPersona: snap.defaultPersona,
+      personaColors: snap.personaColors,
       onPersonaChange: shell.setPersona,
       gatewayStatus: snap.gatewayStatus,
       apiDirect: snap.apiDirect,
@@ -1590,6 +1592,9 @@ function createScheduledTask(input) {
 }
 async function fetchStatus() {
   return request("/api/status").catch(() => null);
+}
+function setProfileColor(name, color) {
+  return request("/api/profile/color", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, color }) });
 }
 function setProfileDefault(name) {
   return request("/api/profile/default", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name }) });
@@ -2963,7 +2968,7 @@ __export(ideas_exports, {
 // src/components/IdeasPage.tsx
 var import_react5 = require("react");
 
-// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -4120,7 +4125,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -6865,6 +6870,27 @@ function festivalsFor(year, month) {
   return result;
 }
 
+// src/lib/persona-color.js
+var PERSONA_PALETTE = [
+  "#c2643a",
+  "#8a63c9",
+  "#2f9e8f",
+  "#c9a227",
+  "#d16ba5",
+  "#5a8fd9",
+  "#b0763f",
+  "#6aa84f",
+  "#a0522d",
+  "#4fb3bf"
+];
+function personaColor(name, colors = {}) {
+  const explicit = colors[name];
+  if (typeof explicit === "string" && /^#[0-9a-fA-F]{6}$/.test(explicit)) return explicit;
+  let hash = 0;
+  for (const ch of String(name)) hash = hash * 31 + ch.codePointAt(0) >>> 0;
+  return PERSONA_PALETTE[hash % PERSONA_PALETTE.length];
+}
+
 // src/components/CalendarPage.tsx
 var import_jsx_runtime9 = require("react/jsx-runtime");
 var STATUS_META = {
@@ -6900,7 +6926,8 @@ var EMPTY2 = {
   source: "manual",
   event_type: "",
   end_date: "",
-  repeat: ""
+  repeat: "",
+  persona: ""
 };
 function eventDates(ev) {
   const [startDate, startTime] = ev.start.split(" ");
@@ -6923,7 +6950,7 @@ function syncAgo(ts) {
   if (s < 86400) return `${Math.floor(s / 3600)} \u5C0F\u65F6\u524D\u540C\u6B65`;
   return `${Math.floor(s / 86400)} \u5929\u524D\u540C\u6B65`;
 }
-function CalendarPage({ onUseTopic, personas }) {
+function CalendarPage({ onUseTopic, personas, personaColors }) {
   const today = (0, import_react6.useMemo)(() => /* @__PURE__ */ new Date(), []);
   const [cursor, setCursor] = (0, import_react6.useState)(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [items, setItems] = (0, import_react6.useState)([]);
@@ -7071,12 +7098,13 @@ function CalendarPage({ onUseTopic, personas }) {
         it.id
       );
     }
+    const color = it.persona ? personaColor(it.persona, personaColors) : STATUS_META[it.status]?.color || "var(--text-tertiary)";
     return /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
       "div",
       {
         className: "cal-event",
         title: it.title,
-        style: { ["--ev"]: STATUS_META[it.status]?.color || "var(--text-tertiary)" },
+        style: { ["--ev"]: color },
         onClick: (e) => {
           e.stopPropagation();
           openEdit(it);
@@ -7208,6 +7236,10 @@ function CalendarPage({ onUseTopic, personas }) {
       /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("span", { className: "cal-legend-item", children: [
         /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: "var(--cal-festival)" } }),
         "\u8282\u65E5"
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)("span", { className: "cal-legend-item", title: "\u6392\u671F\u5173\u8054\u4E86\u753B\u50CF\u65F6\uFF0C\u6309\u753B\u50CF\u989C\u8272\u663E\u793A", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("span", { className: "cal-legend-swatch sq", style: { ["--sw"]: personaColor("\u793A\u4F8B\u753B\u50CF", personaColors) } }),
+        "\u753B\u50CF\u8272"
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("span", { className: "cal-legend-filter", children: ["all", "content", "event"].map((f) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("button", { className: `chip ${filter === f ? "active" : ""}`, onClick: () => setFilter(f), children: f === "all" ? "\u5168\u90E8" : f === "content" ? "\u5185\u5BB9" : "\u6D3B\u52A8" }, f)) })
     ] }),
@@ -7675,6 +7707,22 @@ function CalendarPage({ onUseTopic, personas }) {
           },
           k2
         )) })
+      ] }),
+      !isEvent && /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(import_jsx_runtime9.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { className: "field-label", children: "\u5173\u8054\u753B\u50CF\uFF08\u53EF\u9009\uFF0C\u65E5\u5386\u6309\u753B\u50CF\u989C\u8272\u663E\u793A\uFF09" }),
+        /* @__PURE__ */ (0, import_jsx_runtime9.jsxs)(
+          "select",
+          {
+            className: "field",
+            value: form.persona || "",
+            disabled: saving,
+            onChange: (e) => setForm({ ...form, persona: e.target.value }),
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { value: "", children: "\u4E0D\u5173\u8054\uFF08\u6309\u72B6\u6001\u8272\u663E\u793A\uFF09" }),
+              personas.map((p) => /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("option", { value: p.name, children: p.name }, p.name))
+            ]
+          }
+        )
       ] }),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)("label", { className: "field-label", children: "\u5907\u6CE8" }),
       /* @__PURE__ */ (0, import_jsx_runtime9.jsx)(
@@ -11531,8 +11579,43 @@ ${formToInstruction(name, form)}`;
 
 // src/components/PersonaBrowser.tsx
 var import_jsx_runtime24 = require("react/jsx-runtime");
-function PersonaBrowser({ persona, personas, defaultPersona, onPersonaChange, onDeleted, onRefresh }) {
+function ColorPicker({ name, colors, onPick, onClose }) {
+  return /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { className: "overlay", onClick: onClose, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "modal", style: { width: 300, maxWidth: "100%" }, onClick: (e) => e.stopPropagation(), children: [
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }, children: [
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("h3", { style: { margin: 0, fontSize: 14 }, children: [
+        "\u753B\u50CF\u989C\u8272\uFF1A",
+        name
+      ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { className: "icon-btn", onClick: onClose, children: "\xD7" })
+    ] }),
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { style: { display: "flex", flexWrap: "wrap", gap: 8 }, children: PERSONA_PALETTE.map((c) => /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      "button",
+      {
+        title: c,
+        onClick: () => {
+          onPick(c);
+          onClose();
+        },
+        style: {
+          width: 26,
+          height: 26,
+          borderRadius: "50%",
+          background: c,
+          cursor: "pointer",
+          border: personaColor(name, colors) === c ? "2px solid var(--text)" : "0.5px solid var(--border)"
+        }
+      },
+      c
+    )) }),
+    /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("div", { style: { display: "flex", justifyContent: "flex-end", marginTop: 14 }, children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("button", { className: "btn btn-sm", onClick: () => {
+      onPick("");
+      onClose();
+    }, children: "\u6E05\u9664\u81EA\u5B9A\u4E49\uFF08\u7528\u81EA\u52A8\u8272\uFF09" }) })
+  ] }) });
+}
+function PersonaBrowser({ persona, personas, defaultPersona, personaColors, onPersonaChange, onDeleted, onRefresh }) {
   const [wizardOpen, setWizardOpen] = (0, import_react15.useState)(false);
+  const [colorFor, setColorFor] = (0, import_react15.useState)(null);
   (0, import_react15.useEffect)(() => {
     onRefresh?.();
   }, [onRefresh]);
@@ -11542,6 +11625,10 @@ function PersonaBrowser({ persona, personas, defaultPersona, onPersonaChange, on
   };
   const handleSetDefault = (name) => {
     setProfileDefault(name).then(() => onRefresh?.()).catch(() => {
+    });
+  };
+  const handleSetColor = (name, color) => {
+    setProfileColor(name, color).then(() => onRefresh?.()).catch(() => {
     });
   };
   return /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("div", { className: "persona-browser", children: [
@@ -11572,6 +11659,25 @@ function PersonaBrowser({ persona, personas, defaultPersona, onPersonaChange, on
             onClick: () => onPersonaChange(p.name),
             title: p.description,
             children: [
+              /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+                "span",
+                {
+                  title: "\u70B9\u51FB\u66F4\u6362\u753B\u50CF\u989C\u8272",
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    setColorFor(p.name);
+                  },
+                  style: {
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    flexShrink: 0,
+                    cursor: "pointer",
+                    background: personaColor(p.name, personaColors),
+                    border: "0.5px solid var(--border)"
+                  }
+                }
+              ),
               /* @__PURE__ */ (0, import_jsx_runtime24.jsxs)("span", { className: "persona-row-name", children: [
                 p.name,
                 p.name === defaultPersona && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)("span", { className: "badge", style: { marginLeft: 6 }, children: "\u9ED8\u8BA4" })
@@ -11603,6 +11709,15 @@ function PersonaBrowser({ persona, personas, defaultPersona, onPersonaChange, on
           onDeleted();
           onPersonaChange(name);
         }
+      }
+    ),
+    colorFor !== null && /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(
+      ColorPicker,
+      {
+        name: colorFor,
+        colors: personaColors,
+        onPick: (color) => handleSetColor(colorFor, color),
+        onClose: () => setColorFor(null)
       }
     )
   ] });

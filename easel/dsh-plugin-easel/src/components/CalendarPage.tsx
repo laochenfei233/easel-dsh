@@ -4,6 +4,7 @@ import { fetchSchedule, createSchedule, updateSchedule, deleteSchedule, fetchSch
 import type { ScheduleItem, ScheduleInput, ScheduleContext, CaldavAccount, CaldavEvent, CaldavCalendarRef } from '../lib/api';
 import { festivalsFor } from '../lib/festivals';
 import { GreenlightDialog, TopicPersonaDialog } from './PersonaDialogs';
+import { personaColor } from '../lib/persona-color.js';
 import { IconCalendar, IconTrash, IconChevron } from './icons';
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
@@ -28,7 +29,7 @@ const kindOf = (it: ScheduleItem) => (it.kind === 'event' ? 'event' : 'content')
 const MAX_VISIBLE = 3;   // 每格最多显示几条，超出折叠成「+N 更多」→ 点开当天详情
 const EMPTY: ScheduleInput = {
   title: '', date: '', platform: '', time: '', status: 'idea', note: '',
-  kind: 'content', url: '', source: 'manual', event_type: '', end_date: '', repeat: '',
+  kind: 'content', url: '', source: 'manual', event_type: '', end_date: '', repeat: '', persona: '',
 };
 
 // CalDAV 事件覆盖的日期：全天 end 独占，定时端日为 00:00 也按独占处理
@@ -59,9 +60,11 @@ interface CalendarPageProps {
   onUseTopic: (title: string, projectDir?: string, bodyPath?: string, persona?: string) => void;
   /** 画像清单（shell 状态）：空列表时做内容跳过画像弹窗，保持一键直进。 */
   personas: { name: string }[];
+  /** 显式画像色表（spec easel-persona-color §S2.1）。 */
+  personaColors: Record<string, string>;
 }
 
-export default function CalendarPage({ onUseTopic, personas }: CalendarPageProps) {
+export default function CalendarPage({ onUseTopic, personas, personaColors }: CalendarPageProps) {
   const today = useMemo(() => new Date(), []);
   const [cursor, setCursor] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
   const [items, setItems] = useState<ScheduleItem[]>([]);
@@ -199,9 +202,12 @@ export default function CalendarPage({ onUseTopic, personas }: CalendarPageProps
         </div>
       );
     }
+    // easel-persona-color §S2.4：关联画像 → 画像色；未关联 → 状态色。
+    const color = it.persona ? personaColor(it.persona, personaColors)
+      : (STATUS_META[it.status]?.color || 'var(--text-tertiary)');
     return (
       <div key={it.id} className="cal-event" title={it.title}
-        style={{ ['--ev' as string]: STATUS_META[it.status]?.color || 'var(--text-tertiary)' }}
+        style={{ ['--ev' as string]: color }}
         onClick={(e) => { e.stopPropagation(); openEdit(it); }}>
         <span className="cal-event-dot" />
         <span className="cal-event-title">
@@ -305,6 +311,9 @@ export default function CalendarPage({ onUseTopic, personas }: CalendarPageProps
         </span>
         <span className="cal-legend-item">
           <span className="cal-legend-swatch sq" style={{ ['--sw' as string]: 'var(--cal-festival)' }} />节日
+        </span>
+        <span className="cal-legend-item" title="排期关联了画像时，按画像颜色显示">
+          <span className="cal-legend-swatch sq" style={{ ['--sw' as string]: personaColor('示例画像', personaColors) }} />画像色
         </span>
         <span className="cal-legend-filter">
           {(['all', 'content', 'event'] as Filter[]).map((f) => (
@@ -636,6 +645,18 @@ export default function CalendarPage({ onUseTopic, personas }: CalendarPageProps
                       onClick={() => setForm({ ...form, status: k })}>{m.label}</button>
                   ))}
                 </div>
+              </>
+            )}
+            {!isEvent && (
+              <>
+                <label className="field-label">关联画像（可选，日历按画像颜色显示）</label>
+                <select className="field" value={form.persona || ''} disabled={saving}
+                  onChange={(e) => setForm({ ...form, persona: e.target.value })}>
+                  <option value="">不关联（按状态色显示）</option>
+                  {personas.map((p) => (
+                    <option key={p.name} value={p.name}>{p.name}</option>
+                  ))}
+                </select>
               </>
             )}
             <label className="field-label">备注</label>
