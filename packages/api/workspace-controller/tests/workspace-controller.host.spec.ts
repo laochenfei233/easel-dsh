@@ -477,7 +477,7 @@ describe('WorkspaceController follow', () => {
     })
     const { controller } = await harness({
       pool,
-      sessions: [{ id: SessionId('s1'), cwd: alias, createdAt: 0 } as SessionHeader],
+      sessions: [{ id: brandString<SessionId>('s1'), cwd: alias, createdAt: 0 } as SessionHeader],
     })
     const abort = new AbortController()
     const iterator = controller.follow(abort.signal)[Symbol.asyncIterator]()

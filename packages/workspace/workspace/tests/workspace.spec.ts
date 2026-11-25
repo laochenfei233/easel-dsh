@@ -959,7 +959,7 @@ describe('header-validated membership projection', () => {
     const target = await makeDir('migrated-target')
     const alias = join(base, 'migrated-alias')
     await symlink(target, alias)
-    const id = WorkspaceId('00000000-0000-4000-8000-000000000004')
+    const id = brandString<WorkspaceId>('00000000-0000-4000-8000-000000000004')
     const pool = storedPool(
       [[id, record(alias, ['migrated'])]],
       { initialized: true, workspaceIds: [id] },
@@ -977,7 +977,7 @@ describe('header-validated membership projection', () => {
     expect(storedRecord(pool, id).path).toBe(alias)
     expect(workspace.path).toBe(target)
     expect(workspace.sessionIds).toEqual(['migrated'])
-    await workspace.attachSession(SessionId('new'))
+    await workspace.attachSession(brandString<SessionId>('new'))
     expect(workspace.sessionIds).toEqual(['new', 'migrated'])
     await expect(result.registry.resolveByPath(alias)).resolves.toBe(workspace)
   })
