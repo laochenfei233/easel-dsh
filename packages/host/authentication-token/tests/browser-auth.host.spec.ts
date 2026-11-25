@@ -95,10 +95,12 @@ function exchange(
 }
 
 /** One sign-in per port, issued one second apart from `startPort` upward. */
-function signedInPorts(auth: BrowserAuth, startPort: number, count: number): string[] {
+// Easel names one cookie per Home, scheme, and host (never the port), so retention
+// scenarios vary the host instead of the port.
+function signedInHosts(auth: BrowserAuth, start: number, count: number): string[] {
   return Array.from({ length: count }, (_, index) => {
     vi.advanceTimersByTime(1000)
-    return exchange(auth, `127.0.0.1:${String(startPort + index)}`).cookie
+    return exchange(auth, `10.0.${start}.${index + 1}:3080`).cookie
   })
 }
 
@@ -369,12 +371,12 @@ describe('BrowserAuth', () => {
     expect(auth.isAuthenticated(request('/', '127.0.0.1:3080', { cookie }))).toBe(false)
   })
 
-  it('expires all but the 16 most recently issued cookies of other ports when it signs in', async () => {
+  it('expires all but the 16 most recently issued cookies of other authorities when it signs in', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-11-20T00:00:00.000Z'))
     const auth = await createAuth(new RecordCredentials())
     const previous = exchange(auth).cookie
-    const others = signedInPorts(auth, 40_000, 19)
+    const others = signedInHosts(auth, 40, 19)
     vi.advanceTimersByTime(1000)
 
     const within = exchange(auth, '127.0.0.1:3080', false, [previous, ...others.slice(3)].join('; '))
@@ -394,11 +396,11 @@ describe('BrowserAuth', () => {
     expect(setCookies(tls.state).slice(1)).toEqual([expired(others[0]!, true)])
   })
 
-  it('orders other ports by the issue time their cookies claim, unreadable values first', async () => {
+  it('orders other authorities by the issue time their cookies claim, unreadable values first', async () => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date('2026-11-20T00:00:00.000Z'))
     // Another Harness home signs with a secret this process cannot verify.
-    const elsewhere = signedInPorts(await createAuth(new RecordCredentials()), 41_000, 16)
+    const elsewhere = signedInHosts(await createAuth(new RecordCredentials()), 41, 16)
     const auth = await createAuth(new RecordCredentials())
     const claim = (payload: unknown): string => `v1.${Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url')}.unverified`
     const unreadable = [
@@ -408,7 +410,7 @@ describe('BrowserAuth', () => {
       claim(null),
       claim({ issuedAt: 'now' }),
       claim({ issuedAt: Date.now() + 0.5 }),
-    ].map((value, index) => `${cookieNameOf(exchange(auth, `127.0.0.1:${String(42_000 + index)}`).cookie)}=${value}`)
+    ].map((value, index) => `${cookieNameOf(exchange(auth, `10.0.42.${index + 1}:3080`).cookie)}=${value}`)
     const repeated = `${cookieNameOf(elsewhere[0]!)}=${claim({ issuedAt: Date.now() + 60_000 })}`
 
     const signedIn = exchange(auth, '127.0.0.1:3080', false, [...unreadable, ...elsewhere].join('; '))

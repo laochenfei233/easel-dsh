@@ -3,8 +3,14 @@ import { HttpFetchProvider } from '@deepseek-ai/dsh-web-fetch-http'
 
 const failure = vi.hoisted((): { value: unknown } => ({ value: undefined }))
 
-vi.mock('undici', () => ({
-  fetch: async () => { throw failure.value },
+// Easel's transport pins resolved addresses through publicHttpNetwork instead of calling
+// undici's fetch directly, so the injected failure has to enter through that module.
+vi.mock('../src/network.ts', () => ({
+  publicHttpNetwork: {
+    resolve: async () => [{ address: '192.0.2.10', family: 4 }],
+    request: async () => { throw failure.value },
+    requestVia: async () => { throw failure.value },
+  },
 }))
 
 const provider = new HttpFetchProvider({
