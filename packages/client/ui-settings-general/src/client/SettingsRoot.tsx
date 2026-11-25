@@ -20,7 +20,7 @@ import {
   ConnectionIndicator, Tooltip, useModalLayer,
   IconAgentPresetOutlineMedium, IconArchiveCheckOutlineMedium, IconArchiveOutlineMedium,
   IconCloseOutlineRegular, IconDatabaseOutlineMedium, IconDataOutlineMedium,
-  IconInfoOutlineMedium, IconPersonalizationOutlineMedium, IconSendOutlineMedium,
+  IconInfoOutlineMedium, IconPersonalizationOutlineMedium, IconRemoteConnectionOutlineMedium, IconSendOutlineMedium,
   IconSettingsOutlineMedium, IconUserOutlineMedium,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { ConnectionIndicatorState } from '@deepseek-ai/dsh-client-ui-primitives'
@@ -40,6 +40,7 @@ function navIcon(id: string) {
   if (id === 'agent-presets') return <IconAgentPresetOutlineMedium className={css.navIcon} size={16} />
   if (id === 'plugins') return <IconPersonalizationOutlineMedium className={css.navIcon} size={16} />
   if (id === 'archived-sessions') return <IconArchiveOutlineMedium className={css.navIcon} size={16} />
+  if (id === 'remote-connection') return <IconRemoteConnectionOutlineMedium className={css.navIcon} size={16} />
   // Easel's sections carry their own meaning; a gear reads as "General".
   if (id === 'data-root') return <IconDatabaseOutlineMedium className={css.navIcon} size={16} />
   if (id === 'easel-handoff') return <IconSendOutlineMedium className={css.navIcon} size={16} />
@@ -51,6 +52,7 @@ function navIcon(id: string) {
 type PanelProps = {
   rows: readonly SettingsSectionRow[]
   renderSlot: SettingsRootComponentProps['renderSlot']
+  renderFactorySlot: SettingsRootComponentProps['renderFactorySlot']
   activeId: string | undefined
   onSelect: (id: string) => void
   onClose: () => void
@@ -61,7 +63,7 @@ type PanelProps = {
  * header button, a mask click, and document-level Escape (mounted only while
  * open, so the listener lifetime is the panel's).
  */
-function SettingsPanel({ rows, renderSlot, activeId, onSelect, onClose }: PanelProps) {
+function SettingsPanel({ rows, renderSlot, renderFactorySlot, activeId, onSelect, onClose }: PanelProps) {
   // Entries can unmount underneath the requested id, so the render-time
   // projection falls back to the first row when the id is gone.
   const active = rows.find(r => r.id === activeId)?.id ?? rows[0]?.id
@@ -109,7 +111,7 @@ function SettingsPanel({ rows, renderSlot, activeId, onSelect, onClose }: PanelP
           </button>
         </div>
         <div className={css.options}>
-          {active !== undefined && renderSlot('settings.section', { close: onClose }, { only: active })}
+          {active !== undefined && renderFactorySlot('settings.section.view', { id: active, close: onClose })}
         </div>
       </div>
     </div>
@@ -123,7 +125,7 @@ function SettingsPanel({ rows, renderSlot, activeId, onSelect, onClose }: PanelP
  */
 export function SettingsRoot(props: SettingsRootComponentProps) {
   const {
-    wide, reconnect, useConnectionState, useSections, useOnboardingSteps, useSessions, renderSlot, t,
+    wide, reconnect, useConnectionState, useSections, useOnboardingSteps, useSessions, renderSlot, renderFactorySlot, t,
     useDesktopUpdate, openDesktopUpdate, useStore, actions, useShortcuts,
   } = props
   const { open, activeId } = useStore(state => state)
@@ -223,11 +225,17 @@ export function SettingsRoot(props: SettingsRootComponentProps) {
     connectionIndicator = 'recovered'
   }
 
+  const openSettings = (sectionId?: string): void => {
+    if (sectionId === undefined) actions.open()
+    else actions.openSection(sectionId)
+  }
+
   return (
     <>
+      <div className={css.noticeRow} hidden={!wide}><div className={css.notice}>{renderSlot('settings.notice', { openSettings })}</div></div>
       <div className={clsx(css.triggerRow, !wide && css.railRow)}>
         {renderSlot('settings.launcher', {
-          wide, settingsOpen: open, openSettings: actions.open,
+          wide, settingsOpen: open, openSettings,
           ...(shortcut?.keys.length ? { settingsShortcut: { keys: shortcut.keys, aria: shortcut.aria } } : {}),
           openOnboarding: (id) => { close(); setRequestedOnboarding(id) },
         }, { fallback: <Tooltip disabled={open} label={t('trigger')} shortcutKeys={shortcut?.keys}>
@@ -259,6 +267,7 @@ export function SettingsRoot(props: SettingsRootComponentProps) {
         <SettingsPanel
           rows={rows}
           renderSlot={renderSlot}
+          renderFactorySlot={renderFactorySlot}
           activeId={activeId}
           onSelect={actions.select}
           onClose={close}

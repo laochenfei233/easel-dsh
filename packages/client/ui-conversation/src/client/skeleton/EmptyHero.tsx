@@ -94,6 +94,8 @@ export interface HeroShellProps {
   t: HeroTranslate
   /** Authorized renderer for the hero brand-mark slot. */
   renderSlot: ConversationContentProps['renderSlot']
+  /** Text shown instead of the default headline and preview badge. */
+  headline?: string | undefined
   /** Overlay content after the stack (modals). */
   children?: ReactNode
 }
@@ -103,7 +105,7 @@ export interface HeroShellProps {
  * @param props - see {@link HeroShellProps}.
  * @returns the centered hero element tree.
  */
-export function HeroShell({ t, renderSlot, children }: HeroShellProps) {
+export function HeroShell({ t, renderSlot, headline, children }: HeroShellProps) {
   const [period, setPeriod] = useState(() => heroGreetingPeriod(new Date()))
   useEffect(() => {
     const timer = setInterval(() => {
@@ -122,8 +124,8 @@ export function HeroShell({ t, renderSlot, children }: HeroShellProps) {
           })}
           <span className={css.titleGroup}>
             {/* Own element: keeps the greeting addressable apart from the badge. */}
-            <span data-testid="hero-headline">{t(GREETING_KEYS[period])}</span>
-            <span className={css.previewBadge}>{t('hero.preview')}</span>
+            <span data-testid="hero-headline">{headline ?? t(GREETING_KEYS[period])}</span>
+            {headline === undefined && <span className={css.previewBadge}>{t('hero.preview')}</span>}
           </span>
         </div>
         <div className={css.body}>

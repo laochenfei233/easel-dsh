@@ -1,13 +1,14 @@
 /** Reconnect-safe Workspace baseline and increment producer. */
 
 import type { Context } from '@deepseek-ai/cordis'
+import { brandString } from '@deepseek-ai/dsh-brand'
+import type { WorkspaceId } from '@deepseek-ai/dsh-workspace/types'
 import { Deque } from '@deepseek-ai/dsh-deque'
 import type { DomainChanged } from '@deepseek-ai/dsh-storage-domain'
 import type { Workspace, WorkspaceRecord } from '@deepseek-ai/dsh-workspace'
 import {
   workspaceDomainState,
   workspaceRecord,
-  WorkspaceId,
 } from '@deepseek-ai/dsh-workspace'
 import type {
   WorkspaceBaseline,
@@ -53,9 +54,9 @@ function changedWorkspaceView(
   value: unknown,
 ): WorkspaceView {
   const record: WorkspaceRecord = workspaceRecord.parse(value)
-  const canonical = registry.get(WorkspaceId(workspaceId))?.path ?? record.path
+  const canonical = registry.get(brandString<WorkspaceId>(workspaceId))?.path ?? record.path
   return {
-    workspaceId: WorkspaceId(workspaceId),
+    workspaceId: brandString<WorkspaceId>(workspaceId),
     path: canonical,
     title: record.title,
     sessionIds: [...record.sessionIds],
@@ -149,7 +150,7 @@ export class WorkspaceFeed {
     if (change.table !== 'workspaces') return
     if (change.operation === 'deleted') {
       if (!this.knownIds.delete(change.key)) return
-      this.publish({ type: 'remove', workspaceId: WorkspaceId(change.key) })
+      this.publish({ type: 'remove', workspaceId: brandString<WorkspaceId>(change.key) })
       return
     }
     if (!this.knownIds.has(change.key)) return
