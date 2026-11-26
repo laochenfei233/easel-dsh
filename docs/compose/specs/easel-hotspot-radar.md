@@ -140,12 +140,12 @@ commits: 5d6def5656..1a23740663
 每个 `items[]` 新增：
 
 ```ts
-{
-  rank: number,        // 真实榜位（1 起），不随排序变化
-  delta?: number,      // 正=上升，负=下降；新上榜或上一份快照超过 30 分钟时缺省
-  isNew?: boolean,     // 上一份新近快照里没有
-  ageMin?: number,     // 首次出现至今分钟数（响应时计算，钳到 ≥ 0）
-  watch?: string[]     // 命中的关注词
+type RadarItemDelta = {
+  rank: number        // 真实榜位（1 起），不随排序变化
+  delta?: number      // 正=上升，负=下降；新上榜或上一份快照超过 30 分钟时缺省
+  isNew?: boolean     // 上一份新近快照里没有
+  ageMin?: number     // 首次出现至今分钟数（响应时计算，钳到 ≥ 0）
+  watch?: string[]    // 命中的关注词
 }
 ```
 

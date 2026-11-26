@@ -22,7 +22,7 @@ S2.1 **合并对象与基点**：`refs/remotes/upstream/master`（4b399c39a6，0
 S2.2 **版本家族对齐上游**：全部 `package.json` 版本冲突取上游 0.2.3-alpha.2 家族（沿用 rc.2 同步用户拍板「产品版本号与上游对齐」的先例）。desktop-tauri 壳版本与 easel 插件版本是 Easel 专属文件，上游不触碰，保持现状；产品下次发版时的版本号另定。
 
 S2.3 **排除面（沿用 61b3af27e7 与 b5e6dfe0ee 两次落地的政策）**：
-- `.github`：Easel 只保留 `desktop-release.yml`；上游全部 workflow 改动拒收（modify/delete 冲突保持删除，上游新增文件不吸收）；`.github/review-ownership/*` 属仓库文件，取并集。
+- `.github`：Easel 只保留 `desktop-release.yml`；上游全部 workflow 改动拒收（modify/delete 冲突保持删除，上游新增文件不吸收）。`review-ownership` 与治理脚本（approval-policy、issue-management）已随 master 2026-11-03 的 workflow 收敛删除，本轮维持删除，run-gates 不同步上游对应门；上游本区间新增的 `stale-pull-requests` 脚本与测试自成一体的门吸收。
 - `apps/desktop` 打包/发布/安装面（`scripts|packaging|publishing|installer|config|windows-signing` 与 `tests` 中对应物）冻结在合并前状态；上游在该面的新增文件删除。
 - `apps/desktop-publisher`：rc.2 轮已整面跟上游（HEAD 与上游 rc.2 逐字节一致），本轮冲突取 theirs。
 - `scripts/` 中 CI/发布流水线 spec（ci-workflow、macos-package-workflow、desktop-publish-workflow、windows-package-workflow、preview-workflow、ci-release-selfhosted、release/publish）与 cua-helper 打包脚本取 ours。

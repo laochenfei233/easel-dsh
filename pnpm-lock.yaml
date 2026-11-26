@@ -32309,7 +32309,7 @@ snapshots:
       '@babel/types': 7.29.7
       '@roberts_lando/vfs': 0.3.3
       '@yao-pkg/pkg-fetch': 3.6.4
-      esbuild: 0.28.1
+      esbuild: 0.28.2
       into-stream: 9.1.0
       multistream: 4.1.0
       picocolors: 1.1.1
