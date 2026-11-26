@@ -31,7 +31,7 @@
 - **画布**:写死 `html,body` 尺寸 + `overflow:hidden`。常用 `1080×1350`(4:5)/ `1080×1920`(9:16 贴图)/ `1200×510`(封面)。
 - **结构**(上→下):kicker(等宽小标签)→ hero(大号标题 / 金句,只给一个词上强调色)→ body(要点行 / 卡片)→ footer / 来源(等宽暗色;**新闻类必须署来源 + @handle**)。
 - **一个底色 + 一个强调色**,克制装饰,大留白。
-- **字体**(macOS 自带):sans `"PingFang SC"` · serif `"Songti SC"`(庄重)· mono `"SF Mono","Menlo"`(kicker/footer)。
+- **字体**：使用当前服务器实际安装的字体；sans 可选 `"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",sans-serif`，serif 可选 `"Noto Serif CJK SC","Songti SC",serif`，mono 使用 `monospace`。渲染后确认中文未变成方框。
 
 ## 四套配色变体(按情绪选)
 
@@ -45,21 +45,18 @@
 ## 渲染(核心机制)
 
 ```bash
-# 手写 card.html(html,body 尺寸 = 画布尺寸,overflow:hidden),然后:
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-  --headless=new --disable-gpu --hide-scrollbars \
-  --force-device-scale-factor=2 --window-size=1080,1350 \
-  --screenshot=out.png "file:///abs/path/card.html"
-# → 2160×2700 的 2× retina PNG,再 image_handler.py upload
+python skills/shared/scripts/render_card.py \
+  --html outputs/排版卡/card.html --out outputs/排版卡/card.png \
+  --width 1080 --height 1350 --scale 2
 ```
 
-(装了 bun 的话,new-x-skill 里有个 `scripts/render-card.ts` 封装了同一条命令,可直接拷来用。)
+先切换到 Easel 项目根，使用项目 `.venv` 的 Python。手写 HTML 保存在 `outputs/排版卡/card.html`，上述共享渲染器通过 Playwright Chromium 输出 2160×2700 PNG，不依赖 macOS Chrome 或其它仓库的脚本。安装与浏览器检查使用 `python skills/shared/scripts/render_card.py --selftest`。
 
 ## 坑(都是踩过的)
 
 - **必看渲染图再发**:内容超出画布会**静默裁掉 footer / 来源行**。修法:调小 padding / 字号,或把
   `margin-top:auto` 换成固定 margin(auto 会把元素顶到底,内容一高就溢出)。
-- `html,body{width:Wpx;height:Hpx;overflow:hidden}` 必须和 `--window-size` **完全一致**。
+- `html,body{width:Wpx;height:Hpx;overflow:hidden}` 必须和渲染器的 `--width` / `--height` **完全一致**。
 - 中文换行:避免 `" / "`(带空格),会在斜杠处尴尬断行。
 - **发前逐字核对文字**——排版卡的全部意义就在于文字精确、能被信任;新闻类还要先核实事实源。
 

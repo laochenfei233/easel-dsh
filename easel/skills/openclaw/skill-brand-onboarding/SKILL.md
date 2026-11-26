@@ -110,7 +110,7 @@ WebFetch 无法获取的信息标记为待确认缺口。
 
 用户返回填写的文档和素材后：
 
-1. **素材处理** — Logo → `profiles/<name>/assets/logo.png`；产品图 → `assets/products/`；场景图 → `assets/lifestyle/`；示例帖子 → `assets/examples/`
+1. **素材处理** — Logo → `profiles/<name>/assets/logo.png`；产品图 → `profiles/<name>/assets/products/`；场景图 → `profiles/<name>/assets/lifestyle/`；示例帖子 → `profiles/<name>/assets/examples/`（均相对项目根）
 2. **回复整合** — 将用户回答与 Phase 1 采集合并，识别剩余缺口
 3. **补充确认** — 如有关键缺口，针对性追问（不超过 3 个问题）
 

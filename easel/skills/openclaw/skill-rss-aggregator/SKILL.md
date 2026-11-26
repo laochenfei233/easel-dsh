@@ -43,7 +43,7 @@ python <skill>/scripts/rss_digest.py fetch --url https://example.com/feed.xml --
 
 1. 聚合摘要 → 从中挑选题，喂 skill-topic-evaluator 评估可行性、skill-content-matrix 排选题。
 2. 关键词过滤锁定垂类，只看和账号相关的更新。
-3. 定期跑（配合 OpenClaw 定时）做"每日/每周资讯简报"。
+3. 定期跑（配合当前执行引擎可用的定时功能或系统调度器）做"每日/每周资讯简报"；没有调度能力时说明限制，不声称已安排自动执行。
 
 ## Profile 感知
 

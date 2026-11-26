@@ -29,13 +29,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import re
+import signal
 import sys
 import time
 from pathlib import Path
+from urllib.parse import urljoin, urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import login_state  # noqa: E402
 import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
+import login_qr
+import login_transport
 import content_guard  # noqa: E402  出站内容安全闸门
 import platform_readback  # noqa: E402  发布读回对账（快手已接入，注册表见 _READBACK_VERIFIERS）
 import human_pace  # noqa: E402  人类节奏（提交前双停顿；EASEL_PACE_SKIP=1 跳过）
@@ -200,14 +206,18 @@ PLATFORMS: dict[str, dict] = {
         # 登录判定靠 URL：未登录一律重定向到 channels.weixin.qq.com/login.html（含 login 标记 → _is_logged_in 判未登录）；
         # login_check 为已登录主页的正向兜底（真机 2026-08 校准：登录后主页才有 finder-nickname/唯一ID/桌面导航）
         "login_check": ".finder-nickname, .finder-uniq-id, .finder-ui-desktop-menu",
+        "login_strict": True,
         # ⚠️ 二维码在跨域 iframe 内（open.weixin.qq.com 的微信标准扫码组件 connect/qrconnect），
         # 主页面 query_selector 根本找不到——必须截 <iframe> 元素本体（真机 2026-08 验证：得 208×208 清晰码；
         # iframe 内 img.js_qrcode_img 的 src 是相对 URL /connect/qrcode/<ticket>，非 base64，故打分裁剪那套不适用）
         "login_qr_iframe": "iframe[src*='open.weixin.qq.com/connect/qrconnect']",
+        "login_navigation_timeout_ms": 30000,
+        "login_qr_iframe_timeout_ms": 30000,
         # 登录页出现该扫码 iframe = 未登录的可靠信号
         "logged_out_selector": "iframe[src*='open.weixin.qq.com/connect/qrconnect'], .login-mask",
-        "me_name_selector": ".finder-nickname, .name",
-        "me_avatar_selector": "img.avatar[src], .finder-info img[src]",
+        "whoami_url": "https://channels.weixin.qq.com",
+        "me_name_selector": ".finder-info .finder-nickname",
+        "me_avatar_selector": ".finder-info img.avatar[src]",
         "steps": [
             {"action": "goto", "value": "https://channels.weixin.qq.com/platform/post/create"},
             {"action": "upload", "selector": "input[type=file]", "value": "{media}"},
@@ -229,12 +239,20 @@ PLATFORMS: dict[str, dict] = {
     "zhihu": {
         "name": "知乎",
         "login_url": "https://www.zhihu.com/signin",
+        "login_probe_url": "https://www.zhihu.com/",
         "publish_url": "https://zhuanlan.zhihu.com/write",
         "profile": "ZhihuProfile",
         "login_check": ".AppHeader-profile, .AppHeader-userInfo",
+        "login_strict": True,
         "logged_out_selector": ".SignContainer, .Login-content, button:has-text('登录')",
-        "me_name_selector": ".AppHeader-profile .name, .ProfileHeader-name, .AppHeader-userInfo .name",
-        "me_avatar_selector": ".AppHeader-profile img[src], .Avatar[src]",
+        "login_qr_switch": "button:has-text('扫码登录'), [role='tab']:has-text('扫码登录'), "
+                           ".SignFlow-qrcodeTab, .SignFlow-tab--qrcode, .SignFlow-switch:has-text('扫码')",
+        "login_qr_selector": ".Qrcode-img, .SignFlow-qrcode, .SignFlowQRCode, "
+                             "[class*='qrcode' i], img[src*='qr' i], canvas",
+        "qr_loaded": ".Qrcode-img, [class*='qrcode' i] img, [class*='qrcode' i] canvas, canvas",
+        "strict_login_qr": True,
+        "me_name_selector": ".AppHeader-profile .name, .AppHeader-userInfo .name",
+        "me_avatar_selector": ".AppHeader-profile img[src], .AppHeader-userInfo img[src]",
         "steps": [
             {"action": "goto", "value": "https://zhuanlan.zhihu.com/write"},
             {"action": "waitfor", "selector": "textarea,.WriteIndex-titleInput,input", "value": "30000"},
@@ -247,6 +265,135 @@ PLATFORMS: dict[str, dict] = {
         "publish_success": {"url_contains": "/p/", "url_not_contains": "/edit"},
         "selector_caveat": "知乎专栏写文章页；正文为 Draft.js contenteditable。『发布』按钮须精确匹配"
                            "（避免误点『发布设置』）。首次需核对标题输入框与发布流程。",
+        "media_optional": True,  # 知乎文章可纯文字（cmd_publish 的 --media 必填检查按此放行）
+    },
+    "juejin": {
+        "name": "掘金",
+        "login_url": "https://juejin.cn/login",
+        "login_probe_url": "https://juejin.cn/editor/drafts/new?v=2",
+        "publish_url": "https://juejin.cn/editor/drafts/new?v=2",
+        "profile": "JuejinProfile",
+        "media_optional": True,  # 文章以 Markdown 正文为主，封面可选
+        # 登录判定：用户接口 err_no==0（_authenticated_account 走 JuejinProfile 分支）；
+        # DOM 只作兜底——登录后顶部出现头像 .avatar。
+        "login_check": ".avatar, .user-info, [class*=avatar-wrapper], .login-button-wrap",
+        # 用显式接口判定，不许靠 URL 启发式（掘金未登录会 302 到 /login?to=...，但首页可匿名浏览）
+        "login_strict": True,
+        "logged_out_selector": ".login-button, .login-button-wrap, .top-login-guide",
+        # 掘金登录弹窗直接就有扫码码（img.qrcode-img，base64 PNG，150×150），无需切 tab
+        "login_prep": [{"click": ".login-button, .login-btn, text=登录"}, {"wait": 2500}],
+        "login_qr_selector": "img.qrcode-img, [class*=qrcode] img, [class*=qr-code] img, canvas",
+        "qr_loaded": "img.qrcode-img[src^='data:image'], img.qrcode-img[src]",
+        "strict_login_qr": True,
+        "me_name_selector": ".user-info .name, .username, .avatar-wrapper .name",
+        "me_avatar_selector": ".avatar img[src], img.avatar[src], .avatar-wrapper img[src]",
+        "steps": [
+            {"action": "goto", "value": "https://juejin.cn/editor/drafts/new?v=2"},
+            # ByteMD/CodeMirror 编辑器初始化慢，等标题框
+            {"action": "waitfor", "value": "45000",
+             "selector": "input[placeholder*='标题'], .title-input input, input.title-input"},
+            {"action": "fill", "value": "{title}",
+             "selector": "input[placeholder*='标题'], .title-input input, input.title-input"},
+            # 正文走 CodeMirror 底层 textarea（ByteMD 不认 page.fill 到 contenteditable）
+            {"action": "waitfor", "value": "30000", "selector": ".CodeMirror textarea, .CodeMirror"},
+            {"action": "fill", "selector": ".CodeMirror textarea, .CodeMirror",
+             "value": "{desc}"},
+            # 补一次回车触发编辑器内部状态同步（否则自动保存/发布读到空正文）
+            {"action": "press", "value": "Enter"},
+            {"action": "wait", "value": "2500"},
+            {"action": "screenshot", "value": "outputs/_login/juejin-prefill.png"},
+            # 点顶部「发布」→ 右侧弹出 .publish-popup 发布面板（分类/标签/封面/专栏/摘要）
+            {"action": "click",
+             "selector": "button:has-text('发布'), .publish-btn"},
+            {"action": "waitfor", "value": "15000", "selector": ".publish-popup.active, .publish-popup"},
+            # 分类必选：.category-list .item 是 div（不是 button）；默认投「人工智能」，
+            # 可用 --tags 的第一个标签或默认值覆盖。选不到就点第一个可选分类兜底。
+            {"action": "click",
+             "selector": ".publish-popup .category-list .item:has-text('人工智能'), .publish-popup .category-list .item"},
+            {"action": "wait", "value": "800"},
+            # 标签必填：点 placeholder 展开下拉（input 被 placeholder 遮挡，直接点 input 会超时）
+            {"action": "click", "optional": True, "selector": ".publish-popup .byte-select__placeholder"},
+            {"action": "wait", "value": "1200"},
+            {"action": "press", "optional": True, "value": "ArrowDown"},
+            {"action": "press", "optional": True, "value": "Enter"},
+            {"action": "wait", "value": "1200"},
+            # 标签选中后下拉仍展开会盖住「确定并发布」→ 点面板空白处收起（Esc 也行）
+            {"action": "press", "optional": True, "value": "Escape"},
+            {"action": "wait", "value": "600"},
+            {"action": "click", "optional": True, "selector": ".publish-popup .publish-title, .publish-popup h3"},
+            {"action": "wait", "value": "500"},
+            # 摘要必填且**至少 50 字**（平台校验："摘要不满足最低50字的要求"）。
+            # 点开摘要输入框 → 用 fill 写入拼到 ≥50 字的文本（{summary} 由 cmd_publish 预备）。
+            {"action": "click", "optional": True,
+             "selector": ".publish-popup textarea, .publish-popup [class*=summary] textarea"},
+            {"action": "fill", "optional": True,
+             "selector": ".publish-popup textarea, .publish-popup [class*=summary] textarea",
+             "value": "{summary}"},
+            {"action": "wait", "value": "800"},
+            {"action": "screenshot", "value": "outputs/_login/juejin-publish-panel.png"},
+            # 确认发布：面板底部 primary 按钮 =「确定并发布」。
+            # 用 js_click（JS 派发事件）：掘金是自定义 UI 组件，标准 click 常被判不可点而静默无效。
+            {"action": "js_click", "commit": True,
+             "selector": ".publish-popup .ui-btn.primary, .publish-popup button:has-text('确定并发布')"},
+            {"action": "wait", "value": "8000"},
+        ],
+        # 成功判定要「弹窗真的关掉」：服务端拒绝（如账号受限）时 .publish-popup 不会关闭，
+        # 只靠 URL 变化会假报成功（实测掘金「账户目前受到限制」正是这样被漏掉的）。
+        "publish_success": {"gone_selector": ".publish-popup.active, .publish-popup",
+                            "url_not_contains": "editor/drafts/new"},
+        "selector_caveat": "掘金编辑器 juejin.cn/editor/drafts/new?v=2（ByteMD + CodeMirror5）：标题 "
+                           "input[placeholder*=标题]；正文 .CodeMirror textarea（fill 后须补 Enter 触发状态同步）。"
+                           "点『发布』弹分类/标签/摘要面板，标签只支持掘金已有标签库（搜不到会失败，故标签步 optional）。"
+                           "登录判定走用户接口 err_no（_authenticated_account），比 DOM 可靠；二维码为登录弹窗内 "
+                           "img.qrcode-img（base64，无需切 tab）。首次使用先 plan 预览、小流量试发核对选择器。",
+    },
+    "twitter-x": {
+        "name": "推特 X",
+        "login_url": "https://x.com/i/flow/login",
+        "login_probe_url": "https://x.com/home",
+        "publish_url": "https://x.com/compose/post",
+        "profile": "TwitterXProfile",
+        # X 没有扫码登录（账号密码 + 可能的 2FA）→ login-qr 走窗口模式（--headed），
+        # 用户在本机弹出的浏览器窗口里手动完成登录，脚本轮询登录态后持久化。
+        "login_mode": "window",
+        # 国际站要外网可达：needs_proxy → 优先 EASEL_PROXY/TWITTER_X_PROXY/https_proxy 显式代理，
+        # 没配则不加 --no-proxy-server，让 Chromium 回退系统代理（TUN/系统级 VPN 用户）。
+        "needs_proxy": True,
+        # 代理链路冷启动 + X 首页重，默认 10s 导航超时太短
+        "login_navigation_timeout_ms": 30000,
+        "media_optional": True,  # 纯文字推文合法；图/视频可选（取第一个媒体文件）
+        # 已登录标志：左侧导航底部账号切换按钮只在登录后渲染；data-testid 是 X 上最稳定的锚点
+        "login_check": "[data-testid='SideNav_AccountSwitcher_Button']",
+        "login_strict": True,
+        "logged_out_selector": "[data-testid='loginButton'], a[href='/i/flow/login'], a[href='/login']",
+        "whoami_url": "https://x.com/home",
+        # 账号切换按钮里第一个 div[dir] 是显示名（第二个是 @handle）；头像是按钮内 img
+        "me_name_selector": "[data-testid='SideNav_AccountSwitcher_Button'] div[dir] span",
+        "me_avatar_selector": "[data-testid='SideNav_AccountSwitcher_Button'] img[src]",
+        "steps": [
+            {"action": "goto", "value": "https://x.com/compose/post"},
+            {"action": "waitfor", "value": "45000",
+             "selector": "[data-testid='tweetTextarea_0'], .public-DraftEditor-content"},
+            # 媒体可选：无媒体时引擎自动跳过 upload 步与 needs_media 等待步（纯文字推文）
+            {"action": "upload", "value": "{media}",
+             "selector": "input[type=file][data-testid='fileInput'], input[type=file]"},
+            # 附件处理（图片秒级/视频转码慢）完成前点发布会报错
+            {"action": "waitfor", "value": "120000", "needs_media": True,
+             "selector": "[data-testid='attachments']"},
+            # X 编辑器是 Draft.js contenteditable → 走 type（剪贴板注入，逐字键入兜底）
+            {"action": "type", "value": "{title}\n{desc}",
+             "selector": "[data-testid='tweetTextarea_0'], .public-DraftEditor-content"},
+            {"action": "wait", "value": "2000"},
+            # 推文按钮无文字时不可用；commit 标记 = 读回时间窗基准 + 提交前人类节奏双停顿
+            {"action": "click", "commit": True,
+             "selector": "[data-testid='tweetButton'], [data-testid='tweetButtonInline']"},
+            {"action": "wait", "value": "6000"},
+        ],
+        # 发推成功后离开 compose 页回 /home；[data-testid='toast']「Your post was sent.」作旁证
+        "publish_success": {"url_not_contains": "compose", "selector": "[data-testid='toast']"},
+        "selector_caveat": "X 发文页 x.com/compose/post；编辑器 [data-testid='tweetTextarea_0']（Draft.js）；"
+                           "发布钮 [data-testid='tweetButton']。X 风控对自动化敏感：登录务必走弹窗手动完成；"
+                           "首次使用先 plan 预览再小流量试发。推文=标题+正文合并（≤280 字符，超限按钮置灰）。",
     },
 }
 
@@ -264,7 +411,127 @@ LAUNCH_ARGS = [
 ]
 
 
-def _block_heavy(context, platform: str) -> None:
+def _make_summary(title: str, desc: str, minimum: int = 60, limit: int = 100) -> str:
+    """生成平台摘要（掘金要求 ≥50 字、≤100 字）。标题+正文拼接，不足用中性句补足。"""
+    import re as _re
+    base = _re.sub(r"\s+", " ", f"{title}：{desc}").strip()
+    pad = " 本文记录相关实践与经验总结，供参考交流。"
+    text = base
+    while len(text) < minimum:
+        text += pad
+    return text[:limit]
+
+
+def _env_file_value(key: str, env_file: Path | None = None) -> str:
+    """读项目根 .env 里的单个键（standalone CLI 直跑时不经 web 服务进程，
+    环境变量之外再查设置页持久化下来的配置）。读不到/没有该键返回 ''。"""
+    path = env_file or (Path(__file__).resolve().parents[3] / ".env")
+    try:
+        result = ""
+        for line in path.read_text(encoding="utf-8-sig").splitlines():
+            s = line.strip()
+            if s and not s.startswith("#") and "=" in s:
+                k, _, v = s.partition("=")
+                if k.strip() == key:
+                    result = v.strip().strip("\"'")
+        return result
+    except (OSError, UnicodeError):
+        pass
+    return ""
+
+
+def _publish_receipt(platform: str, url: str, status: int, payload: object) -> dict | None:
+    """Accept only the matching platform's submission response, never a URL or toast."""
+    from urllib.parse import urlsplit
+    try:
+        parsed = urlsplit(url)
+    except ValueError:
+        return None
+    if platform == "juejin":
+        matches = parsed.scheme == "https" and parsed.hostname == "api.juejin.cn" and parsed.path == "/content_api/v1/article/publish"
+    elif platform == "twitter-x":
+        matches = (parsed.scheme == "https" and parsed.hostname in {"x.com", "api.x.com", "twitter.com", "api.twitter.com"}
+                   and "/graphql/" in parsed.path and parsed.path.endswith("/CreateTweet"))
+    else:
+        return None
+    if not matches:
+        return None
+    if not 200 <= status < 300 or not isinstance(payload, dict):
+        return {"outcome": "unknown"}
+    if platform == "juejin":
+        if type(payload.get("err_no")) is int and payload["err_no"] != 0:
+            return {"outcome": "rejected"}
+        if type(payload.get("err_no")) is not int or payload["err_no"] != 0:
+            return {"outcome": "unknown"}
+        data = payload.get("data")
+        identifier = data.get("article_id") if isinstance(data, dict) else None
+    else:
+        if payload.get("errors"):
+            return {"outcome": "rejected"}
+        try:
+            identifier = payload["data"]["create_tweet"]["tweet_results"]["result"]["rest_id"]
+        except (KeyError, TypeError):
+            identifier = None
+    if (type(identifier) not in (str, int) or len(str(identifier)) > 32
+            or not re.fullmatch(r"[0-9]+", str(identifier)) or int(identifier) <= 0):
+        return {"outcome": "unknown"}
+    link = f"https://juejin.cn/post/{identifier}" if platform == "juejin" else f"https://x.com/i/status/{identifier}"
+    return {"outcome": "accepted", "id": str(identifier), "url": link}
+
+
+def _observe_publish_receipt(page, platform: str) -> dict:
+    state = {"submitted": False, "outcome": "unknown"}
+    def receive(response):
+        if not state["submitted"] or state["outcome"] == "accepted":
+            return
+        try:
+            if response.request.method != "POST":
+                return
+            result = _publish_receipt(platform, response.url, response.status, response.json())
+            if result is not None:
+                state.update(result)
+        except Exception:
+            pass  # A missing/unreadable receipt leaves the outcome unknown.
+    page.on("response", receive)
+    return state
+
+
+# headless 校验国际站时的 UA 伪装：headless Chromium 默认 UA 含 "HeadlessChrome"，
+# Google/X 风控看到同一会话被 HeadlessChrome 客户端使用会**服务端直接作废会话**
+# （实测：X 窗口登录成功 → headless whoami 跑一次 → 会话 cookie 被清空 → 账号页翻未登录）。
+# 伪装成同版本正常 Chrome UA 即可避免。版本号跟随 playwright 内核，升级时同步改。
+_HEADLESS_SAFE_UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+                     "(KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36")
+
+
+def _launch_kwargs(cfg: dict, platform: str = "", headless: bool = False) -> dict:
+    """launch_persistent_context 的 kwargs（args + 可选 proxy + headless UA 伪装）。
+
+    国内平台维持原状：args 追加 --no-proxy-server，Chromium 级屏蔽系统/环境代理（开 VPN 也直连）。
+    needs_proxy 的国际站（如 X）相反：
+    - 按优先级取显式代理：EASEL_PROXY → 平台专属变量（如 TWITTER_X_PROXY）
+      → .env 里持久化的 EASEL_PROXY（设置页「网络代理」）→ https_proxy/HTTPS_PROXY
+      → all_proxy/ALL_PROXY，传给 Playwright proxy 参数；
+    - 都没配 → **不加** --no-proxy-server，让 Chromium 回退系统代理（TUN/系统级 VPN 用户）；
+    - headless 运行时伪装 UA（_HEADLESS_SAFE_UA）——防 Google/X 风控因 HeadlessChrome UA 踢会话。
+    """
+    kwargs: dict = {"args": list(LAUNCH_ARGS)}
+    if cfg.get("needs_proxy"):
+        slug = platform.upper().replace("-", "_")
+        proxy = (os.environ.get("EASEL_PROXY") or (os.environ.get(f"{slug}_PROXY") if slug else "")
+                 or (_env_file_value("EASEL_PROXY") if "EASEL_PROXY" not in os.environ else "")
+                 or os.environ.get("https_proxy") or os.environ.get("HTTPS_PROXY")
+                 or os.environ.get("all_proxy") or os.environ.get("ALL_PROXY") or "").strip()
+        if proxy:
+            kwargs["proxy"] = {"server": proxy}
+        if headless:
+            kwargs["user_agent"] = _HEADLESS_SAFE_UA
+    else:
+        kwargs["args"] = kwargs["args"] + ["--no-proxy-server"]
+    return kwargs
+
+
+def _block_heavy(context, platform: str, login_assets: bool = True) -> None:
     if platform != "weixin-channels":
         return
 
@@ -272,8 +539,10 @@ def _block_heavy(context, platform: str) -> None:
         if request.resource_type in {"media", "font"}:
             route.abort()
         else:
-            route.continue_()
+            route.fallback()
 
+    if login_assets:
+        login_transport.install(context, platform)
     context.route("**/*", handle_route)
 
 
@@ -577,18 +846,28 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
     profile = _session_profile(a)
     cfg = PLATFORMS[a.platform]
     ctx = {"media": a.media or "", "title": a.title or "", "desc": a.desc or "",
-           "tags": a.tags or "", "cover": a.cover or ""}
+           "tags": a.tags or "", "cover": a.cover or "",
+           # summary：摘要占位符（掘金要求 ≥50 字），标题+正文拼够长度
+           "summary": _make_summary(a.title or "", a.desc or "")}
     with sync_playwright() as p:
         cdp = browser_session.resolve_endpoint(a)
         if cdp:
             # CDP 附身运行中实例（账号直启的窗口）：登录态在实例里，不碰持久 profile。
-            br, owned = browser_session.open_browser(p, cdp_endpoint=cdp, launch=None)
+            browser, owned = browser_session.open_browser(p, cdp_endpoint=cdp, launch=None)
         else:
             profile.mkdir(parents=True, exist_ok=True)
-            br, owned = p.chromium.launch_persistent_context(
-                str(profile), headless=not headed, args=LAUNCH_ARGS + ["--no-proxy-server"],
-                viewport={"width": 1440, "height": 900}), True
-        page = browser_session.open_page(br, owned)
+            browser = p.chromium.launch_persistent_context(
+                str(profile), headless=not headed,
+                viewport={"width": 1440, "height": 900}, **_launch_kwargs(cfg, a.platform, headless=not headed))
+            owned = True
+        page = browser_session.open_page(browser, owned)
+        receipt = _observe_publish_receipt(page, a.platform) if a.platform in {"juejin", "twitter-x"} else None
+        # 收集页面 console 错误：平台把「账号受限/风控」这类拒绝只打在控制台、UI 不给提示
+        # （掘金实测："抱歉，您的账户目前受到限制，暂时无法发布文章"）。失败时据此给出真实原因。
+        console_errors: list[str] = []
+        page.on("console", lambda m: console_errors.append(m.text[:200])
+                if m.type == "error" else None)
+        page.on("pageerror", lambda e: console_errors.append(str(e)[:200]))
         if not do_publish:
             page.goto(cfg["login_url"])
             if cdp:
@@ -602,7 +881,7 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
                 input()
             except EOFError:
                 pass
-            browser_session.close_session(br, owned)
+            browser_session.close_session(browser, owned)
             return 0
         # publish：按媒体类型选步骤——图片且平台有图文流程走 steps_image，否则默认 steps
         steps = _resolve_steps(a.platform, ctx, _steps_key_for(cfg, a.media))
@@ -614,13 +893,17 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
         # 快手等 SPA 发布页外壳（login_check 选择器）渲染偏慢，实测 5–10s+- 不等；
         # 单次 _settle_login(7s) 输给渲染会误判未登录（strict 模式下选择器不命中即未登录）→
         # 重复 settle + 判定数轮，给慢渲染的登录外壳足够时间，绝不因竞态把有效会话判成未登录。
-        logged = False
-        for _i in range(4):
+        #
+        # 再叠一层权威判定：有账号接口的平台（知乎 /api/v4/me、掘金 user/get、视频号 auth_data）
+        # 直接问后端「我是谁」。编辑器/发布页的 DOM 外壳常常没有登录后标志元素（掘金编辑器页实测
+        # 无 .avatar/.user-info），只靠 DOM 会把有效会话判成未登录 → 误报「未登录」挡住发布。
+        logged = _authenticated_account(browser, cfg) is not None
+        for _i in range(0 if logged else 4):
             try:
                 _settle_login(page, cfg)  # 等客户端跳转/登录外壳渲染落定
             except Exception:
                 pass
-            if _is_logged_in(page, cfg):
+            if _is_logged_in(page, cfg) or _authenticated_account(browser, cfg) is not None:
                 logged = True
                 break
             try:
@@ -649,6 +932,10 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
                 sel = s.get("selector", "")
                 val = s.get("value", "")
                 opt = s.get("optional", False)  # 可选步骤失败不中断（如清理旧草稿弹窗）
+                # 可选媒体：无媒体时跳过上传步与标记 needs_media 的等待步（如 X 的纯文字推文）
+                if not ctx["media"] and (act in ("upload", "filechooser_upload") or s.get("needs_media")):
+                    print(f"  步骤 {i}/{len(steps)}: {act}（无媒体，跳过）", file=sys.stderr)
+                    continue
                 print(f"  步骤 {i}/{len(steps)}: {act} {sel}", file=sys.stderr)
                 if s.get("commit") and submitted_at_ms is None:
                     submitted_at_ms = int(time.time() * 1000)
@@ -656,9 +943,14 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
                     # 单次提交契约 × 人类节奏：提交前「复核 + 反应」双停顿（human_pace）
                     human_pace.pause_before_commit(
                         len(str(ctx.get("title") or "")) + len(str(ctx.get("desc") or "")))
+                    if receipt is not None:
+                        receipt["submitted"] = True
                 try:
                     if act == "goto":
-                        page.goto(val)
+                        # 用 domcontentloaded 而非默认的 load：重 SPA（如掘金编辑器、Studio 类后台）
+                        # 有持续长连接/资源请求，load 事件长期不到 → goto 超时但其实页面已可用
+                        # （实测 Studio 超时那刻搜索框已渲染）。步骤内自带的 waitfor/wait 负责等就绪。
+                        page.goto(val, wait_until="domcontentloaded", timeout=60000)
                     elif act == "upload":
                         page.set_input_files(sel, val)
                     elif act == "filechooser_upload":
@@ -711,6 +1003,8 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
                         try:
                             el.click(force=True, timeout=5000)
                         except Exception:
+                            if receipt is not None and s.get("commit"):
+                                _die("提交结果未知，请到平台后台核对，先别重发。", 5)
                             # 回退：完整指针事件链（pointerdown→mousedown→mouseup→click）
                             page.evaluate("""
                                 el => {
@@ -738,13 +1032,22 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
                             el.scroll_into_view_if_needed()
                         except Exception:
                             pass
-                        el.click()
+                        try:
+                            el.click()
+                        except Exception:
+                            if receipt is not None and s.get("commit"):
+                                _die("提交结果未知，请到平台后台核对，先别重发。", 5)
+                            raise
                     elif act == "wait":
                         page.wait_for_timeout(int(val or 1000))
                     elif act == "press":
                         page.keyboard.press(val)
                     elif act == "waitfor":
-                        page.wait_for_selector(sel, timeout=int(val or 30000))  # 逗号=CSS group
+                        # att=True → 只等元素挂到 DOM（state="attached"），不等可见。
+                        # 文件上传 input 几乎都是 aria-hidden 的隐藏元素，等 visible 必超时
+                        # （实测：文件上传 input 普遍 aria-hidden）。
+                        state = "attached" if s.get("att") else "visible"
+                        page.wait_for_selector(sel, timeout=int(val or 30000), state=state)  # 逗号=CSS group
                 except Exception as e:
                     if opt:
                         print(f"    (可选步骤跳过：{e})", file=sys.stderr)
@@ -753,11 +1056,17 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
             # 发布结果校验（界面层，旁证）：配置了 publish_success 才验；未配的平台沿用"跑完即报"
             chk = cfg.get("publish_success")
             ui_ok = False
-            if chk:
+            if chk and receipt is None:
                 deadline = time.time() + 30
                 while time.time() < deadline:
                     url = (page.url or "").lower()
                     uc, unc = chk.get("url_contains"), chk.get("url_not_contains")
+                    gone = chk.get("gone_selector")
+                    # gone_selector：成功后该元素（如发布弹窗）必须消失。服务端拒绝时弹窗不会关，
+                    # 只靠 URL 会假报成功（掘金「账户目前受到限制」实测就是这样被漏掉的）。
+                    if gone and page.query_selector(gone):
+                        page.wait_for_timeout(500)
+                        continue
                     if uc or unc:  # 支持纯 url_not_contains（发布成功后离开发布页）
                         if (uc in url if uc else True) and (unc not in url if unc else True):
                             ui_ok = True
@@ -768,7 +1077,16 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
                     page.wait_for_timeout(500)
             # 读回对账（权威判定）：回到作品管理页读本人作品列表，标题+时间窗对上才算成功。
             # 界面判定只作旁证；四档结算（verified 才成功），未核实绝不冒报成功、不许盲目重发。
-            if cfg.get("readback") and a.platform in _READBACK_VERIFIERS:
+            if receipt is not None:
+                deadline = time.monotonic() + 30
+                while receipt["outcome"] == "unknown" and time.monotonic() < deadline:
+                    page.wait_for_timeout(250)
+                if receipt["outcome"] == "rejected":
+                    _die(f"{cfg['name']}拒绝本次提交，请到平台后台查看原因。", 5)
+                if receipt["outcome"] != "accepted":
+                    _die(f"{cfg['name']}发布结果未核实，请到平台后台核对，先别重发。", 5)
+                print(f"✅ {cfg['name']}发布提交已确认（平台响应作品 {receipt['id']}）：{receipt['url']}")
+            elif cfg.get("readback") and a.platform in _READBACK_VERIFIERS:
                 verdict = _readback_verify(a.platform, page, title=ctx.get("title") or "",
                                            since_ms=submitted_at_ms or flow_started_ms,
                                            snapshot_ids=snapshot_ids)
@@ -826,8 +1144,15 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
                               + (dlg or "(无弹窗按钮——可能没触发发布或已直接提交)"), file=sys.stderr)
                     except Exception:
                         pass
+                    # 平台把真实拒绝原因打在 console（如掘金「账户目前受到限制」）→ 优先报它
+                    _blocked = next((e for e in console_errors
+                                     if any(k in e for k in ("限制", "受限", "风控", "封禁",
+                                                             "cannot publish", "restricted", "forbidden"))), "")
+                    if _blocked:
+                        _die(f"{cfg['name']}发布被平台拒绝：{_blocked}", 5)
                     _die(f"发布未确认成功：步骤跑完但未跳到成功状态（当前 URL={page.url}）。"
-                         f"可能『发布』按钮未生效或有二次确认弹窗——需核对选择器。", 5)
+                         f"可能『发布』按钮未生效或有二次确认弹窗——需核对选择器。"
+                         + (f" 页面报错：{console_errors[-1]}" if console_errors else ""), 5)
                 print(f"✅ 发布成功（已确认跳转：{page.url}）")
             else:
                 print("✅ 发布步骤执行完毕，请在浏览器/平台后台确认发布结果。")
@@ -858,7 +1183,7 @@ def _run_browser(a, headed: bool, do_publish: bool) -> int:
         finally:
             if not a.keep_open:
                 # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
-                browser_session.close_session(br, owned)
+                browser_session.close_session(browser, owned)
     return 0
 
 
@@ -874,6 +1199,155 @@ VIDEO_EXTS = {".mp4", ".mov", ".flv", ".mkv", ".avi", ".webm", ".m4v", ".wmv", "
 # 登录轮询：间隔 1s（原 2s，成功检测延迟减半）；每 N 轮用辅助页深探一次
 _LOGIN_POLL_MS = 1000
 _LOGIN_PROBE_EVERY = 3
+
+
+def _navigate_login(page, destination: str, timeout_ms: int = 10000) -> None:
+    from playwright.sync_api import TimeoutError as PlaywrightTimeout
+
+    try:
+        page.goto(destination, wait_until="commit", timeout=timeout_ms)
+    except PlaywrightTimeout:
+        current = (page.url or "").lower()
+        if (not current.startswith(("https://", "http://"))
+                or urlparse(current).hostname != urlparse(destination).hostname):
+            raise RuntimeError("登录页面连接超时，请检查服务器能否访问平台及扫码服务") from None
+
+
+def _account_identity(account: dict, base_url: str = "") -> dict:
+    name = account.get("name")
+    avatar = account.get("avatar_url")
+    name = name.strip().splitlines()[0][:40] if isinstance(name, str) and name.strip() else ""
+    avatar = avatar.strip() if isinstance(avatar, str) else ""
+    try:
+        if urlparse(avatar).scheme and not avatar.startswith(("https://", "http://")):
+            avatar = ""
+        avatar = urljoin(base_url, avatar) if avatar else ""
+        parsed = urlparse(avatar)
+        if parsed.scheme not in ("https", "http") or not parsed.hostname or parsed.username or parsed.password:
+            avatar = ""
+    except ValueError:
+        avatar = ""
+    return {"name": name, "avatar": avatar}
+
+
+def _channels_account(payload) -> dict | None:
+    if not isinstance(payload, dict) or type(payload.get("errCode")) is not int or payload["errCode"] != 0:
+        return None
+    data = payload.get("data")
+    account = data.get("finderUser") if isinstance(data, dict) else None
+    if not isinstance(account, dict):
+        return None
+    identifier = account.get("finderUsername")
+    name = account.get("nickname")
+    if not isinstance(identifier, str) or not identifier.strip() or not isinstance(name, str) or not name.strip():
+        return None
+    return {"id": identifier, "name": name, "avatar_url": account.get("headImgUrl", "")}
+
+
+def _observe_channels_account(browser, cfg: dict) -> None:
+    if cfg.get("profile") != "ChannelsProfile":
+        return
+    browser._easel_channel_account = None
+
+    def observe(response):
+        parsed = urlparse(response.url)
+        if (parsed.scheme != "https" or parsed.hostname != "channels.weixin.qq.com"
+                or parsed.path != "/cgi-bin/mmfinderassistant-bin/auth/auth_data"):
+            return
+        try:
+            if 200 <= response.status < 300:
+                browser._easel_channel_account = _channels_account(response.json())
+        except Exception:
+            pass
+
+    browser.on("response", observe)
+
+
+def _authenticated_account(browser, cfg: dict) -> dict | None:
+    if cfg.get("profile") == "ChannelsProfile":
+        return getattr(browser, "_easel_channel_account", None)
+    if cfg.get("profile") == "JuejinProfile":
+        # 掘金用户接口：带登录 cookie 时 err_no==0 且 data 有 user_name/avatar_large；
+        # 未登录 err_no!=0。比 DOM 选择器可靠（实测 2026-10）。
+        try:
+            response = browser.request.get(
+                "https://api.juejin.cn/user_api/v1/user/get?aid=2608&uuid=0&spider=0",
+                timeout=3000)
+            if response.status != 200:
+                return None
+            payload = response.json()
+            if not isinstance(payload, dict) or payload.get("err_no") != 0:
+                return None
+            data = payload.get("data")
+            if not isinstance(data, dict):
+                return None
+            name = (data.get("user_name") or "").strip()
+            if not name:
+                return None
+            return {"id": str(data.get("user_id") or ""), "name": name,
+                    "avatar_url": data.get("avatar_large") or ""}
+        except Exception:
+            return None
+    if cfg.get("profile") != "ZhihuProfile":
+        return None
+    try:
+        response = browser.request.get("https://www.zhihu.com/api/v4/me", timeout=3000)
+        if response.status != 200:
+            return None
+        account = response.json()
+        if (isinstance(account, dict) and not account.get("error")
+                and isinstance(account.get("id"), str) and account["id"].strip()
+                and isinstance(account.get("name"), str) and account["name"].strip()):
+            return account
+    except Exception:
+        pass
+    return None
+
+
+def _login_qr_state(page, cfg: dict) -> str:
+    profile = cfg.get("profile")
+    if profile not in ("ZhihuProfile", "ChannelsProfile"):
+        return ""
+    try:
+        if profile == "ChannelsProfile":
+            frame = next((frame for frame in page.frames
+                          if urlparse(frame.url).hostname == "open.weixin.qq.com"
+                          and urlparse(frame.url).path == "/connect/qrconnect"), None)
+            if frame is None:
+                return ""
+            text = frame.inner_text("body", timeout=500)
+        else:
+            text = page.inner_text(".SignContainer, .SignFlow, .Login-content", timeout=500)
+    except Exception:
+        return ""
+    compact = re.sub(r"\s+", "", text)
+    if any(message in compact for message in (
+            "扫码成功", "扫描成功", "已扫码", "请在手机上确认", "请在知乎APP中确认",
+            "请在微信中确认", "请在手机微信上确认", "扫描成功请")):
+        return "scanned"
+    if any(message in compact for message in (
+            "二维码已失效", "二维码失效", "二维码已过期", "二维码过期", "二维码无效",
+            "请刷新二维码", "二维码已超时")):
+        return "expired"
+    return ""
+
+
+def _refresh_login_qr(page, qr_out: Path, cfg: dict) -> bool:
+    if _login_qr_state(page, cfg) != "expired":
+        return False
+    selectors = (".SignContainer button:has-text('刷新'), "
+                 ".SignContainer [role='button']:has-text('刷新'), "
+                 ".SignContainer span:has-text('刷新'), "
+                 ".SignFlow button:has-text('重新'), .SignFlow .Qrcode-mask")
+    for element in page.query_selector_all(selectors):
+        if element.is_visible():
+            element.click(timeout=2000)
+            page.wait_for_timeout(500)
+            if _login_qr_state(page, cfg) == "scanned":
+                return False
+            login_qr.capture_qr(page, qr_out, cfg["login_qr_selector"], attempts=1)
+            return True
+    return False
 
 
 def _is_logged_in(page, cfg: dict) -> bool:
@@ -915,7 +1389,7 @@ def _is_logged_in(page, cfg: dict) -> bool:
             return False
     # 4. URL 启发式兜底（非严格平台）：已离开登录入口页且无登录标记 → 已登录
     login_url = cfg["login_url"].lower().rstrip("/")
-    if url and url != login_url:
+    if url.startswith(("https://", "http://")) and url != login_url:
         return True
     return False
 
@@ -940,10 +1414,14 @@ def _probe_publish_auth(page, cfg: dict) -> str:
         r = page.evaluate(
             """async ({u,m}) => {
                 try {
-                  const resp = await fetch(u, {method:m||'GET', credentials:'include',
+                  const controller = new AbortController();
+                  const timer = setTimeout(() => controller.abort(), 3000);
+                  try {
+                  const resp = await fetch(u, {method:m||'GET', credentials:'include', signal:controller.signal,
                                                headers:{'accept':'application/json'}});
                   const t = await resp.text();
                   return {status: resp.status, redirected: resp.redirected, finalUrl: resp.url, body: (t||'').slice(0,600)};
+                  } finally { clearTimeout(timer); }
                 } catch(e) { return {error: String(e)}; }
             }""",
             {"u": probe["url"], "m": probe.get("method", "GET")},
@@ -1049,7 +1527,11 @@ def _crop_qr(page, qr_out, cfg) -> None:
     """把登录二维码裁出来单独存图（而非整页）。遍历平台配置 + 常见选择器的所有候选，
     用 _score_qr_el 挑「最像二维码」的那个（base64/canvas 本体 + 接近正方形 + 尺寸合适），
     而不是遇到第一个宽松方形就用；都不中才退回整页。
+    strict_login_qr 平台则检测图案并裁剪，找不到实际二维码时明确报错，不退回整页。
     ⚠️ 调用前应先等二维码渲染（见 cmd_login_qr 的 qr_loaded 等待），否则可能截到空框。"""
+    if cfg.get("strict_login_qr"):
+        login_qr.capture_qr(page, qr_out, cfg["login_qr_selector"])
+        return
     cands: list[str] = []
     if cfg.get("login_qr_selector"):  # 拆逗号逐个试，保证具体选择器优先于容器
         cands += [s.strip() for s in cfg["login_qr_selector"].split(",") if s.strip()]
@@ -1078,12 +1560,12 @@ def _crop_qr(page, qr_out, cfg) -> None:
 def _capture_qr(page, qr_out, cfg) -> None:
     """截登录二维码到 qr_out，按平台形态分两条路：
     - 码在跨域 iframe（视频号：open.weixin.qq.com 的微信标准扫码组件）→ 主页面 query_selector 找不到，
-      直接截 <iframe> 元素本体（真机验证得清晰码；iframe 内 img 是相对 URL 非 base64，打分裁剪那套不适用）。
+      截 iframe 元素并检测、裁剪真实二维码，不能用空白组件冒充二维码。
     - 码在主页面 → 先等它渲染（qr_loaded），再用 _crop_qr 按打分裁剪最像二维码的元素。"""
     ifr = cfg.get("login_qr_iframe")
     if ifr:
         try:
-            page.wait_for_selector(ifr, timeout=15000, state="visible")
+            page.wait_for_selector(ifr, timeout=cfg.get("login_qr_iframe_timeout_ms", 15000), state="visible")
             # 等 iframe 内二维码 img attach（跨域 frame 里 img 的 visible 判定不稳，用 attached 兜底）
             for fr in page.frames:
                 if fr != page.main_frame and "qrconnect" in (fr.url or ""):
@@ -1091,16 +1573,24 @@ def _capture_qr(page, qr_out, cfg) -> None:
                         fr.wait_for_selector(
                             "img.js_qrcode_img, img.web_qrcode_img, img[src*='/connect/qrcode/']",
                             timeout=10000, state="attached")
+                        fr.wait_for_function("""() => {
+                            const image = document.querySelector(
+                                "img.js_qrcode_img, img.web_qrcode_img, img[src*='/connect/qrcode/']");
+                            return image && image.complete && image.naturalWidth >= 96;
+                        }""", timeout=15000)
                     except Exception:
                         pass
                     break
-            page.wait_for_timeout(800)  # 让二维码画完再截
-            el = page.query_selector(ifr)
-            if el:
-                el.screenshot(path=str(qr_out))
-                return
-        except Exception:
-            pass  # iframe 路径任何异常都退回主页面裁剪
+            for attempt in range(3):
+                page.wait_for_timeout(800)
+                element = page.query_selector(ifr)
+                if (element and element.is_visible()
+                        and login_qr.save_qr(element.screenshot(timeout=3000, animations="disabled"),
+                                             Path(qr_out), minimum_size=96)):
+                    return
+        except Exception as error:
+            raise RuntimeError("微信扫码组件未加载，请检查服务器到 channels.weixin.qq.com、res.wx.qq.com 和 open.weixin.qq.com 的连接后重试") from error
+        raise RuntimeError("微信扫码组件中未找到可识别的二维码，请稍后重新登录")
     # 主页面二维码：先等渲染（异步 base64/canvas，固定 wait 不够会截到空框），再打分裁剪
     try:
         page.wait_for_selector(cfg.get("qr_loaded") or _QR_LOADED_DEFAULT,
@@ -1118,9 +1608,9 @@ def _probe_logged_in(browser, cfg: dict) -> bool:
     probe = None
     try:
         probe = browser.new_page()
-        probe.goto(cfg.get("publish_url") or cfg["login_url"],
-                   wait_until="domcontentloaded", timeout=20000)
-        _settle_login(probe, cfg)  # 等客户端跳转落定（视频号死会话 3-4s 才跳回 login.html）
+        _navigate_login(probe, cfg.get("login_probe_url") or cfg.get("publish_url") or cfg["login_url"],
+                        timeout_ms=5000)
+        _settle_login(probe, cfg, max_ms=4000)
         return _is_logged_in(probe, cfg)
     except Exception:
         return False
@@ -1132,9 +1622,53 @@ def _probe_logged_in(browser, cfg: dict) -> bool:
                 pass
 
 
+def _visible_account_identity(page, cfg: dict) -> dict:
+    account = {"name": "", "avatar_url": ""}
+    for field, selectors in (("name", cfg.get("me_name_selector")),
+                             ("avatar_url", cfg.get("me_avatar_selector"))):
+        for selector in (selectors or "").split(","):
+            if not selector.strip():
+                continue
+            for element in page.query_selector_all(selector.strip()):
+                if not element.is_visible():
+                    continue
+                value = element.inner_text() if field == "name" else element.get_attribute("src")
+                candidate = _account_identity({field: value}, page.url)
+                if candidate["name" if field == "name" else "avatar"]:
+                    account[field] = value
+                    break
+            if account[field]:
+                break
+    return _account_identity(account, page.url)
+
+
+def _settle_channels_account(page, browser, max_ms: int = 45000) -> bool:
+    deadline = time.monotonic() + max_ms / 1000
+    while time.monotonic() < deadline:
+        if _authenticated_account(browser, PLATFORMS["weixin-channels"]) is not None:
+            return True
+        for frame in page.frames:
+            parsed = urlparse(frame.url)
+            if parsed.hostname == "open.weixin.qq.com" and parsed.path == "/connect/qrconnect":
+                try:
+                    if frame.evaluate("""() => {
+                        const image = document.querySelector(
+                            "img.js_qrcode_img, img.web_qrcode_img, img[src*='/connect/qrcode/']");
+                        return !!(image && image.complete && image.naturalWidth >= 96);
+                    }"""):
+                        return False
+                except Exception:
+                    pass
+        page.wait_for_timeout(250)
+    raise RuntimeError("视频号账号页面或身份接口尚未就绪，请稍后重试校验")
+
+
 def cmd_login_qr(a) -> int:
     """headless 抠二维码登录（供 Web 前端）：截登录页二维码 → 轮询登录成功 → 持久化。
-    状态写 login_state JSON 供后端轮询。同 xhs_publish.py login 的机制。"""
+    状态写 login_state JSON 供后端轮询。同 xhs_publish.py login 的机制。
+
+    无扫码登录的平台（cfg login_mode == "window"，如 X，或显式 --headed）改走窗口模式：
+    弹有头浏览器由用户手动登录，脚本轮询登录态，成功后持久化并写 success。"""
     try:
         from playwright.sync_api import sync_playwright
     except Exception as e:
@@ -1147,72 +1681,115 @@ def cmd_login_qr(a) -> int:
     qr_out = Path(a.qr_out).expanduser() if a.qr_out else root / f"{a.platform}.png"
     sf = a.status_file or str(root / f"{a.platform}.json")
     timeout_s = a.timeout or 180
+    # 窗口登录：平台配置（X 无扫码）或显式 --headed 都弹有头窗口
+    window_mode = cfg.get("login_mode") == "window" or bool(getattr(a, "headed", False))
 
     login_state.write_status(sf, "starting")
     cdp = browser_session.resolve_endpoint(a)
-    headed = getattr(a, "headed", False)
     with sync_playwright() as p:
-        if cdp:
-            # CDP 附身运行中实例（账号直启的窗口）：真指纹/真登录态，不碰持久 profile。
-            browser, owned = browser_session.open_browser(p, cdp_endpoint=cdp, launch=None)
-            login_state.write_status(sf, "window_login",
-                                     "已接管你的 Chrome——请在那个浏览器窗口里完成登录。")
-        elif headed:
-            profile.mkdir(parents=True, exist_ok=True)
-            browser, owned = p.chromium.launch_persistent_context(
-                str(profile), headless=False, locale="zh-CN", args=LAUNCH_ARGS), True
-            login_state.write_status(sf, "window_login",
-                                     "请在弹出的浏览器窗口里完成登录（扫码或账号），不要关掉那个窗口。")
-        else:
-            profile.mkdir(parents=True, exist_ok=True)
-            browser, owned = p.chromium.launch_persistent_context(
-                str(profile), headless=True, locale="zh-CN",
-                args=LAUNCH_ARGS + ["--no-proxy-server"]), True
-        page = browser_session.open_page(browser, owned)
-        if cdp or headed:
-            # 窗口模式没有「抠二维码给远端看」这一步：直接进入登录轮询，
-            # 前端收到 window_login 状态后展示引导文案而不是二维码图片。
-            try:
-                page.goto(cfg["login_url"], wait_until="domcontentloaded")
-            except Exception as e:  # noqa: BLE001
-                login_state.write_status(sf, "error", f"打不开 {cfg['name']} 登录页：{e}")
-                return 1
-            confirmed = False
-            deadline = time.time() + timeout_s
-            while time.time() < deadline:
-                if _is_logged_in(page, cfg):
-                    confirmed = True
-                    break
-                page.wait_for_timeout(_LOGIN_POLL_MS)
-            if confirmed:
-                login_state.write_status(sf, "success", "登录成功")
-                print(f"✅ {cfg['name']} 登录成功，登录态已持久化")
-                return 0
-            login_state.write_status(sf, "expired", f"{timeout_s}s 内未检测到登录成功")
-            return 1
+        browser = None
+        owned = True
+        previous_handler = signal.getsignal(signal.SIGTERM)
+        def stop_login(signum, frame):
+            raise SystemExit(0)
+
         try:
+            signal.signal(signal.SIGTERM, stop_login)
+            if cdp:
+                # CDP 附身运行中实例（账号直启的窗口）：真指纹/真登录态，不碰持久 profile。
+                browser, owned = browser_session.open_browser(p, cdp_endpoint=cdp, launch=None)
+            else:
+                profile.mkdir(parents=True, exist_ok=True)
+                browser = p.chromium.launch_persistent_context(
+                    str(profile), headless=not window_mode, locale="zh-CN", **_launch_kwargs(cfg, a.platform, headless=not window_mode))
+                owned = True
+            page = browser_session.open_page(browser, owned)
             if not cdp:
                 # 路由拦截只该加在自己起的 context 上——CDP 附身的默认 context 是用户共享的。
                 _block_heavy(browser, a.platform)
-            page.goto(cfg["login_url"], wait_until="domcontentloaded")
+            _observe_channels_account(browser, cfg)
+            _navigate_login(page, cfg["login_url"],
+                            timeout_ms=cfg.get("login_navigation_timeout_ms", 10000))
             # 给客户端 redirect + 登录态渲染时间：已登录常从入口页跳到 /profile 等，
             # 固定 1.2s 经常不够（快手实测 → 误判未登录去截整页）。等 login_check 出现最多 6s。
             try:
-                page.wait_for_selector(cfg["login_check"], timeout=6000)
+                page.wait_for_selector(
+                    ", ".join(filter(None, (cfg["login_check"], cfg.get("logged_out_selector")))),
+                    timeout=6000, state="visible")
             except Exception:
                 page.wait_for_timeout(1200)
-            if _is_logged_in(page, cfg):
+            if _is_logged_in(page, cfg) or _authenticated_account(browser, cfg) is not None:
+                browser_session.close_session(browser, owned)
+                browser = None
                 login_state.write_status(sf, "success", "已登录")
                 print(f"✅ {cfg['name']} 已登录（登录态在持久化目录）")
                 return 0
+
+            if cdp:
+                # CDP 附身模式（宿主为账号直启的窗口）：没有「抠二维码给远端看」这一步——写
+                # window_login 引导后只轮询登录页的登录态；窗口是用户开着的，全程不关。
+                login_state.write_status(sf, "window_login",
+                                         "已接管你的 Chrome——请在那个浏览器窗口里完成登录。")
+                deadline = time.time() + timeout_s
+                while time.time() < deadline:
+                    try:
+                        if _is_logged_in(page, cfg) or _authenticated_account(browser, cfg) is not None:
+                            login_state.write_status(sf, "success", "登录成功")
+                            print(f"✅ {cfg['name']} 登录成功，登录态已持久化")
+                            try:
+                                qr_out.unlink()
+                            except OSError:
+                                pass
+                            return 0
+                    except Exception:  # noqa: BLE001
+                        # 用户手动关了窗口/页面崩溃 → 明确终态，别让前端无限转圈
+                        login_state.write_status(sf, "expired", "登录窗口已关闭，请重新发起登录")
+                        return 1
+                    # 用 time.sleep 而非 page.wait_for_timeout：用户关窗后 page 已死
+                    time.sleep(_LOGIN_POLL_MS / 1000)
+                login_state.write_status(sf, "expired", "登录窗口超时未完成登录，请重新发起登录")
+                return 1
+
+            # 窗口登录模式（X：无扫码）：不截二维码，写 window_login 状态后纯轮询登录态
+            if window_mode and cfg.get("login_mode") == "window":
+                login_state.write_status(
+                    sf, "window_login",
+                    f"请在运行 Easel 的电脑弹出的浏览器窗口里登录 {cfg['name']}，完成后窗口会自动关闭。该方式需要图形桌面。")
+                print(f"🪟 {cfg['name']} 请在弹出的浏览器窗口完成登录…", file=sys.stderr)
+                deadline = time.time() + timeout_s
+                while time.time() < deadline:
+                    try:
+                        if not browser.pages:
+                            login_state.write_status(sf, "expired", "登录窗口已关闭，请重新发起登录")
+                            return 1
+                        if any(_is_logged_in(candidate, cfg) for candidate in browser.pages):
+                            browser_session.close_session(browser, owned)
+                            browser = None
+                            login_state.write_status(sf, "success", "登录成功")
+                            print(f"✅ {cfg['name']} 登录成功，登录态已持久化")
+                            try:
+                                qr_out.unlink()
+                            except OSError:
+                                pass
+                            return 0
+                    except Exception:
+                        # 用户手动关了窗口/页面崩溃 → 明确终态，别让前端无限转圈
+                        login_state.write_status(sf, "expired", "登录窗口已关闭，请重新发起登录")
+                        return 1
+                    # 用 time.sleep 而非 page.wait_for_timeout：用户关窗后 page 已死，
+                    # 后者会抛 "Target closed" 逃逸成误导性的「登录异常」（真机踩过）
+                    time.sleep(_LOGIN_POLL_MS / 1000)
+                login_state.write_status(sf, "expired", "登录窗口超时未完成登录，请重新发起登录")
+                return 1
 
             # 登录预备步骤（如快手：点『立即登录』跳 passport 再切『扫码登录』才出二维码）
             for step in cfg.get("login_prep", []):
                 try:
                     if "click" in step:
-                        el = page.query_selector(step["click"])
-                        if el:
-                            el.click()
+                        for el in page.query_selector_all(step["click"]):
+                            if el.is_visible():
+                                el.click(timeout=3000)
+                                break
                     if "wait" in step:
                         page.wait_for_timeout(step["wait"])
                 except Exception:
@@ -1221,31 +1798,90 @@ def cmd_login_qr(a) -> int:
             # 截二维码为 PNG。视频号等把码放在跨域 iframe 里（主页面找不到）→ 截 iframe 元素本体；
             # 其余平台在主页面异步渲染（base64/canvas）→ 先等渲染再按打分裁剪。统一走 _capture_qr。
             qr_out.parent.mkdir(parents=True, exist_ok=True)
-            _capture_qr(page, qr_out, cfg)
+            try:
+                if cfg.get("login_qr_switch"):
+                    login_qr.prepare_qr(page, qr_out, cfg["login_qr_selector"], cfg["login_qr_switch"])
+                else:
+                    _capture_qr(page, qr_out, cfg)
+            except Exception:
+                if not _is_logged_in(page, cfg) and _authenticated_account(browser, cfg) is None:
+                    raise
+                browser_session.close_session(browser, owned)
+                browser = None
+                login_state.write_status(sf, "success", "已登录")
+                print(f"✅ {cfg['name']} 已登录（登录态在持久化目录）")
+                return 0
             login_state.write_status(sf, "qr_ready", f"扫码登录 {cfg['name']}", qr=str(qr_out))
             print(f"📱 {cfg['name']} 登录页/二维码已保存：{qr_out}", file=sys.stderr)
             print(f"⏳ 等待扫码（最长 {timeout_s}s）...", file=sys.stderr)
 
             confirmed = False
+            scanned = False
+            refresh_count = 0
             tick = 0
             deadline = time.time() + timeout_s
+            next_refresh = time.monotonic() + 5
+            channels_probe = None
+            next_probe = time.monotonic() + 15
             while time.time() < deadline:
                 tick += 1
-                if _is_logged_in(page, cfg):
+                if (any(_is_logged_in(candidate, cfg) for candidate in browser.pages)
+                        or cfg.get("profile") == "ChannelsProfile"
+                        and _authenticated_account(browser, cfg) is not None):
                     confirmed = True
                     break
+                qr_state = _login_qr_state(page, cfg)
+                if qr_state == "scanned":
+                    scanned = True
+                    login_state.write_status(sf, "scanned", "扫码成功，请在手机上确认登录")
+                elif qr_state == "expired":
+                    scanned = False
+                    if cfg.get("profile") == "ChannelsProfile":
+                        login_state.write_status(sf, "expired", "微信二维码已过期，请关闭后重新登录")
+                        return 1
                 # 扫码页仍停在 passport/login 域时深探：用辅助页 goto 发布页判登录态
                 # （快手扫码成功不自跳创作者中心，主扫码页 URL 恒含 passport）
                 try:
                     cur = (page.url or "").lower()
                 except Exception:
                     cur = ""
-                if tick % _LOGIN_PROBE_EVERY == 0 and any(m in cur for m in _LOGIN_MARKERS):
-                    if _probe_logged_in(browser, cfg):
+                if tick % _LOGIN_PROBE_EVERY == 0:
+                    if _authenticated_account(browser, cfg) is not None:
                         confirmed = True
                         break
+                    if cfg.get("profile") == "ChannelsProfile":
+                        if time.monotonic() >= next_probe or scanned and channels_probe is None:
+                            if channels_probe is None:
+                                channels_probe = browser.new_page()
+                            next_probe = time.monotonic() + 30
+                            try:
+                                _navigate_login(channels_probe, cfg["login_url"], timeout_ms=5000)
+                            except Exception:
+                                channels_probe.close()
+                                channels_probe = None
+                    elif any(m in cur for m in _LOGIN_MARKERS) or cfg.get("login_probe_url"):
+                        if _probe_logged_in(browser, cfg):
+                            confirmed = True
+                            break
+                if cfg.get("strict_login_qr") and not scanned and time.monotonic() >= next_refresh:
+                    try:
+                        if qr_state == "expired":
+                            if refresh_count >= 3 or not _refresh_login_qr(page, qr_out, cfg):
+                                login_state.write_status(sf, "expired", "二维码已过期，请关闭后重新登录")
+                                return 1
+                            refresh_count += 1
+                            login_state.write_status(sf, "qr_ready", "二维码已刷新，请重新扫码", qr=str(qr_out))
+                        else:
+                            login_qr.capture_qr(page, qr_out, cfg["login_qr_selector"], attempts=1)
+                    except RuntimeError:
+                        if qr_state == "expired":
+                            login_state.write_status(sf, "expired", "二维码刷新失败，请关闭后重新登录")
+                            return 1
+                    next_refresh = time.monotonic() + 5
                 page.wait_for_timeout(_LOGIN_POLL_MS)
             if confirmed:
+                browser_session.close_session(browser, owned)
+                browser = None
                 login_state.write_status(sf, "success", "登录成功")
                 print(f"✅ {cfg['name']} 登录成功，登录态已持久化")
                 try:
@@ -1253,7 +1889,7 @@ def cmd_login_qr(a) -> int:
                 except OSError:
                     pass
                 return 0
-            login_state.write_status(sf, "expired", "二维码超时未扫")
+            login_state.write_status(sf, "expired", "已扫码但未完成登录确认，请在手机确认后重试" if scanned else "二维码超时未扫")
             print(f"⏱️ {timeout_s}s 内未检测到登录成功（二维码可能过期）", file=sys.stderr)
             return 1
         except Exception as e:  # noqa: BLE001 — 任何异常都写 error 终态，否则前端轮询会卡在 starting/qr_ready
@@ -1261,17 +1897,22 @@ def cmd_login_qr(a) -> int:
             print(f"❌ {cfg['name']} 登录异常：{e}", file=sys.stderr)
             return 1
         finally:
-            # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
-            browser_session.close_session(browser, owned)
+            try:
+                # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
+                if browser is not None:
+                    browser_session.close_session(browser, owned)
+            finally:
+                signal.signal(signal.SIGTERM, previous_handler)
 
 
 def cmd_publish(a) -> int:
-    if not a.media and a.platform != "zhihu":
+    cfg = PLATFORMS.get(a.platform, {})
+    # 媒体是否必填由平台配置决定（知乎文章/纯文字推文可不带媒体）
+    if not a.media and not cfg.get("media_optional"):
         _die("--media 媒体文件必填")
     if a.media and not Path(a.media).expanduser().is_file():
         _die(f"媒体文件不存在：{a.media}")
     # 媒体类型校验：视频流程平台给图片会晦涩超时；但若平台有图文流程（steps_image）则放行走图文
-    cfg = PLATFORMS.get(a.platform, {})
     if cfg.get("media_kind") == "video" and a.media and not cfg.get("steps_image"):
         ext = Path(a.media).suffix.lower()
         if ext not in VIDEO_EXTS:
@@ -1327,17 +1968,27 @@ def cmd_whoami(a) -> int:
             else:
                 profile = _session_profile(a)
                 profile.mkdir(parents=True, exist_ok=True)
-                browser, owned = p.chromium.launch_persistent_context(
-                    str(profile), headless=True, locale="zh-CN",
-                    args=LAUNCH_ARGS + ["--no-proxy-server"]), True
+                browser = p.chromium.launch_persistent_context(
+                    str(profile), headless=True, locale="zh-CN", **_launch_kwargs(cfg, a.platform, headless=True))
+                owned = True
             page = browser_session.open_page(browser, owned)
             try:
                 if not cdp:
                     # 路由拦截只该加在自己起的 context 上——CDP 附身的默认 context 是用户共享的。
-                    _block_heavy(browser, a.platform)
-                page.goto(cfg["publish_url"], wait_until="domcontentloaded", timeout=30000)
-                _settle_login(page, cfg)  # 等客户端跳转落定，避免 SPA 未跳转期误判已登录
-                logged = _is_logged_in(page, cfg)
+                    _block_heavy(browser, a.platform, login_assets=False)
+                _observe_channels_account(browser, cfg)
+                account = _authenticated_account(browser, cfg)
+                if account is not None:
+                    result.update(loggedIn=True, **_account_identity(account))
+                    print(json.dumps(result, ensure_ascii=False))
+                    return 0
+                _navigate_login(page, cfg.get("whoami_url") or cfg.get("login_probe_url") or cfg["publish_url"])
+                if cfg.get("profile") == "ChannelsProfile":
+                    _settle_channels_account(page, browser)
+                else:
+                    _settle_login(page, cfg, max_ms=7000)
+                account = _authenticated_account(browser, cfg) if cfg.get("profile") == "ChannelsProfile" else None
+                logged = account is not None or _is_logged_in(page, cfg)
                 # 外壳判已登录后，再探发布子系统鉴权：外壳 token 活着但发布 token 已死时翻成未登录
                 if logged and cfg.get("login_probe"):
                     pa = _probe_publish_auth(page, cfg)
@@ -1347,26 +1998,13 @@ def cmd_whoami(a) -> int:
                         result["reason"] = "publish_auth_expired"
                 result["loggedIn"] = logged
                 if logged:
-                    for s in (cfg.get("me_name_selector") or "").split(","):
-                        s = s.strip()
-                        if not s:
-                            continue
-                        el = page.query_selector(s)
-                        if el:
-                            t = (el.inner_text() or "").strip()
-                            if t:
-                                result["name"] = t.splitlines()[0][:40]
-                                break
-                    for s in (cfg.get("me_avatar_selector") or "").split(","):
-                        s = s.strip()
-                        if not s:
-                            continue
-                        el = page.query_selector(s)
-                        if el:
-                            src = el.get_attribute("src")
-                            if src:
-                                result["avatar"] = src
-                                break
+                    result.update(_account_identity(account) if account else _visible_account_identity(page, cfg))
+                elif cfg.get("profile") == "ChannelsProfile":
+                    login_url = any(marker in (page.url or "").lower() for marker in _LOGIN_MARKERS)
+                    login_visible = any(element.is_visible() for selector in cfg["logged_out_selector"].split(",")
+                                        for element in page.query_selector_all(selector.strip()))
+                    if not login_url and not login_visible:
+                        result["error"] = "视频号账号页面或身份接口尚未就绪，请稍后重试校验"
             finally:
                 # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
                 browser_session.close_session(browser, owned)
@@ -1506,12 +2144,60 @@ def cmd_selftest(_a) -> int:
     assert callable(_capture_qr), "缺 _capture_qr（iframe 感知的二维码截取）"
     # SPA 客户端跳转落定后再判登录态（修视频号未跳转期 URL 启发式误报已登录的假阳性）
     assert callable(_settle_login), "缺 _settle_login（判登录态前等客户端跳转落定）"
+    # X（国际站）：窗口登录模式 + 代理声明 + 媒体规则
+    tx = PLATFORMS["twitter-x"]
+    assert tx.get("login_mode") == "window" and tx.get("needs_proxy") is True, \
+        "X 无扫码登录，须窗口模式 + needs_proxy"
+    assert tx.get("media_optional") is True, "X 纯文字推文合法，媒体应为可选"
+    assert any(s.get("needs_media") for s in tx["steps"]), "X 的附件等待步应标 needs_media（无媒体时跳过）"
+    # 代理路由：国内平台强制直连，国际站按环境变量走显式代理或系统代理
+    assert "--no-proxy-server" in _launch_kwargs(PLATFORMS["zhihu"], "zhihu")["args"]
+    # 与项目 .env 隔离：已配代理的机器上「未配代理回退系统代理」分支断言会失真
+    _real_env_file_value = _env_file_value
+    globals()["_env_file_value"] = lambda *a, **k: ""
+    try:
+        for _v in ("EASEL_PROXY", "TWITTER_X_PROXY", "https_proxy", "HTTPS_PROXY", "all_proxy", "ALL_PROXY"):
+            os.environ.pop(_v, None)
+        kw = _launch_kwargs(tx, "twitter-x")
+        assert "--no-proxy-server" not in kw["args"] and "proxy" not in kw, \
+            "国际站未配代理时应回退系统代理（不加 --no-proxy-server）"
+    finally:
+        globals()["_env_file_value"] = _real_env_file_value
+    os.environ["TWITTER_X_PROXY"] = "http://127.0.0.1:7891"
+    try:
+        kw = _launch_kwargs(tx, "twitter-x")
+        assert kw.get("proxy", {}).get("server") == "http://127.0.0.1:7891", "平台专属代理变量应生效"
+    finally:
+        os.environ.pop("TWITTER_X_PROXY", None)
+    os.environ["EASEL_PROXY"] = "http://127.0.0.1:7890"
+    try:
+        kw = _launch_kwargs(tx, "twitter-x")
+        assert kw.get("proxy", {}).get("server") == "http://127.0.0.1:7890", "EASEL_PROXY 应优先生效"
+    finally:
+        os.environ.pop("EASEL_PROXY", None)
+    # 纯文字推文：无媒体时 upload 步可跳过（_run_browser 的跳过逻辑静态检查）
+    import inspect as _ins2
+    assert "needs_media" in _ins2.getsource(_run_browser), "_run_browser 应支持 needs_media 跳步"
+    # 掘金（国内技术社区）：扫码登录（登录弹窗内 img.qrcode-img）+ CodeMirror 正文 + 接口判登录
+    jj = PLATFORMS["juejin"]
+    assert jj.get("media_optional") is True and not jj.get("needs_proxy"), "掘金国内直连、文章可不带媒体"
+    assert "qrcode-img" in jj.get("login_qr_selector", ""), "掘金登录弹窗二维码 img.qrcode-img"
+    assert any("CodeMirror" in s.get("selector", "") for s in jj["steps"]), "掘金正文写 CodeMirror"
+    assert any(s["action"] == "press" for s in jj["steps"]), "掘金 fill 后须补 Enter 触发编辑器状态同步"
+    # headless 校验国际站须伪装 UA（HeadlessChrome UA 会被 Google 风控踢会话）；headed 不伪装
+    kw_h = _launch_kwargs(tx, "twitter-x", headless=True)
+    assert "Headless" not in kw_h.get("user_agent", "Headless") and "Chrome/" in kw_h.get("user_agent", ""), \
+        "headless 国际站必须带正常 Chrome UA"
+    assert "user_agent" not in _launch_kwargs(tx, "twitter-x", headless=False), "窗口登录不伪装 UA"
+    assert "user_agent" not in _launch_kwargs(PLATFORMS["zhihu"], "zhihu", headless=True), \
+        "国内平台 headless 不动 UA"
     print(f"✅ selftest 通过（{len(PLATFORMS)} 平台配置完整 + 步骤/占位符解析 + 路由 + 账号参数 profile-dir/cdp-endpoint + 登录轮询/深探 "
-          "+ 二维码打分/iframe 截取 + 多候选/快手健壮化 + 读回对账（快手））")
+          "+ 二维码打分/iframe 截取 + 多候选/快手健壮化 + 读回对账（快手）+ 国际站窗口登录/代理/媒体规则）")
     return 0
 
 
 def main() -> int:
+    login_state.configure_stdio()
     ap = argparse.ArgumentParser(
         description="通用浏览器发布框架（Playwright，配置驱动，登录态持久化）",
         formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -1538,13 +2224,13 @@ def main() -> int:
     add_common(p)
     p.set_defaults(func=cmd_login)
 
-    p = sub.add_parser("login-qr", help="headless 抠二维码登录（供 Web 前端）")
-    p.add_argument("--headed", action="store_true",
-                   help="有头模式：弹可见浏览器窗口由用户亲手登录（本机 IP + 真窗口指纹）")
+    p = sub.add_parser("login-qr", help="headless 抠二维码登录（供 Web 前端）；无扫码平台用窗口模式")
     add_common(p)
     p.add_argument("--qr-out", help="二维码图片输出路径")
     p.add_argument("--status-file", help="登录状态 JSON 输出路径（供 Web 后端轮询）")
     p.add_argument("--timeout", type=int, help="等待扫码超时秒数（默认 180）")
+    p.add_argument("--headed", action="store_true",
+                   help="弹有头窗口手动登录（X 等无扫码平台由配置自动开启，无需显式传）")
     p.set_defaults(func=cmd_login_qr)
 
     p = sub.add_parser("publish", help="网页发布")

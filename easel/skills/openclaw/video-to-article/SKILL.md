@@ -24,7 +24,7 @@ layer: produce
 
 - `article.md` — 成篇图文（标题 + 正文 + 小标题/要点 + 金句 + 话题标签）
 - `assets/frame-*.jpg` — 抽取的配图
-- `assets/transcript.txt` / `assets/transcript.json` — 转录原文与时间轴（备查）
+- `outputs/主题名/assets/transcript.txt` / `outputs/主题名/assets/transcript.json` — 转录原文与时间轴（备查，均相对项目根）
 
 ## 执行步骤
 

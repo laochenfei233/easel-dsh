@@ -43,7 +43,7 @@ python <skill>/scripts/publish_queue.py mark  --queue $Q --id 1 --status done
 2. **对每条到期项**：按 `platform` 委派对应发布 SKILL 执行真实发布
    （单平台或用 cross-platform-publish）。发布前按平台适配内容格式。
 3. 发布成功/失败后 `mark` 回填状态（可配合 skill-publish-notify 推送结果、skill-publish-log 记录）。
-4. 需要"守护式到点触发"时，由 OpenClaw 定时任务周期性跑 `run`（本脚本只做单次到期计算，不常驻）。
+4. 需要"守护式到点触发"时，由当前执行引擎可用的定时功能或系统调度器周期性跑 `run`（本脚本只做单次到期计算，不常驻）；没有调度能力时说明限制。
 
 ## 规则
 
@@ -51,7 +51,7 @@ python <skill>/scripts/publish_queue.py mark  --queue $Q --id 1 --status done
 2. `--now` 可覆盖当前时间用于预演（查看某时刻会发哪些），不影响真实时间。
 3. 发布时间用 `YYYY-MM-DD HH:MM`；同一时刻多平台会一并到期。
 4. 每条发布后务必 `mark`，避免重复发布。
-5. 定时触发依赖上层（OpenClaw cron / 手动周期跑），本脚本是无状态到期计算 + 持久化队列。
+5. 定时触发依赖上层（执行引擎定时功能 / 系统调度器 / 手动周期跑），本脚本是无状态到期计算 + 持久化队列。
 
 ## 参考来源
 

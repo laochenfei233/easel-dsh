@@ -229,7 +229,7 @@ gzh-design/
 ## 🗺 Roadmap
 
 - [x] 主题生成器：按描述/参考图生成自定义主题
-- [ ] 更多精选内置主题（欢迎 [提建议](../../issues/new?template=theme_request.md)）
+- [ ] 更多精选内置主题（欢迎向上游 [提建议](https://github.com/isjiamu/gzh-design-skill/issues/new?template=theme_request.md)）
 - [ ] 主题静态截图预览（docs/screenshots/）
 - [ ] GitHub Pages 在线画廊
 - [ ] 一键把整篇 Markdown + 配图打包导出

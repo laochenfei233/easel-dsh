@@ -33,7 +33,7 @@
 
 1. 每一页只对应一个中心结论：`claim`（屏幕观点）+ `narration`（口播）+ 一个视觉证据；不要把口播全文放上屏。
 2. 按 `slide-design.md` 生成 `slide-plan.json`，只用其中定义的 cover/statement/evidence/process/metrics/comparison/takeaway 骨架。
-3. 图：`assets/parsed/figures/` 选原图；方法图/结果图用 infographic/chart-visualization 重绘；原图太密就裁关键区域，不能缩成邮票。
+3. 图：从项目根 `outputs/论文简称/assets/parsed/figures/` 选原图；方法图/结果图用 infographic/chart-visualization 重绘；原图太密就裁关键区域，不能缩成邮票。
 4. 必须用 `render_slides.py validate → render → audit`，再肉眼查看 contact sheet；禁止每次在 outputs 临时发明一套 slide 脚本。
 5. 单人口播用 tts-voiceover；双人问答用 multi-voice-dubbing。字幕与每页时长按 narration 分段对齐，再交 auto-short-video 合成。storyboard 顶层必须写 `"image_motion": "static"`；slide 不做 Ken Burns 缩放/平移，只在换页时使用克制转场。
 6. 画幅按用户确认值；B站通常 16:9，视频号可 16:9 或 9:16，但不能静默推断。

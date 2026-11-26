@@ -1,6 +1,6 @@
 # skills/shared
 
-跨 SKILL 复用的工具、脚本与配置。SKILL 通过相对路径引用（如 `../../shared/xxx`）。
+跨 SKILL 复用的工具、脚本与配置。项目根使用 `skills/shared/`；技能的 SKILL.md 引用本目录时向上两层，技能的 references 文档则向上三层。具体写法见 [热点数据参考](hotlist-apis.md)，相对链接以当前文档所在目录为准，执行命令统一先切换到项目根。
 
 ## 知识文件
 
@@ -28,7 +28,7 @@
 - `image_ops.py` 需 `pip install Pillow`（图像处理）
 - `audio_ops.mjs` / `video_ops.mjs` 需 Node ≥22 + 系统 `ffmpeg`/`ffprobe`（零 npm 依赖）
 - ASR 走本地路由，需 `MIMO_API_KEY`（.env 或环境变量）+ ffmpeg；无本地模型
-- `tts.py` 需 `pip install edge-tts` + 外网代理（微软在线 TTS）
+- `tts.py` 的 edge 引擎需 `pip install edge-tts` 和到语音服务的网络连接；闭源引擎使用项目 `.env` 中的语音配置。代理按实际网络配置选择。
 - `ai_image.py` / `ai_video.py` / `ai_music.py` 纯标准库（urllib/hmac），但需**用户自备各服务的 API key**（配 .env），见各自 SKILL 的配置章节
 - `data-report`（pandas+matplotlib）、`infographic/gif_chart.py`（matplotlib+Pillow）、`auto-short-video/assemble.py`（ffmpeg）在各自 SKILL 的 scripts/ 下
-- 其余脚本纯标准库，无需额外依赖
+- 浏览器账号与发布脚本需 Playwright + Chromium；图片、音视频、统计等脚本还会使用 Pillow、FFmpeg、pandas 等依赖。项目 Python 依赖由 `pip install -e .` 安装，系统工具与浏览器内核由安装脚本补齐；各脚本 `check` / `--help` 和 `easel doctor` 用于确认当前环境。

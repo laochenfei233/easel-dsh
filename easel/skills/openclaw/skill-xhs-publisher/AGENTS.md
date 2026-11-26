@@ -7,17 +7,17 @@ Chrome、headless 环境不可用）**整体重写为 Playwright 版**，流程�
 [xpzouying/xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp)。旧 CDP 脚本已删除。
 
 - 执行入口：`../../shared/scripts/xhs_publish.py`（不在本目录，属跨 SKILL 共享脚本层）。
-- 本目录只保留：`SKILL.md`（流程/约束）、`references/commands.md`（命令样例）、
-  `config/accounts.json.example`、`public/`、`docs/`。
+- 本目录保留：`SKILL.md`（流程/约束）、`references/commands.md`（命令样例）、
+  `AGENTS.md`、`EASEL-META.md`、`public/` 和 `todo.md`；账号登录态由共享脚本管理。
 
 ## 开发/冒烟命令（CWD=项目根）
 
 ```bash
-python ../../shared/scripts/xhs_publish.py selftest   # 离线自检（选择器/标题算法/参数）
-python ../../shared/scripts/xhs_publish.py check       # 验 playwright + chromium
-python ../../shared/scripts/xhs_publish.py login       # 有头扫码登录（持久化）
-python ../../shared/scripts/xhs_publish.py plan ...    # dry-run 预检
-python ../../shared/scripts/xhs_publish.py publish --exec --headed ...   # 首次校验选择器
+python skills/shared/scripts/xhs_publish.py selftest   # 离线自检（选择器/标题算法/参数）
+python skills/shared/scripts/xhs_publish.py check       # 验 playwright + chromium
+python skills/shared/scripts/xhs_publish.py login       # 提取二维码扫码（持久化），本地有桌面时加 --headed
+python skills/shared/scripts/xhs_publish.py plan ...    # dry-run 预检
+python skills/shared/scripts/xhs_publish.py publish --exec --headed ...   # 首次校验选择器
 ```
 
 ## 维护规范

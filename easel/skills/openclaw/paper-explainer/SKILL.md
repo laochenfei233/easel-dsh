@@ -52,7 +52,7 @@ assets/                  paper.pdf / parsed/ / asset-library.json / script.md
 ### 2. 结构化提炼（你来做，核心）
 
 4. 生成骨架：`paper_ingest.py skeleton -o outputs/论文简称/assets/asset-library.json`。
-5. 读 `assets/parsed/content.*`，按 `references/paper-distill-schema.md` 填满 `assets/asset-library.json`：
+5. 读 `outputs/论文简称/assets/parsed/content.*`，按 `references/paper-distill-schema.md` 填满 `outputs/论文简称/assets/asset-library.json`：
    `one_liner`（一句话讲清干了啥）、`problem`/`prior_gap`、`contributions`（≤3 条）、
    `method`（含**通俗类比** analogy）、`key_figures`（挑 2–4 张关键图，每张写 `plain` 大白话解释）、
    `results`（含关键数字）、`limitations`、`takeaway`、`terms`（术语通俗表）。
@@ -61,10 +61,10 @@ assets/                  paper.pdf / parsed/ / asset-library.json / script.md
 
 ### 3A. 视频产线（视频号/B站）
 
-7. **分镜脚本**：按 `references/video-storyboard.md` 结构（钩子→问题→已有不足→贡献→方法一图讲清→结果→意义）把 asset-library 写成 `assets/script.md`。
+7. **分镜脚本**：按 `references/video-storyboard.md` 结构（钩子→问题→已有不足→贡献→方法一图讲清→结果→意义）把 asset-library 写成 `outputs/论文简称/assets/script.md`。
    分镜/留存/口播节奏**复用 video-script** 的方法（喂论文语境）。可选**双人问答口播**（主持人提问+讲解者回答）比单人旁白更抓耳——用双人时把口播写成逐行 `lines.json`（`{speaker,text,emotion}`，speaker=主讲/提问）。
-8. **视觉素材盘点 + 配图**：先列出每页的视觉角色（证据图/重绘图/概念线稿/字体图形/motif），再写 slide-plan。论文原图从 `assets/parsed/figures/` 选用；复杂原图先裁关键区域，方法流程/结果图用 **infographic / chart-visualization** 重绘。封面/概念页缺图时，主动找或制作与主题直接相关的线稿、局部图或符号素材，不用随机机器人/blob 填空。图中文字在目标分辨率不可读就不得直接使用。
-9. **稳定 slide 产线（强制，不得在 outputs 临时写 make_slides 脚本）**：先读 [card-design](../card-design/SKILL.md) 的设计原则和 `references/slide-design.md`，把 script 写成 `assets/slide-plan.json`。把用户/Profile/参考图的原始风格意图原样写入 `style`，再分别选 `base_style`、`treatment`、`theme`、`motif` 和视觉素材来实现；不得把用户风格强行归为某个预设，也不得因没有同名预设而拒绝。迁移的是可观察特征（氛围、配色、线条、纹理、构图、角色/物件素材），不是穷举风格名。未指定风格时用 `editorial`，但默认也必须有明确的编辑网格、纸张层次、章节锚点和图片框法，不得交付“素底 + 字”。整套锁定一个设计立场，页面骨架与审计门保持稳定。运行：
+8. **视觉素材盘点 + 配图**：先列出每页的视觉角色（证据图/重绘图/概念线稿/字体图形/motif），再写 slide-plan。论文原图从 `outputs/论文简称/assets/parsed/figures/` 选用；复杂原图先裁关键区域，方法流程/结果图用 **infographic / chart-visualization** 重绘。封面/概念页缺图时，主动找或制作与主题直接相关的线稿、局部图或符号素材，不用随机机器人/blob 填空。图中文字在目标分辨率不可读就不得直接使用。
+9. **稳定 slide 产线（强制，不得在 outputs 临时写 make_slides 脚本）**：先读 [card-design](../card-design/SKILL.md) 的设计原则和 `references/slide-design.md`，把 script 写成 `outputs/论文简称/assets/slide-plan.json`。把用户/Profile/参考图的原始风格意图原样写入 `style`，再分别选 `base_style`、`treatment`、`theme`、`motif` 和视觉素材来实现；不得把用户风格强行归为某个预设，也不得因没有同名预设而拒绝。迁移的是可观察特征（氛围、配色、线条、纹理、构图、角色/物件素材），不是穷举风格名。未指定风格时用 `editorial`，但默认也必须有明确的编辑网格、纸张层次、章节锚点和图片框法，不得交付“素底 + 字”。整套锁定一个设计立场，页面骨架与审计门保持稳定。运行：
    ```bash
    python skills/openclaw/paper-explainer/scripts/render_slides.py validate --plan outputs/<项目>/assets/slide-plan.json
    python skills/openclaw/paper-explainer/scripts/render_slides.py render --plan outputs/<项目>/assets/slide-plan.json --out-dir outputs/<项目>/assets/slides
@@ -72,12 +72,12 @@ assets/                  paper.pdf / parsed/ / asset-library.json / script.md
    ```
    任一非 0 退出必须改 plan 后重渲；`validate` 会按页面职能拦截“只有口号、缺少解释”的低信息页，并检查合并主题后所有正文色在实际背景上的对比度；明亮 accent 可继续用于装饰，文字会使用可读的语义前景色。`render` 会硬拦文字/元素越界、重叠、组内不对齐、卡内文字左边漂移与结构页过度空洞。脚本全过后当前 Agent **必须肉眼查看 contact sheet 和至少 3 张原尺寸 slide**，检查暂停/静音时页面能否独立读懂、论文图可读、文字是否和所属元素对齐、留白是否有叙事作用、视觉素材是否相关、节奏是否重复；只过脚本不等于合格。不要把 narration 整段搬上屏。只有论文图本身承载主要信息时才可在该页设 `density: visual`，不得把它当作跳过内容提炼的开关。
 10. **成片（配音+字幕+合成，缺一不可）**：从 slide-plan 的 narration 生成口播——单人用 **tts-voiceover**，双人用 **multi-voice-dubbing**；同步 SRT，缺则跑 **auto-subtitle**。把 `assets/slides/slide_*.png`、配音和字幕写入 auto-short-video storyboard 后合成，必须设顶层 `"image_motion": "static"`；slide/图表禁用 Ken Burns，不得缩放、平移或裁掉边缘。页面停留时长按对应 narration 音频/字幕分段，不均分整轨。不能只交静态图或无声视频。
-11. 用 `manifest.py meta` 登记 `final.mp4` 或 `article.md` 为 deliverable；中间解析、slide 和音频只放 `assets/`。
+11. 用 `manifest.py meta` 登记 `final.mp4` 或 `article.md` 为 deliverable；中间解析、slide 和音频只放 `outputs/论文简称/assets/`。
 12. **发布**：交 **skill-channels-upload**（视频号）/ B站 biliup。
 
 ### 3B. 图文产线（知乎/公众号）
 
-13. 用**同一份 asset-library** 写 `article.md`：标题（钩子）+ 用大白话讲清 problem→method→results→takeaway，配 `assets/` 的图。
+13. 用**同一份 asset-library** 写 `article.md`：标题（钩子）+ 用大白话讲清 problem→method→results→takeaway，配 `outputs/论文简称/assets/` 的图。
     平台适配见 `references/platform-adapt.md`（知乎逻辑链、公众号成文起承转合）。排版/长图交 **doc-convert**；发布交 **skill-zhihu-publisher / skill-wechat-publisher**。
 
 ## Profile 感知

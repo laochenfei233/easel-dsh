@@ -64,7 +64,7 @@ printenv EASEL_ASKUSER_CARDS   # "1"=支持选项卡片(OpenClaw 2026.9.x)；"0"
 
 ### 第 1 步：**后台脱离**启动发布（关键：必须能跨对话轮存活）
 
-务必带 `--status-file` 和 `--sms-code-file`（路径放 `outputs/_login/` 下），并用 `setsid`+`&`+日志重定向**把进程脱离当前 shell**——否则本轮结束、openclaw 进程退出时会把它一起杀掉，文字等待模式就跨不了轮：
+务必带 `--status-file` 和 `--sms-code-file`（路径放 `outputs/_login/` 下）。下列命令适用于 Linux：用 `setsid`+`&`+日志重定向**把进程脱离当前 shell**，避免当前执行引擎退出时一并终止登录等待；Windows 使用 Web「账号」页启动登录，不照抄这组 shell 命令：
 
 ```bash
 mkdir -p outputs/_login

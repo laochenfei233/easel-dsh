@@ -19,7 +19,7 @@ metadata:
 | 场景 | 管线 | 说明 |
 |------|------|------|
 | 已有原片做大片（口播/独白叠加概念动画+PiP+字幕） | **本技能主流程**（下方 1-5 节） | Remotion 双层架构 |
-| 从零做片（品牌片/宣传片/trailer/无原片） | **OpenMontage cinematic**（`references/openmontage-cinematic-execution.md`） | 44.5k⭐ 项目，13 管线，8 阶段链 research→proposal→script→scene_plan→assets→edit→compose→publish，proposal 批准门 |
+| 从零做短片（无原片） | Easel `../../../../auto-short-video/SKILL.md` | 使用本仓库实际提供的自动短视频流程；本 SDK 未附带 OpenMontage cinematic 执行说明，不据此承诺其管线可用 |
 | 产品宣传片（有产品/网页截图） | video-shotcraft | 104 镜头配方卡 + Ink Press 模板 + 149 音效 |
 | 长视频切短视频 | shorts（claude-shorts） | 转录→选段→Remotion 动画字幕 |
 
@@ -39,7 +39,7 @@ metadata:
 | 8 | 转场 | **每次 A↔B 状态切换都转场**（6种轮换：纸帘/墨晕/裂痕/淡入/边收/光圈，相邻不重复，0.2-0.26s）。**半透明叠加 0.5-0.8 不黑屏**。pipSnap 冻结视频层否则全塌成放大缩小。**B→B 连续舞台内不转场只切内容**（同状态相邻场 transitionIn 留空，2026.8.8 明确） |
 | 9 | 配色 | **禁铜金默认**（#c4956a/#e8c97a 反射性习惯）。彩色多 accent：冰蓝#4dc9f6/青#22d3ee/紫#a78bfa/粉#f472b6/绿#34d399/暗橙红#c95a3a。每 kind 独立 accent。用户明确说"用铜色"才用 |
 | 10 | 背景氛围 | 三层缺一不可：z0常驻暖光radial-gradient（A态也可见！禁MeshGradientBg，视觉为零）+ z2 FloatParticles 18颗微尘 + z4 B态 InkBokeh+光斑。B态动态背景照抄81模板参数化（grid-pulse/starfield/matrix-rain），z3。**所有背景层必须带动态分量，禁静态死背景**：z0 常驻光做呼吸/缓慢漂移（位置或亮度 6-10s 周期），A 态微尘常动，B 态动态背景全速——画面任意时刻至少 2 层在动 |
-| 11 | 声音 | **零BGM**。音效铁律（2026.9.8 用户立）：**音效只能找现成的**——从现成音效库（本机 video-shotcraft **149 枚·16 类**：`skills/creative/video-shotcraft/assets/audio/sfx/`）/网上找真实音效文件（Mixkit 音效直链可爬：`assets.mixkit.co/active_storage/sfx/<id>/<id>-preview.mp3`），**禁止自己生成/合成音效**（AI 生成的"阴间音效"被用户狠批，例：whoosh-fast/impact-cine-big 被嫌难听）。用户没说要音效=不加SFX层；要加就按他的要求找合适的（剪辑感强、不阴间），音量≤0.2（人声-25dB对比），一个B场景只留1个impact。`<Sequence from={帧}><Audio/></Sequence>` 起播，**禁 startFrom/endAt**（那是音频内部偏移，会把短音效裁空）。用户说"没必要配音/音效"=删掉SFX层；**（2026.9.16 追加）生成通道全弃**——ElevenLabs sound-effects 等"文字→音效"就是验收方点名的"自己生成雷霆音效"，违规；音效要"对得上"动作：转场刀=whoosh/sweep、强调点=hit、UI 点=click/chime；核验=ffprobe 时长+名字语义（耳朵终审=验收方） |
+| 11 | 声音 | **零BGM**。音效铁律（2026.9.8 用户立）：**音效只能找现成的**——许可与抓取说明见 [SDK 音效台账](../assets/sfx/README.md)，本仓库未内置上游 video-shotcraft 音效库或 MP3；也可网上找真实音效文件（Mixkit 音效直链可爬：`assets.mixkit.co/active_storage/sfx/<id>/<id>-preview.mp3`），**禁止自己生成/合成音效**（AI 生成的"阴间音效"被用户狠批，例：whoosh-fast/impact-cine-big 被嫌难听）。用户没说要音效=不加SFX层；要加就按他的要求找合适的（剪辑感强、不阴间），音量≤0.2（人声-25dB对比），一个B场景只留1个impact。`<Sequence from={帧}><Audio/></Sequence>` 起播，**禁 startFrom/endAt**（那是音频内部偏移，会把短音效裁空）。用户说"没必要配音/音效"=删掉SFX层；**（2026.9.16 追加）生成通道全弃**——ElevenLabs sound-effects 等"文字→音效"就是验收方点名的"自己生成雷霆音效"，违规；音效要"对得上"动作：转场刀=whoosh/sweep、强调点=hit、UI 点=click/chime；核验=ffprobe 时长+名字语义（耳朵终审=验收方） |
 | 12 | 进度条 | 全片必含：顶部3-4px流动光泽+端头发光点，**标明章节名**（当前章accent高亮其余暗灰），z50 |
 | 13 | 预览确认制 | **用户满意前绝不渲全片**（"我不满意就渲染等于浪费时间"）。Studio 3002 预览 → 用户点头 → 才渲染 |
 | 14 | 流式连续 | 禁每句独立spring弹入弹出（=断点）。A卡 enter [start-0.18,+0.08] 右滑入 / exit [end-0.12,+0.08] 左滑出（end=next start 天然重叠）；B舞台常驻只切内容（useFlow）；A↔B交叉衔接（B收尾0.22s+ A提前0.18s）。**全局连续性三铁律**：①色彩贯穿——accent 家族设计表定死后全片不换色系，kind 间切色走渐变过渡不硬跳；②动势衔接——上一元素出场方向/速度影响下一元素入场（同向延续或对撞反转），禁每场运动方向随机；③曝光平滑——场景切换前后整体亮度/色温不突变，禁一明一暗闪观众 |
@@ -104,7 +104,7 @@ metadata:
   1. 工程：复用既有工作工程（带 node_modules）或复制 package.json+tsconfig 新建（**build 脚本必须= `remotion compositions`**，模板遗留 HelloWorld 会报错）
   2. 字体本地化 `public/fonts/`+@font-face（MaShanZheng+simhei+simkai），**禁 @remotion/google-fonts**（联网卡死）
   3. public/ 只放本片资产（源视频+fonts+sfx+frames+assets），其余移 public_backup（bundler 全拷 TEMP，2GB 必超时）
-  4. SFX：`skills/creative/video-shotcraft/assets/audio/sfx/`
+  4. SFX：按 [SDK 音效台账](../assets/sfx/README.md) 找现成素材；下载后使用本次 Remotion 项目的 public/sfx，不假设已安装上游技能库。
   5. 组件分层 zIndex 铁律：`Bg=1 → 粒子=2 → B动态背景=3 → B光斑=4 → 视频=10 → 卡片≥20 → 字幕=30 → 转场=40 → 进度条=50 → 噪点=55 → 渐黑=60`（未设 zIndex 的层被视频层盖住=B 态全黑根因）
   6. 按设计表实现，遵守硬性需求 #1-#17 全表
 - **得到**：Composition 编译通过
@@ -147,13 +147,15 @@ metadata:
 
 **风格不从这里"挑"，由内容长出来**：本节是动效机制弹药库，不是风格模板单。每部片按 #15 的风格基调，先判库内机制是否服务该片表达；不服务/不够就主动出去找（本地动效库、GitHub、设计站扒技法），找到合适的再参数化改造。**禁"库里有就直接套"——清单固定=一直土**（2026.8.7 定）。机制照抄，风格外壳每片新做。
 
-### video-shotcraft demos（`skills/creative/video-shotcraft/demos/`）
+### video-shotcraft demos（上游示例，本仓库未内置）
+
+以下文件名仅相对另行安装的上游 video-shotcraft 示例目录，不是 Easel 本地资源。未安装时不可直接引用；先确认实际文件存在，或使用本 SDK 已提供的动效机制。
 | 引擎 | 文件 | 用途 |
 |------|------|------|
 | 图标场+色波 | `opening/icon-field-colorize/IconFieldColorize.tsx` | 同质化/集合/群像 |
 | 机场翻牌字 | `typography/split-flap-title/SplitFlapFlip.tsx` | 高潮大字/收尾定格 |
 | 贝塞尔发光飞线 | `effects/glow-flyline-moves/FlylineArc.tsx` | 复制/传输/连接 |
-| 数字滚动 | `assets/lib/DigitRoll.tsx` | 数据/能力值 |
+| 数字滚动 | `<VIDEO_SHOTCRAFT_ROOT>/assets/lib/DigitRoll.tsx` | 数据/能力值 |
 | 冲击反馈 | `effects/impact-feedback/` | 印章/落地/重击 |
 | 霓虹框 | `ui-entrance/neon-frame-forerun/NeonFrameForerun.tsx` | 高光/聚焦 |
 

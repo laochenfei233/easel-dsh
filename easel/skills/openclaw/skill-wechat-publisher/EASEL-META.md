@@ -25,8 +25,8 @@
 - **环境标注（历史状态）**：SKILL.md 顶部新增「⚠️ 环境依赖（部分可跑）」表 —— 核心链路（`publish.py` 官方 HTTP API 发草稿 + `ai_score.py` 反 AI 检测 + `html_converter.py` 排版）配好 `app_id`/`app_secret` 后**可跑**；`generate_image.py` 需图像 API key、`multi_publish.py` 多平台同步需浏览器扩展，标注**当前不可用**。
   - 当前 Markdown / HTML 发布默认走已扫码的公众号后台会话，无需 YAML、AppID/AppSecret 或 IP 白名单；上述凭证要求仅适用于官方 API 路径，详见 SKILL.md「前置条件」。
 - **移除的臃肿物**（不该进 SKILL）：
-  - `docs/`（602K，GitHub Pages 主题预览 HTML + 截图，与 `assets/theme-previews/` 重复）
+  - docs 目录（602K，GitHub Pages 主题预览 HTML + 截图，与 `assets/theme-previews/` 重复）
   - `tech/`（6.7M，示例文章配图）
-  - `scripts/baoyu_danger_gemini_web/`（112K，逆向 Gemini Web API 库）
+  - scripts 下的 baoyu_danger_gemini_web 目录（112K，逆向 Gemini Web API 库，已移除，不能作为执行依赖）
   - 目录体积 ~10M → 2.7M。
 - **保留的可跑核心脚本**：`publish.py` / `wechat_api.py` / `ai_score.py` / `html_converter.py` / `api.py` / `config.py` / `wechat_token.py` / `image_handler.py` / `newspic_build.py`；生图后端 `baoyu_image_gen.ts` / `baoyu_image_gen_core.ts` 保留（默认生图入口，非逆向库）。`assets/`（themes / image-styles / theme-previews / typeset-card）保留。

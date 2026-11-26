@@ -71,7 +71,7 @@ python3 skills/openclaw/xhs-note-creator/scripts/text_on_image.py input.jpg outp
 - `--position` = `top / center / bottom`；cover 推荐 top 或 center
 - 文字长度 ≤18 字，更长先拆成两行(脚本已支持换行符 `\n`)
 - 照片有水印先走 `crop_watermark.py`
-- 字体走 `assets/fonts/` 下的 CJK 字体，缺字体脚本会警告并用 PIL 默认字体(不推荐上线)
+- 字体优先使用本 SKILL 的 assets/fonts 下用户另行提供的 CJK 字体，也会尝试系统字体；该字体目录不是必备仓库资源，可用 `--font <字体绝对路径>` 显式指定。缺字体脚本会警告并用 PIL 默认字体(不推荐上线)
 
 ### 策略 C：`collage` — 多图拼贴
 

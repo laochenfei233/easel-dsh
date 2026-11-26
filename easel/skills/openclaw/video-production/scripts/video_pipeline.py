@@ -28,6 +28,7 @@ except Exception:  # noqa: BLE001
     pass
 
 STATE = {0: "done", 2: "gate-failed", 3: "awaiting-answer", 1: "error"}
+DEFAULT_GATES = Path(__file__).resolve().parent.parent / "vendor" / "video-pipeline-sdk" / "gates" / "default-gates.json"
 
 
 def now_iso():
@@ -62,6 +63,10 @@ def _workspace_root() -> Path:
     B4 退役后无 OpenClaw workspace 布局问题：宿主半 spawn 时注入 EASEL_ROOT（仓库根），
     直接用它；否则按「自己在上层仓库里 / cwd 有 outputs/」探测。
     """
+    if os.environ.get("EASEL_AGENT_RUNTIME", "").strip().lower() in ("codex", "opencode", "acp"):
+        root = Path(os.environ.get("EASEL_ROOT") or Path.cwd()).resolve()
+        if (root / "easel").is_dir() and (root / "skills" / "builtin").is_dir():
+            return root
     override = os.environ.get("EASEL_OPENCLAW_WORKSPACE")
     if override:
         return Path(override)
@@ -223,16 +228,17 @@ def cmd_start(args) -> int:
             print(f"设计表就位：{dt}")
         else:
             print(f"提示：设计表不存在（{dt}），流程会停在需要设计表处", file=sys.stderr)
-    if args.gates:
-        gp = Path(args.gates)
-        if gp.is_file():
-            text = gp.read_text(encoding="utf-8")
-            posix = lambda v: str(v).replace("\\", "/")  # noqa: E731 —— JSON 里路径必须正斜杠
-            text = text.replace("{run_dir}", posix(rd)).replace("{out_dir}", posix(outd))
-            (rd / "gates.json").write_text(text, encoding="utf-8")
-            print(f"质量门配置就位：{gp}")
-        else:
-            print(f"提示：gates 配置不存在（{gp}）", file=sys.stderr)
+    gp = Path(args.gates) if args.gates else DEFAULT_GATES
+    if gp.is_file():
+        text = gp.read_text(encoding="utf-8")
+        posix = lambda v: str(v).replace("\\", "/")  # noqa: E731 —— JSON 里路径必须正斜杠
+        text = (text.replace("{run_dir}", posix(rd))
+                    .replace("{out_dir}", posix(outd))
+                    .replace("{python}", posix(sys.executable)))
+        (rd / "gates.json").write_text(text, encoding="utf-8")
+        print(f"质量门配置就位：{gp}")
+    elif args.gates:
+        print(f"提示：gates 配置不存在（{gp}）", file=sys.stderr)
     code, out = cexec(rcmd(sdk, ["run", "--run-dir", str(rd)]))
     print(out)
     (base / "current.txt").write_text(str(rd), encoding="utf-8")

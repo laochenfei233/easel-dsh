@@ -1,6 +1,6 @@
 # xhs-publisher 命令样例
 
-> 统一走 `../../shared/scripts/xhs_publish.py`（Playwright，headless 可用）。CWD=项目根。
+> 统一走 `skills/shared/scripts/xhs_publish.py`（Playwright，headless 可用）。CWD=项目根。
 > 流程/选择器移植自 xpzouying/xiaohongshu-mcp。旧 CDP 脚本已退役删除。
 
 ## 环境检查

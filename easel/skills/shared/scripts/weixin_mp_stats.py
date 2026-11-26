@@ -16,10 +16,11 @@ import argparse
 import json
 import os
 import re
+import signal
 import sys
 import time
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import unquote, urlparse
 
 if os.name == "nt":
     import msvcrt
@@ -27,6 +28,7 @@ else:
     import fcntl
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import login_qr  # noqa: E402
 import login_state  # noqa: E402
 import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
 
@@ -188,18 +190,122 @@ def _now():
 
 
 def _extract_token(url):
+    parsed = urlparse(url or "")
+    if parsed.scheme != "https" or parsed.hostname != "mp.weixin.qq.com":
+        return ""
     m = TOKEN_RE.search(url or "")
     return m.group(1) if m else ""
 
 
-def _capture_qr(page, qr_out):
-    """等二维码 img 真正渲染(complete && naturalWidth>0)后再截图。"""
-    Path(qr_out).parent.mkdir(parents=True, exist_ok=True)
-    sel = "img[src*='qrcode'], img.login__type__container__scan__qrcode, .login__type__container__scan img"
-    for _ in range(25):  # 最多等 ~25s
+def _account_identity(page):
+    identity = {"name": "", "avatar": ""}
+    for container in page.query_selector_all(".weui-desktop-account"):
+        if not container.is_visible():
+            continue
+        name = container.query_selector(".weui-desktop-account__nickname, .account_nickname")
+        avatar = container.query_selector(".weui-desktop-account__thumb img, img.weui-desktop-account__thumb, "
+                                          ".weui-desktop-account__avatar img")
+        if name and name.is_visible():
+            text = (name.inner_text() or "").strip()
+            if text:
+                identity["name"] = text.splitlines()[0][:40]
+        if avatar and avatar.is_visible():
+            source = avatar.get_attribute("src") or ""
+            if source.startswith("//"):
+                source = "https:" + source
+            try:
+                parsed = urlparse(source)
+                if parsed.scheme in ("https", "http") and parsed.hostname and not parsed.username and not parsed.password:
+                    identity["avatar"] = source
+            except ValueError:
+                pass
+        if identity["name"] or identity["avatar"]:
+            break
+    return identity
+
+
+QR_IMG_SEL = ("img.login__type__container__scan__qrcode, img[src*='qrcode'], "
+              ".login__type__container__scan img")
+QR_SWITCH_SEL = "a.login__type__container__link_text"
+# 未登录时的两种登录页形态：扫码视图，或记住微账号后的「微信快捷登录」视图
+LOGIN_UI_SEL = f"{QR_IMG_SEL}, {QR_SWITCH_SEL}"
+
+
+def _qr_visible(page):
+    try:
+        return any(el.is_visible() and el.bounding_box()
+                   and page.evaluate("(e)=>e.complete && e.naturalWidth>10", el)
+                   for el in page.query_selector_all(QR_IMG_SEL))
+    except Exception:
+        return False
+
+
+def _ensure_qr_mode(page, timeout=20.0):
+    """mp 记住微信账号后会默认展示「微信快捷登录」，主文档二维码被隐藏，
+    此时只能截到整页。点「扫码登录」切回二维码模式。返回是否已看到二维码。
+
+    只能点一次：每次点击都会 startlogin 重建会话并作废旧二维码，重复点击会让
+    用户刚扫的码变成「已失效」。"""
+    deadline = time.monotonic() + timeout
+    switched = False
+    while time.monotonic() < deadline:
+        if _qr_visible(page):
+            return True
+        if not switched:
+            for link in page.query_selector_all(QR_SWITCH_SEL):
+                try:
+                    text = (link.inner_text() or "").strip()
+                    if text == "扫码登录" and link.is_visible():
+                        # Set before clicking: an uncertain click must not be replayed.
+                        switched = True
+                        link.click(timeout=3000)
+                        page.wait_for_timeout(1500)
+                        break
+                except Exception:
+                    break
+        page.wait_for_timeout(500)
+    return _qr_visible(page)
+
+
+def _refresh_expired_qr(page):
+    """二维码过期/加载失败后页面会停轮询并盖遮罩，点遮罩内「点击刷新」重新出码。
+    只在过期/失败遮罩上点，避免误点「扫码成功」旁的「重新扫码」取消登录。"""
+    try:
+        masks = page.query_selector_all(".login__type__container__scan_mask")
+    except Exception:
+        return False
+    for mask in masks:
         try:
-            el = page.query_selector(sel)
-            if el:
+            if not mask.is_visible():
+                continue
+            text = mask.inner_text() or ""
+        except Exception:
+            continue
+        if "扫码成功" in text or ("已过期" not in text and "加载失败" not in text):
+            continue
+        try:
+            links = mask.query_selector_all("a")
+        except Exception:
+            continue
+        for link in links:
+            try:
+                if link.is_visible() and (link.inner_text() or "").strip() == "点击刷新":
+                    link.click(timeout=3000)
+                    return True
+            except Exception:
+                continue
+    return False
+
+
+def _capture_qr(page, qr_out, attempts=25):
+    """等二维码 img 真正渲染后截图，并校验截图里确实能识别出二维码。
+    校验失败返回 False：绝不把整页/过期遮罩当二维码交给前端。"""
+    Path(qr_out).parent.mkdir(parents=True, exist_ok=True)
+    for _ in range(attempts):
+        try:
+            for el in page.query_selector_all(QR_IMG_SEL):
+                if not el.is_visible():
+                    continue
                 box = el.bounding_box()
                 loaded = False
                 try:
@@ -207,21 +313,23 @@ def _capture_qr(page, qr_out):
                 except Exception:
                     loaded = bool(box and box["width"] > 80)
                 if loaded and box and box["width"] > 80:
-                    el.screenshot(path=str(qr_out))
-                    return True
+                    shot = el.screenshot(timeout=3000)
+                    if login_qr.save_qr(shot, Path(qr_out)):
+                        return True
         except Exception:
             pass
         page.wait_for_timeout(1000)
-    # 兜底：整页截（仍可能白，但至少给个东西）
-    try:
-        page.screenshot(path=str(qr_out), timeout=15000)
-        return True
-    except Exception:
-        return False
+    return False
 
 
 def cmd_login(a):
+    previous_handler = signal.getsignal(signal.SIGTERM)
+
+    def stop_login(signum, frame):
+        raise SystemExit(0)
+
     try:
+        signal.signal(signal.SIGTERM, stop_login)
         return _run_login(a)
     except Exception as exc:
         # 异常类型对用户可见；不把可能包含会话令牌的浏览器异常全文写进状态。
@@ -229,6 +337,8 @@ def cmd_login(a):
                                  f"公众号登录失败（{type(exc).__name__}），请检查浏览器、网络及会话占用")
         print(f"login failed: {type(exc).__name__}", file=sys.stderr, flush=True)
         return 1
+    finally:
+        signal.signal(signal.SIGTERM, previous_handler)
 
 
 def _run_login(a):
@@ -244,11 +354,16 @@ def _run_login(a):
             page.wait_for_timeout(1500)
             # 已登录（持久化会话仍有效）→ 直接成功
             if _extract_token(page.url):
+                browser_session.close_session(ctx, owned)
+                ctx = None
                 login_state.write_status(status, "success", "已登录（复用会话）")
                 print("already logged in, token acquired")
                 return 0
+            # 默认可能是「微信快捷登录」视图（二维码在 iframe 里或直接隐藏），先切回扫码
+            if not _ensure_qr_mode(page):
+                raise RuntimeError("未找到登录二维码（页面停留在快捷登录/账号页）")
             if not _capture_qr(page, qr_out):
-                raise RuntimeError("二维码截图失败")
+                raise RuntimeError("未识别到登录二维码")
             if a.headed:
                 login_state.write_status(
                     status, "window_login",
@@ -257,25 +372,32 @@ def _run_login(a):
             else:
                 login_state.write_status(status, "qr_ready", "请用公众号管理员微信扫码", qr=str(qr_out))
             deadline = time.time() + a.timeout
+            next_capture = time.monotonic() + 5
             while time.time() < deadline:
-                page.wait_for_timeout(2000)
-                if _extract_token(page.url):
+                page.wait_for_timeout(1000)
+                if any(_extract_token(candidate.url) for candidate in ctx.pages):
+                    browser_session.close_session(ctx, owned)
+                    ctx = None
                     login_state.write_status(status, "success", "登录成功")
                     # 不打印 token 值：它是 mp 后台会话令牌，stdout 会落进
                     # outputs/_login/wechat-oa-mp.log，避免敏感值明文落盘。
                     print("login success, token acquired")
                     return 0
-                # 二维码可能刷新，定期重截
+                # 二维码过期/加载失败时点遮罩里的「点击刷新」再重截；
+                # 不要重复点「扫码登录」——那会重建会话并作废用户正在扫的二维码。
                 try:
-                    if not _extract_token(page.url):
-                        _capture_qr(page, qr_out)
+                    if time.monotonic() >= next_capture and not _extract_token(page.url):
+                        _refresh_expired_qr(page)
+                        _capture_qr(page, qr_out, attempts=1)
+                        next_capture = time.monotonic() + 5
                 except Exception:
                     pass
             login_state.write_status(status, "expired", "二维码超时未扫")
             _die("login timeout", 1)
         finally:
             # launch 模式关自己起的浏览器（close 钩子会释放占用锁）；CDP 附身模式不关（用户窗口）
-            browser_session.close_session(ctx, owned)
+            if ctx is not None:
+                browser_session.close_session(ctx, owned)
 
 
 def _fetch_json(page, url):
@@ -764,9 +886,20 @@ def cmd_whoami(a):
             ctx, owned = _open_session(a, p)
             page = browser_session.open_page(ctx, owned)
             try:
-                page.goto(MP_HOME, wait_until="commit", timeout=60000)
-                page.wait_for_timeout(1200)
+                page.goto(MP_HOME, wait_until="commit", timeout=10000)
+                deadline = time.monotonic() + 12
+                while time.monotonic() < deadline:
+                    if _extract_token(page.url):
+                        out.update(loggedIn=True, **_account_identity(page))
+                        if out["name"] and out["avatar"]:
+                            break
+                    elif page.query_selector(f"img[src*='qrcode'], {LOGIN_UI_SEL}"):
+                        break
+                    page.wait_for_timeout(500)
                 out["loggedIn"] = bool(_extract_token(page.url))
+                if not out["loggedIn"] and not page.query_selector(
+                        f"img[src*='qrcode'], {LOGIN_UI_SEL}"):
+                    out["error"] = "公众号账号页面尚未就绪，请稍后重试"
             finally:
                 # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
                 browser_session.close_session(ctx, owned)
