@@ -1704,7 +1704,9 @@ var PLATFORM_LABELS = {
   zhihu: "\u77E5\u4E4E",
   bilibili: "B\u7AD9",
   douyin: "\u6296\u97F3",
-  "wechat-oa": "\u5FAE\u4FE1\u516C\u4F17\u53F7"
+  "wechat-oa": "\u5FAE\u4FE1\u516C\u4F17\u53F7",
+  toutiao: "\u4ECA\u65E5\u5934\u6761",
+  juejin: "\u6398\u91D1"
 };
 var platformLabel = (platform) => PLATFORM_LABELS[platform] ?? platform;
 async function fetchRoster() {
@@ -2987,7 +2989,7 @@ __export(ideas_exports, {
 // src/components/IdeasPage.tsx
 var import_react5 = require("react");
 
-// ../../../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
+// ../../node_modules/.pnpm/marked@16.4.2/node_modules/marked/lib/marked.esm.js
 function L() {
   return { async: false, breaks: false, extensions: null, gfm: true, hooks: null, pedantic: false, renderer: null, silent: false, tokenizer: null, walkTokens: null };
 }
@@ -4144,7 +4146,7 @@ var jt = k.parseInline;
 var Ut = b.parse;
 var Kt = x.lex;
 
-// ../../../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
+// ../../node_modules/.pnpm/dompurify@3.4.16/node_modules/dompurify/dist/purify.es.mjs
 function _OverloadYield(e, d2) {
   this.v = e, this.k = d2;
 }
@@ -8619,6 +8621,9 @@ var SKILL_DISPLAY_NAMES = {
   "skill-livestream": "\u76F4\u64AD\u65B9\u6848",
   "skill-my-account": "\u8D26\u53F7\u67E5\u8BE2",
   "skill-news-intelligence": "\u884C\u4E1A\u60C5\u62A5",
+  "skill-toutiao-publisher": "\u5934\u6761\u53F7\u53D1\u5E03",
+  "real-lab-paper-promotion": "\u8BBA\u6587\u5C0F\u7EA2\u4E66\u5BA3\u4F20",
+  "real-lab-paper2video-v1": "\u8BBA\u6587\u8F6C\u89C6\u9891",
   "skill-persona-check": "\u4EBA\u8BBE\u4E00\u81F4\u6027",
   "skill-positioning-analysis": "\u5DEE\u5F02\u5316\u5B9A\u4F4D",
   "skill-post-scorer": "\u4E92\u52A8\u6F5C\u529B\u8BC4\u5206",
@@ -9482,6 +9487,8 @@ var PLATFORMS2 = [
   { key: "kuaishou", label: "\u5FEB\u624B", titleLimit: 30, bodyLimit: 1e3, hint: "\u89C6\u9891\u6216\u56FE\u7247(\u56FE\u6587)\uFF0C\u6807\u9898\u226430\uFF0C\u9700\u9644\u5A92\u4F53" },
   { key: "weixin-channels", label: "\u89C6\u9891\u53F7", bodyLimit: 1e3, hint: "\u9700\u9644\u89C6\u9891\uFF0C\u77ED\u63CF\u8FF0+\u8BDD\u9898\u6807\u7B7E\uFF0C\u5FAE\u4FE1\u626B\u7801\u767B\u5F55" },
   { key: "zhihu", label: "\u77E5\u4E4E", bodyLimit: 5e3, hint: "\u957F\u6587/\u56DE\u7B54\uFF0C\u8BB2\u6E05\u903B\u8F91" },
+  { key: "toutiao", label: "\u4ECA\u65E5\u5934\u6761", titleLimit: 30, bodyLimit: 2e4, hint: "\u56FE\u6587\u6587\u7AE0\uFF0C\u6807\u9898\u226430\u3001\u8BDD\u9898\u22645\uFF08# \u81EA\u52A8\u53BB\u6389\uFF09\uFF0C\u63D2\u56FE\u8FDB\u6B63\u6587\u3001\u9996\u56FE\u4F5C\u5C01\u9762\uFF1B\u767B\u5F55\u4F1A\u5F39\u6D4F\u89C8\u5668\u7A97\u53E3" },
+  { key: "juejin", label: "\u6398\u91D1", bodyLimit: 2e4, hint: "\u6280\u672F\u957F\u6587\uFF0C\u6B63\u6587\u7EAF\u6587\u672C\uFF1B\u6807\u7B7E\u987B\u662F\u6398\u91D1\u5DF2\u6709\u6807\u7B7E" },
   { key: "bilibili", label: "B\u7AD9", titleLimit: 80, bodyLimit: 2e3, hint: "\u9700\u9644\u89C6\u9891\uFF0C\u6807\u9898\u226480\u3001\u7B80\u4ECB\u22642000\uFF0C\u9ED8\u8BA4\u6295\u300C\u77E5\u8BC6\u300D\u5206\u533A" },
   { key: "wechat-oa", label: "\u516C\u4F17\u53F7", titleLimit: 64, bodyLimit: 2e4, hint: "\u56FE\u6587\u6587\u7AE0\uFF0C\u6B63\u6587\u7528 Markdown\uFF0C\u9996\u56FE\u4F5C\u5C01\u9762\uFF0C\u53D1\u5230\u8349\u7A3F\u7BB1\uFF1B\u9700\u5148\u5728\u8D26\u53F7\u9875\u300C\u767B\u5F55\u516C\u4F17\u53F7\u540E\u53F0\u300D\u626B\u7801" }
 ];
@@ -10137,6 +10144,7 @@ var import_jsx_runtime20 = require("react/jsx-runtime");
 var STATE_LABEL = {
   starting: "\u542F\u52A8\u4E2D\u2026",
   qr_ready: "\u8BF7\u626B\u7801",
+  window_login: "\u8BF7\u5728\u6D4F\u89C8\u5668\u7A97\u53E3\u767B\u5F55",
   scanned: "\u626B\u7801\u6210\u529F",
   sms_required: "\u9700\u77ED\u4FE1\u9A8C\u8BC1",
   verifying: "\u9A8C\u8BC1\u4E2D\u2026",
@@ -10151,6 +10159,8 @@ var PLATFORM_META = [
   { key: "kuaishou", label: "\u5FEB\u624B", backend: "web" },
   { key: "weixin-channels", label: "\u5FAE\u4FE1\u89C6\u9891\u53F7", backend: "web" },
   { key: "zhihu", label: "\u77E5\u4E4E", backend: "web" },
+  { key: "toutiao", label: "\u4ECA\u65E5\u5934\u6761", backend: "toutiao" },
+  { key: "juejin", label: "\u6398\u91D1", backend: "web" },
   { key: "bilibili", label: "B\u7AD9", backend: "biliup" },
   { key: "wechat-oa", label: "\u5FAE\u4FE1\u516C\u4F17\u53F7", backend: "wechat-oa" }
 ];
@@ -10932,7 +10942,15 @@ function AccountsPage() {
                   children: smsBusy ? "\u63D0\u4EA4\u4E2D\u2026" : "\u63D0\u4EA4\u9A8C\u8BC1\u7801"
                 }
               )
-            ] }) : qr.state === "qr_ready" && qr.qr ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("img", { className: "qr-img", src: `${mediaUrl(qr.qr)}?v=${qr.qrTs || qrNonce}`, alt: "\u767B\u5F55\u4E8C\u7EF4\u7801" }) : qr.state === "scanned" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
+            ] }) : qr.state === "qr_ready" && qr.qr ? /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("img", { className: "qr-img", src: `${mediaUrl(qr.qr)}?v=${qr.qrTs || qrNonce}`, alt: "\u767B\u5F55\u4E8C\u7EF4\u7801" }) : qr.state === "window_login" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { style: { fontSize: 30, padding: "30px 10px 34px" }, children: [
+              "\u{1FA9F}",
+              /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { style: {
+                fontSize: 13,
+                marginTop: 8,
+                color: "var(--text-secondary)",
+                lineHeight: 1.7
+              }, children: qr.message || "\u8BF7\u5728\u5F39\u51FA\u7684\u6D4F\u89C8\u5668\u7A97\u53E3\u91CC\u5B8C\u6210\u767B\u5F55\uFF08\u53EF\u80FD\u9700\u8981\u7ED1\u5B9A\u624B\u673A\u53F7\u5E76\u8F93\u5165\u77ED\u4FE1\u9A8C\u8BC1\u7801\uFF09" })
+            ] }) : qr.state === "scanned" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
               /* @__PURE__ */ (0, import_jsx_runtime20.jsx)("div", { className: "spinner" }),
               "\u626B\u7801\u6210\u529F\uFF0C\u6B63\u5728\u8DF3\u8F6C\u9A8C\u8BC1\u2026\uFF08\u9996\u6B21\u53EF\u80FD\u7B49\u5341\u51E0\u79D2\uFF09"
             ] }) : qr.state === "verifying" ? /* @__PURE__ */ (0, import_jsx_runtime20.jsxs)("div", { className: "loading", style: { padding: 40 }, children: [
