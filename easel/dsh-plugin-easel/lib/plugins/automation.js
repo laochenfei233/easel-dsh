@@ -24,6 +24,8 @@ const LOGIN_URLS = {
   'weixin-channels': 'https://channels.weixin.qq.com',
   zhihu: 'https://www.zhihu.com',
   bilibili: 'https://www.bilibili.com',
+  toutiao: 'https://mp.toutiao.com/',
+  juejin: 'https://juejin.cn/',
 }
 
 async function accountLoggedIn(settings, account, cfg) {
@@ -209,6 +211,11 @@ const BROWSER_PROFILES = () => process.env.EASEL_BROWSER_PROFILES || join(homedi
 export const loadRegistry = settings => loadAccounts(settings.projectRoot, { browserProfilesDir: BROWSER_PROFILES() })
 const WECHAT_SKILL_DIR = root => join(root, 'skills', 'openclaw', 'skill-wechat-publisher')
 const WECHAT_SKILL_SCRIPTS = root => join(WECHAT_SKILL_DIR(root), 'scripts')
+// 头条专用 publisher 住在它自己的 skill 目录下（不在 shared/scripts）。
+const TOUTIAO_PUBLISHER = root => join(root, 'skills', 'openclaw', 'skill-toutiao-publisher', 'scripts', 'toutiao_publish.py')
+/** 头条图文的硬限制：标题 30 字、话题 5 个（脚本同样会拒；宿主先拦是为了给中文提示）。 */
+const TOUTIAO_TITLE_LIMIT = 30
+const TOUTIAO_TAG_LIMIT = 5
 
 // ---- 多账户：注册表解析 + 账号直启 CDP 实例 ----
 // 注册表 outputs/_accounts.json（lib/accounts.js）。默认账号 id = 平台 key，所以
@@ -311,7 +318,7 @@ const whoamiCache = new Map()
 const WHOAMI_TTL_MS = 600_000
 const MEDIA_REQUIRED = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'weixin-channels', 'bilibili'])
 const VIDEO_ONLY_PUBLISH = new Set(['douyin', 'weixin-channels', 'bilibili'])
-const NO_PROXY_DEFAULT = 'localhost,127.0.0.1,10.*,*.xiaohongshu.com,*.devops.xiaohongshu.com,*.douyin.com,*.kuaishou.com,*.zhihu.com,*.bilibili.com,*.weixin.qq.com,*.qq.com'
+const NO_PROXY_DEFAULT = 'localhost,127.0.0.1,10.*,*.xiaohongshu.com,*.devops.xiaohongshu.com,*.douyin.com,*.kuaishou.com,*.zhihu.com,*.bilibili.com,*.weixin.qq.com,*.qq.com,*.toutiao.com,*.juejin.cn'
 
 /** 子进程环境：应用内代理（雷达设置）> EASEL_PROXY；publish 加禁自动记日历。 */
 export async function runnerEnv(settings, { publish = false } = {}) {
@@ -533,6 +540,10 @@ async function apiLoginStart(c) {
     cmd = [process.execPath, join(scripts, 'bili_login.mjs'), 'login', '--qr-out', join(loginDir, `${account.id}.png`), '--status-file', join(loginDir, `${account.id}.json`), '--cookie', accountCookieFile(c.settings.projectRoot, account), '--timeout', String(timeout)]
   } else if (cfg.backend === 'douyin') {
     cmd = [py, join(scripts, 'douyin_publish.py'), 'login', '--qr-out', join(loginDir, `${account.id}.png`), '--status-file', join(loginDir, `${account.id}.json`), '--sms-code-file', join(loginDir, `${account.id}.code`), '--timeout', String(timeout)]
+  } else if (cfg.backend === 'toutiao') {
+    // 头条号扫码后可能要求绑定手机号并收短信验证码，无头模式下脚本只能报错：
+    // 登录固定有头窗口（二维码照常落盘供弹窗展示），命令形态同上游 web/app.py。
+    cmd = [py, TOUTIAO_PUBLISHER(c.settings.projectRoot), 'login', '--qr-out', join(loginDir, `${account.id}.png`), '--status-file', join(loginDir, `${account.id}.json`), '--timeout', String(timeout), '--headed']
   } else {
     cmd = [py, join(scripts, 'web_publisher.py'), 'login-qr', '--platform', cfg.wp, '--qr-out', join(loginDir, `${account.id}.png`), '--status-file', join(loginDir, `${account.id}.json`), '--timeout', String(timeout)]
   }
@@ -569,6 +580,8 @@ async function apiWhoami(c) {
     cmd = [process.execPath, join(scripts, 'bili_login.mjs'), 'whoami', '--cookie', accountCookieFile(c.settings.projectRoot, account)]
   } else if (cfg.backend === 'xhs') {
     cmd = [py, join(scripts, 'xhs_publish.py'), 'whoami', '--no-proxy', ...(await accountBrowserArgs(c.settings, account))]
+  } else if (cfg.backend === 'toutiao') {
+    cmd = [py, TOUTIAO_PUBLISHER(c.settings.projectRoot), 'whoami', ...(await accountBrowserArgs(c.settings, account))]
   } else if (cfg.backend === 'douyin') {
     cmd = [py, join(scripts, 'douyin_publish.py'), 'whoami', ...(await accountBrowserArgs(c.settings, account))]
   } else {
@@ -826,9 +839,10 @@ async function apiMpLoginStatus(c) {
 
 // ---- 归因抓取（spawn runner，180s）----
 
-/** 参与归档的归因平台：account_stats.py 五家 + 公众号（weixin_mp_stats.py 也调
- * record_snapshot("wechat-oa")，写在同一个 _analytics 目录）。B站走 biliup stats，不写归档。 */
-const ARCHIVED_ANALYTICS = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'zhihu', 'weixin-channels', 'wechat-oa'])
+/** 参与归档的归因平台：account_stats.py 六家（掘金在其内委托 juejin_stats）+ 公众号
+ * （weixin_mp_stats.py 也调 record_snapshot("wechat-oa")，写在同一个 _analytics 目录）。
+ * B站走 biliup stats，不写归档。 */
+const ARCHIVED_ANALYTICS = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'zhihu', 'weixin-channels', 'wechat-oa', 'toutiao', 'juejin'])
 
 /** 读一个账号的归档快照（history 子命令，不起浏览器）；失败降级为「无数据」而不是整表失败。 */
 async function readAccountHistory(settings, account) {
@@ -990,7 +1004,14 @@ async function apiPublish(c) {
   if (VIDEO_ONLY_PUBLISH.has(platform) && vids.length === 0) {
     throw new ApiError(400, `${cfg.name} 只能发视频，请附带一个视频文件`)
   }
+  if (platform === 'toutiao' && vids.length > 0) throw new ApiError(400, `${cfg.name}图文只收图片，请去掉视频或不带媒体`)
   const title = reqTitle.trim() || reqBody.trim().slice(0, 20)
+  // 头条话题：脚本按逗号切分且最多 5 个；把 # 前缀与中英文逗号、空白归一。
+  const toutiaoTopics = tags.split(/[,，\s]+/).map(tag => tag.replace(/^#+/, '').trim()).filter(Boolean)
+  if (platform === 'toutiao') {
+    if ([...title].length > TOUTIAO_TITLE_LIMIT) throw new ApiError(400, `${cfg.name}标题不能超过 ${TOUTIAO_TITLE_LIMIT} 字`)
+    if (toutiaoTopics.length > TOUTIAO_TAG_LIMIT) throw new ApiError(400, `${cfg.name}话题不能超过 ${TOUTIAO_TAG_LIMIT} 个`)
+  }
   const registry = await loadRegistry(c.settings)
   const account = resolveAccountStrict(registry, platform, typeof body?.account === 'string' ? body.account : '')
   if (account === null && platform !== 'wechat-oa') throw new ApiError(400, '该平台还没有账号，请先在账号页登录')
@@ -1049,6 +1070,11 @@ async function apiPublish(c) {
     const wxProxy = process.env.EASEL_PROXY || process.env.https_proxy || ''
     cmd = [py, join(scripts, 'weixin_mp_stats.py'), 'publish', '--proxy', wxProxy,
       '--html', htmlPath, '--cover', imgs[0], '--title', title, '--digest', (reqBody || '').trim().slice(0, 100), '--author', '']
+  } else if (platform === 'toutiao') {
+    // 头条图文：正文直传，图片全部进正文（头条取首图作封面），所以不带 --media。命令形态同上游 web/app.py。
+    cmd = [py, TOUTIAO_PUBLISHER(c.settings.projectRoot), '--content', reqBody, '--title', title, '--tags', toutiaoTopics.join(',')]
+    if (imgs.length > 0) cmd.push('--images', imgs.join(','))
+    cmd.push('--exec', ...browserArgs)
   } else {
     cmd = [py, join(scripts, 'web_publisher.py'), 'publish', '--platform', cfg.wp,
       '--title', title, '--desc', reqBody, '--tags', tags, '--exec']

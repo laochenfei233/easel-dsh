@@ -11,7 +11,7 @@ import { getWhoamiCache, setWhoamiCache, verifyStale } from '../lib/whoami';
 type QRState = {
   account: AccountItem;
   title?: string;      // 弹窗标题（缺省 = 账号名；公众号后台登录加「后台取数」后缀）
-  state: string;       // starting | qr_ready | success | expired | error | unknown
+  state: string;       // starting | qr_ready | window_login | scanned | sms_required | verifying | success | expired | error | unknown
   message: string;
   qr: string;          // outputs 相对路径
   qrTs?: number;       // 二维码文件 mtime，作 img 缓存键：码刷新一次就变，避免看到过期旧码
@@ -27,6 +27,7 @@ type DirectState = {
 const STATE_LABEL: Record<string, string> = {
   starting: '启动中…',
   qr_ready: '请扫码',
+  window_login: '请在浏览器窗口登录',
   scanned: '扫码成功',
   sms_required: '需短信验证',
   verifying: '验证中…',
@@ -43,6 +44,8 @@ const PLATFORM_META: { key: string; label: string; backend: string }[] = [
   { key: 'kuaishou', label: '快手', backend: 'web' },
   { key: 'weixin-channels', label: '微信视频号', backend: 'web' },
   { key: 'zhihu', label: '知乎', backend: 'web' },
+  { key: 'toutiao', label: '今日头条', backend: 'toutiao' },
+  { key: 'juejin', label: '掘金', backend: 'web' },
   { key: 'bilibili', label: 'B站', backend: 'biliup' },
   { key: 'wechat-oa', label: '微信公众号', backend: 'wechat-oa' },
 ];
@@ -754,6 +757,10 @@ export default function AccountsPage() {
                   </div>
                 ) : qr.state === 'qr_ready' && qr.qr ? (
                   <img className="qr-img" src={`${mediaUrl(qr.qr)}?v=${qr.qrTs || qrNonce}`} alt="登录二维码" />
+                ) : qr.state === 'window_login' ? (
+                  <div style={{ fontSize: 30, padding: '30px 10px 34px' }}>🪟<div style={{ fontSize: 13, marginTop: 8,
+                    color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                    {qr.message || '请在弹出的浏览器窗口里完成登录（可能需要绑定手机号并输入短信验证码）'}</div></div>
                 ) : qr.state === 'scanned' ? (
                   <div className="loading" style={{ padding: 40 }}><div className="spinner" />扫码成功，正在跳转验证…（首次可能等十几秒）</div>
                 ) : qr.state === 'verifying' ? (

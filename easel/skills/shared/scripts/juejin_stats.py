@@ -28,6 +28,9 @@ import time
 import urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
+
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 BROWSER_PROFILES = Path.home() / ".easel-browser-profiles"
 PROFILE = "JuejinProfile"
@@ -157,24 +160,32 @@ def _fetch_with(user_id: str, limit: int, jar) -> dict:
     }
 
 
-def fetch(user_id: str = "", limit: int = 20) -> dict:
-    """起一次 headless Chromium 读登录 cookie，再采集（Chromium 负责 cookie 解密）。"""
+def fetch(user_id: str = "", limit: int = 20, profile_dir: str | None = None,
+          cdp_endpoint: str | None = None) -> dict:
+    """在带登录 cookie 的浏览器上下文里采集（Chromium 负责 cookie 解密）。
+
+    cdp_endpoint 给定时附身运行中实例（账号的直启窗口开着，持久 profile 被它占用，起不了第二个）；
+    否则起一次 headless 持久化上下文，profile_dir 覆盖默认 JuejinProfile（多账号）。"""
     from playwright.sync_api import sync_playwright
 
-    profile = BROWSER_PROFILES / PROFILE
     with sync_playwright() as p:
-        ctx = p.chromium.launch_persistent_context(
-            str(profile), headless=True, locale="zh-CN",
-            args=["--no-sandbox", "--disable-gpu", "--no-proxy-server"])
+        if cdp_endpoint:
+            ctx, owned = browser_session.open_browser(p, cdp_endpoint=cdp_endpoint, launch=None)
+        else:
+            profile = browser_session.pick_profile(profile_dir, BROWSER_PROFILES / PROFILE)
+            ctx, owned = p.chromium.launch_persistent_context(
+                str(profile), headless=True, locale="zh-CN",
+                args=["--no-sandbox", "--disable-gpu", "--no-proxy-server"]), True
         try:
             return _fetch_with(user_id, limit, ctx.request)
         finally:
-            ctx.close()
+            browser_session.close_session(ctx, owned)
 
 
 def cmd_fetch(a) -> int:
     try:
-        print(json.dumps(fetch(a.user_id or "", a.limit), ensure_ascii=False))
+        print(json.dumps(fetch(a.user_id or "", a.limit, profile_dir=a.profile_dir,
+                                cdp_endpoint=browser_session.resolve_endpoint(a)), ensure_ascii=False))
         return 0
     except Exception as e:  # noqa: BLE001 — 失败也要输出 JSON 供前端展示
         print(json.dumps({"platform": "juejin", "name": "掘金", "loggedIn": False,
@@ -189,6 +200,9 @@ def cmd_selftest(_a) -> int:
     # 汇总逻辑：文章级求和兜底
     arts = [{"views": 3, "likes": 1}, {"views": 16, "likes": 0}]
     assert sum(x["views"] for x in arts) == 19
+    browser_session.selftest_args()
+    assert browser_session.pick_profile(None, BROWSER_PROFILES / PROFILE) == BROWSER_PROFILES / PROFILE
+    assert browser_session.pick_profile("~/pd", BROWSER_PROFILES / PROFILE) == Path.home() / "pd"
     print("✅ juejin_stats 自检通过")
     return 0
 
@@ -199,6 +213,7 @@ def main() -> int:
     p = sub.add_parser("fetch", help="采集并输出 JSON")
     p.add_argument("--user-id", help="掘金用户 ID（默认从登录 cookie 推断）")
     p.add_argument("--limit", type=int, default=20, help="文章条数（默认 20）")
+    browser_session.add_args(p, default_hint="~/.easel-browser-profiles/JuejinProfile")
     p.set_defaults(func=cmd_fetch)
     sub.add_parser("selftest", help="离线自检").set_defaults(func=cmd_selftest)
     a = ap.parse_args()

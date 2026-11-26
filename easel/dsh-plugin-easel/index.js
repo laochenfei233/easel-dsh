@@ -1981,8 +1981,13 @@ export const LOGIN_RUNNERS = {
   douyin: { name: '抖音', backend: 'douyin', profile: 'DouyinProfile' },
   // 微信公众号：扫码登录后台会话（发布+数据都走它），backend=='wechat-oa' 各处单独分支。
   'wechat-oa': { name: '微信公众号', backend: 'wechat-oa' },
+  // 今日头条：自带专用 publisher（skill-toutiao-publisher/scripts/toutiao_publish.py），
+  // backend=='toutiao' 在登录/校验/发布三处单独分支；采集走 account_stats.py 的 toutiao 平台条目。
+  toutiao: { name: '今日头条', backend: 'toutiao', profile: 'ToutiaoProfile' },
+  // 掘金：通用发布框架的平台块（登录弹窗内二维码 + 用户接口判登录），采集在 account_stats.py 内委托 juejin_stats。
+  juejin: { name: '掘金', backend: 'web', wp: 'juejin', profile: 'JuejinProfile' },
 }
-export const ANALYTICS_PLATFORMS = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'zhihu', 'weixin-channels', 'bilibili', 'wechat-oa'])
+export const ANALYTICS_PLATFORMS = new Set(['xiaohongshu', 'douyin', 'kuaishou', 'zhihu', 'weixin-channels', 'bilibili', 'wechat-oa', 'toutiao', 'juejin'])
 
 
 // ---- 画像构建：基线（确定性，宿主半直写）；AI 增强由向导页推 dsh 会话（方案 B）----

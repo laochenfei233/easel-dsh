@@ -20,7 +20,7 @@ export function accountsFile(workspaceRoot) {
 }
 
 /**
- * 七平台元数据，镜像 index.js LOGIN_RUNNERS：name 平台中文名；legacyProfile
+ * 九平台元数据，镜像 index.js LOGIN_RUNNERS：name 平台中文名；legacyProfile
  * 为升级前 ~/.easel-browser-profiles 下的目录名（null = 该平台无浏览器
  * profile，登录态是 cookie 文件或后台会话）；prefix 用于新账号 profileDir
  * 的人眼前缀。
@@ -33,6 +33,8 @@ export const PLATFORMS = {
   bilibili: { name: 'B站', legacyProfile: null, prefix: 'Bilibili' },
   douyin: { name: '抖音', legacyProfile: 'DouyinProfile', prefix: 'Douyin' },
   'wechat-oa': { name: '微信公众号', legacyProfile: null, prefix: 'WeixinOa' },
+  toutiao: { name: '今日头条', legacyProfile: 'ToutiaoProfile', prefix: 'Toutiao' },
+  juejin: { name: '掘金', legacyProfile: 'JuejinProfile', prefix: 'Juejin' },
 }
 
 /** 公众号扫码后台的凭证文件（workspaceRoot 相对，POSIX 斜杠）。 */

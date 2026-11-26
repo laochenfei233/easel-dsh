@@ -108,6 +108,14 @@ PLATFORMS: dict[str, dict] = {
         "notes_url": "https://mp.toutiao.com/profile_v4/manage/content/all",
         "note_url_re": r"toutiao\.com/(article|w|a)\d+|toutiao\.com/c/user/",
     },
+    "juejin": {
+        # 掘金走公开 JSON 接口（juejin_stats.py：账号概览需登录 cookie、文章列表免登录），不抓 DOM；
+        # 采集在 _scrape 开头委托。url/overview 仅为满足平台表同构（委托路径不读它们）。
+        "name": "掘金", "profile": "JuejinProfile", "default_proxy": False,
+        "url": "https://juejin.cn/",
+        "overview": {"followers": ["粉丝"], "likes": ["获赞"], "following": ["关注"]},
+        "overview_dir": "after",
+    },
 }
 
 LAUNCH_ARGS = [
@@ -631,8 +639,26 @@ def _scrape_xhs(context, page, result: dict) -> dict:
     return result
 
 
+def _scrape_juejin(profile_dir: str | None, cdp_endpoint: str | None) -> dict:
+    """委托 juejin_stats.fetch（公开接口 + 持久 profile 的登录 cookie），映射成本脚本的结果字段；
+    归档键、快照与增长窗口与其余平台共用。登录态缺失时与其余平台一样返回 logged_in=False。"""
+    from juejin_stats import fetch as _juejin_fetch
+    try:
+        s = _juejin_fetch(limit=20, profile_dir=profile_dir, cdp_endpoint=cdp_endpoint)
+    except Exception as e:  # noqa: BLE001
+        return {"nickname": "", "followers": None, "likes": None, "following": None,
+                "posts": None, "metrics": [], "notes": [], "logged_in": False,
+                "metrics_title": "账号累计（掘金公开接口）", "warning": str(e)[:120]}
+    return {"nickname": s["nickname"], "followers": s["followers"], "likes": s["likes"],
+            "following": s["following"], "posts": s["posts"], "metrics": s["metrics"],
+            "notes": s["notes"], "logged_in": bool(s["loggedIn"]),
+            "metrics_title": "账号累计（掘金公开接口）", "warning": s.get("warning", "")}
+
+
 def _scrape(platform: str, headed: bool, base: str | None, proxy: str | None,
             profile_dir: str | None = None, cdp_endpoint: str | None = None) -> dict:
+    if platform == "juejin":
+        return _scrape_juejin(profile_dir, cdp_endpoint)
     from playwright.sync_api import sync_playwright
     cfg = PLATFORMS[platform]
     r = {"nickname": "", "followers": None, "likes": None, "following": None,
@@ -1138,7 +1164,7 @@ def cmd_fetch(a) -> int:
         "followers": s["followers"], "likes": s["likes"],
         "following": s["following"], "posts": s["posts"],
         "metrics": s["metrics"], "notes": s["notes"],
-        "metrics_title": "平台近 7 日（创作中心只给这档）",
+        "metrics_title": s.get("metrics_title") or "平台近 7 日（创作中心只给这档）",
         "overview": [
             {"key": "followers", "label": "粉丝", "value": s["followers"]},
             {"key": "likes", "label": "获赞与收藏" if a.platform == "xiaohongshu" else "获赞", "value": s["likes"]},
@@ -1291,6 +1317,24 @@ def cmd_selftest(_a) -> int:
     assert is_public_xhs_note({"title": "(无标题)"}) is False
     assert is_public_xhs_note({"title": "还没写完", "text": "草稿 编辑"}) is False
     assert is_public_xhs_note({"title": "有标题草稿", "href": "https://creator.xiaohongshu.com/publish/publish?id=1"}) is False
+    # 掘金委托：字段映射齐全，采集失败降级为未登录（不起浏览器：桩掉 juejin_stats.fetch）
+    import juejin_stats
+    real_fetch = juejin_stats.fetch
+    try:
+        juejin_stats.fetch = lambda **kw: {"nickname": "掘友", "loggedIn": True, "followers": 1, "likes": 2,
+                                           "following": 3, "posts": 4, "metrics": [], "notes": [], "warning": ""}
+        mapped = _scrape_juejin(None, None)
+        assert mapped["logged_in"] and (mapped["followers"], mapped["likes"], mapped["posts"]) == (1, 2, 4)
+        assert mapped["following"] == 3 and mapped["nickname"] == "掘友"
+
+        def unavailable(**kw):
+            raise RuntimeError("无法确定掘金用户 ID（登录态 Cookie 缺失或已过期）")
+        juejin_stats.fetch = unavailable
+        offline = _scrape_juejin(None, None)
+        assert offline["logged_in"] is False and "登录态" in offline["warning"] and offline["followers"] is None
+    finally:
+        juejin_stats.fetch = real_fetch
+    assert PLATFORMS["juejin"]["profile"] == "JuejinProfile" and PLATFORMS["toutiao"]["profile"] == "ToutiaoProfile"
     print("✅ selftest 通过（解析 + 概览分方向取数(修获赞bug) + 近7日环比 + 多窗口增长 + 配置/代理 + 账号参数 profile-dir/cdp-endpoint + 接口token提取 + 排除草稿）")
     return 0
 

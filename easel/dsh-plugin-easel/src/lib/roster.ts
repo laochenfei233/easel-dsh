@@ -10,6 +10,8 @@ const PLATFORM_LABELS: Record<string, string> = {
   bilibili: 'B站',
   douyin: '抖音',
   'wechat-oa': '微信公众号',
+  toutiao: '今日头条',
+  juejin: '掘金',
 };
 
 export interface RosterAccount {

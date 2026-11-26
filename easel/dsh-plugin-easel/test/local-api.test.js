@@ -282,7 +282,9 @@ test('accounts come from the registry; analytics platforms read the default acco
   const bilibili = (await call('GET', 'accounts')).json.find(a => a.platform === 'bilibili')
   assert.equal(bilibili.loggedIn, true)
   const platforms = (await call('GET', 'analytics/platforms')).json
-  assert.equal(platforms.length, 7)
+  assert.equal(platforms.length, 9)
+  assert.equal(platforms.find(p => p.platform === 'toutiao').name, '今日头条')
+  assert.equal(platforms.find(p => p.platform === 'juejin').name, '掘金')
   assert.equal(platforms.find(p => p.platform === 'xiaohongshu').loggedIn, false)
   writeFileSync(join(root, 'outputs', '_login', 'xiaohongshu.json'), JSON.stringify({ state: 'success' }), 'utf8')
   assert.equal((await call('GET', 'analytics/platforms')).json.find(p => p.platform === 'xiaohongshu').loggedIn, true)

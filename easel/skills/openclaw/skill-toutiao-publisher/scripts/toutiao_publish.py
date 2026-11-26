@@ -49,6 +49,7 @@ if str(_SHARED_SCRIPTS) not in sys.path:
 import content_guard  # noqa: E402  出站内容安全闸门
 import login_qr  # noqa: E402
 import output_paths  # noqa: E402  产物路径规约
+import browser_session  # noqa: E402  双模式浏览器会话（persistent profile / CDP 附身）
 
 PROFILE_DIR = Path.home() / ".easel-browser-profiles" / "ToutiaoProfile"
 
@@ -506,6 +507,19 @@ def _open_browser(pw, headed: bool):
     return ctx, ctx.pages[0] if ctx.pages else ctx.new_page()
 
 
+def _open_session(pw, profile: Path, cdp_endpoint: str | None, headed: bool):
+    """双模式开会话，返回 (ctx, owned, page)。--cdp-endpoint 附身运行中实例（宿主为账号直启的窗口：
+    登录态在实例里，不碰持久 profile）；否则自起持久化上下文，profile 由调用方按 --profile-dir 解析。"""
+    if cdp_endpoint:
+        ctx, owned = browser_session.open_browser(pw, cdp_endpoint=cdp_endpoint, launch=None)
+        return ctx, owned, browser_session.open_page(ctx, owned)
+    profile.mkdir(parents=True, exist_ok=True)
+    ctx, owned = pw.chromium.launch_persistent_context(
+        str(profile), headless=not headed, locale="zh-CN", args=LAUNCH_ARGS,
+        viewport={"width": 1440, "height": 900}), True
+    return ctx, owned, browser_session.open_page(ctx, owned)
+
+
 def login(wait_seconds: int, headed: bool = True) -> int:
     """打开登录页等扫码，登录态写入 PROFILE_DIR。"""
     sync_playwright = _require_playwright()
@@ -535,6 +549,7 @@ def _login_parser() -> argparse.ArgumentParser:
     p.add_argument("--status-file", help="登录状态 JSON（默认 outputs/_login/toutiao.json）")
     p.add_argument("--timeout", type=int, default=180, help="等待扫码秒数")
     p.add_argument("--headed", action="store_true", help="有头浏览器（本机调试）")
+    browser_session.add_args(p, default_hint="~/.easel-browser-profiles/ToutiaoProfile")
     return p
 
 
@@ -542,6 +557,7 @@ def _whoami_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="toutiao_publish.py whoami",
                                 description="校验头条号登录态，stdout 输出一行 JSON")
     p.add_argument("--headed", action="store_true", help="有头浏览器（本机调试）")
+    browser_session.add_args(p, default_hint="~/.easel-browser-profiles/ToutiaoProfile")
     return p
 
 
@@ -662,8 +678,10 @@ def _capture_qr(page, qr_out: Path) -> bool:
 
 
 def _qr_login(profile: Path, qr_out: Path, status_file: Path, timeout_s: int,
-              headed: bool = False) -> int:
-    """扫码登录：二维码落盘；可见窗口支持手机绑定，状态供 Web 轮询。"""
+              headed: bool = False, cdp_endpoint: str | None = None) -> int:
+    """扫码登录：二维码落盘；可见窗口支持手机绑定，状态供 Web 轮询。
+
+    cdp_endpoint 给定时附身运行中实例：不抠二维码，写 window_login 后只轮询登录页的登录态。"""
     import login_state
 
     try:
@@ -672,25 +690,36 @@ def _qr_login(profile: Path, qr_out: Path, status_file: Path, timeout_s: int,
         login_state.write_status(str(status_file), "error", "未安装 playwright")
         raise
 
-    profile.mkdir(parents=True, exist_ok=True)
     qr_out.parent.mkdir(parents=True, exist_ok=True)
     login_state.write_status(str(status_file), "starting", "启动浏览器…")
     with sync_playwright() as pw:
         ctx = None
+        owned = True
         try:
-            ctx = pw.chromium.launch_persistent_context(
-                str(profile), headless=not headed, locale="zh-CN", args=LAUNCH_ARGS,
-                viewport={"width": 1440, "height": 900},
-            )
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+            ctx, owned, page = _open_session(pw, profile, cdp_endpoint, headed)
             page.goto(LOGIN_URL, wait_until="domcontentloaded")
             page.wait_for_timeout(2500)
             if _backend_authenticated(page):
-                ctx.close()
+                browser_session.close_session(ctx, owned)
                 ctx = None
                 login_state.write_status(str(status_file), "success", "已登录")
                 print("✅ 今日头条 已登录（登录态在持久化目录）")
                 return 0
+            if cdp_endpoint:
+                # CDP 附身模式（宿主为账号直启的窗口）：窗口是用户开着的，只轮询登录页，全程不关。
+                login_state.write_status(str(status_file), "window_login",
+                                         "已接管你的 Chrome——请在那个浏览器窗口里完成登录。")
+                deadline = time.time() + max(timeout_s, 30)
+                while time.time() < deadline:
+                    page.wait_for_timeout(2000)
+                    if _backend_authenticated(page):
+                        browser_session.close_session(ctx, owned)
+                        ctx = None
+                        login_state.write_status(str(status_file), "success", "登录成功")
+                        print("✅ 登录成功")
+                        return 0
+                login_state.write_status(str(status_file), "expired", "登录未完成，请重新登录")
+                return 1
             # 二维码 img 由前端异步注入 wrapper（真机 2026-11 实测约 5-8s 才出现），
             # 而手机号登录表单是同页常驻可见的。等二维码出现（或确认等不到）再做
             # 绑定墙判定，否则加载窗口内必然误判成「要求绑定手机号」。
@@ -744,7 +773,7 @@ def _qr_login(profile: Path, qr_out: Path, status_file: Path, timeout_s: int,
                     continue
                 qr_missing_since = None
                 if _backend_authenticated(page):
-                    ctx.close()
+                    browser_session.close_session(ctx, owned)
                     ctx = None
                     login_state.write_status(str(status_file), "success", "登录成功")
                     try:
@@ -765,11 +794,13 @@ def _qr_login(profile: Path, qr_out: Path, status_file: Path, timeout_s: int,
             login_state.write_status(str(status_file), "error", f"登录失败：{exc}")
             return 1
         finally:
+            # launch 模式关自己起的浏览器；CDP 附身模式不关（那是用户开着的窗口）
             if ctx is not None:
-                ctx.close()
+                browser_session.close_session(ctx, owned)
 
 
-def _probe_identity(headed: bool = False) -> dict:
+def _probe_identity(headed: bool = False, profile_dir: str | None = None,
+                    cdp_endpoint: str | None = None) -> dict:
     """打开头条号后台判定登录态。返回 {loggedIn, name, avatar}；失败附 error 字段。
 
     error 字段是给 Web 端判定的：有它 = 校验本身没跑成（不是可信的「未登录」），
@@ -782,13 +813,9 @@ def _probe_identity(headed: bool = False) -> dict:
         out["error"] = "未安装 playwright"
         return out
     try:
-        PROFILE_DIR.mkdir(parents=True, exist_ok=True)
         with sync_playwright() as pw:
-            ctx = pw.chromium.launch_persistent_context(
-                str(PROFILE_DIR), headless=not headed, locale="zh-CN", args=LAUNCH_ARGS,
-                viewport={"width": 1440, "height": 900},
-            )
-            page = ctx.pages[0] if ctx.pages else ctx.new_page()
+            ctx, owned, page = _open_session(
+                pw, browser_session.pick_profile(profile_dir, PROFILE_DIR), cdp_endpoint, headed)
             try:
                 response = page.goto(HOME_URL, wait_until="domcontentloaded", timeout=45000)
                 if response is None or not 200 <= response.status < 300:
@@ -805,7 +832,13 @@ def _probe_identity(headed: bool = False) -> dict:
                     if not qr_visible:
                         out['error'] = '后台页面尚未就绪，未确认账号身份，请稍后重试'
             finally:
-                ctx.close()
+                if not owned:
+                    # CDP 附身模式：只关自己开的这一页，用户的窗口留着；页面已被用户关掉就算了。
+                    try:
+                        page.close()
+                    except Exception:
+                        pass
+                browser_session.close_session(ctx, owned)
     except Exception as exc:
         out["error"] = f"校验失败：{exc}"
     return out
@@ -831,18 +864,21 @@ def cmd_login(argv: list[str]) -> int:
     qr_out = _resolve(args.qr_out) if args.qr_out else (root / "toutiao.png")
     status_file = (Path(args.status_file).expanduser() if args.status_file
                    else (root / "toutiao.json"))
-    return _qr_login(PROFILE_DIR, qr_out, status_file, args.timeout, headed=args.headed)
+    return _qr_login(browser_session.pick_profile(args.profile_dir, PROFILE_DIR), qr_out, status_file, args.timeout,
+                     headed=args.headed, cdp_endpoint=browser_session.resolve_endpoint(args))
 
 
 def cmd_whoami(argv: list[str]) -> int:
     args = _whoami_parser().parse_args(argv)
-    print(json.dumps(_probe_identity(headed=args.headed), ensure_ascii=False))
+    print(json.dumps(_probe_identity(headed=args.headed, profile_dir=args.profile_dir,
+                                     cdp_endpoint=browser_session.resolve_endpoint(args)), ensure_ascii=False))
     return 0
 
 
 def publish_article(content: str, title: str, tags: list[str], cover: Path | None,
                     images: list[Path], dry_run: bool, headed: bool, as_draft: bool,
-                    timeout_ms: int) -> dict:
+                    timeout_ms: int, profile_dir: str | None = None,
+                    cdp_endpoint: str | None = None) -> dict:
     """把图文发到头条号。dry_run=True 时只返回离线计划，不打开浏览器或创建远程草稿。"""
     result: dict = {"platform": "toutiao", "dry_run": dry_run, "draft": as_draft,
                     "title": title, "tags": tags,
@@ -854,7 +890,8 @@ def publish_article(content: str, title: str, tags: list[str], cover: Path | Non
         return result
     sync_playwright = _require_playwright()
     with sync_playwright() as pw:
-        ctx, page = _open_browser(pw, headed)
+        ctx, owned, page = _open_session(
+            pw, browser_session.pick_profile(profile_dir, PROFILE_DIR), cdp_endpoint, headed)
         try:
             receipt = _observe_receipts(page, 'draft' if as_draft else 'publish')
             page.goto(PUBLISH_URL, wait_until="domcontentloaded", timeout=60000)
@@ -916,7 +953,7 @@ def publish_article(content: str, title: str, tags: list[str], cover: Path | Non
                 result['article_id'] = receipt['id']
             result["url"] = page.url
         finally:
-            ctx.close()
+            browser_session.close_session(ctx, owned)
     return result
 
 
@@ -1017,6 +1054,10 @@ def _selftest() -> int:
     except output_paths.OutputPathError:
         ok = False
     assert ok, "outputs/_publish/ 应被接受为注册系统目录"
+    # 多账号参数：--profile-dir 覆盖、--cdp-endpoint 附身（与其余 runner 同一份 browser_session 契约）
+    browser_session.selftest_args()
+    assert browser_session.pick_profile(None, PROFILE_DIR) == PROFILE_DIR, "未传 --profile-dir 默认 ToutiaoProfile"
+    assert browser_session.pick_profile("~/pd", PROFILE_DIR) == Path.home() / "pd", "显式覆盖生效"
     # 出站闸门在 dry-run 下不拦、只告警
     content_guard.guard_or_die(["正常正文，无敏感信息"], exec_mode=False, label="自检")
     try:
@@ -1065,6 +1106,7 @@ def main(argv: list[str] | None = None) -> int:
                         help="放行内容安全闸门（检出内部设置泄露也照发，谨慎）")
     parser.add_argument("--headed", action="store_true", help="有头浏览器模式（调试用）")
     parser.add_argument("--timeout", type=int, default=15000, help="编辑器元素等待毫秒数")
+    browser_session.add_args(parser, default_hint="~/.easel-browser-profiles/ToutiaoProfile")
     args = parser.parse_args(args_list)
 
     if args.login:
@@ -1121,7 +1163,8 @@ def main(argv: list[str] | None = None) -> int:
           f"{' · 存草稿' if args.draft else ''}", file=sys.stderr)
 
     result = publish_article(content, title, tags, cover, images, dry_run,
-                             args.headed, args.draft, args.timeout)
+                             args.headed, args.draft, args.timeout, profile_dir=args.profile_dir,
+                             cdp_endpoint=browser_session.resolve_endpoint(args))
     if result.get("error"):
         print(json.dumps(result, ensure_ascii=False, indent=2))
         die(result["error"])

@@ -133,6 +133,14 @@ python skills/shared/scripts/manifest.py record --topic <主题> --layer publish
 
 有 Easel Profile 时，用 Profile 的账号定位/受众/语气决定标题风格与话题选择，并可用 `skill-persona-check` 做事后一致性检查；无 Profile 时按头条通用图文规范发布，不额外假设账号人设。
 
+## 多账号（可选）
+
+数据根 `outputs/_accounts.json` 是账号注册表，支持同平台多头条号。登录用子命令时带
+`--profile-dir`（浏览器 profile 根下该账号的目录）切号；账号的直启窗口开着时改带
+`--cdp-endpoint http://127.0.0.1:<端口>` 附身那个可见窗口（扫码/绑定手机号都在里面完成）。
+发布同样接受这两个参数；走宿主 API `POST /easel/api/publish/toutiao` 时带
+`account: <账号id>` 即可，profile 解析由宿主负责。账号清单（id/名字/绑定画像）直接读注册表。
+
 ## 结果核对
 
 公开提交与草稿保存分别核对对应写入接口的成功响应及有效文章 ID。进入内容管理或草稿箱不代表本次提交成功；确认点击超时不换另一个按钮重试。结果未核实时先到平台后台核对，不重复提交。平台接受公开提交后仍可能进入审核队列。
