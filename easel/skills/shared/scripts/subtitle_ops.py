@@ -6,7 +6,7 @@ LLM 完成（agent 读原文行 → 逐行翻译 → 回填），本脚本只负
 解析多格式字幕、按行提取待译文本、把译文与原文合并成双语字幕、格式互转、
 以及软挂载 / 硬烧录进视频。这样翻译质量交给 LLM，时间轴/格式/烧录不出错。
 
-与 asr.py 的边界：asr.py 是"语音 → 字幕"（ASR）；本脚本是"已有字幕 → 翻译/双语/烧录"，
+与宿主 ASR 的边界：`POST /easel/api/asr`（lib/asr.js）是"语音 → 字幕"（ASR）；本脚本是"已有字幕 → 翻译/双语/烧录"，
 不做语音识别。与 video_ops.py 的边界：video_ops 做通用剪辑，本脚本专管字幕。
 
 依赖：ffmpeg + ffprobe（仅 burn/convert-from-video 用）。解析/合并纯 Python，无依赖。

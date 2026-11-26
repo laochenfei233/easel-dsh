@@ -10,7 +10,7 @@
 mp 走直连（不经 JP 出口），避免异地安全校验。
 
 子命令：login / whoami / stats / selftest
-输出：stats 打印与 account_stats.py/bili_login.py 一致的统一 JSON dict（stdout 末行以 { 开头）。
+输出：stats 打印与 account_stats.py 一致的统一 JSON dict（stdout 末行以 { 开头）。
 """
 import argparse
 import json

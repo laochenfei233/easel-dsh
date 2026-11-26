@@ -31,6 +31,7 @@ model / base_url 均可用 env 覆盖；如报错请对照最新官方文档调�
 from __future__ import annotations
 
 import argparse
+import asr_route  # noqa: E402  宿主 ASR 路由客户端（本仓无 asr.py，转写统一走 lib/asr.js）
 import base64
 import difflib
 import hashlib
@@ -817,18 +818,13 @@ def cmd_probe_dialogue(args: argparse.Namespace) -> int:
     print(f"[probe] 生成测试片段：{provider}:{model or '默认'} 说「{text}」…", file=sys.stderr)
     GENERATORS[provider](gen_args, image)
 
-    asr = Path(__file__).resolve().parent / "asr.py"
     asr_out = outdir / "probe_asr.json"
-    cp = subprocess.run([sys.executable, str(asr), "transcribe", "-i", str(clip),
-                         "--model", args.asr_model or "base", "--format", "json", "-o", str(asr_out)],
-                        capture_output=True, text=True)
-    if cp.returncode != 0 or not asr_out.is_file():
-        return _finish(False, {"error": "asr_failed", "asr_stderr": (cp.stderr or "").strip()[-400:],
-                               "note": "ASR 失败，无法判定，保守判不忠实"})
+    project_root = Path(os.environ.get("EASEL_ROOT") or Path(__file__).resolve().parents[3])
     try:
-        data = json.loads(asr_out.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return _finish(False, {"error": "asr_bad_json"})
+        data = asr_route.transcribe(clip, asr_out, project_root=project_root)
+    except Exception as e:  # noqa: BLE001
+        return _finish(False, {"error": "asr_failed", "asr_stderr": str(e)[:400],
+                               "note": "ASR 失败，无法判定，保守判不忠实"})
     heard = "".join(str(s.get("text") or "") for s in data.get("segments", []))
     detected = data.get("language")
     faithful, sim, lang_ok = dialogue_faithful_verdict(text, heard, detected, language, args.threshold)

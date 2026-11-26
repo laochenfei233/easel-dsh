@@ -514,7 +514,8 @@ def _audit(root: str, series: str, episode: int, model: str, threshold: float,
             f"说明没跑 prepare（步骤16）就直接生了视频——台词没喂给模型，成片原生对白必然对不上。\n"
             f"请先跑：dubbing.py prepare --series \"{series}\" --episode {episode} --language <zh-CN>，"
             f"对这些镜**带 generation_prompt 重新生视频**，再回来 audit。")
-    asr_script = Path(__file__).resolve().parents[3] / "shared" / "scripts" / "asr.py"
+    import asr_route
+    _project_root = Path(os.environ.get("EASEL_ROOT") or Path(__file__).resolve().parents[3])
     report = {"episode": episode, "policy": "native-first", "threshold": threshold,
               "expected_language": expected_language, "shots": []}
     hard_fail = False
@@ -542,17 +543,18 @@ def _audit(root: str, series: str, episode: int, model: str, threshold: float,
         else:
             item["native_audio"] = True
             asr_out = ep / f".audit-shot-{idx}.json"
-            cp = subprocess.run([sys.executable, str(asr_script), "transcribe", "-i", str(rp),
-                                 "--model", model, "--format", "json", "-o", str(asr_out)],
-                                text=True, capture_output=True)
-            if cp.returncode != 0 or not asr_out.exists():
+            try:
+                # 本仓无 asr.py：转写走宿主 ASR 路由（lib/asr.js，mimo）；语言由路由结果给出，
+                # 宿主不回 language 时视为通过（模型按内容识别，不硬猜）。
+                data = asr_route.transcribe(rp, asr_out, project_root=_project_root)
+                if data.get("language") is None:
+                    data["language"] = expected_language
+            except Exception as e:  # noqa: BLE001
                 d, r = _decide_audio(has_audio=True, asr_ok=False, target=target, score=0.0,
                                      language_ok=False, n_dialogue=len(dialogue_lines),
                                      has_segs=False, threshold=threshold)
-                item.update({"decision": d, "reason": r, "asr_error": cp.stderr.strip()[-500:]})
+                item.update({"decision": d, "reason": r, "asr_error": str(e)[:500]})
             else:
-                data = mv._load_json(asr_out, {})
-                asr_out.unlink(missing_ok=True)
                 segs = data.get("segments", [])
                 heard = "".join(str(s.get("text") or "") for s in segs)
                 score = difflib.SequenceMatcher(None, _norm_text(target), _norm_text(heard)).ratio() if target else 0.0

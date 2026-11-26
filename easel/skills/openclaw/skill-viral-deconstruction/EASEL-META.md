@@ -6,7 +6,7 @@
 | **所属层** | attribute |
 | **来源类型** | Easel 自研 |
 | **功能描述** | 爆款视频拆解：下载（video_fetch.mjs：抖音 Feed 接口/小红书笔记页/快手详情页 `__APOLLO_STATE__` 原生路径 + 视频号下载器 staging 拾取 + yt-dlp 通用）→ ffmpeg 抽帧 → asr.py 转写 → 视觉模型看帧 → source.md 素材档案 → 六点拆解入选题库 |
-| **依赖** | yt-dlp（B站/YouTube/通用）、ffmpeg、faster-whisper（经 asr.py）、dsh 模型管理里用户自配的视觉模型（看帧）、wx_channels_download（视频号，外部 sidecar exe） |
+| **依赖** | yt-dlp（B站/YouTube/通用）、ffmpeg、语音转写走宿主 ASR 路由（mimo）、dsh 模型管理里用户自配的视觉模型（看帧）、wx_channels_download（视频号，外部 sidecar exe） |
 | **自包含** | 抖音/快手免 cookie（快手可选游客 cookie）；小红书需手动填登录 cookie（outputs/_deconstruct/cookies.json）；视频号免 cookie 但需微信 PC 已登录 + 下载器（识别到 sph 链接才检查） |
 
 > 创建时间: 2026-10-14
@@ -26,5 +26,5 @@
 - [wx_channels_download](https://github.com/ltaoo/wx_channels_download)：视频号下载
   （外部 sidecar exe，MIT + Commons Clause，未随包分发）：经微信 PC 客户端流量代理 +
   页面注入下载并解密，Easel 只做微信登录门控与产物拾取。
-- [faster-whisper](https://github.com/SYSTRAN/faster-whisper)：语音转写（经共享脚本 asr.py，MIT）。
+- 语音转写走宿主 ASR 路由 `POST /easel/api/asr`（lib/asr.js，mimo-v2.5-asr）。
 - FFmpeg：抽帧（LGPL/GPL）。
