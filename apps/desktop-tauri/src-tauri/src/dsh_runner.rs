@@ -10,13 +10,6 @@ use std::sync::Mutex as LaunchUrlMutex;
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
-// WebView2 pre-installs the session cookie for the iframe; the WebKit app
-// window authenticates through the loopback proxy instead.
-#[cfg(windows)]
-use tauri::webview::{
-    cookie::{time::Duration as CookieDuration, SameSite},
-    Cookie,
-};
 #[cfg(not(windows))]
 use tauri::webview::NewWindowFeatures;
 use tauri::{AppHandle, Emitter, Manager, Url};
@@ -1108,8 +1101,9 @@ struct AuthCookie {
     max_age: i64,
 }
 
-/// The URL the shell iframe should load: the clean origin on Windows, the
-/// token URL on WebKit shells (see `authenticate_webview`).
+/// The proxy URL the app window loads after the launch-token exchange. It
+/// carries the shell nonce so the proxy can tell this window's frame
+/// navigation from any other page that reaches its loopback port.
 #[derive(Serialize)]
 pub struct WebviewSession {
     pub url: String,
@@ -1185,18 +1179,13 @@ async fn launch_exchange(parsed: Url) -> Result<(AuthCookie, String, String), St
     Ok((cookie, clean_url, token_url))
 }
 
-/// Load the launch-token URL into the shell webview.
-///
-/// Chromium WebView2 (Windows): the shell installs the exchanged cookie into
-/// the native cookie store (`SameSite=None; Secure`) and returns the clean URL
-/// for the iframe, because a `SameSite=Strict` cookie minted inside the
-/// embedded cross-origin iframe is not sent to the loopback server.
-///
-/// WebKit shells (macOS/Linux): the session load no longer goes through this
-/// command — an iframe (or any third-party-context navigation) can never
-/// carry the exchange cookie there, so the window itself navigates top-level
-/// via `navigate_main` instead. This command's WebKit branch survives only as
-/// the validated probe that hands back the token URL unchanged.
+/// Exchange the launch token, point the loopback proxy at the session it
+/// mints, and return the proxy URL (carrying the shell nonce) the window
+/// loads. dsh 0.2.3 extends its browser-trust fence to HTML entry routes and
+/// refuses a cross-site navigation before authentication, so both shells load
+/// through the proxy — which injects the session itself and recognizes the
+/// window's one nonce navigation — instead of relying on the webview's own
+/// cookie jar or an in-iframe token URL.
 #[tauri::command]
 pub async fn authenticate_webview(app: AppHandle, url: String) -> Result<WebviewSession, String> {
     let parsed = url
@@ -1212,30 +1201,28 @@ pub async fn authenticate_webview(app: AppHandle, url: String) -> Result<Webview
     // {token_url}); the statement allow keeps the other target's fields
     // warning-free.
     #[allow(unused_variables)]
-    let (cookie, clean_url, token_url) = launch_exchange(parsed).await?;
+    let port = parsed.port().ok_or("invalid dsh web launch URL")?;
+    let (cookie, _clean_url, _token_url) = launch_exchange(parsed).await?;
     let _ = &app;
-    #[cfg(windows)]
-    {
-        let cookie = Cookie::build((cookie.name, cookie.value))
-            .domain("127.0.0.1")
-            .path("/")
-            .http_only(true)
-            .same_site(SameSite::None)
-            .secure(true)
-            .max_age(CookieDuration::seconds(cookie.max_age))
-            .build();
-        let window = app
-            .get_webview_window("main")
-            .ok_or("main webview unavailable")?;
-        window
-            .set_cookie(cookie)
-            .map_err(|e| format!("browser-cookie installation failed: {e}"))?;
-        Ok(WebviewSession { url: clean_url })
-    }
-    #[cfg(not(windows))]
-    {
-        Ok(WebviewSession { url: token_url })
-    }
+    let nonce = shell_nonce()?;
+    crate::proxy::session_updated(
+        port,
+        format!("{}={}", cookie.name, cookie.value),
+        nonce.clone(),
+    );
+    let proxy_port = crate::proxy::ensure_started().await?;
+    Ok(WebviewSession {
+        url: format!("http://127.0.0.1:{proxy_port}/?__easel_shell={nonce}"),
+    })
+}
+
+/// 32 random bytes for the frame URL's shell nonce: a page that scans the
+/// loopback ports cannot guess the value the proxy accepts as proof that a
+/// navigation belongs to this shell's webview.
+fn shell_nonce() -> Result<String, String> {
+    let mut bytes = [0u8; 32];
+    getrandom::fill(&mut bytes).map_err(|error| format!("shell nonce: {error}"))?;
+    Ok(bytes.iter().map(|byte| format!("{byte:02x}")).collect())
 }
 
 /// Label of the window that hosts the dsh UI on WebKit shells. The shell page
@@ -1294,9 +1281,10 @@ pub(crate) async fn open_app_window(app: &AppHandle, url: &str) -> Result<(), St
         .ok_or("invalid dsh web launch URL: missing port")?;
     // The exchange is the liveness probe AND the session source.
     let (cookie, _clean_url, _token_url) = launch_exchange(parsed).await?;
-    crate::proxy::session_updated(port, format!("{}={}", cookie.name, cookie.value));
+    let nonce = shell_nonce()?;
+    crate::proxy::session_updated(port, format!("{}={}", cookie.name, cookie.value), nonce.clone());
     let proxy_port = crate::proxy::ensure_started().await?;
-    let app_origin = Url::parse(&format!("http://127.0.0.1:{proxy_port}/"))
+    let app_origin = Url::parse(&format!("http://127.0.0.1:{proxy_port}/?__easel_shell={nonce}"))
         .map_err(|e| format!("invalid app proxy origin: {e}"))?;
     if let Some(window) = app.get_webview_window(APP_WINDOW) {
         let navigated = window.url().ok().map(|current| !same_origin(&current, &app_origin)).unwrap_or(true);
@@ -1582,6 +1570,15 @@ mod adopt_tests {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn shell_nonce_is_64_hex_characters_and_fresh_each_call() {
+        let first = shell_nonce().expect("a nonce from OS entropy");
+        let second = shell_nonce().expect("a nonce from OS entropy");
+        assert_eq!(first.len(), 64);
+        assert!(first.bytes().all(|byte| byte.is_ascii_hexdigit()));
+        assert_ne!(first, second);
+    }
 
     #[test]
     fn rival_sweep_kills_orphans_and_rivals_but_spares_the_kept_hub() {
