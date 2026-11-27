@@ -61,7 +61,7 @@ export const name = 'easel'
  * state, so it admits requests exactly like `/api`: a live authenticated Peer,
  * or the runner capability minted for the ASR skill (see `runnerAuthorized`).
  */
-export const inject = ['webServer', 'connection']
+export const inject = ['webServer', 'connection', 'connection.authentication']
 
 const DEFAULT_BASE_PATH = '/easel'
 const SKILL_FILE = 'SKILL.md'
@@ -2446,7 +2446,7 @@ export const CORE_ROUTES = [
  * @param connection - the host connection service this plane admits through.
  * @param port - reads the webserver port once it is bound (it may be unbound at activation).
  */
-export function createRouteRegistry(settings, connection, port) {
+export function createRouteRegistry(settings, connection, authentication, port) {
   // Per process, not persisted: a restarted server invalidates every token and
   // the activation-time `writeApiDiscovery` publishes the replacement.
   const runnerToken = randomBytes(32).toString('hex')
@@ -2455,6 +2455,7 @@ export function createRouteRegistry(settings, connection, port) {
   return {
     settings: { ...settings, runnerToken },
     connection,
+    authentication,
     port,
     runnerToken,
     discoveryPublished: false,
@@ -2554,13 +2555,13 @@ async function streamFile(res, { file, status = 200, headers = {}, range }) {
  * @returns true when a rejection was written.
  */
 function rejected(api, req, res) {
-  if (api.connection === undefined) {
+  if (api.authentication === undefined) {
     sendJson(res, 503, { detail: '本地 API 未接入连接鉴权' })
     return true
   }
-  const rejection = api.connection.requestRejection(req)
+  const rejection = apiAdmissionRejection(api, req)
   if (rejection === undefined) return false
-  sendJson(res, rejection, { ok: false, error: rejection === 401 ? 'unauthorized' : 'cross-origin api use is not allowed' })
+  sendJson(res, rejection, { ok: false, error: rejection === 401 ? 'unauthorized' : 'authentication unavailable' })
   return true
 }
 
@@ -2570,6 +2571,24 @@ function rejected(api, req, res) {
  * Admission is the connection service's: this plane answers filesystem state,
  * so it takes the same Host/Origin fence and live-Peer check as `/api`.
  */
+/**
+ * Credential admission for the easel API plane. dsh 0.2.3 removed
+ * `connection.requestRejection` (#8266): the source fence runs at the
+ * webserver layer and credential verification lives in the
+ * `connection.authentication` service, so this gate re-asks that service
+ * directly. Returns 401 when no provider accepts (the runner token exempts
+ * the ASR route) and 503 when verification failed without success.
+ */
+function apiAdmissionRejection(api, req) {
+  const facts = {
+    headers: req.headers, method: req.method,
+    url: new URL(req.url ?? '/', 'http://dsh.local').href,
+    transport: 'http', socket: req.socket,
+  }
+  const admission = api.authentication.authenticate(facts)
+  return 'rejection' in admission ? admission.rejection : undefined
+}
+
 async function serveApi(api, req, res) {
   const settings = api.settings
   let segments
@@ -2591,13 +2610,13 @@ async function serveApi(api, req, res) {
     api.discoveryPublished = (await writeApiDiscovery(settings.projectRoot, port, settings.basePath, api.runnerToken)
       .catch(() => false)) === true
   }
-  if (api.connection === undefined) {
+  if (api.authentication === undefined) {
     sendJson(res, 503, { detail: '本地 API 未接入连接鉴权' })
     return
   }
-  const rejection = api.connection.requestRejection(req)
+  const rejection = apiAdmissionRejection(api, req)
   if (rejection !== undefined && !(rejection === 401 && runnerAuthorized(api, req, segments))) {
-    sendJson(res, rejection, { ok: false, error: rejection === 401 ? 'unauthorized' : 'cross-origin api use is not allowed' })
+    sendJson(res, rejection, { ok: false, error: rejection === 401 ? 'unauthorized' : 'authentication unavailable' })
     return
   }
   let cachedBody
@@ -3136,7 +3155,7 @@ export function apply(ctx, config = {}) {
   const settings = resolveSettings(config)
   // Feature plugins (automation, deconstruct) mount their own routes into this
   // registry; clicking a row off in the profile turns one feature off cleanly.
-  const api = createRouteRegistry(settings, ctx.connection, () => ctx.webServer?.port)
+  const api = createRouteRegistry(settings, ctx.connection, ctx['connection.authentication'], () => ctx.webServer?.port)
   ctx.provide('easelApi', api)
   ctx.effect(() => api.register(CORE_ROUTES), 'easel: core routes')
   ctx.effect(() => api.register(createHandoffRoutes(ctx)), 'easel: handoff routes')
@@ -3150,6 +3169,8 @@ export function apply(ctx, config = {}) {
   ctx.effect(() => ctx.webServer.register({
     kind: 'exact',
     path: `${settings.basePath}/status`,
+    // credential checks live in serveApi/rejected (runner token exempts /asr)
+    auth: 'anonymous',
     handler: async (req, res) => {
       if (rejected(api, req, res)) return
       if (!requireGet(req, res)) return
@@ -3167,6 +3188,7 @@ export function apply(ctx, config = {}) {
   ctx.effect(() => ctx.webServer.register({
     kind: 'exact',
     path: `${settings.basePath}/skills`,
+    auth: 'anonymous',
     handler: async (req, res) => {
       if (rejected(api, req, res)) return
       if (!requireGet(req, res)) return
@@ -3177,6 +3199,7 @@ export function apply(ctx, config = {}) {
   ctx.effect(() => ctx.webServer.register({
     kind: 'prefix',
     path: `${settings.basePath}${PROXY_SUFFIX}`,
+    auth: 'anonymous',
     handler: (req, res) => serveApi(api, req, res),
   }), 'easel: api routes (all local; unmatched paths are 404)')
 

@@ -53,7 +53,7 @@ async function withFixture(run) {
     webServer: { register: route => (routes.push(route), () => {}) },
     // The catalog tests never touch the API prefix; a fence that admits nothing
     // would make every /easel/api case a 401 before reaching its assertion.
-    connection: { requestRejection: () => undefined },
+    'connection.authentication': { authenticate: () => ({ peer: {} }) },
     logger: { info() {} },
   }
   try {
@@ -126,7 +126,7 @@ test('reports an absent skill root instead of failing', async () => {
     effect: start => start(),
     provide() {},
     webServer: { register: route => (routes.push(route), () => {}) },
-    connection: { requestRejection: () => undefined },
+    'connection.authentication': { authenticate: () => ({ peer: {} }) },
     logger: { info() {} },
   }, { skillsDir: join(tmpdir(), 'easel-plugin-does-not-exist'), basePath: '/easel' })
   const answer = await invoke(routeAt(routes, '/easel/skills'))

@@ -23,7 +23,17 @@ async function mount({ withConnection = true } = {}) {
     effect: start => start(),
     provide: (name, service) => { provided[name] = service },
     webServer: { register: route => (routes.push(route), () => {}) },
-    ...(withConnection ? { connection: { requestRejection: () => rejections.shift() } } : {}),
+    ...(withConnection ? {
+      connection: {},
+      // dsh 0.2.3: each verdict comes from one authenticate() call
+      // ({peer} admitted, {rejection} refused), queued per request.
+      'connection.authentication': {
+        authenticate: () => {
+          const verdict = rejections.shift()
+          return verdict === undefined ? { peer: {} } : { rejection: verdict }
+        },
+      },
+    } : {}),
     logger: { info() {} },
   }
   apply(ctx, { projectRoot: root })
@@ -79,12 +89,12 @@ test('an authenticated same-origin caller is admitted', async () => {
   }
 })
 
-test('a cross-site or rebound caller is refused even without a cookie', async () => {
+test('a verification failure without success answers 503', async () => {
   const fixture = await mount()
   try {
-    fixture.rejections.push(403)
+    fixture.rejections.push(503)
     const answer = await call(fixture.routes)
-    assert.equal(answer.status, 403)
+    assert.equal(answer.status, 503)
   } finally {
     await fixture.cleanup()
   }
