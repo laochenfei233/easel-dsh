@@ -28,6 +28,24 @@ Easel-dsh is a desktop social-media operations workbench built on [DeepSeek Harn
 
 <img src="assets/readme/features.svg" alt="Easel-dsh core capabilities: one creation flow, local content assets, pluggable models" width="100%">
 
+## Interface tour
+
+| Hotspot radar | Topic board |
+|---|---|
+| <img src="assets/readme/radar.png" alt="Hotspot radar: cross-platform trending aggregation" width="100%"> | <img src="assets/readme/topics.png" alt="Topic board: kanban with persona ownership" width="100%"> |
+| **Content calendar** | **Persona** |
+| <img src="assets/readme/calendar.png" alt="Content calendar: holiday underlay and scheduling" width="100%"> | <img src="assets/readme/persona.png" alt="Persona: six-dimension profile" width="100%"> |
+| **Skill library** | **Publishing** |
+| <img src="assets/readme/skills.png" alt="Skill library: 120 skills layered by pipeline stage" width="100%"> | <img src="assets/readme/publish.png" alt="Publishing hub: master copy rewrite and per-account distribution" width="100%"> |
+
+## Live demo
+
+| Product tour | Real AI round |
+|---|---|
+| <img src="assets/readme/easel-demo-tour.gif" alt="Product tour: workbench, hotspot radar, topic board, content calendar, persona" width="100%"> | <img src="assets/readme/easel-demo-agent.gif" alt="Real AI round: conversation drives the agent to read and update the topic board" width="100%"> |
+
+The demo GIFs were recorded on an isolated instance: real server, real model rounds (the agent genuinely called the topic-board skills), played back at 2-4x speed.
+
 ## Quick start
 
 1. Download the installer for your platform from [GitHub Releases](https://github.com/laochenfei233/easel-dsh/releases) (Windows / macOS / Linux; the installer bundles its own Node runtime, no system environment needed).

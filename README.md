@@ -28,6 +28,24 @@ Easel-dsh 是基于 [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-h
 
 <img src="assets/readme/features.svg" alt="Easel-dsh 三大能力：一站式创作流、内容资产本地化、多模型随插随用" width="100%">
 
+## 界面速览
+
+| 热点雷达 | 选题库 |
+|---|---|
+| <img src="assets/readme/radar.png" alt="热点雷达：跨平台热搜聚合" width="100%"> | <img src="assets/readme/topics.png" alt="选题库：选题看板与画像归属" width="100%"> |
+| **内容日历** | **画像** |
+| <img src="assets/readme/calendar.png" alt="内容日历：节假日底图与排期" width="100%"> | <img src="assets/readme/persona.png" alt="画像：六维人设与默认画像" width="100%"> |
+| **技能库** | **发布中心** |
+| <img src="assets/readme/skills.png" alt="技能库：120 个技能按流水线分层" width="100%"> | <img src="assets/readme/publish.png" alt="发布中心：母版改写与按账号分发" width="100%"> |
+
+## 动态演示
+
+| 产品导览 | 真实 AI 轮次 |
+|---|---|
+| <img src="assets/readme/easel-demo-tour.gif" alt="产品导览：工作台、热点雷达、选题库、内容日历、画像" width="100%"> | <img src="assets/readme/easel-demo-agent.gif" alt="真实 AI 轮次：对话驱动 agent 读取与更新选题库" width="100%"> |
+
+演示 GIF 录制于隔离实例：真实服务端、真实模型轮次（agent 真实调用了选题库技能），播放为 2-4 倍速。
+
 ## 快速开始
 
 1. 从 [GitHub Releases](https://github.com/laochenfei233/easel-dsh/releases) 下载对应平台的安装包（Windows / macOS / Linux，安装包内嵌 Node 运行时，无需系统环境）。
